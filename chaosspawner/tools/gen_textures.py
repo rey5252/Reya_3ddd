@@ -317,12 +317,16 @@ for n, (name, (bg, rim, sym, glow, rows)) in enumerate(CARDS.items()):
     px = grid()
     for y in range(16):
         for x in range(16):
-            if x == 0 or y == 0:
+            pale = tuple(int(bright[i] * 0.7 + edge[i] * 0.3) for i in range(3))
+            if x == 15 or y == 15:
+                # raised light lip on the right and bottom, like the reference frame
+                c = pale if not (x == 0 or y == 0) else shade(frame, 1.1)
+            elif x == 0 or y == 0:
                 c = fdark
-            elif x == 15 or y == 15:
-                c = shade(frame, 1.25)
-            elif x == 1 or y == 1 or x == 14 or y == 14:
-                c = frame if not (x == 14 or y == 14) else shade(frame, 0.85)
+            elif x == 14 or y == 14:
+                c = shade(edge, 0.62)
+            elif x == 1 or y == 1:
+                c = frame
             elif x == 2 or y == 2 or x == 13 or y == 13:
                 c = edge
             else:
