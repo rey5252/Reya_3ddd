@@ -1,6 +1,9 @@
 {
-  "parent": "minecraft:item/generated",
+  "parent": "minecraft:item/handheld",
   "textures": {
     "layer0": "mobfarm:item/lasso"
-  }
+  },
+  "overrides": [
+    { "predicate": { "mobfarm:captured": 1 }, "model": "mobfarm:item/lasso_captured" }
+  ]
 }

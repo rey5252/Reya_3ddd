@@ -62,11 +62,6 @@ public class LassoItem extends Item {
         return stack;
     }
 
-    @Override
-    public boolean isFoil(ItemStack stack) {
-        return hasMob(stack);
-    }
-
     /** Releases the caught mob next to the clicked block. */
     @Override
     public InteractionResult useOn(UseOnContext context) {
