@@ -41,3 +41,31 @@ jobs:
           name: ${{ matrix.mod }}-jar
           path: ${{ matrix.dir }}/build/libs/*.jar
 
+
+  # Puts the freshly built jars into jars/ on this branch, so they can be handed out directly.
+  publish-jars:
+    needs: build
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          pattern: '*-jar'
+          merge-multiple: true
+      - name: Commit jars
+        run: |
+          mkdir -p jars
+          rm -f jars/*.jar
+          cp artifacts/*.jar jars/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add jars
+          git diff --cached --quiet && exit 0
+          git commit -m "Update built jars [skip ci]"
+          for i in 1 2 3; do git pull --rebase && git push && break; sleep 5; done
