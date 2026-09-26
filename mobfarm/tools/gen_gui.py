@@ -91,17 +91,20 @@ def rnd(i, salt):
 
 # ------------------------------------------------------------------ pieces
 
+RIM = (122, 127, 140)
+RIM_HI = (170, 175, 188)
+
+
 def framed_panel(cv, x1, y1, x2, y2, pal, band=4):
-    """Black edge, thick dark metal band (lit top, light inner edge), dark line, background."""
+    """Black edge, thin light-grey rim, dark band, dark inner line, then the tier background."""
     bg, bgl, bgd, tr, trl, trd = pal
     cv.rect(x1, y1, x2, y2, BLACK)
-    cv.rect(x1 + 1, y1 + 1, x2 - 1, y2 - 1, BAND)
-    cv.rect(x1 + 1, y1 + 1, x2 - 1, y1 + 2, BAND_HI)
-    cv.rect(x1 + 1, y2 - 2, x2 - 1, y2 - 1, BAND_LO)
+    cv.outline(x1 + 1, y1 + 1, x2 - 1, y2 - 1, RIM)
+    cv.rect(x1 + 1, y1 + 1, x2 - 1, y1 + 2, RIM_HI)
+    cv.rect(x1 + 2, y1 + 2, x2 - 2, y2 - 2, BAND)
     i = band + 1
-    cv.outline(x1 + i - 1, y1 + i - 1, x2 - i + 1, y2 - i + 1, BAND_HI)
+    cv.outline(x1 + i - 1, y1 + i - 1, x2 - i + 1, y2 - i + 1, BAND_LO)
     cv.rect(x1 + i, y1 + i, x2 - i, y2 - i, bgd)
-    cv.rect(x1 + i, y1 + i, x2 - i, y1 + i + 1, trd)
     top, bottom = y1 + i + 1, y2 - i - 1
     for y in range(top, bottom):
         t = (y - top) / max(1, bottom - top - 1)
@@ -207,26 +210,32 @@ def inventory_panel(cv, x1, y1, x2, y2):
 
 
 def stone_slot(cv, x, y, dark=False):
-    """18x18 carved stone slot at slot position (x, y) (item area x..x+16)."""
-    face = mix(STONE, (70, 76, 72), 0.35) if dark else STONE
-    hi = mix(STONE_HI, (90, 98, 92), 0.35) if dark else STONE_HI
-    lo = mix(STONE_LO, (50, 56, 52), 0.35) if dark else STONE_LO
-    eng = mix(STONE_ENG, (64, 70, 66), 0.35) if dark else STONE_ENG
+    """18x18 carved tile: bevelled edge, a dotted square border around the centre and small gold
+    dots in its corners (item area x..x+16)."""
+    face = (140, 152, 138)
+    light = (184, 196, 180)
+    shade = (96, 106, 96)
+    dot_l = (178, 190, 172)
+    dot_d = (110, 120, 108)
+    gold = (214, 162, 72)
+    if dark:
+        face, light, shade, dot_l, dot_d = (mix(c, (60, 64, 60), 0.4) for c in (face, light, shade, dot_l, dot_d))
     cv.rect(x - 1, y - 1, x + 17, y + 17, STONE_OUT)
     cv.rect(x, y, x + 16, y + 16, face)
-    cv.rect(x, y, x + 16, y + 1, hi)
-    cv.rect(x, y, x + 1, y + 16, hi)
-    cv.rect(x, y + 15, x + 16, y + 16, lo)
-    cv.rect(x + 15, y, x + 16, y + 16, lo)
+    cv.rect(x, y, x + 16, y + 1, light)
+    cv.rect(x, y, x + 1, y + 16, light)
+    cv.rect(x, y + 15, x + 16, y + 16, shade)
+    cv.rect(x + 15, y, x + 16, y + 16, shade)
+    # dotted square border at inset 2
+    for k in range(2, 14):
+        for (xx, yy) in ((x + k, y + 2), (x + k, y + 13), (x + 2, y + k), (x + 13, y + k)):
+            cv.set(xx, yy, dot_l if (xx + yy) % 2 == 0 else dot_d)
+    # inner shadow line inside the border
+    cv.rect(x + 3, y + 3, x + 13, y + 4, shade)
+    cv.rect(x + 3, y + 3, x + 4, y + 13, shade)
     if not dark:
-        # engraved ring
-        for yy in range(16):
-            for xx in range(16):
-                d = math.hypot(xx - 7.5, yy - 7.5)
-                if 4.6 <= d < 5.6:
-                    cv.set(x + xx, y + yy, eng)
-                elif 5.6 <= d < 6.4 and xx + yy > 15:
-                    cv.set(x + xx, y + yy, hi)
+        for (xx, yy) in ((x + 2, y + 2), (x + 13, y + 2), (x + 2, y + 13), (x + 13, y + 13)):
+            cv.set(xx, yy, gold)
 
 
 def gold_brackets(cv, x1, y1, x2, y2, pal, arm=5):
