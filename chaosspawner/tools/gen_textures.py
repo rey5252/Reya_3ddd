@@ -303,151 +303,132 @@ CARDS = {
         "............",
         "............"]),
 }
-# upgrades: shiny metal tokens like the reference - a dark frame, a plate glowing from the orange
-# rim to a bright middle, a diagonal glint, white shine dots in two corners and an engraved symbol
-METALS = {
-    # frame dark, frame, rim, middle, bright, engraving
-    "speed":      ((14, 44, 58), (24, 74, 92), (30, 120, 150), (80, 200, 225), (205, 250, 255), (12, 46, 62)),
-    "looting":    ((96, 56, 24), (117, 77, 46), (163, 99, 35), (232, 190, 70), (255, 246, 160), (72, 46, 18)),
-    "quantity":   ((52, 20, 70), (76, 36, 98), (120, 50, 160), (190, 120, 232), (248, 220, 255), (50, 16, 70)),
-    "experience": ((26, 58, 20), (40, 84, 30), (62, 138, 34), (150, 222, 76), (232, 255, 172), (26, 62, 18)),
-}
-# The tokens are 16x16 and follow the reference token: a dark frame on the top and
-# left, an orange band, a dark groove and a pale lip on the right and bottom, a plate going from pale
-# yellow at the top to orange at the bottom, a diagonal glint, a white shine in the top-left and
-# bottom-right corners, and a symbol engraved in thin dark lines. The gold token is the reference;
-# the others are the same token turned to their own hue.
+# upgrades: tilted 3D medallions, 64x64 and animated (12 frames): a thick engraved metal rim with a
+# visible edge, a glowing dome that fades from white to the upgrade's colour, a symbol on the dome and
+# a shimmer that sweeps across the medallion.
 import colorsys
 
-
-def lerp3(a, b, t):
-    t = max(0.0, min(1.0, t))
-    return tuple(int(a[i] + (b[i] - a[i]) * t) for i in range(3))
-
-
-def ramp(stops, v):
-    """Colour at v from a list of (position, colour) stops."""
-    for (p0, c0), (p1, c1) in zip(stops, stops[1:]):
-        if v <= p1:
-            return lerp3(c0, c1, (v - p0) / float(p1 - p0))
-    return stops[-1][1]
-
-
-N = 16                     # token size
-P1, P2 = 3, 12             # plate columns/rows (inclusive)
-PLATE = [(3, (250, 236, 140)), (5, (246, 222, 110)), (7, (240, 198, 72)), (9, (234, 172, 50)),
-         (11, (229, 155, 38)), (12, (224, 145, 32))]
-
-
-def gold_token16():
-    px = [[None] * N for _ in range(N)]
-    for y in range(N):
-        for x in range(N):
-            mid_x = 1.0 - abs(x - 7.5) / 7.5
-            mid_y = 1.0 - abs(y - 7.5) / 7.5
-            if x == 15:
-                c = (207, 166, 108) if y < 15 else (201, 160, 99)
-            elif y == 15:
-                c = (218, 180, 123) if x > 0 else (143, 103, 70)
-            elif y <= 2 and not (x <= 2 and x < y):
-                c = [(109, 68, 36), (122, 78, 42), lerp3((172, 108, 28), (220, 158, 58), mid_x)][y]
-                if x >= 13:
-                    c = [(110, 70, 43), (128, 79, 49), (160, 96, 40)][y]
-            elif x <= 2:
-                c = [(111, 71, 46), (116, 72, 40), lerp3((165, 99, 32), (200, 138, 50), mid_y)][x]
-                if y >= 13:
-                    c = shade(c, 0.9)
-            elif x == 14 or y == 14:
-                c = (137, 84, 17)
-            elif x == 13 or y == 13:
-                c = lerp3((165, 104, 30), (192, 128, 44), mid_y if x == 13 else mid_x)
-            else:
-                c = ramp(PLATE, max(P1, y))
-                if y < 8 and x < 7:
-                    c = lerp3(c, (255, 248, 175), (7 - x) / 7.0 * 0.3)
-                if x == P1:
-                    c = lerp3(c, (205, 140, 40), 0.3)
-                elif x == P2:
-                    c = lerp3(c, (205, 140, 40), 0.3)
-                if y == P2:
-                    c = (224, 145, 32) if P1 < x < P2 else (206, 130, 30)
-                # the glint running from the top edge down to the right edge
-                if P1 <= y <= 8 and P1 <= x <= P2:
-                    k = {3: 0.2, 4: 0.55, 5: 0.85, 6: 0.45}.get(x - y, 0.0)
-                    c = lerp3(c, (255, 252, 150), k)
-            px[y][x] = c
-    # shine: a white square top left and a small one bottom right
-    for (x, y) in ((3, 3), (4, 3), (3, 4), (4, 4)):
-        px[y][x] = (255, 255, 236)
-    px[3][3] = (255, 255, 255)
-    for (x, y) in ((5, 3), (3, 5), (5, 4), (4, 5)):
-        px[y][x] = lerp3(px[y][x], (252, 246, 196), 0.5)
-    for (x, y) in ((11, 11), (11, 10), (10, 11)):
-        px[y][x] = (253, 248, 204) if (x, y) == (11, 11) else lerp3(px[y][x], (250, 232, 170), 0.5)
-    return px
-
-
-def square_outline(x1, y1, x2, y2):
-    pts = set()
-    for i in range(x1, x2 + 1):
-        pts |= {(i, y1), (i, y2)}
-    for j in range(y1, y2 + 1):
-        pts |= {(x1, j), (x2, j)}
-    return pts
-
-
-GLYPH16 = {
-    "speed": ["#..#..",
-              ".#..#.",
-              "..#..#",
-              "..#..#",
-              ".#..#.",
-              "#..#.."],
-    "looting": [".....#",
-                "....#.",
-                ".#.#..",
-                "..#...",
-                ".#.#..",
-                "#....."],
-    "quantity": None,
-    "experience": [".####.",
-                   "#....#",
-                   "#.##.#",
-                   "#.##.#",
-                   "#....#",
-                   ".####."],
+MED = {
+    # rim dark, rim, rim light, dome colour, symbol
+    "speed":      ((10, 60, 62), (30, 150, 150), (150, 250, 240), (60, 230, 220), (10, 110, 120)),
+    "looting":    ((80, 50, 8), (190, 140, 30), (255, 235, 150), (250, 200, 60), (120, 70, 10)),
+    "quantity":   ((50, 14, 70), (150, 60, 200), (240, 190, 255), (220, 120, 255), (90, 20, 130)),
+    "experience": ((20, 60, 10), (80, 170, 40), (210, 255, 160), (150, 240, 80), (40, 110, 20)),
 }
-HUE = {"speed": (190, 0.95), "looting": None, "quantity": (285, 0.9), "experience": (100, 0.9)}
+FR, SZ = 12, 64
+ANG = math.radians(-24)
+CX, CY, RX, RY = 31.0, 32.0, 24.0, 27.0
 
 
-def rehue(c, hue, sat):
-    h, l, s_ = colorsys.rgb_to_hls(*(v / 255.0 for v in c))
-    r, g, b = colorsys.hls_to_rgb(hue / 360.0, l, min(1.0, s_ * sat))
-    return (int(r * 255), int(g * 255), int(b * 255))
+def ell(x, y, ox=0.0, oy=0.0, scale=1.0):
+    """Normalised radius of (x, y) in the tilted medallion ellipse (1 = its edge)."""
+    dx, dy = x - CX - ox, y - CY - oy
+    u = dx * math.cos(ANG) + dy * math.sin(ANG)
+    v = -dx * math.sin(ANG) + dy * math.cos(ANG)
+    return math.hypot(u / (RX * scale), v / (RY * scale)), math.atan2(v, u)
+
+
+def symbol(name, x, y):
+    # coordinates relative to the dome centre, a little up-left of the medallion centre
+    X, Y = x - 30.5, y - 30.0
+    if name == "speed":      # an arrow pointing up and right
+        return (seg_dist(X, Y, -9, 8, 6, -7) <= 2.3 or seg_dist(X, Y, 8, -9, -2, -8) <= 2.0
+                or seg_dist(X, Y, 8, -9, 7, 1) <= 2.0)
+    if name == "looting":    # a sword: long blade to the top right, short guard, grip and pommel
+        return (seg_dist(X, Y, -3.5, 3.5, 10, -10) <= 2.0 - max(0.0, X - 6) * 0.25
+                or seg_dist(X, Y, -6.5, 0.5, -0.5, 6.5) <= 1.4
+                or seg_dist(X, Y, -4, 4, -8, 8) <= 1.3 or math.hypot(X + 9.3, Y - 9.3) <= 2.0)
+    if name == "quantity":   # a bold plus
+        return (abs(X) <= 2.6 and abs(Y) <= 10) or (abs(Y) <= 2.6 and abs(X) <= 10)
+    # experience: a four-point star inside a ring
+    r = math.hypot(X, Y)
+    star = abs(X) * abs(Y) <= 5.0 and abs(X) + abs(Y) <= 9.0
+    return star or 9.5 <= r <= 11.5
+
+
+def seg_dist(px_, py_, ax, ay, bx, by):
+    dx, dy = bx - ax, by - ay
+    t = max(0.0, min(1.0, ((px_ - ax) * dx + (py_ - ay) * dy) / float(dx * dx + dy * dy)))
+    return math.hypot(px_ - (ax + t * dx), py_ - (ay + t * dy))
+
+
+def mixc(a, b, t):
+    t = max(0.0, min(1.0, t))
+    return tuple(a[i] + (b[i] - a[i]) * t for i in range(3))
 
 
 for n, name in enumerate(CARDS):
-    tok = gold_token16()
-    rows = GLYPH16[name]
-    if rows is None:
-        pts = square_outline(0, 0, 3, 3) | square_outline(2, 2, 5, 5)
-    else:
-        pts = {(c, r) for r, row in enumerate(rows) for c, ch in enumerate(row) if ch == "#"}
-    ink = (100, 78, 38)
-    ox = oy = 5
-    for (gx, gy) in pts:
-        tok[oy + gy][ox + gx] = ink
-    # soft half-tone beside the lines so the engraving reads bold, as in the reference
-    for (gx, gy) in pts:
-        for (dx, dy, k) in ((1, 0, 0.25), (0, 1, 0.25)):
-            q = (gx + dx, gy + dy)
-            x, y = ox + q[0], oy + q[1]
-            if q not in pts and x <= P2 and y <= P2:
-                tok[y][x] = lerp3(tok[y][x], ink, k)
-    if HUE[name]:
-        hue, sat = HUE[name]
-        tok = [[rehue(c, hue, sat) for c in row] for row in tok]
-    px = [[c + (255,) for c in row] for row in tok]
-    png(f"{ROOT}/textures/item/{name}_upgrade.png", px)
+    rdark, rim, rlight, dome, sym = MED[name]
+    sheet = [[T] * SZ for _ in range(SZ * FR)]
+    # symbol coverage (4x supersampled) is the same in every frame
+    cov = [[sum(symbol(name, x + (i + 0.5) / 4, y + (j + 0.5) / 4) for i in range(4) for j in range(4)) / 16.0
+            for x in range(SZ)] for y in range(SZ)]
+    # a soft halo of the dome colour round the symbol
+    glow = [[0.0] * SZ for _ in range(SZ)]
+    for y in range(SZ):
+        for x in range(SZ):
+            if cov[y][x] < 1:
+                near = max(cov[yy][xx] for yy in range(max(0, y - 2), min(SZ, y + 3))
+                           for xx in range(max(0, x - 2), min(SZ, x + 3)))
+                glow[y][x] = near
+    for f in range(FR):
+        sweep = -40 + f * (150 / FR)            # position of the shimmer band along x + y
+        for y in range(SZ):
+            for x in range(SZ):
+                acc, alpha = [0.0, 0.0, 0.0], 0.0
+                for (sx, sy) in ((0.25, 0.25), (0.75, 0.25), (0.25, 0.75), (0.75, 0.75)):
+                    fx, fy = x + sx, y + sy
+                    r, a = ell(fx, fy)
+                    if r <= 1.0:
+                        if r > 0.95:
+                            c = rdark                               # outline
+                        elif r > 0.72:
+                            # the rim: lit from the top left, engraved with rings and notches
+                            lightk = 0.5 + 0.5 * math.cos(a + 2.4)
+                            h0, l0, s0 = colorsys.rgb_to_hls(*(v / 255.0 for v in rim))
+                            hr = colorsys.hls_to_rgb((h0 + 0.09 * math.sin(a * 2 + 1)) % 1.0, l0, min(1.0, s0 * 1.1))
+                            rim_c = tuple(v * 255 for v in hr)
+                            c = mixc(rdark, rim_c, 0.35 + 0.65 * lightk)
+                            c = mixc(c, rlight, max(0.0, lightk - 0.55) * 1.6)
+                            if abs(r - 0.84) < 0.018 or abs(r - 0.76) < 0.02:
+                                c = mixc(c, rdark, 0.6)
+                            notch = (int((a + math.pi) / (2 * math.pi) * 28) % 3 == 0) and 0.79 < r < 0.83
+                            if notch:
+                                c = mixc(c, rlight, 0.45)
+                            grain = ((hsh(int(fx * 2), int(fy * 2), n) % 9) - 4) / 60.0
+                            c = mixc(c, (255, 255, 255) if grain > 0 else (0, 0, 0), abs(grain))
+                        elif r > 0.69:
+                            c = mixc(rdark, (0, 0, 0), 0.3)          # groove round the dome
+                        else:
+                            # the dome: white-hot up and to the left, the upgrade colour at its edge
+                            dx, dy = fx - 25.0, fy - 23.0
+                            h = min(1.0, math.hypot(dx, dy) / 26.0)
+                            c = mixc((255, 255, 255), dome, (h - 0.15) * 1.5)
+                            c = mixc(c, rdark, max(0.0, r - 0.55) * 1.4)
+                            g = glow[y][x]
+                            if g > 0:
+                                c = mixc(c, dome, g * 0.6)
+                            k = cov[y][x]
+                            if k > 0:
+                                c = mixc(c, sym, k)
+                        # shimmer
+                        band = abs((fx + fy) - sweep)
+                        if band < 7:
+                            c = mixc(c, (255, 255, 255), (1 - band / 7) * 0.6)
+                    else:
+                        # the medallion's edge, seen below and right of it
+                        r2, a2 = ell(fx, fy, 2.2, 3.0)
+                        if r2 > 1.0:
+                            continue
+                        c = mixc(rdark, rim, 0.25 + 0.2 * math.sin(a2 * 6))
+                        if r2 > 0.96:
+                            c = mixc(rdark, (0, 0, 0), 0.5)
+                    acc = [acc[i] + c[i] for i in range(3)]
+                    alpha += 1
+                if alpha:
+                    sheet[f * SZ + y][x] = tuple(int(v / alpha) for v in acc) + (int(255 * min(1.0, alpha / 2.0)) if alpha < 4 else 255,)
+    # the symbol's soft outer glow is baked in above; write the strip and its animation file
+    png(f"{ROOT}/textures/item/{name}_upgrade.png", sheet)
+    json.dump({"animation": {"frametime": 2}}, open(f"{ROOT}/textures/item/{name}_upgrade.png.mcmeta", "w"), indent=2)
     json.dump({"parent": "minecraft:item/generated", "textures": {"layer0": f"chaosspawner:item/{name}_upgrade"}},
               open(f"{ROOT}/models/item/{name}_upgrade.json", "w"), indent=2)
