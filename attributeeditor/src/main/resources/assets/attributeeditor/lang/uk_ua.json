@@ -9,5 +9,11 @@
   "commands.attributeeditor.unbreakable.on": "Предмет тепер незламний",
   "commands.attributeeditor.unbreakable.off": "Предмет знову ламається",
   "commands.attributeeditor.reload": "Конфіг перезавантажено: %s правил",
-  "commands.attributeeditor.reload.failed": "Не вдалося прочитати config/attributeeditor.json, дивись лог"
+  "commands.attributeeditor.reload.failed": "Не вдалося прочитати config/attributeeditor.json, дивись лог",
+  "block.attributeeditor.attribute_table": "Стіл атрибутів",
+  "container.attributeeditor.attribute_table": "Стіл атрибутів",
+  "gui.attributeeditor.cost": "Коштує %s рів. досвіду",
+  "gui.attributeeditor.reset": "Скинути",
+  "gui.attributeeditor.unbreakable": "Незлам.",
+  "gui.attributeeditor.unbreakable.tooltip": "Увімк./вимк. незламність (%s рів.)"
 }

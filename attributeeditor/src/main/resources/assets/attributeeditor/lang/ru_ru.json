@@ -9,5 +9,11 @@
   "commands.attributeeditor.unbreakable.on": "Предмет теперь неразрушимый",
   "commands.attributeeditor.unbreakable.off": "Предмет снова ломается",
   "commands.attributeeditor.reload": "Конфиг перезагружен: %s правил",
-  "commands.attributeeditor.reload.failed": "Не удалось прочитать config/attributeeditor.json, смотри лог"
+  "commands.attributeeditor.reload.failed": "Не удалось прочитать config/attributeeditor.json, смотри лог",
+  "block.attributeeditor.attribute_table": "Стол атрибутов",
+  "container.attributeeditor.attribute_table": "Стол атрибутов",
+  "gui.attributeeditor.cost": "Стоит %s ур. опыта",
+  "gui.attributeeditor.reset": "Сброс",
+  "gui.attributeeditor.unbreakable": "Нерушим.",
+  "gui.attributeeditor.unbreakable.tooltip": "Вкл./выкл. неразрушимость (%s ур.)"
 }

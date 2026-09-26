@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " S ",
+    "DAD",
+    "OOO"
+  ],
+  "key": {
+    "S": { "item": "minecraft:diamond_sword" },
+    "D": { "item": "minecraft:diamond" },
+    "A": { "item": "minecraft:anvil" },
+    "O": { "item": "minecraft:obsidian" }
+  },
+  "result": { "item": "attributeeditor:attribute_table" }
+}

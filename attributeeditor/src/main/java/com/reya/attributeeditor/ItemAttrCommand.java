@@ -1,12 +1,10 @@
 package com.reya.attributeeditor;
 
 import java.util.Arrays;
-import java.util.EnumMap;
 import java.util.Map;
 
 import javax.annotation.Nullable;
 
-import com.google.common.collect.Multimap;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -22,9 +20,6 @@ import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.ResourceArgument;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
@@ -42,8 +37,6 @@ import net.minecraft.world.item.ItemStack;
  * /itemattr reload                             – reload config/attributeeditor.json
  */
 public final class ItemAttrCommand {
-    private static final String NBT_KEY = "AttributeModifiers";
-
     private static final SimpleCommandExceptionType NO_ITEM =
             new SimpleCommandExceptionType(Component.translatable("commands.attributeeditor.no_item"));
     private static final DynamicCommandExceptionType BAD_SLOT =
@@ -92,9 +85,7 @@ public final class ItemAttrCommand {
         double value = DoubleArgumentType.getDouble(c, "value");
         EquipmentSlot slot = slotArg != null ? slotArg : AttributeValues.defaultSlot(stack);
 
-        copyDefaultsToNbt(stack);
-        removeFromNbt(stack, attribute, slot);
-        stack.addAttributeModifier(attribute, AttributeValues.modifierFor(attribute, slot, value), slot);
+        ItemAttributeEditing.set(stack, attribute, slot, value);
 
         c.getSource().sendSuccess(() -> Component.translatable("commands.attributeeditor.set",
                 Component.translatable(attribute.getDescriptionId()), format(value), slot.getName()), true);
@@ -105,8 +96,7 @@ public final class ItemAttrCommand {
         ItemStack stack = heldItem(c);
         Attribute attribute = ResourceArgument.getAttribute(c, "attribute").value();
 
-        copyDefaultsToNbt(stack);
-        int removed = removeFromNbt(stack, attribute, slot);
+        int removed = ItemAttributeEditing.remove(stack, attribute, slot);
         c.getSource().sendSuccess(() -> Component.translatable("commands.attributeeditor.removed",
                 Component.translatable(attribute.getDescriptionId()), removed), true);
         return removed;
@@ -138,24 +128,14 @@ public final class ItemAttrCommand {
 
     private static int reset(CommandContext<CommandSourceStack> c) throws CommandSyntaxException {
         ItemStack stack = heldItem(c);
-        if (stack.getTag() != null) {
-            stack.getTag().remove(NBT_KEY);
-            if (stack.getTag().isEmpty()) stack.setTag(null);
-        }
+        ItemAttributeEditing.reset(stack);
         c.getSource().sendSuccess(() -> Component.translatable("commands.attributeeditor.reset"), true);
         return 1;
     }
 
     private static int unbreakable(CommandContext<CommandSourceStack> c) throws CommandSyntaxException {
         ItemStack stack = heldItem(c);
-        CompoundTag tag = stack.getOrCreateTag();
-        boolean now = !tag.getBoolean("Unbreakable");
-        if (now) {
-            tag.putBoolean("Unbreakable", true);
-            stack.setDamageValue(0);
-        } else {
-            tag.remove("Unbreakable");
-        }
+        boolean now = ItemAttributeEditing.toggleUnbreakable(stack);
         c.getSource().sendSuccess(() -> Component.translatable(now
                 ? "commands.attributeeditor.unbreakable.on" : "commands.attributeeditor.unbreakable.off"), true);
         return 1;
@@ -169,33 +149,6 @@ public final class ItemAttrCommand {
         }
         c.getSource().sendSuccess(() -> Component.translatable("commands.attributeeditor.reload", rules), true);
         return rules;
-    }
-
-    /**
-     * An item with an AttributeModifiers tag loses all of its default attributes, so before the
-     * first edit copy the current ones in; otherwise setting damage would wipe attack speed.
-     */
-    private static void copyDefaultsToNbt(ItemStack stack) {
-        if (stack.getTag() != null && stack.getTag().contains(NBT_KEY, Tag.TAG_LIST)) return;
-
-        Map<EquipmentSlot, Multimap<Attribute, AttributeModifier>> current = new EnumMap<>(EquipmentSlot.class);
-        for (EquipmentSlot slot : EquipmentSlot.values()) {
-            current.put(slot, stack.getAttributeModifiers(slot));
-        }
-        stack.getOrCreateTag().put(NBT_KEY, new ListTag());
-        current.forEach((slot, modifiers) ->
-                modifiers.forEach((attribute, modifier) -> stack.addAttributeModifier(attribute, modifier, slot)));
-    }
-
-    private static int removeFromNbt(ItemStack stack, Attribute attribute, @Nullable EquipmentSlot slot) {
-        if (stack.getTag() == null) return 0;
-        ListTag list = stack.getTag().getList(NBT_KEY, Tag.TAG_COMPOUND);
-        String id = AttributeValues.key(attribute);
-        int before = list.size();
-        list.removeIf(t -> t instanceof CompoundTag entry
-                && id.equals(entry.getString("AttributeName"))
-                && (slot == null || slot.getName().equals(entry.getString("Slot"))));
-        return before - list.size();
     }
 
     private static String format(double value) {
