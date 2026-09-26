@@ -15,7 +15,7 @@
   "item.chaosspawner.looting_upgrade.tip": "Каждое — +1 уровень Добычи (до X)",
   "item.chaosspawner.quantity_upgrade.tip": "Каждое — ещё столько же мобов за раунд",
   "item.chaosspawner.experience_upgrade.tip": "Каждое — +50% опыта",
-  "gui.chaosspawner.collect": "Собрать опыт",
+  "gui.chaosspawner.collect": "СОБРАТЬ ОПЫТ",
   "gui.chaosspawner.xp": "Опыт: %s очков",
   "gui.chaosspawner.running": "Работает",
   "gui.chaosspawner.stopped": "Стоит: нет душ, полно лута или есть сигнал редстоуна",

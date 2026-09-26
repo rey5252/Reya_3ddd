@@ -15,7 +15,7 @@
   "item.chaosspawner.looting_upgrade.tip": "Each one: +1 Looting level (up to X)",
   "item.chaosspawner.quantity_upgrade.tip": "Each one: as many mobs again per round",
   "item.chaosspawner.experience_upgrade.tip": "Each one: +50% experience",
-  "gui.chaosspawner.collect": "Collect XP",
+  "gui.chaosspawner.collect": "COLLECT XP",
   "gui.chaosspawner.xp": "Experience: %s points",
   "gui.chaosspawner.running": "Running",
   "gui.chaosspawner.stopped": "Stopped: no souls, loot full or a redstone signal",

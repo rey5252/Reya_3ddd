@@ -32,7 +32,7 @@ public class ChaosSpawnerScreen extends AbstractContainerScreen<ChaosSpawnerMenu
     private static final int BLACK = 0xFF0A090C;
     private static final int CYAN = 0xFF50DCE6, CYAN_L = 0xFFBEFAFF, CYAN_D = 0xFF1E788C;
     private static final int PLAQUE_TEXT = 0xFF3A3530;
-    private static final int XP_X1 = 29, XP_Y1 = 108, XP_X2 = 125, XP_Y2 = 117;
+    private static final int XP_X1 = 29, XP_Y1 = 108, XP_X2 = 113, XP_Y2 = 117;
     /** Points for one full bar: what it takes to reach level 30. */
     private static final int XP_FULL = 1395;
 
@@ -48,7 +48,7 @@ public class ChaosSpawnerScreen extends AbstractContainerScreen<ChaosSpawnerMenu
     @Override
     protected void init() {
         super.init();
-        collect = addRenderableWidget(new TealButton(leftPos + 134, topPos + 104, 94, 18,
+        collect = addRenderableWidget(new TealButton(leftPos + 118, topPos + 103, 110, 20,
                 Component.translatable("gui.chaosspawner.collect"),
                 b -> minecraft.gameMode.handleInventoryButtonClick(menu.containerId, ChaosSpawnerMenu.BUTTON_COLLECT)));
     }
@@ -162,7 +162,21 @@ public class ChaosSpawnerScreen extends AbstractContainerScreen<ChaosSpawnerMenu
         }
     }
 
-    /** Teal button with corner brackets, like "Собрать опыт" in the reference. */
+    /** Circuit-like side ornament of the collect button, as in the reference (mirrored on the right). */
+    private static final String[] ORNAMENT = {
+            "#######....",
+            "#.....#....",
+            "#####.#....",
+            "#...#.#....",
+            "...##......",
+            "......#....",
+            "...##.###.#",
+            "....#......",
+            "#####.##...",
+            "#.....#....",
+            "#######...."};
+
+    /** Slate-teal button with a bright top line, a dimmer bottom line and circuit ornaments at the ends. */
     private class TealButton extends Button {
         TealButton(int x, int y, int w, int h, Component msg, OnPress press) {
             super(x, y, w, h, msg, press, DEFAULT_NARRATION);
@@ -172,26 +186,34 @@ public class ChaosSpawnerScreen extends AbstractContainerScreen<ChaosSpawnerMenu
         public void renderWidget(GuiGraphics g, int mx, int my, float pt) {
             boolean hot = isHoveredOrFocused() && active;
             int x = getX(), y = getY(), x2 = x + width, y2 = y + height;
-            int face = !active ? 0xFF3A4E5E : hot ? 0xFF2FA8BC : 0xFF1F7E92;
-            g.fill(x, y, x2, y2, BLACK);
+            int face = !active ? 0xFF28404E : hot ? 0xFF34768F : 0xFF2C6178;
+            int line = active ? 0xFF31F3DB : 0xFF4E7C84;
+            int lineEnd = active ? 0xFF24A1B4 : 0xFF3E626A;
+            int bottom = active ? 0xFF26A3B6 : 0xFF3A5A64;
+            int orn = active ? (hot ? 0xFF3FD8E6 : 0xFF2796AB) : 0xFF3E626A;
+            g.fill(x, y, x2, y2, 0xFF2A3945);
             g.fill(x + 1, y + 1, x2 - 1, y2 - 1, face);
-            g.fill(x + 1, y + 1, x2 - 1, y + 2, active ? CYAN_L : 0xFF6A7E8E);
-            g.fill(x + 1, y2 - 2, x2 - 1, y2 - 1, active ? CYAN_D : 0xFF26323C);
-            int b = active ? CYAN_L : 0xFF8A9EAE;
-            for (int[] c : new int[][]{{x + 2, y + 3, 1, 1}, {x2 - 3, y + 3, -1, 1}, {x + 2, y2 - 4, 1, -1}, {x2 - 3, y2 - 4, -1, -1}}) {
-                g.fill(c[0], c[1], c[0] + 1, c[1] + 1, b);
-                g.fill(c[0], c[1] + c[3], c[0] + 1, c[1] + c[3] + 1, b);
-                g.fill(c[0] + c[2], c[1], c[0] + c[2] + 1, c[1] + 1, b);
+            g.fill(x + 3, y + 2, x2 - 3, y + 3, lineEnd);
+            g.fill(x + 6, y + 2, x2 - 6, y + 3, line);
+            g.fill(x + 2, y2 - 3, x2 - 2, y2 - 2, bottom);
+            int oy = y + (height - ORNAMENT.length) / 2;
+            for (int r = 0; r < ORNAMENT.length; r++) {
+                String row = ORNAMENT[r];
+                for (int c = 0; c < row.length(); c++) {
+                    if (row.charAt(c) != '#') continue;
+                    g.fill(x + 3 + c, oy + r, x + 4 + c, oy + r + 1, orn);
+                    g.fill(x2 - 4 - c, oy + r, x2 - 3 - c, oy + r + 1, orn);
+                }
             }
             Component m = getMessage();
-            int tw = font.width(m), room = width - 12;
-            int color = active ? 0xFFFFFFFF : 0xFF9AA8B4;
+            int tw = font.width(m), room = width - 2 * (ORNAMENT[0].length() + 5);
+            int color = active ? 0xFFB8F7FE : 0xFF7A96A0;
             if (tw <= room) {
-                g.drawString(font, m, x + (width - tw) / 2, y + (height - 8) / 2 + 1, color, true);
+                g.drawString(font, m, x + (width - tw) / 2, y + (height - 8) / 2, color, true);
             } else {
                 float k = room / (float) tw;
                 g.pose().pushPose();
-                g.pose().translate(x + width / 2.0F - tw * k / 2.0F, y + height / 2.0F - 4.0F * k + 0.5F, 0.0F);
+                g.pose().translate(x + width / 2.0F - tw * k / 2.0F, y + height / 2.0F - 4.0F * k, 0.0F);
                 g.pose().scale(k, k, 1.0F);
                 g.drawString(font, m, 0, 0, color, true);
                 g.pose().popPose();

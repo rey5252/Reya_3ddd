@@ -336,8 +336,8 @@ IX1, IX2, IY1 = 39, 217, 146      # inventory panel
 PAL = ((16, 28, 46), (24, 42, 64), (8, 16, 30), (80, 220, 230), (190, 250, 255), (30, 110, 130))
 CYAN, CYAN_L, CYAN_D = (80, 220, 230), (190, 250, 255), (30, 120, 140)
 SOUL, OUT, UP = (29, 16), (29, 46), (173, 46)
-XP_BAR = (29, 108, 125, 117)
-BUTTON = (134, 104, 228, 122)
+XP_BAR = (29, 108, 113, 117)
+BUTTON = (118, 103, 228, 123)
 WISP = ["...#....", "...##...", "..###...", "..####..", ".#####..", ".##.###.", "##..###.", "##...##.", ".##.##..", "..###..."]
 ARROW = ["...##...", "..####..", ".######.", "...##...", "...##...", "...##...", "........", ".######."]
 
@@ -376,109 +376,139 @@ def recess(cv, x1, y1, x2, y2, fill, pal):
     cv.rect(x1 + 1, y2 - 2, x2 - 1, y2 - 1, mix(fill, pink, 0.35))
 
 
+# frame layers from the outside in, sampled from the reference: grey rim, bright cyan line,
+# a striped teal band, a blue line and a pale inner line
+LAYERS = [BLACK, (81, 100, 105), (53, 235, 209), (38, 123, 112), (1, 11, 11), (40, 142, 128), (21, 124, 111),
+          (38, 143, 129), (9, 17, 28), (32, 115, 146), (13, 76, 99), (186, 251, 255), (48, 63, 69)]
+INTERIOR = (12, 22, 36)
+DECO_HI, DECO, DECO_LO = (60, 240, 215), (38, 200, 190), (24, 128, 140)
+PLATE_TOP = 17                    # side plates (their first row), mirrored at the bottom
+
+
+def corner_gem(cv, x, y, flip=False):
+    """Dark 9x9 tile with a diagonal crystal shard, sitting on a frame corner."""
+    cv.rect(x, y, x + 9, y + 9, BLACK)
+    cv.rect(x + 1, y + 1, x + 8, y + 8, (18, 34, 44))
+    shard = [".........",
+             ".WW...cC.",
+             ".WWW.cCC.",
+             "..WcCCC..",
+             "..cCCc...",
+             ".cCCc....",
+             ".CCc.....",
+             "..d......",
+             "........."]
+    cols = {"W": (236, 255, 255), "C": (53, 235, 209), "c": (30, 160, 170), "d": (20, 90, 100)}
+    for r, row in enumerate(shard):
+        for c, ch in enumerate(row):
+            if ch in cols:
+                cv.set(x + (8 - c if flip else c), y + r, cols[ch])
+
+
+def bright_block(cv, x, y):
+    """The small glowing cyan square under each corner gem."""
+    cv.rect(x - 1, y - 1, x + 6, y + 6, (81, 100, 105))
+    cv.rect(x, y, x + 5, y + 5, (53, 235, 209))
+    cv.rect(x, y, x + 5, y + 1, (140, 250, 240))
+    cv.rect(x + 1, y + 1, x + 3, y + 3, (236, 255, 255))
+    cv.rect(x, y + 4, x + 5, y + 5, (30, 160, 150))
+
+
+def side_plate(cv, y, f):
+    """Dark plate set across the frame band; the cyan line runs over and under it."""
+    for l in range(2, 14):
+        x = f(l - 3)
+        t = max(0.0, (l - 7) / 6.0)
+        cv.set(x, y, mix((53, 235, 209), (236, 255, 255), t))
+        cv.set(x, y + 1, (38, 123, 112) if l < 12 else (186, 251, 255))
+        cv.set(x, y + 8, (38, 150, 136) if l < 12 else (53, 235, 209))
+        cv.set(x, y + 9, (53, 235, 209))
+    for yy in range(y + 2, y + 8):
+        for l in range(3, 14):
+            cv.set(f(l - 3), yy, (6, 6, 5))
+        cv.set(f(0), yy, (38, 123, 112))
+        cv.set(f(9), yy, (186, 251, 255))
+        cv.set(f(10), yy, (53, 235, 209))
+    for l in range(4, 12):
+        cv.set(f(l - 3), y + 2, (133, 172, 181) if l < 11 else (236, 255, 255))
+    for l in range(5, 11):
+        cv.set(f(l - 3), y + 4, (40, 40, 40))
+        cv.set(f(l - 3), y + 5, (40, 40, 40))
+    for yy in range(y + 2, y + 8):
+        cv.set(f(-1), yy, (38, 123, 112))
+
+
+SHAPES = {
+    "big":   ["#####", "#...#", "#...#", "#...#", "#####"],
+    "small": ["###", "#.#", "###"],
+    "open":  ["####", "#..#", "#..#", "####"],
+    "brL":   ["###", "#..", "#..", "#..", "###"],
+    "brR":   ["###", "..#", "..#", "..#", "###"],
+    "dot":   ["#"],
+}
+
+
+def deco_shape(cv, x, y, rows, f):
+    h, w = len(rows), len(rows[0])
+    for r, row in enumerate(rows):
+        for c, ch in enumerate(row):
+            if ch != "#":
+                continue
+            if r == 0 or c == w - 1:
+                col = DECO_HI if (r == 0 and c == w - 1) or c > w // 2 else DECO
+            else:
+                col = DECO_LO if r == h - 1 and c < w // 2 else DECO
+            if h == 1:
+                col = DECO
+            cv.set(f(x + c) if f(0) == 0 else f(x + c), y + r, col)
+
+
 def build(pal=PAL):
     cv = Canvas(W, H)
     bg, bgl, bgd, tr, trl, trd = pal
-    pink = mix(bg, (236, 190, 170), 0.16)
-    accent = mix(trl, (240, 150, 90), 0.5)
-    bx1, bx2, top_h = 0, SW, TOP_H
+    top_h = TOP_H
     ix1, ix2, iy1, iy2 = IX1, IX2, IY1, SH
 
-    inside = set()
-    def area(x1, y1, x2, y2):
-        for y in range(y1, y2):
-            for x in range(x1, x2):
-                inside.add((x, y))
-                inside.add((mx(x), y))
-    area(bx1 + 4, 4, SW // 2, top_h - 4)
-    area(bx1 + 11, top_h - 4, SW // 2, top_h)
-    area(ix1 - 2, top_h, SW // 2, iy1)
-    area(ix1 - 2, iy1, ix1, iy1 + 5)
-    area(ix1 - 6, iy1 + 2, ix1, iy1 + 5)
-    for (x, y) in inside:
-        edge = any((x + dx, y + dy) not in inside for dx in (-1, 0, 1) for dy in (-1, 0, 1))
-        face = all((x + dx, y + dy) in inside for dx in range(-3, 4) for dy in range(-3, 4))
-        cv.set(x, y, bg if face else pink if edge else bgd)
+    # the frame shape: the main panel (reaching 3px into the margin) and the legs down to the inventory
+    rects = [(-3, -3, SW + 3, top_h + 3), (ix1 - 6, top_h, ix2 + 6, iy1 + 6)]
+    inside = lambda x, y: any(r[0] <= x < r[2] and r[1] <= y < r[3] for r in rects)
+    for y in range(-M, SH + M):
+        for x in range(-M, SW + M):
+            if not inside(x, y):
+                continue
+            d = 0
+            while d < len(LAYERS) and all(inside(x + dx, y + dy) for dx in (-d - 1, 0, d + 1) for dy in (-d - 1, 0, d + 1)):
+                d += 1
+            cv.set(x, y, LAYERS[d] if d < len(LAYERS) else INTERIOR)
 
-    cv.rect(bx1 + 7, 7, bx2 - 7, 8, accent)
-    cv.rect(bx1 + 7, 8, bx2 - 7, 9, mix(bg, BLACK, 0.25))
-    for x in (bx1 + 7, bx2 - 8):
-        cv.rect(x, 7, x + 1, top_h - 10, accent)
-
-    grey = {}
-    def pipe(points):
-        for (a, b) in zip(points, points[1:]):
-            (x1, y1), (x2, y2) = a, b
-            if y1 == y2:
-                for x in range(min(x1, x2), max(x1, x2) + 2):
-                    grey[(x, y1)] = 1
-                    grey[(x, y1 + 1)] = 1
-            else:
-                for y in range(min(y1, y2), max(y1, y2) + 2):
-                    grey[(x1, y)] = 1
-                    grey[(x1 + 1, y)] = 1
-    pipe([(SW // 2, 1), (bx1 + 1, 1), (bx1 + 1, top_h - 3), (bx1 + 8, top_h - 3), (bx1 + 8, top_h),
-          (ix1 - 5, top_h), (ix1 - 5, iy1 - 1), (ix1 - 12, iy1 - 1), (ix1 - 12, iy1 + 3)])
-    for (x, y) in list(grey):
-        grey[(mx(x), y)] = 1
-    near_in = lambda q: any((q[0] + dx, q[1] + dy) in inside for dx in (-1, 0, 1) for dy in (-1, 0, 1))
-    shade = {}
-    for (x, y) in grey:
-        outer = inner = False
-        for (dx, dy) in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-            q = (x + dx, y + dy)
-            if q not in grey:
-                if near_in(q):
-                    inner = True
-                else:
-                    outer = True
-        if outer != inner:
-            shade[(x, y)] = GREY_HI if outer else GREY_LO
-        else:
-            shade[(x, y)] = GREY_HI if ((x - 1, y) not in grey or (x, y - 1) not in grey) else GREY_LO
-    for (x, y) in shade:
-        for dx in (-1, 0, 1):
-            for dy in (-1, 0, 1):
-                q = (x + dx, y + dy)
-                if q not in shade:
-                    cv.set(q[0], q[1], BLACK)
-    for (x, y), c in shade.items():
-        cv.set(x, y, c)
     for side in (False, True):
         f = (lambda x: mx(x)) if side else (lambda x: x)
-        for x in range(ix1 - 9, ix1):
-            cv.set(f(x), iy1 + 5, BLACK)
-            cv.set(f(x), iy1 + 6, GREY_HI)
-            cv.set(f(x), iy1 + 7, GREY_LO)
-            cv.set(f(x), iy1 + 8, BLACK)
+        # corner gems, the glowing blocks under them and the plates across the side band (top and bottom)
+        corner_gem(cv, f(-4) - (8 if side else 0), -4, side)
+        corner_gem(cv, f(-4) - (8 if side else 0), top_h - 5, side)
+        bright_block(cv, f(-3) - (4 if side else 0), 8)
+        bright_block(cv, f(-3) - (4 if side else 0), top_h - 13)
+        side_plate(cv, PLATE_TOP, f)
+        side_plate(cv, top_h - 27, f)
 
-    # a thin rail down each side strip with small cyan diamonds strung on it at even steps
-    for side in (False, True):
-        f = (lambda x: mx(x)) if side else (lambda x: x)
-        cxr = 13
-        for y in range(22, top_h - 19):
-            cv.set(f(cxr), y, CYAN_D)
-        for k, y in enumerate(range(28, top_h - 24, 12)):
-            big = k % 2 == 0
-            r = 2 if big else 1
-            for dy in range(-r - 1, r + 2):
-                for dx in range(-r - 1, r + 2):
-                    d = abs(dx) + abs(dy)
-                    if d == r + 1:
-                        cv.set(f(cxr + dx), y + dy, BLACK)
-                    elif d <= r:
-                        c = CYAN_L if (dy < 0 or (dy == 0 and dx < 0)) else CYAN if d < r or dy <= 0 else CYAN_D
-                        cv.set(f(cxr + dx), y + dy, c)
-
-    # corner caps, clips, gem medallions, leg caps
-    for side in (False, True):
-        f = (lambda x: mx(x)) if side else (lambda x: x)
-        corner_cap(cv, f(bx1), 0)
-        for y in (40, top_h // 2, top_h - 40):
-            stud(cv, f(bx1 + 1) - (1 if side else 0), y)
-        for y in (8, top_h - 17):
-            gem_medallion(cv, f(bx1 + 4) - (8 if side else 0), y, flip_x=side)
-        cap_notch(cv, f(ix1 - 11), iy1 + 5, side)
+        # squares, brackets and dots scattered down the side strip like the reference
+        taken = set()
+        y, i = 13, 0
+        order = ["brL", "small", "big", "dot", "small", "open", "small", "dot", "big", "small", "brR", "small",
+                 "dot", "small", "big", "small", "dot", "open", "small", "big", "small"]
+        while y < top_h - 8:
+            kind = order[i % len(order)]
+            rows = SHAPES[kind]
+            w, h = len(rows[0]), len(rows)
+            x = 12 + rnd(i, 31 + side) % (13 - w)
+            deco_shape(cv, x, y, rows, f)
+            # a stray dot beside most shapes
+            if kind != "dot" and rnd(i, 7) % 3:
+                dx = x + w + 2 + rnd(i, 9) % 3
+                if dx <= 25:
+                    cv.set(f(dx), y + rnd(i, 11) % h, DECO)
+            y += h + 2 + rnd(i, 13) % 3
+            i += 1
 
     # player inventory
     inventory_panel(cv, ix1, iy1, ix2, iy2)
@@ -510,9 +540,6 @@ def build(pal=PAL):
     for k in range(1, 6):
         sx = x1 + (x2 - x1) * k // 6
         cv.rect(sx, y1 + 1, sx + 1, y2 - 1, BLACK)
-    # button plate (the screen draws the face and text over it)
-    x1, y1, x2, y2 = BUTTON
-    cv.rect(x1 - 1, y1 - 1, x2 - 1, y2 + 1, BLACK)
     return cv
 
 

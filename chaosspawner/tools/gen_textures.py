@@ -24,24 +24,43 @@ TEAL, TEAL_L = (38, 150, 160), (70, 200, 205)
 STONE, STONE_L, STONE_D = (140, 146, 150), (186, 192, 196), (84, 90, 96)
 BARS = (3, 6, 9, 12)
 
-# cage side: rims top and bottom, thin bars between, corners left open for the posts
+# cage side: rims top and bottom, dark bars, and teal glyphs between them (drips, hollow squares
+# with a pale middle) like the reference; corners left open for the posts
+G, G_L, G_D, G_P = (38, 200, 190), (120, 240, 225), (25, 120, 140), (205, 240, 236)
 cage = grid()
 for x in range(2, 14):
     for y in (0, 15):
         cage[y][x] = NAVY_D
     cage[1][x] = NAVY_L
     cage[14][x] = NAVY
-    cage[2][x] = NAVY_D
-    cage[13][x] = NAVY_D
-for k, bx in enumerate(BARS):
-    for y in range(3, 13):
-        cage[y][bx] = NAVY
-    # a teal glint running down part of each bar, like the reference
-    for y in range(4 + k % 3, 9 + k % 3):
-        cage[y][bx] = TEAL if y % 4 else TEAL_L
+for bx in (5, 10):
+    for y in range(2, 14):
+        cage[y][bx] = NAVY if y % 5 else NAVY_L
+GLYPHS = [
+    "##..#....#..",
+    "#...#....##.",
+    "#...#.....#.",
+    "##..#.##..#.",
+    ".......#..#.",
+    ".......#.##.",
+    "###..####...",
+    "#P#..#PP#...",
+    "###..#PP#.##",
+    ".....####.#P",
+    "..........##",
+    "............"]
+for r, row in enumerate(GLYPHS):
+    for c, ch in enumerate(row):
+        x, y = 2 + c, 2 + r
+        if x in (5, 10):
+            continue
+        if ch == "#":
+            cage[y][x] = G_L if r in (0, 6) or (c + r) % 4 == 0 else G if r < 9 else G_D
+        elif ch == "P":
+            cage[y][x] = G_P
 png(f"{ROOT}/textures/block/cage.png", cage)
 
-# top: dark rim around the edge and a grid of bars, corners left for the post caps
+# top: dark rim around the edge and a square spiral of bars with teal glints, corners left for the caps
 top = grid()
 for i in range(2, 14):
     for (x, y) in ((i, 0), (i, 15), (0, i), (15, i)):
@@ -50,13 +69,22 @@ for i in range(2, 14):
         top[y][x] = NAVY_L
     for (x, y) in ((i, 14), (14, i)):
         top[y][x] = NAVY
-for bx in BARS:
-    for i in range(2, 14):
-        top[i][bx] = NAVY
-        top[bx][i] = NAVY
-for bx in BARS:
-    for by in BARS:
-        top[by][bx] = TEAL
+TOP_SPIRAL = ["............",
+              ".##########.",
+              ".#........#.",
+              ".#.######.#.",
+              ".#.#....#.#.",
+              ".#.#.##.#.#.",
+              ".#.#.#..#.#.",
+              ".#.#.####.#.",
+              ".#.#......#.",
+              ".#.########.",
+              ".#..........",
+              "............"]
+for r, row in enumerate(TOP_SPIRAL):
+    for c, ch in enumerate(row):
+        if ch == "#":
+            top[2 + r][2 + c] = G_L if (r + c) % 6 == 0 else (60, 170, 190) if r < 6 else (40, 130, 160)
 png(f"{ROOT}/textures/block/cage_top.png", top)
 
 # bottom: solid dark plate
@@ -100,16 +128,6 @@ for y, row in enumerate(SPIRAL):
             floor[2 + y][2 + x] = (14, 60, 72)
 png(f"{ROOT}/textures/block/floor.png", floor)
 
-# crystal shard: teal pane with a lighter core
-shard = grid()
-for y in range(16):
-    for x in range(16):
-        edge = x in (0, 15) or y in (0, 15)
-        core = 5 <= x <= 10 and 5 <= y <= 10
-        shard[y][x] = (30, 120, 130) if edge else (200, 235, 235) if core else (60, 190, 190) if (x + y) % 7 else (110, 225, 220)
-png(f"{ROOT}/textures/block/shard.png", shard)
-
-
 def box(frm, to, tex, faces=("north", "south", "east", "west", "up", "down"), rot=None, glow=False, uvs=None):
     e = {"from": frm, "to": to, "faces": {}}
     for f in faces:
@@ -147,14 +165,6 @@ for (x, z) in ((0, 0), (14, 0), (0, 14), (14, 14)):
                    uvs={f: [0, 2, 2, 14] for f in ("north", "south", "east", "west")}))
     for y in (0, 14):
         els.append(box([x, y, z], [x + 2, y + 2, z + 2], "#cap"))
-# crystal shards leaning in the corners and flat crystal panes on two walls
-for (x, z, ang, axis) in ((3, 3, 22.5, "x"), (11, 11, -22.5, "x"), (11, 3, -22.5, "z"), (3, 11, 22.5, "z")):
-    els.append(box([x, 1, z], [x + 2, 8, z + 2], "#shard", uvs={f: [4, 2, 8, 14] for f in ("north", "south", "east", "west", "up", "down")},
-                   rot={"angle": ang, "axis": axis, "origin": [x + 1, 1, z + 1]}, glow=True))
-els.append(box([4, 4, 2.5], [8, 9, 3.5], "#shard", uvs={f: [2, 2, 14, 14] for f in ("north", "south", "east", "west", "up", "down")},
-               rot={"angle": 22.5, "axis": "z", "origin": [6, 6, 3]}, glow=True))
-els.append(box([12.5, 5, 8], [13.5, 10, 12], "#shard", uvs={f: [2, 2, 14, 14] for f in ("north", "south", "east", "west", "up", "down")},
-               rot={"angle": -22.5, "axis": "x", "origin": [13, 7, 10]}, glow=True))
 
 model = {
     "parent": "minecraft:block/block",
@@ -162,7 +172,7 @@ model = {
     "ambientocclusion": False,
     "textures": {"particle": "chaosspawner:block/cage", "cage": "chaosspawner:block/cage", "top": "chaosspawner:block/cage_top",
                  "bottom": "chaosspawner:block/cage_bottom", "post": "chaosspawner:block/post", "cap": "chaosspawner:block/cap",
-                 "floor": "chaosspawner:block/floor", "shard": "chaosspawner:block/shard"},
+                 "floor": "chaosspawner:block/floor"},
     "elements": els,
 }
 json.dump(model, open(f"{ROOT}/models/block/chaos_spawner.json", "w"), indent=2)

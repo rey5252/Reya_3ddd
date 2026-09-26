@@ -15,7 +15,7 @@
   "item.chaosspawner.looting_upgrade.tip": "Кожне — +1 рівень Грабунку (до X)",
   "item.chaosspawner.quantity_upgrade.tip": "Кожне — ще раз стільки ж мобів за раунд",
   "item.chaosspawner.experience_upgrade.tip": "Кожне — +50% досвіду",
-  "gui.chaosspawner.collect": "Забрати досвід",
+  "gui.chaosspawner.collect": "ЗАБРАТИ ДОСВІД",
   "gui.chaosspawner.xp": "Досвід: %s очок",
   "gui.chaosspawner.running": "Працює",
   "gui.chaosspawner.stopped": "Стоїть: немає душ, повно луту або є сигнал редстоуну",
