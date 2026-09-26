@@ -62,6 +62,8 @@ public class MultiBrewerScreen extends AbstractContainerScreen<MultiBrewerMenu> 
     private static final int[][] OUTPUT_TUBE = {{92, 72}, {103, 72}};
 
     private float shownProgress;
+    private static boolean recipesOpen = true;
+    private final RecipePanel recipes = new RecipePanel();
 
     public MultiBrewerScreen(MultiBrewerMenu menu, Inventory inv, Component title) {
         super(menu, inv, title);
@@ -77,11 +79,81 @@ public class MultiBrewerScreen extends AbstractContainerScreen<MultiBrewerMenu> 
     // ---------------------------------------------------------------- drawing
 
     @Override
+    protected void init() {
+        super.init();
+        if (recipesOpen) {
+            // make room for the recipe panel on the right
+            leftPos = Math.max(2, (width - imageWidth - RecipePanel.W - 6) / 2);
+        }
+    }
+
+    private int panelX() {
+        return leftPos + imageWidth + 6;
+    }
+
+    private int panelY() {
+        return topPos - 4;
+    }
+
+    /** Little book button on the brew pool that shows or hides the recipe panel. */
+    private boolean overToggle(double mx, double my) {
+        int x = leftPos + 200, y = topPos + 131;
+        return mx >= x && mx < x + 14 && my >= y && my < y + 12;
+    }
+
+    @Override
     public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
         renderBackground(g);
         super.render(g, mouseX, mouseY, partialTick);
+        ItemStack panelHover = ItemStack.EMPTY;
+        if (recipesOpen) panelHover = recipes.render(g, font, panelX(), panelY(), mouseX, mouseY);
+        drawToggle(g, overToggle(mouseX, mouseY));
         renderTooltip(g, mouseX, mouseY);
-        if (hoveredSlot == null || !hoveredSlot.hasItem()) renderOwnTooltips(g, mouseX, mouseY);
+        if (!panelHover.isEmpty()) {
+            g.renderTooltip(font, panelHover, mouseX, mouseY);
+        } else if (overToggle(mouseX, mouseY)) {
+            g.renderTooltip(font, Component.translatable(recipesOpen ? "gui.multibrewer.recipes.hide" : "gui.multibrewer.recipes.show"),
+                    mouseX, mouseY);
+        } else if (hoveredSlot == null || !hoveredSlot.hasItem()) {
+            renderOwnTooltips(g, mouseX, mouseY);
+        }
+    }
+
+    private void drawToggle(GuiGraphics g, boolean hot) {
+        int x = leftPos + 200, y = topPos + 131;
+        g.fill(x, y, x + 14, y + 12, BLACK);
+        g.fill(x + 1, y + 1, x + 13, y + 11, hot ? 0xFF6A3E8C : 0xFF4E2A68);
+        g.fill(x + 2, y + 2, x + 7, y + 10, 0xFFEEE0BE);
+        g.fill(x + 7, y + 2, x + 12, y + 10, 0xFFE2D2AA);
+        g.fill(x + 7, y + 1, x + 7 + 1, y + 11, GOLD);
+        for (int i = 0; i < 3; i++) {
+            g.fill(x + 3, y + 4 + i * 2, x + 6, y + 5 + i * 2, 0xFF8A6A4A);
+            g.fill(x + 8, y + 4 + i * 2, x + 11, y + 5 + i * 2, 0xFF8A6A4A);
+        }
+    }
+
+    @Override
+    public boolean mouseClicked(double mx, double my, int button) {
+        if (overToggle(mx, my)) {
+            recipesOpen = !recipesOpen;
+            rebuildWidgets();
+            return true;
+        }
+        if (recipesOpen && recipes.click(mx, my, panelX(), panelY())) return true;
+        return super.mouseClicked(mx, my, button);
+    }
+
+    @Override
+    public boolean mouseScrolled(double mx, double my, double delta) {
+        if (recipesOpen && recipes.scroll(mx, my, panelX(), panelY(), delta)) return true;
+        return super.mouseScrolled(mx, my, delta);
+    }
+
+    @Override
+    protected boolean hasClickedOutside(double mx, double my, int left, int top, int button) {
+        boolean inPanel = recipesOpen && mx >= panelX() && mx < panelX() + RecipePanel.W
+                && my >= panelY() && my < panelY() + RecipePanel.H;
+        return !inPanel && super.hasClickedOutside(mx, my, left, top, button);
     }
 
     @Override

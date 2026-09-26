@@ -339,6 +339,50 @@ TUBES = [[(72, 29), (72, 33)],
 POOL_Y = 132
 
 
+MEDAL_COLORS = [(220, 60, 70), (70, 130, 235), (80, 200, 90), (170, 80, 220)]
+BOTTLE = ["..ccc..",
+          "..ggg..",
+          ".gLLLg.",
+          "gLLLLLg",
+          "gLwLLLg",
+          "gLLLLLg",
+          ".gDDDg."]
+
+
+def potion_medallion(cv, x, y, pal, color, flip_x=False, handle_to=None):
+    """Frame medallion (11x11 incl. outline): grey metal ring, dark inside, a little potion bottle.
+    A gold line runs out of it across the frame, ending in a bright dot."""
+    tr, trl = pal[3], pal[4]
+    cv.rect(x - 1, y - 1, x + 10, y + 10, BLACK)
+    cv.rect(x, y, x + 9, y + 9, GREY_LO)
+    cv.rect(x, y, x + 9, y + 1, GREY_HI)
+    cv.rect(x, y, x + 1, y + 9, GREY_HI)
+    cv.rect(x + 1, y + 1, x + 8, y + 8, (26, 16, 36))
+    cols = {"c": (150, 100, 56), "g": (190, 226, 236), "L": color, "w": (255, 255, 255),
+            "D": tuple(int(v * 0.6) for v in color)}
+    for r, row in enumerate(BOTTLE):
+        for c, ch in enumerate(row):
+            if ch in cols:
+                cv.set(x + 1 + (6 - c if flip_x else c), y + 1 + r, cols[ch])
+    if handle_to is not None:
+        row = y + 4
+        start = x - 1 if handle_to < x else x + 9
+        step = 1 if handle_to > start else -1
+        for xx in range(start, handle_to + step, step):
+            cv.set(xx, row - 1, BLACK)
+            cv.set(xx, row + 1, BLACK)
+            cv.set(xx, row, trl)
+        cv.set(handle_to, row, (255, 250, 220))
+        cv.set(handle_to + step, row, BLACK)
+
+
+def sprite(cv, x, y, rows, cols):
+    for r, row in enumerate(rows):
+        for c, ch in enumerate(row):
+            if ch in cols:
+                cv.set(x + c, y + r, cols[ch])
+
+
 def flask_inside(x, y):
     """Neck 68..76 from y 33, round bulb centred on (72, 72). The screen uses the same shape."""
     if 68 <= x <= 76 and 33 <= y <= 56:
@@ -507,8 +551,8 @@ def build(pal=PAL):
         clip(cv, f(bx1 - 3) - (2 if side else 0), 5)
         clip(cv, f(bx1 - 3) - (2 if side else 0), top_h - 12)
         for (y, fy) in ((8, False), (top_h - 17, True)):
-            key_spiral(cv, f(bx1 + 4) - (8 if side else 0), y, pal, flip_x=side, flip_y=fy,
-                       handle_to=f(bx1 + 1))
+            potion_medallion(cv, f(bx1 + 4) - (8 if side else 0), y, pal,
+                             MEDAL_COLORS[(1 if side else 0) + (2 if fy else 0)], flip_x=side, handle_to=f(bx1 + 1))
         cap_notch(cv, f(ix1 - 11), iy1 + 5, side)
 
     # player inventory
@@ -521,6 +565,26 @@ def build(pal=PAL):
 
     content = [(2, 2, 16, 22), (2, 104, 16, 131), (14, 8, 50, 98), (58, 6, 86, 32), (48, 26, 96, 106), (98, 58, 126, 88),
                (30, 90, 114, 131), (126, 8, 241, 131), (238, 2, 256, 22), (238, 104, 256, 131)]
+
+    # little details: bottles on a shelf, herbs, stars and gold runes round the flask
+    shelf_y = 50
+    for x in range(98, 127):
+        cv.set(x, shelf_y, trd); cv.set(x, shelf_y + 1, mix(bgd, BLACK, 0.3))
+    for (x, col) in ((101, (220, 60, 70)), (109, (80, 200, 90)), (117, (70, 130, 235))):
+        sprite(cv, x, shelf_y - 7, BOTTLE, {"c": (150, 100, 56), "g": (190, 226, 236), "L": col, "w": (255, 255, 255),
+                                           "D": tuple(int(v * 0.6) for v in col)})
+    herb = ["..g..", ".gGg.", "g.G.g", "..G..", ".bbb."]
+    sprite(cv, 104, 30, herb, {"g": (90, 180, 80), "G": (60, 130, 50), "b": (120, 80, 50)})
+    mushroom = [".rrr.", "rwrwr", "..s..", "..s.."]
+    sprite(cv, 116, 32, mushroom, {"r": (200, 50, 60), "w": (250, 240, 230), "s": (230, 220, 200)})
+    for (x, y) in ((100, 18), (122, 22), (111, 14), (47, 20), (54, 26)):
+        cv.set(x, y, trl)
+        for (dx, dy) in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            cv.set(x + dx, y + dy, mix(bg, trl, 0.5))
+    runes = [["#.#", ".#.", "#.#"], ["###", "#..", "###"], [".#.", "###", ".#."], ["#..", "###", "..#"]]
+    for (rune, (rx, ry)) in zip(runes, ((47, 58), (92, 50), (46, 84), (93, 86))):
+        sprite(cv, rx, ry, rune, {"#": mix(bg, trl, 0.55)})
+    content += [(96, 12, 128, 54)]
 
     # background: soft bubbles floating in the free parts of the panel
     placed = []

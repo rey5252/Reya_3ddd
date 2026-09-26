@@ -49,6 +49,8 @@ public class MultiBrewer {
             () -> new UpgradeItem(UpgradeItem.Kind.EFFICIENCY, new Item.Properties().stacksTo(4)));
     public static final RegistryObject<Item> POTENCY_UPGRADE = ITEMS.register("potency_upgrade",
             () -> new UpgradeItem(UpgradeItem.Kind.POTENCY, new Item.Properties().stacksTo(4)));
+    public static final RegistryObject<Item> GUIDE = ITEMS.register("guide_book",
+            () -> new GuideItem(new Item.Properties().stacksTo(1).rarity(Rarity.UNCOMMON)));
     public static final RegistryObject<BlockEntityType<MultiBrewerBlockEntity>> BREWER_BE = BLOCK_ENTITIES.register("multi_brewer",
             () -> BlockEntityType.Builder.of(MultiBrewerBlockEntity::new, BREWER.get()).build(null));
     public static final RegistryObject<MenuType<MultiBrewerMenu>> BREWER_MENU = MENUS.register("multi_brewer",
@@ -58,6 +60,7 @@ public class MultiBrewer {
             .icon(() -> new ItemStack(BREWER_ITEM.get()))
             .displayItems((params, output) -> {
                 output.accept(BREWER_ITEM.get());
+                output.accept(GUIDE.get());
                 output.accept(SPEED_UPGRADE.get());
                 output.accept(EFFICIENCY_UPGRADE.get());
                 output.accept(POTENCY_UPGRADE.get());
