@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [ "GBG", "BSB", "III" ],
+  "key": {
+    "G": { "item": "minecraft:gold_ingot" },
+    "B": { "item": "minecraft:glass_bottle" },
+    "S": { "item": "minecraft:brewing_stand" },
+    "I": { "item": "minecraft:iron_block" }
+  },
+  "result": { "item": "multibrewer:multi_brewer" }
+}

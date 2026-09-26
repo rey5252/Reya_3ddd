@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "brewing=false": { "model": "multibrewer:block/multi_brewer" },
+    "brewing=true": { "model": "multibrewer:block/multi_brewer_on" }
+  }
+}

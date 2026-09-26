@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [ "GLG", "DBD", "GLG" ],
+  "key": {
+    "G": { "item": "minecraft:gold_ingot" },
+    "L": { "item": "minecraft:glowstone" },
+    "D": { "item": "minecraft:diamond" },
+    "B": { "item": "minecraft:blaze_rod" }
+  },
+  "result": { "item": "multibrewer:potency_upgrade" }
+}

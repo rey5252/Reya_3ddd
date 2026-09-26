@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [ "GSG", "RBR", "GSG" ],
+  "key": {
+    "G": { "item": "minecraft:gold_ingot" },
+    "S": { "item": "minecraft:sugar" },
+    "R": { "item": "minecraft:redstone" },
+    "B": { "item": "minecraft:blaze_rod" }
+  },
+  "result": { "item": "multibrewer:speed_upgrade" }
+}

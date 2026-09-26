@@ -28,6 +28,8 @@ jobs:
             dir: enchantsiphon
           - mod: advancedenchanting
             dir: advancedenchanting
+          - mod: multibrewer
+            dir: multibrewer
     defaults:
       run:
         working-directory: ${{ matrix.dir }}
