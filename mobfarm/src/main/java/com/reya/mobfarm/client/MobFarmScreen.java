@@ -213,10 +213,38 @@ public class MobFarmScreen extends AbstractContainerScreen<MobFarmMenu> {
         if (filled < BAR_W) g.fill(tip, y, Math.min(bx + BAR_W, tip + 2), y2, (bright & 0xFFFFFF) | 0x50000000);
     }
 
+    /** Pixel book engraved into an empty upgrade slot: only enchanted books go here. */
+    private static final String[] BOOK = {
+            "BBBBBBBBBB..",
+            "BSCCCCCCCBB.",
+            "BSCCCCCCCBPB",
+            "BSCCCGCCCBPB",
+            "BSCCGgGCCBPB",
+            "BSCCCGCCCBPB",
+            "BSCCCCCCCBPB",
+            "BSCCCCCCCBPB",
+            "BSCCCCCCCBPB",
+            "BSCCCCCCCBPB",
+            "BBBBBBBBBBPB",
+            ".BPPPPPPPPPB",
+            ".BBBBBBBBBBB"};
+
     private static void drawGhostBook(GuiGraphics g, int x, int y) {
-        g.fill(x + 4, y + 3, x + 12, y + 13, 0x40000000);
-        g.fill(x + 5, y + 4, x + 11, y + 12, 0x30FFFFFF);
-        g.fill(x + 7, y + 3, x + 8, y + 13, 0x40000000);
+        for (int r = 0; r < BOOK.length; r++) {
+            String row = BOOK[r];
+            for (int c = 0; c < row.length(); c++) {
+                int color = switch (row.charAt(c)) {
+                    case 'B' -> 0xFF5C6856;
+                    case 'S' -> 0xFF6C7966;
+                    case 'C' -> 0xFF7E8B77;
+                    case 'P' -> 0xFFB6C0AE;
+                    case 'G' -> 0xFF9A7CB8;
+                    case 'g' -> 0xFFD8C4F0;
+                    default -> 0;
+                };
+                if (color != 0) g.fill(x + 2 + c, y + 2 + r, x + 3 + c, y + 3 + r, color);
+            }
+        }
     }
 
     /** Pulsing sparks on the tabs while books are in. */

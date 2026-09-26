@@ -174,7 +174,7 @@ def inventory_panel(cv, x1, y1, x2, y2):
     cv.rect(x2 - 3, y1 + 3, x2 - 1, y2 - 1, INV_LO)
 
 
-def stone_slot(cv, x, y, shade_col=None, shadow=False):
+def stone_slot(cv, x, y, shade_col=None, shadow=False, plain=False):
     """18x18 pale sage tile like the reference: dark edge, inner shadow top/left, a faint engraved
     gear ring with a small square in the middle and dots in the corners (item area x..x+16)."""
     face = (142, 152, 133)
@@ -190,6 +190,8 @@ def stone_slot(cv, x, y, shade_col=None, shadow=False):
     cv.rect(x, y, x + 1, y + 16, inner)
     cv.rect(x + 15, y + 1, x + 16, y + 16, light)
     cv.rect(x + 1, y + 15, x + 16, y + 16, light)
+    if plain:
+        return
     # gear ring: ring of radius ~4-6 with small teeth
     c0 = 7.5
     for yy in range(1, 15):
@@ -506,7 +508,7 @@ def build(pal, warm=True):
 
     # --- upgrade slots in the tabs
     for (sx, sy) in ((6, 33), (6, 53), (SW - 22, 33), (SW - 22, 53)):
-        stone_slot(cv, sx, sy)
+        stone_slot(cv, sx, sy, plain=True)
 
     # --- bars with gems
     for (y, bright, deep) in ((88, (232, 70, 60), (128, 22, 18)), (99, (100, 226, 240), (18, 108, 124))):
