@@ -534,12 +534,19 @@ def build(pal=PAL):
             sx, sy = UP[0] + c * 18, UP[1] + r * 18
             stone_slot(cv, sx, sy, plain=True)
             engrave(cv, sx + 4, sy + 4, ARROW)
-    # experience bar: six segments in a sunken track
+    # experience bar: a grey-rimmed track with six dark cells (the screen fills them with glowing tubes)
     x1, y1, x2, y2 = XP_BAR
-    recess(cv, x1, y1, x2, y2, (8, 14, 24), pal)
-    for k in range(1, 6):
-        sx = x1 + (x2 - x1) * k // 6
-        cv.rect(sx, y1 + 1, sx + 1, y2 - 1, BLACK)
+    cv.rect(x1 - 1, y1 - 1, x2 + 1, y2 + 1, (9, 18, 34))
+    cv.rect(x1, y1, x2, y2, (4, 8, 14))
+    cv.rect(x1, y1, x2, y1 + 1, (101, 115, 124))
+    cv.rect(x1, y2 - 1, x2, y2, (49, 72, 84))
+    cv.rect(x1, y1 + 1, x1 + 1, y2 - 1, (74, 90, 100))
+    cv.rect(x2 - 1, y1 + 1, x2, y2 - 1, (49, 72, 84))
+    seg = (x2 - x1) // 6
+    for k in range(6):
+        sx = x1 + k * seg
+        cv.rect(sx + 1, y1 + 1, sx + seg - 1, y2 - 1, (6, 10, 16))
+        cv.rect(sx + 1, y1 + 1, sx + seg - 1, y1 + 2, (2, 4, 8))
     return cv
 
 

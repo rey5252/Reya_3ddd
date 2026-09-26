@@ -90,20 +90,28 @@ public class ChaosSpawnerScreen extends AbstractContainerScreen<ChaosSpawnerMenu
         }
     }
 
-    /** Six segments light up as experience collects; a full bar is 30 levels' worth. */
+    /** Six glass tubes light up as experience collects; a full bar is 30 levels' worth. */
     private void drawXp(GuiGraphics g, long time) {
         float fill = Mth.clamp(menu.storedXp() / (float) XP_FULL, 0.0F, 1.0F);
         int segW = (XP_X2 - XP_X1) / 6;
+        int y = topPos + XP_Y1 + 1;
         for (int k = 0; k < 6; k++) {
             float f = Mth.clamp(fill * 6 - k, 0.0F, 1.0F);
             if (f <= 0.0F) break;
-            int sx = leftPos + XP_X1 + k * segW + 2;
-            int ex = sx + Math.round((segW - 3) * f);
-            int y1 = topPos + XP_Y1 + 2, y2 = topPos + XP_Y2 - 2;
-            g.fill(sx, y1, ex, y2, 0xFF3FC4DA);
-            g.fill(sx, y1, ex, y1 + 1, CYAN_L);
-            g.fill(sx, y2 - 1, ex, y2, CYAN_D);
-            if ((time / 120L + k) % 9L == 0L) g.fill(sx, y1 + 1, ex, y1 + 2, 0xFFFFFFFF);
+            int sx = leftPos + XP_X1 + k * segW + 1;
+            int full = segW - 2;
+            int ex = sx + Math.max(2, Math.round(full * f));
+            // rows of the tube from top to bottom: rim, bright band, shade, dark middle, lower band, rim
+            int[] rows = {0xFF4AACA6, 0xFF2CF3DC, 0xFF309999, 0xFF052233, 0xFF0B5B70, 0xFF24A0B5, 0xFF2D6F80};
+            for (int r = 0; r < rows.length; r++) g.fill(sx, y + r, ex, y + r + 1, rows[r]);
+            g.fill(sx, y + 1, sx + 1, y + 6, 0xFF309999);
+            if (ex - sx == full) g.fill(ex - 1, y + 1, ex, y + 6, 0xFF1E7A86);
+            // glints: a white spot on the bright band and a pale dot on the lower one, twinkling in turn
+            if (ex - sx > 5) {
+                boolean twinkle = (time / 150L + k * 3L) % 12L == 0L;
+                g.fill(sx + 2, y + 1, sx + 4, y + 2, twinkle ? 0xFFFFFFFF : 0xFFC8FFF6);
+                g.fill(ex - 4, y + 5, ex - 3, y + 6, 0xFF9EF0F0);
+            }
         }
     }
 
@@ -190,7 +198,7 @@ public class ChaosSpawnerScreen extends AbstractContainerScreen<ChaosSpawnerMenu
             int line = active ? 0xFF31F3DB : 0xFF4E7C84;
             int lineEnd = active ? 0xFF24A1B4 : 0xFF3E626A;
             int bottom = active ? 0xFF26A3B6 : 0xFF3A5A64;
-            int orn = active ? (hot ? 0xFF3FD8E6 : 0xFF2796AB) : 0xFF3E626A;
+            int orn = active ? (hot ? 0xFF2FB2C6 : 0xFF2496AE) : 0xFF3E626A;
             g.fill(x, y, x2, y2, 0xFF2A3945);
             g.fill(x + 1, y + 1, x2 - 1, y2 - 1, face);
             g.fill(x + 3, y + 2, x2 - 3, y + 3, lineEnd);
@@ -207,17 +215,17 @@ public class ChaosSpawnerScreen extends AbstractContainerScreen<ChaosSpawnerMenu
             }
             Component m = getMessage();
             int tw = font.width(m), room = width - 2 * (ORNAMENT[0].length() + 5);
-            int color = active ? 0xFFB8F7FE : 0xFF7A96A0;
-            if (tw <= room) {
-                g.drawString(font, m, x + (width - tw) / 2, y + (height - 8) / 2, color, true);
-            } else {
-                float k = room / (float) tw;
-                g.pose().pushPose();
-                g.pose().translate(x + width / 2.0F - tw * k / 2.0F, y + height / 2.0F - 4.0F * k, 0.0F);
-                g.pose().scale(k, k, 1.0F);
-                g.drawString(font, m, 0, 0, color, true);
-                g.pose().popPose();
-            }
+            int color = active ? 0xFFC8FBFF : 0xFF7A96A0;
+            int bevel = active ? 0xFF28A5B8 : 0xFF3E5A64;
+            float k = tw <= room ? 1.0F : room / (float) tw;
+            g.pose().pushPose();
+            g.pose().translate(x + width / 2.0F - tw * k / 2.0F, y + (height - 8 * k) / 2.0F, 0.0F);
+            g.pose().scale(k, k, 1.0F);
+            // bevelled lettering: a darker teal copy one pixel lower, then the pale text on top
+            g.drawString(font, m, 1, 1, 0xFF14303C, false);
+            g.drawString(font, m, 0, 1, bevel, false);
+            g.drawString(font, m, 0, 0, color, false);
+            g.pose().popPose();
         }
     }
 }

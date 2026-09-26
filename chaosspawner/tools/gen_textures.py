@@ -182,33 +182,46 @@ json.dump({"parent": "chaosspawner:block/chaos_spawner"}, open(f"{ROOT}/models/i
 # soul crystal: a faceted cyan crystal; the filled one has a two-colour soul inside (tinted per mob)
 CRYSTAL = [
     "................",
-    ".......##.......",
-    "......#LL#......",
-    ".....#LWLL#.....",
-    "....#LWLLLD#....",
-    "....#LLLLLD#....",
-    "...#LLLLLLDD#...",
-    "...#LLLLLLDD#...",
-    "...#LLLLLLDD#...",
-    "....#LLLLDD#....",
-    "....#LLLLDD#....",
-    ".....#LLDD#.....",
-    "......#DD#......",
-    ".......##.......",
-    "................",
+    "......####......",
+    ".....#WLMM#.....",
+    "....#WLLMMD#....",
+    "...#LLLMMMDD#...",
+    "...#LLMMMMDD#...",
+    "..#LLLMMMMDDD#..",
+    "..#LLMMMMMDDD#..",
+    "..#LLMMMMMDDD#..",
+    "..#LLMMMMMDDS#..",
+    "...#LMMMMDDS#...",
+    "...#LMMMMDDS#...",
+    "....#MMMDDS#....",
+    ".....#MDDS#.....",
+    "......####......",
     "................"]
-cols = {"#": (20, 60, 76), "L": (150, 230, 240, 200), "W": (255, 255, 255), "D": (60, 160, 180, 220)}
+cols = {"#": (18, 52, 66), "W": (255, 255, 255), "L": (170, 242, 246), "M": (96, 210, 226), "D": (52, 150, 182),
+        "S": (34, 104, 138)}
 empty = grid()
 for y, row in enumerate(CRYSTAL):
     for x, ch in enumerate(row):
         if ch in cols:
-            c = cols[ch]
-            empty[y][x] = c if len(c) == 4 else c + (255,)
+            empty[y][x] = cols[ch] + (255,)
+# facet ridges and a couple of sparkles
+for (x, y) in ((5, 6), (5, 7), (5, 8), (5, 9), (6, 10), (6, 11)):
+    empty[y][x] = (130, 228, 238, 255)
+for (x, y) in ((10, 4), (11, 6), (11, 7)):
+    empty[y][x] = (80, 180, 205, 255)
+empty[1][13] = (200, 250, 255, 255)
+empty[3][14] = (120, 220, 235, 255)
 png(f"{ROOT}/textures/item/soul_crystal.png", empty)
+# the captured soul: a flame-shaped wisp (tinted with the mob's first colour) with two eyes (second colour)
+FLAME = [(7, 4), (7, 5), (8, 5), (6, 6), (7, 6), (8, 6), (6, 7), (7, 7), (8, 7), (9, 7),
+         (5, 8), (6, 8), (7, 8), (8, 8), (9, 8), (5, 9), (6, 9), (7, 9), (8, 9), (9, 9),
+         (6, 10), (7, 10), (8, 10), (7, 11)]
 soul1, soul2 = grid(), grid()
-for (x, y) in ((6, 6), (7, 6), (8, 6), (5, 7), (6, 7), (7, 7), (8, 7), (9, 7), (6, 8), (7, 8), (8, 8), (9, 8), (7, 9), (8, 9)):
-    soul1[y][x] = (255, 255, 255, 255)
-for (x, y) in ((7, 5), (6, 10), (8, 10), (9, 6), (7, 11)):
+for (x, y) in FLAME:
+    v = 255 if y < 8 else 225 if y < 10 else 190
+    soul1[y][x] = (v, v, v, 255)
+for (x, y) in ((6, 8), (8, 8)):
+    soul1[y][x] = T
     soul2[y][x] = (255, 255, 255, 255)
 png(f"{ROOT}/textures/item/soul_crystal_soul.png", soul1)
 png(f"{ROOT}/textures/item/soul_crystal_spots.png", soul2)
@@ -220,34 +233,102 @@ json.dump({"parent": "minecraft:item/generated", "textures": {"layer0": "chaossp
                                                               "layer2": "chaosspawner:item/soul_crystal_spots"}},
           open(f"{ROOT}/models/item/soul_crystal_filled.json", "w"), indent=2)
 
-# upgrades: a dark tile with a cyan rim and a symbol
-SYMBOLS = {
-    "speed": (["....#...#.....", "....##..##....", "....###.###...", "....####.###..", "....###.###...", "....##..##....",
-               "....#...#....."], (90, 230, 250)),
-    "looting": (["..........##..", ".........##...", "........##....", "...#...##.....", "....#.##......", ".....##.......",
-                 "....#.#.......", "...#...#......"], (240, 200, 90)),
-    "quantity": (["...##....##...", "..####..####..", "...##....##...", "..............", "...##....##...",
-                  "..####..####..", "...##....##..."], (230, 110, 230)),
-    "experience": (["......##......", ".....####.....", "....##..##....", "...##.##.##...", "....##..##....",
-                    ".....####.....", "......##......"], (130, 240, 90)),
+# upgrades: glowing cards like the reference - a dark rounded outline, a bevelled coloured rim, a
+# speckled background brighter in the middle, and a bright symbol with a soft glow round it
+import math
+
+
+def hsh(x, y, salt):
+    h = (x * 374761393 + y * 668265263 + salt * 2147483647) & 0xFFFFFFFF
+    h = ((h ^ (h >> 13)) * 1274126177) & 0xFFFFFFFF
+    return (h ^ (h >> 16)) & 0xFF
+
+
+def shade(c, k):
+    return tuple(max(0, min(255, int(v * k))) for v in c)
+
+
+CARDS = {
+    # background, rim, symbol, glow, symbol rows (12x12, "#" symbol, "o" darker symbol edge)
+    "speed": ((18, 104, 118), (80, 220, 230), (225, 255, 255), (90, 240, 250), [
+        "............",
+        "............",
+        "..#...#.....",
+        "..##..##....",
+        "..###.###...",
+        "..####.###..",
+        "..####.###..",
+        "..###.###...",
+        "..##..##....",
+        "..#...#.....",
+        "............",
+        "............"]),
+    "looting": ((26, 44, 120), (110, 140, 250), (255, 222, 120), (255, 190, 80), [
+        "............",
+        ".........##.",
+        "........###.",
+        ".......###..",
+        "......###...",
+        ".....###....",
+        "..#.###.....",
+        "...###......",
+        "...##.......",
+        "..#..#......",
+        ".#..........",
+        "............"]),
+    "quantity": ((84, 30, 118), (210, 110, 240), (150, 255, 110), (120, 255, 90), [
+        "............",
+        "............",
+        "..##....##..",
+        "..##....##..",
+        "............",
+        "............",
+        "............",
+        "............",
+        "..##....##..",
+        "..##....##..",
+        "............",
+        "............"]),
+    "experience": ((30, 96, 34), (130, 230, 90), (240, 255, 120), (200, 255, 80), [
+        "............",
+        "....####....",
+        "...#....#...",
+        "..#..##..#..",
+        ".#..#..#..#.",
+        ".#.#....#.#.",
+        ".#.#....#.#.",
+        ".#..#..#..#.",
+        "..#..##..#..",
+        "...#....#...",
+        "....####....",
+        "............"]),
 }
-for name, (shape, col) in SYMBOLS.items():
+for n, (name, (bg, rim, sym, glow, rows)) in enumerate(CARDS.items()):
     px = grid()
-    for y in range(1, 15):
-        for x in range(1, 15):
-            px[y][x] = DARK + (255,)
-    for i in range(1, 15):
-        px[1][i] = CYAN_L + (255,); px[i][1] = CYAN_L + (255,)
-        px[14][i] = CYAN_D + (255,); px[i][14] = CYAN_D + (255,)
-    for i in range(16):
-        for (x, y) in ((i, 0), (i, 15), (0, i), (15, i)):
-            if 0 < i < 15:
-                px[y][x] = (6, 10, 16, 255)
-    top = (16 - len(shape)) // 2
-    for y, row in enumerate(shape):
-        for x, ch in enumerate(row):
-            if ch == "#":
-                px[top + y][1 + x] = tuple(min(255, int(v * (1.15 if y < len(shape) / 2 else 0.85))) for v in col) + (255,)
+    for y in range(16):
+        for x in range(16):
+            if (x in (0, 15)) and (y in (0, 15)):
+                continue
+            if x in (0, 15) or y in (0, 15):
+                px[y][x] = (8, 10, 18, 255)
+            elif x in (1, 14) or y in (1, 14):
+                px[y][x] = (shade(rim, 1.15) if (x == 1 or y == 1) and not (x == 14 or y == 14) else shade(rim, 0.6)) + (255,)
+            else:
+                d = math.hypot(x - 7.5, y - 7.5) / 7.0
+                k = 1.25 - 0.55 * d + (hsh(x, y, n) % 5 - 2) * 0.06
+                px[y][x] = shade(bg, k) + (255,)
+    pts = {(2 + c, 2 + r) for r, row in enumerate(rows) for c, ch in enumerate(row) if ch == "#"}
+    glowed = set()
+    for (x, y) in pts:
+        for (dx, dy) in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            q = (x + dx, y + dy)
+            if q not in pts and q not in glowed and 2 <= q[0] <= 13 and 2 <= q[1] <= 13:
+                glowed.add(q)
+                o = px[q[1]][q[0]]
+                px[q[1]][q[0]] = tuple(int(o[i] * 0.62 + glow[i] * 0.38) for i in range(3)) + (255,)
+    for (x, y) in pts:
+        top = (x, y - 1) not in pts
+        px[y][x] = (shade(sym, 1.1) if top else sym) + (255,)
     png(f"{ROOT}/textures/item/{name}_upgrade.png", px)
     json.dump({"parent": "minecraft:item/generated", "textures": {"layer0": f"chaosspawner:item/{name}_upgrade"}},
               open(f"{ROOT}/models/item/{name}_upgrade.json", "w"), indent=2)
