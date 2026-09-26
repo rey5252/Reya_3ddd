@@ -34,7 +34,6 @@ import net.minecraftforge.registries.ForgeRegistries;
  */
 public final class BossPanelOverlay {
     private static final int MIN_WIDTH = 200;
-    private static final int TOP = 6;
     private static final int GAP = 6;
     private static final int MAX_PANELS = 3;
     private static final long FADE_MS = 220L;
@@ -67,7 +66,7 @@ public final class BossPanelOverlay {
 
     public static void render(ForgeGui gui, GuiGraphics g, float partialTick, int screenWidth, int screenHeight) {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.options.hideGui || mc.player == null) return;
+        if (mc.options.hideGui || mc.player == null || mc.screen instanceof MovePanelScreen) return;
 
         PanelStyle style = ClientConfig.style();
         long now = Util.getMillis();
@@ -103,7 +102,9 @@ public final class BossPanelOverlay {
         for (BossInfoPacket info : wanted) order.add(ANIMS.get(info.entityId()));
         for (Anim anim : ANIMS.values()) if (anim.goneAt >= 0) order.add(anim);
 
-        int y = TOP;
+        // Where the player put the panel: horizontal centre and top edge, as fractions of the screen.
+        int centerX = Math.round((float) ClientConfig.panelX() * screenWidth);
+        int y = Math.round((float) ClientConfig.panelY() * screenHeight);
         for (Anim anim : order) {
             float alpha = anim.goneAt >= 0
                     ? 1.0F - (now - anim.goneAt) / (float) FADE_MS
@@ -114,7 +115,9 @@ public final class BossPanelOverlay {
             updateHealth(anim, dt, now);
             int width = panelWidth(mc.font, anim.info, screenWidth);
             int slide = Math.round((1.0F - ease) * -10.0F);
-            int height = drawPanel(g, mc, style, anim, (screenWidth - width) / 2, y + slide, width, alpha, now);
+            int px = Mth.clamp(centerX - width / 2, 4, Math.max(4, screenWidth - width - 4));
+            int py = Mth.clamp(y, 4, Math.max(4, screenHeight - panelHeight(anim.info) - 4));
+            int height = drawPanel(g, mc, style, anim, px, py + slide, width, alpha, now);
             if (anim.goneAt < 0) y += height + GAP;
         }
 
@@ -152,6 +155,10 @@ public final class BossPanelOverlay {
         return compact(boss.health()) + " / " + compact(boss.maxHealth());
     }
 
+    public static int panelHeight(BossInfoPacket boss) {
+        return 32 + (boss.rows().isEmpty() ? 0 : 14 + boss.rows().size() * 10) + 2;
+    }
+
     /** Wide enough for the name and the health text. */
     private static int panelWidth(Font font, BossInfoPacket boss, int screenWidth) {
         int needed = 32 + font.width(boss.name()) + 12 + font.width(hpText(boss)) + 8;
@@ -166,7 +173,7 @@ public final class BossPanelOverlay {
         Font font = mc.font;
         BossInfoPacket boss = anim.info;
         List<BossInfoPacket.Row> rows = boss.rows();
-        int height = 32 + (rows.isEmpty() ? 0 : 14 + rows.size() * 10) + 2;
+        int height = panelHeight(boss);
         int x2 = x + width;
         int y2 = y + height;
         // Text with an alpha below 4 is drawn fully opaque by the font renderer, so skip the last frames.

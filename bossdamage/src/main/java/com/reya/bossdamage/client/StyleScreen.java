@@ -105,7 +105,7 @@ public class StyleScreen extends Screen {
 
         // Style name, big
         Component name = Component.translatable(st.translationKey());
-        int ny = y + LIST_Y + 14 + previewHeight + 12;
+        int ny = y + LIST_Y + 14 + previewHeight + 8;
         g.pose().pushPose();
         g.pose().translate(px + pw / 2.0F, ny, 0);
         g.pose().scale(1.5F, 1.5F, 1.0F);
@@ -116,6 +116,7 @@ public class StyleScreen extends Screen {
         int by = y2 - 12 - BUTTON_H;
         Component numbers = Component.translatable(ClientConfig.damageNumbers()
                 ? "bossdamage.menu.numbers.on" : "bossdamage.menu.numbers.off");
+        drawButton(g, st, px, by - 2 * (BUTTON_H + 6), pw, Component.translatable("bossdamage.menu.move"), mouseX, mouseY);
         drawButton(g, st, px, by - BUTTON_H - 6, pw, numbers, mouseX, mouseY);
         drawButton(g, st, px, by, pw, Component.translatable("gui.done"), mouseX, mouseY);
 
@@ -150,6 +151,11 @@ public class StyleScreen extends Screen {
         int px = x + PREVIEW_X;
         int pw = x + WIDTH - 12 - px;
         int by = y + HEIGHT - 12 - BUTTON_H;
+        if (inside(mouseX, mouseY, px, by - 2 * (BUTTON_H + 6), pw, BUTTON_H)) {
+            click();
+            if (minecraft != null) minecraft.setScreen(new MovePanelScreen(this));
+            return true;
+        }
         if (inside(mouseX, mouseY, px, by - BUTTON_H - 6, pw, BUTTON_H)) {
             click();
             ClientConfig.DAMAGE_NUMBERS.set(!ClientConfig.damageNumbers());

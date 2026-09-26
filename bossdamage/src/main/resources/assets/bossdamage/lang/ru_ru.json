@@ -19,5 +19,9 @@
   "bossdamage.menu.title": "Стиль панели",
   "bossdamage.menu.preview": "Предпросмотр",
   "bossdamage.menu.numbers.on": "Цифры урона: ВКЛ.",
-  "bossdamage.menu.numbers.off": "Цифры урона: ВЫКЛ."
+  "bossdamage.menu.numbers.off": "Цифры урона: ВЫКЛ.",
+  "bossdamage.menu.move": "Переместить панель",
+  "bossdamage.move.title": "Перемещение панели",
+  "bossdamage.move.hint": "Перетащи панель мышкой. Enter — готово, R — сбросить",
+  "bossdamage.move.reset": "Сбросить"
 }

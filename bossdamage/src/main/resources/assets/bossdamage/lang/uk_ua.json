@@ -19,5 +19,9 @@
   "bossdamage.menu.title": "Стиль панелі",
   "bossdamage.menu.preview": "Попередній перегляд",
   "bossdamage.menu.numbers.on": "Цифри шкоди: УВІМК.",
-  "bossdamage.menu.numbers.off": "Цифри шкоди: ВИМК."
+  "bossdamage.menu.numbers.off": "Цифри шкоди: ВИМК.",
+  "bossdamage.menu.move": "Перемістити панель",
+  "bossdamage.move.title": "Переміщення панелі",
+  "bossdamage.move.hint": "Перетягни панель мишкою. Enter — готово, R — скинути",
+  "bossdamage.move.reset": "Скинути"
 }

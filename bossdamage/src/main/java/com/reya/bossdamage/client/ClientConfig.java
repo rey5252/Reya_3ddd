@@ -14,6 +14,14 @@ public final class ClientConfig {
             .comment("Show floating damage numbers when entities are hit")
             .define("damageNumbers", true);
 
+    public static final ForgeConfigSpec.DoubleValue PANEL_X = BUILDER
+            .comment("Horizontal centre of the panel, as a fraction of the screen width (0 = left, 0.5 = middle, 1 = right)")
+            .defineInRange("panelX", 0.5D, 0.0D, 1.0D);
+
+    public static final ForgeConfigSpec.DoubleValue PANEL_Y = BUILDER
+            .comment("Top edge of the panel, as a fraction of the screen height (0 = top, 1 = bottom)")
+            .defineInRange("panelY", 0.02D, 0.0D, 1.0D);
+
     public static final ForgeConfigSpec SPEC = BUILDER.build();
 
     public static PanelStyle style() {
@@ -30,6 +38,29 @@ public final class ClientConfig {
         } catch (IllegalStateException e) {
             return true;
         }
+    }
+
+    public static double panelX() {
+        try {
+            return PANEL_X.get();
+        } catch (IllegalStateException e) {
+            return 0.5D;
+        }
+    }
+
+    public static double panelY() {
+        try {
+            return PANEL_Y.get();
+        } catch (IllegalStateException e) {
+            return 0.02D;
+        }
+    }
+
+    public static void setPanelPosition(double x, double y) {
+        PANEL_X.set(Math.max(0.0D, Math.min(1.0D, x)));
+        PANEL_Y.set(Math.max(0.0D, Math.min(1.0D, y)));
+        PANEL_X.save();
+        PANEL_Y.save();
     }
 
     private ClientConfig() {

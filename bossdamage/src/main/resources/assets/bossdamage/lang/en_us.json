@@ -19,5 +19,9 @@
   "bossdamage.menu.title": "Panel Style",
   "bossdamage.menu.preview": "Preview",
   "bossdamage.menu.numbers.on": "Damage numbers: ON",
-  "bossdamage.menu.numbers.off": "Damage numbers: OFF"
+  "bossdamage.menu.numbers.off": "Damage numbers: OFF",
+  "bossdamage.menu.move": "Move panel",
+  "bossdamage.move.title": "Move panel",
+  "bossdamage.move.hint": "Drag the panel with the mouse. Enter - done, R - reset",
+  "bossdamage.move.reset": "Reset"
 }
