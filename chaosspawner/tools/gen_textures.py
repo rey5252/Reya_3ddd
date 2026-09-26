@@ -303,75 +303,61 @@ CARDS = {
         "............",
         "............"]),
 }
-STEEL_HI, STEEL, STEEL_LO = (226, 232, 238), (158, 166, 176), (92, 99, 110)
-
-
-def steel(x, y):
-    """Polished steel for the plate frame: lighter up-left, darker down-right, with diagonal glints."""
-    t = (x + y) / 30.0
-    c = tuple(int(STEEL_HI[i] * (1 - t) + STEEL_LO[i] * t) for i in range(3))
-    if (x + y) % 9 in (3, 4):
-        c = tuple(int(v * 0.4 + 250 * 0.6) for v in c)
-    return c
-
-
+# upgrades: shiny metal tokens like the reference - a dark frame, a plate glowing from the orange
+# rim to a bright middle, a diagonal glint, white shine dots in two corners and an engraved symbol
+METALS = {
+    # frame dark, frame, rim, middle, bright, engraving
+    "speed":      ((14, 44, 58), (24, 74, 92), (30, 120, 150), (80, 200, 225), (205, 250, 255), (12, 46, 62)),
+    "looting":    ((96, 56, 24), (117, 77, 46), (163, 99, 35), (232, 190, 70), (255, 246, 160), (72, 46, 18)),
+    "quantity":   ((52, 20, 70), (76, 36, 98), (120, 50, 160), (190, 120, 232), (248, 220, 255), (50, 16, 70)),
+    "experience": ((26, 58, 20), (40, 84, 30), (62, 138, 34), (150, 222, 76), (232, 255, 172), (26, 62, 18)),
+}
 for n, (name, (bg, rim, sym, glow, rows)) in enumerate(CARDS.items()):
+    fdark, frame, edge, mid, bright, ink = METALS[name]
     px = grid()
-    pts = {(2 + c, 2 + r) for r, row in enumerate(rows) for c, ch in enumerate(row) if ch == "#"}
-    cx = sum(p[0] for p in pts) / len(pts)
-    cy = sum(p[1] for p in pts) / len(pts)
     for y in range(16):
         for x in range(16):
-            if (x in (0, 15)) and (y in (0, 15)):
-                continue
-            if x in (0, 15) or y in (0, 15):
-                px[y][x] = (24, 26, 32, 255)
-            elif x == 1 or y == 1:
-                # outer bevel of the steel frame
-                px[y][x] = ((246, 249, 252) if not (x == 14 or y == 14) else STEEL) + (255,)
-            elif x == 14 or y == 14:
-                px[y][x] = (72, 78, 88, 255)
-            elif x in (2, 13) or y in (2, 13):
-                c = steel(x, y)
-                if x == 13 or y == 13:
-                    c = shade(c, 0.8)
-                px[y][x] = c + (255,)
-            elif x == 3 or y == 3:
-                px[y][x] = shade(bg, 0.4) + (255,)
+            if x == 0 or y == 0:
+                c = fdark
+            elif x == 15 or y == 15:
+                c = shade(frame, 1.25)
+            elif x == 1 or y == 1 or x == 14 or y == 14:
+                c = frame if not (x == 14 or y == 14) else shade(frame, 0.85)
+            elif x == 2 or y == 2 or x == 13 or y == 13:
+                c = edge
             else:
-                # the card inside, as before: dark vignette, speckles and a halo round the symbol
-                d = math.hypot(x - 7.5, y - 7.5) / 7.0
-                k = 1.05 - 0.45 * d + (hsh(x, y, n) % 7 - 3) * 0.05
-                c = shade(bg, k)
-                g = max(0.0, 1.0 - math.hypot(x - cx, y - cy) / 5.5) * 0.45
-                px[y][x] = tuple(int(c[i] * (1 - g) + glow[i] * g) for i in range(3)) + (255,)
-    # rivets on the frame corners
-    for (rx, ry) in ((2, 2), (13, 2), (2, 13), (13, 13)):
-        px[ry][rx] = (58, 62, 70, 255)
-    glowed = set()
-    for (x, y) in pts:
-        for (dx, dy) in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-            q = (x + dx, y + dy)
-            if q not in pts and q not in glowed and 4 <= q[0] <= 12 and 4 <= q[1] <= 12:
-                glowed.add(q)
-                o = px[q[1]][q[0]]
-                px[q[1]][q[0]] = tuple(int(o[i] * 0.6 + glow[i] * 0.4) for i in range(3)) + (255,)
-    deep = tuple(int(sym[i] * 0.55 + glow[i] * 0.25) for i in range(3))
-    for (x, y) in pts:
-        if name == "experience":
-            t = min(1.0, math.hypot(x - (cx - 1.5), y - (cy - 1.5)) / 5.0)
-            c = tuple(int(255 * (1 - t) + sym[i] * t) for i in range(3)) if t < 0.55 else \
-                tuple(int(sym[i] * (1.6 - t) + deep[i] * (t - 0.6)) for i in range(3))
-            c = tuple(max(0, min(255, v)) for v in c)
-        elif (x, y - 1) not in pts or (x - 1, y) not in pts:
-            c = tuple(min(255, int(v * 0.6 + 255 * 0.4)) for v in sym)
-        elif (x, y + 1) not in pts or (x + 1, y) not in pts:
-            c = deep
-        else:
-            c = sym
-        px[y][x] = c + (255,)
-    tl = min(pts, key=lambda p: (p[0] + p[1], p[1]))
-    px[tl[1]][tl[0]] = (255, 255, 255, 255)
+                # glow from the rim to the middle, a little brighter towards the top
+                d = max(abs(x - 7.5), abs(y - 7.0)) / 5.0
+                t = max(0.0, min(1.0, 1.0 - d))
+                c = tuple(int(mid[i] * (1 - t * 0.7) + bright[i] * t * 0.7) for i in range(3))
+                if d > 0.85:
+                    c = tuple(int(c[i] * 0.55 + edge[i] * 0.45) for i in range(3))
+                c = shade(c, 1.0 + ((hsh(x, y, n) % 5) - 2) * 0.02)
+                # diagonal glint across the upper right
+                if x - y in (4, 5) and y <= 9:
+                    c = tuple(int(c[i] * 0.3 + bright[i] * 0.7) for i in range(3))
+                elif x - y == 3 and y <= 8:
+                    c = tuple(int(c[i] * 0.65 + bright[i] * 0.35) for i in range(3))
+            px[y][x] = c + (255,)
+    # white shine dots
+    for (x, y) in ((3, 3), (4, 3), (3, 4), (4, 4), (11, 11), (12, 11), (11, 12), (12, 12)):
+        px[y][x] = (255, 255, 250, 255)
+    px[4][4] = tuple(int(v * 0.5 + 255 * 0.5) for v in bright) + (255,)
+    px[12][12] = tuple(int(v * 0.5 + 255 * 0.5) for v in bright) + (255,)
+    # the symbol, engraved: dark lines with a bright lip below-right
+    pts = {(2 + c, 2 + r) for r, row in enumerate(rows) for c, ch in enumerate(row) if ch == "#"}
+    # only the outline of a solid shape is cut in (thin lines like the reference); its inside stays
+    # plate, just a shade deeper
+    edge_pts = {(x, y) for (x, y) in pts
+                if name == "looting" or any((x + dx, y + dy) not in pts for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)))}
+    for (x, y) in edge_pts:
+        q = (x + 1, y + 1)
+        if q not in edge_pts and q not in pts and 3 <= q[0] <= 12 and 3 <= q[1] <= 12:
+            px[q[1]][q[0]] = tuple(int(px[q[1]][q[0]][i] * 0.4 + bright[i] * 0.6) for i in range(3)) + (255,)
+    for (x, y) in pts - edge_pts:
+        px[y][x] = shade(px[y][x], 0.82)
+    for (x, y) in edge_pts:
+        px[y][x] = ink + (255,)
     png(f"{ROOT}/textures/item/{name}_upgrade.png", px)
     json.dump({"parent": "minecraft:item/generated", "textures": {"layer0": f"chaosspawner:item/{name}_upgrade"}},
               open(f"{ROOT}/models/item/{name}_upgrade.json", "w"), indent=2)
