@@ -200,12 +200,15 @@ public class MobFarmScreen extends AbstractContainerScreen<MobFarmMenu> {
         shownFullness += (fullness - shownFullness) * Math.min(1.0F, dt * 6.0F);
     }
 
-    /** How full the loot slots are, counting stack sizes, not just occupied slots. */
+    /**
+     * How full the loot slots are. Any used slot counts for half of its share right away (so a
+     * few items are already visible), the other half grows with the stack size.
+     */
     private float fillFraction() {
         float total = 0.0F;
         for (int i = MobFarmBlockEntity.OUTPUT_START; i < MobFarmBlockEntity.OUTPUT_START + MobFarmBlockEntity.OUTPUT_COUNT; i++) {
             ItemStack stack = menu.slots.get(i).getItem();
-            if (!stack.isEmpty()) total += stack.getCount() / (float) stack.getMaxStackSize();
+            if (!stack.isEmpty()) total += 0.5F + 0.5F * stack.getCount() / (float) stack.getMaxStackSize();
         }
         return total / MobFarmBlockEntity.OUTPUT_COUNT;
     }
@@ -423,7 +426,7 @@ public class MobFarmScreen extends AbstractContainerScreen<MobFarmMenu> {
         int bw = BAR_W - 10;
         g.fill(bx - 1, y - 1, bx + bw + 1, y + BAR_H + 1, p.trimDark);
         g.fill(bx, y, bx + bw, y + BAR_H, 0xFF141016);
-        int filled = Math.round(bw * fraction);
+        int filled = fraction > 0.002F ? Math.max(2, Math.round(bw * fraction)) : 0;
         for (int i = 0; i < filled; i += 2) {
             float t = (float) i / Math.max(1, bw - 1);
             g.fill(bx + i, y, bx + Math.min(filled, i + 2), y + BAR_H, lerp(deep, bright, t));
