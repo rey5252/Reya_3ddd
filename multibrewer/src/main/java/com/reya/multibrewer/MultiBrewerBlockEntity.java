@@ -221,7 +221,10 @@ public class MultiBrewerBlockEntity extends BlockEntity implements MenuProvider 
     @Override
     public void load(CompoundTag tag) {
         super.load(tag);
-        items.deserializeNBT(tag.getCompound("Items"));
+        // brewers saved by older versions had fewer slots; grow them to the current size, items kept
+        CompoundTag saved = tag.getCompound("Items");
+        saved.putInt("Size", BrewLogic.SLOTS);
+        items.deserializeNBT(saved);
         progress = tag.getInt("Progress");
         fuel = tag.getInt("Fuel");
     }
