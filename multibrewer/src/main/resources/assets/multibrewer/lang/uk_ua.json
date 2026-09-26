@@ -10,7 +10,7 @@
   "item.multibrewer.mixed_potion": "Змішане зілля",
   "itemGroup.multibrewer": "Multi Brewer",
   "container.multibrewer.brewer": "Мульти зіляварка",
-  "gui.multibrewer.hint": "Поклади 2-3 зілля, щоб змішати, або 1 зілля з редстоуном чи світлопилом",
+  "gui.multibrewer.hint": "Інгредієнт зверху + зілля знизу — звичайне варіння. 2-3 зілля — змішати. 1 зілля з редстоуном чи світлопилом — подовжити або посилити",
   "gui.multibrewer.result": "Вийде:",
   "gui.multibrewer.brewing": "Вариться: %s%%",
   "gui.multibrewer.ready": "Чекає на паливо",
@@ -27,5 +27,8 @@
   "gui.multibrewer.slot.duration.more": "+%s%% часу",
   "gui.multibrewer.slot.power": "Світлопил — сильніша дія",
   "gui.multibrewer.slot.power.more": "+%s рівень (максимум %s)",
-  "gui.multibrewer.slot.upgrade": "Покращення"
+  "gui.multibrewer.slot.upgrade": "Покращення",
+  "gui.multibrewer.result_vanilla": "Зілля стануть:",
+  "gui.multibrewer.brewing_vanilla": "Вариться: %s%%",
+  "gui.multibrewer.slot.ingredient": "Інгредієнт (як у звичайній зіляварці)"
 }

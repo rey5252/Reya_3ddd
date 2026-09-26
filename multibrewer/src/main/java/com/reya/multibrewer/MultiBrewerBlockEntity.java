@@ -9,6 +9,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.Containers;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -19,6 +20,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.common.brewing.BrewingRecipeRegistry;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
@@ -39,13 +41,14 @@ public class MultiBrewerBlockEntity extends BlockEntity implements MenuProvider 
                 case BrewLogic.FUEL -> stack.is(Items.BLAZE_POWDER);
                 case BrewLogic.DURATION -> stack.is(Items.REDSTONE);
                 case BrewLogic.POWER -> stack.is(Items.GLOWSTONE_DUST);
+                case BrewLogic.INGREDIENT -> BrewingRecipeRegistry.isValidIngredient(stack);
                 default -> stack.getItem() instanceof UpgradeItem;
             };
         }
 
         @Override
         public int getSlotLimit(int slot) {
-            return slot <= BrewLogic.OUTPUT ? 1 : slot >= BrewLogic.UP_1 ? 4 : 64;
+            return slot <= BrewLogic.OUTPUT ? 1 : slot == BrewLogic.UP_1 || slot == BrewLogic.UP_2 ? 4 : 64;
         }
 
         @Override
@@ -54,7 +57,7 @@ public class MultiBrewerBlockEntity extends BlockEntity implements MenuProvider 
         }
     };
 
-    /** Hoppers: put potions, fuel, redstone and glowstone in; take finished potions and bottles out. */
+    /** Hoppers: put potions, fuel, ingredients, redstone and glowstone in; take finished potions and bottles out. */
     private final IItemHandler automation = new IItemHandler() {
         @Override
         public int getSlots() {
@@ -68,7 +71,7 @@ public class MultiBrewerBlockEntity extends BlockEntity implements MenuProvider 
 
         @Override
         public @Nonnull ItemStack insertItem(int slot, @Nonnull ItemStack stack, boolean simulate) {
-            if (slot == BrewLogic.OUTPUT || slot >= BrewLogic.UP_1 || stack.is(Items.GLASS_BOTTLE)) return stack;
+            if (slot == BrewLogic.OUTPUT || slot == BrewLogic.UP_1 || slot == BrewLogic.UP_2 || stack.is(Items.GLASS_BOTTLE)) return stack;
             return items.insertItem(slot, stack, simulate);
         }
 
@@ -124,8 +127,9 @@ public class MultiBrewerBlockEntity extends BlockEntity implements MenuProvider 
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, MultiBrewerBlockEntity be) {
-        ItemStack result = BrewLogic.result(be.items);
-        boolean canWork = result != null && be.items.getStackInSlot(BrewLogic.OUTPUT).isEmpty();
+        boolean vanilla = BrewLogic.canBrewVanilla(be.items);
+        ItemStack result = vanilla ? null : BrewLogic.result(be.items);
+        boolean canWork = vanilla || result != null && be.items.getStackInSlot(BrewLogic.OUTPUT).isEmpty();
         if (canWork && be.fuel <= 0 && be.items.getStackInSlot(BrewLogic.FUEL).is(Items.BLAZE_POWDER)) {
             be.items.extractItem(BrewLogic.FUEL, 1, false);
             be.fuel = Config.FUEL_PER_BLAZE_POWDER.get();
@@ -136,7 +140,11 @@ public class MultiBrewerBlockEntity extends BlockEntity implements MenuProvider 
         if (brewing) {
             be.progress++;
             if (be.progress >= be.maxProgress) {
-                be.finish(level, pos, result);
+                if (vanilla) {
+                    be.finishVanilla(level, pos);
+                } else {
+                    be.finish(level, pos, result);
+                }
             }
         } else if (be.progress != 0) {
             be.progress = 0;
@@ -144,6 +152,32 @@ public class MultiBrewerBlockEntity extends BlockEntity implements MenuProvider 
         if (state.getValue(MultiBrewerBlock.BREWING) != brewing) {
             level.setBlock(pos, state.setValue(MultiBrewerBlock.BREWING, brewing), 3);
         }
+    }
+
+    /** Like the vanilla stand: every potion that has a recipe with the ingredient turns into its result. */
+    private void finishVanilla(Level level, BlockPos pos) {
+        progress = 0;
+        float save = BrewLogic.saveChance(items);
+        ItemStack ingredient = items.getStackInSlot(BrewLogic.INGREDIENT);
+        for (int slot = BrewLogic.IN_1; slot <= BrewLogic.IN_3; slot++) {
+            ItemStack s = items.getStackInSlot(slot);
+            if (s.isEmpty() || !BrewingRecipeRegistry.hasOutput(s, ingredient)) continue;
+            items.setStackInSlot(slot, BrewingRecipeRegistry.getOutput(s, ingredient));
+        }
+        if (level.random.nextFloat() >= save) {
+            ItemStack remainder = ingredient.getCraftingRemainingItem();
+            items.extractItem(BrewLogic.INGREDIENT, 1, false);
+            if (!remainder.isEmpty()) {
+                if (items.getStackInSlot(BrewLogic.INGREDIENT).isEmpty()) {
+                    items.setStackInSlot(BrewLogic.INGREDIENT, remainder);
+                } else {
+                    Containers.dropItemStack(level, pos.getX(), pos.getY() + 1, pos.getZ(), remainder);
+                }
+            }
+        }
+        if (level.random.nextFloat() >= save) fuel--;
+        level.levelEvent(1035, pos, 0);
+        setChanged();
     }
 
     private void finish(Level level, BlockPos pos, ItemStack result) {

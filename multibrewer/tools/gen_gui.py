@@ -323,21 +323,27 @@ def bar_track(cv, x1, y, x2, h):
 
 # ------------------------------------------------------------------ whole screen
 
-PAL = TIERS["golden"]
 TOP_H = 136                       # ornate panel height; the inventory panel hangs below
 IX1, IX2, IY1 = 39, 217, 146      # inventory panel
-SLOTS = {"in1": (22, 18), "in2": (48, 14), "in3": (74, 18), "out": (48, 108), "fuel": (18, 108),
-         "dur": (88, 50), "pow": (88, 76), "up1": (196, 108), "up2": (218, 108)}
-PREVIEW = (110, 14, 237, 101)
-GAUGE = (22, 62, 31, 101)
-GLASS, GLASS_HI, GLASS_IN = (150, 196, 210), (225, 245, 250), (22, 26, 36)
+SLOTS = {"in1": (36, 108), "in2": (64, 108), "in3": (92, 108), "out": (104, 64), "fuel": (20, 14),
+         "dur": (20, 52), "pow": (20, 76), "up1": (196, 108), "up2": (218, 108), "ing": (64, 12)}
+PREVIEW = (130, 14, 237, 97)
+GAUGE = (17, 37, 44, 44)
+GLASS, GLASS_HI, GLASS_IN = (150, 196, 210), (225, 245, 250), (22, 20, 34)
+# alchemy colours: violet panel, gold trim, a violet-teal brew
+PAL = ((70, 36, 92), (92, 52, 118), (40, 18, 56), (227, 179, 65), (255, 226, 140), (136, 96, 18))
+BREW, BREW_HI, BREW_LO = (150, 90, 220), (210, 170, 255), (70, 40, 130)
+TUBES = [[(72, 29), (72, 33)],
+         [(72, 91), (72, 96)], [(72, 96), (44, 96), (44, 106)], [(72, 96), (72, 106)], [(72, 96), (100, 96), (100, 106)],
+         [(92, 72), (103, 72)]]
+POOL_Y = 132
 
 
 def flask_inside(x, y):
-    """Neck 52..60 from y 37, round bulb centred on (56, 82). The screen uses the same shape."""
-    if 52 <= x <= 60 and 37 <= y <= 66:
+    """Neck 68..76 from y 33, round bulb centred on (72, 72). The screen uses the same shape."""
+    if 68 <= x <= 76 and 33 <= y <= 56:
         return True
-    return (x - 56) ** 2 + (y - 82) ** 2 <= 380
+    return (x - 72) ** 2 + (y - 72) ** 2 <= 380
 
 
 def glass_shape(cv, inside):
@@ -513,22 +519,56 @@ def build(pal=PAL):
     for c in range(9):
         vanilla_slot(cv, ix1 + 8 + c * 18, iy1 + 66)
 
-    # glass: flask, tubes from the three potions into its neck, a spout down to the result
-    inside = {(x, y) for x in range(30, 84) for y in range(30, 106) if flask_inside(x, y)}
-    inside |= channel([(30, 35), (30, 38), (52, 38)])
-    inside |= channel([(56, 31), (56, 37)])
-    inside |= channel([(82, 35), (82, 38), (60, 38)])
-    inside |= channel([(56, 101), (56, 106)])
-    glass_shape(cv, inside)
-    # gold collar round the neck and a ring under the bulb
-    for x in range(50, 63):
-        cv.set(x, 44, trd); cv.set(x, 45, tr); cv.set(x, 46, trl)
-    for x in range(49, 64):
-        cv.set(x, 103, BLACK)
-    for x in range(50, 63):
-        cv.set(x, 102, tr)
+    content = [(2, 2, 16, 22), (2, 104, 16, 131), (14, 8, 50, 98), (58, 6, 86, 32), (48, 26, 96, 106), (98, 58, 126, 88),
+               (30, 90, 114, 131), (126, 8, 241, 131), (238, 2, 256, 22), (238, 104, 256, 131)]
 
-    # fuel: sunken gauge above the blaze powder slot, a flame mark on top
+    # background: soft bubbles floating in the free parts of the panel
+    placed = []
+    for i in range(700):
+        x = 10 + rnd(i, 11) % (SW - 20)
+        y = 10 + rnd(i, 12) % 118
+        if any(c[0] - 3 <= x <= c[2] + 3 and c[1] - 3 <= y <= c[3] + 3 for c in content):
+            continue
+        if any(abs(x - px) + abs(y - py) < 9 for (px, py) in placed):
+            continue
+        placed.append((x, y))
+        r = 1 + rnd(i, 13) % 2
+        ring = mix(bg, BREW_HI, 0.35)
+        for dx in range(-r, r + 1):
+            for dy in range(-r, r + 1):
+                if abs(dx) + abs(dy) == r + (1 if r == 2 else 0) or (r == 1 and abs(dx) + abs(dy) == 1):
+                    cv.set(x + dx, y + dy, ring)
+        cv.set(x - r + 1, y - r + (0 if r == 1 else 1), mix(bg, (255, 255, 255), 0.5))
+
+    # drips of brew hanging from the gold line along the top
+    for (x, n) in ((47, 3), (53, 5), (91, 4), (99, 2), (108, 5), (117, 3), (124, 4), (44, 2), (86, 3)):
+        for y in range(8, 8 + n):
+            cv.set(x, y, BREW)
+        cv.set(x - 1, 8 + n, BREW_LO); cv.set(x, 8 + n, BREW); cv.set(x + 1, 8 + n, BREW_LO)
+        cv.set(x - 1, 9 + n, BREW_LO); cv.set(x, 9 + n, BREW_HI); cv.set(x + 1, 9 + n, BREW_LO)
+        cv.set(x, 10 + n, BREW_LO)
+
+    # a pool of brew on the strip above the inventory (the screen animates its surface)
+    for x in range(ix1 - 1, ix2 + 1):
+        surf = POOL_Y + round(math.sin(x / 5.0) * 1.2)
+        for y in range(surf, iy1):
+            if (x, y) in inside and all((x + dx, y + dy) in inside for dx in (-2, 0, 2) for dy in (-2, 0)):
+                cv.set(x, y, BREW_HI if y == surf else mix(BREW, BREW_LO, min(1.0, (y - surf) / 10.0)))
+
+    # glass: flask, a tube from the ingredient into its neck, a manifold down to the three bottles,
+    # a spout across to the mixed result
+    glass = {(x, y) for x in range(40, 104) for y in range(26, 110) if flask_inside(x, y)}
+    for t in TUBES:
+        glass |= channel(t)
+    glass_shape(cv, glass)
+    for x in range(66, 79):
+        cv.set(x, 40, trd); cv.set(x, 41, tr); cv.set(x, 42, trl)
+    for x in range(64, 81):
+        cv.set(x, 93, BLACK)
+    for x in range(66, 79):
+        cv.set(x, 92, tr)
+
+    # fuel: sunken gauge under the blaze powder slot with a flame mark
     x1, y1, x2, y2 = GAUGE
     recess(cv, x1, y1, x2, y2, mix(bgd, BLACK, 0.45), pal)
     flame = ["..#..", ".#o#.", ".#oo#", "#oyo#", "#oyo#", ".###."]
@@ -536,10 +576,10 @@ def build(pal=PAL):
         for c, ch in enumerate(row):
             col = {"#": BLACK, "o": (240, 130, 30), "y": (255, 220, 90)}.get(ch)
             if col:
-                cv.set(x1 + 2 + c, y1 - 8 + r, col)
+                cv.set(x2 + 2 + c, y1 - 1 + r, col)
 
     # slots
-    for key in ("in1", "in2", "in3", "out", "fuel", "dur", "pow"):
+    for key in ("in1", "in2", "in3", "out", "fuel", "dur", "pow", "ing"):
         sx, sy = SLOTS[key]
         stone_slot(cv, sx, sy, bgd, shadow=True, plain=True)
         gold_brackets(cv, sx - 2, sy - 2, sx + 18, sy + 18, pal, arm=4)

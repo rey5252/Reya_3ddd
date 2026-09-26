@@ -10,7 +10,7 @@
   "item.multibrewer.mixed_potion": "Mixed Potion",
   "itemGroup.multibrewer": "Multi Brewer",
   "container.multibrewer.brewer": "Multi Brewer",
-  "gui.multibrewer.hint": "Put in 2-3 potions to mix them, or 1 potion with redstone or glowstone",
+  "gui.multibrewer.hint": "Ingredient on top + potions below: normal brewing. 2-3 potions: mix them. 1 potion with redstone or glowstone: longer or stronger",
   "gui.multibrewer.result": "Makes:",
   "gui.multibrewer.brewing": "Brewing: %s%%",
   "gui.multibrewer.ready": "Waiting for fuel",
@@ -27,5 +27,8 @@
   "gui.multibrewer.slot.duration.more": "+%s%% time",
   "gui.multibrewer.slot.power": "Glowstone - stronger",
   "gui.multibrewer.slot.power.more": "+%s level (up to %s)",
-  "gui.multibrewer.slot.upgrade": "Upgrade"
+  "gui.multibrewer.slot.upgrade": "Upgrade",
+  "gui.multibrewer.result_vanilla": "Potions become:",
+  "gui.multibrewer.brewing_vanilla": "Brewing: %s%%",
+  "gui.multibrewer.slot.ingredient": "Ingredient (like a normal brewing stand)"
 }

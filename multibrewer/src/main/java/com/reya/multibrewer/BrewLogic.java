@@ -13,6 +13,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.PotionUtils;
+import net.minecraftforge.common.brewing.BrewingRecipeRegistry;
 import net.minecraftforge.items.IItemHandler;
 
 /**
@@ -20,21 +21,45 @@ import net.minecraftforge.items.IItemHandler;
  * (to show the result before it's made).
  *
  * <ul>
- *   <li>Every effect of every input potion ends up in one potion. The same effect at the same level
+ *   <li>With an ingredient on top it brews like the vanilla stand: every potion below turns into
+ *       what the vanilla (and modded) brewing recipes make from it.</li>
+ *   <li>Otherwise every effect of every input potion ends up in one potion. The same effect at the same level
  *       adds up its time; at different levels the stronger one wins.</li>
  *   <li>Redstone: +50% time (+25% more per potency upgrade).</li>
  *   <li>Glowstone: +1 level (+1 more for every two potency upgrades).</li>
  * </ul>
  */
 public final class BrewLogic {
-    public static final int IN_1 = 0, IN_2 = 1, IN_3 = 2, OUTPUT = 3, FUEL = 4, DURATION = 5, POWER = 6, UP_1 = 7, UP_2 = 8;
-    public static final int SLOTS = 9;
+    public static final int IN_1 = 0, IN_2 = 1, IN_3 = 2, OUTPUT = 3, FUEL = 4, DURATION = 5, POWER = 6, UP_1 = 7, UP_2 = 8,
+            INGREDIENT = 9;
+    public static final int SLOTS = 10;
 
     private BrewLogic() {
     }
 
     public static boolean isPotion(ItemStack stack) {
         return stack.is(Items.POTION) || stack.is(Items.SPLASH_POTION) || stack.is(Items.LINGERING_POTION);
+    }
+
+    /** True when the ingredient turns at least one of the potions into something, like the vanilla stand. */
+    public static boolean canBrewVanilla(IItemHandler items) {
+        ItemStack ingredient = items.getStackInSlot(INGREDIENT);
+        if (ingredient.isEmpty()) return false;
+        for (int slot = IN_1; slot <= IN_3; slot++) {
+            ItemStack s = items.getStackInSlot(slot);
+            if (!s.isEmpty() && BrewingRecipeRegistry.hasOutput(s, ingredient)) return true;
+        }
+        return false;
+    }
+
+    /** What the vanilla recipe makes of the first potion that changes, for the preview; else empty. */
+    public static ItemStack vanillaPreview(IItemHandler items) {
+        ItemStack ingredient = items.getStackInSlot(INGREDIENT);
+        for (int slot = IN_1; slot <= IN_3; slot++) {
+            ItemStack s = items.getStackInSlot(slot);
+            if (!s.isEmpty() && BrewingRecipeRegistry.hasOutput(s, ingredient)) return BrewingRecipeRegistry.getOutput(s, ingredient);
+        }
+        return ItemStack.EMPTY;
     }
 
     public static int upgrades(IItemHandler items, UpgradeItem.Kind kind) {
@@ -50,7 +75,7 @@ public final class BrewLogic {
         return Math.max(10, (int) (Config.BREW_TICKS.get() * Math.pow(0.7D, upgrades(items, UpgradeItem.Kind.SPEED))));
     }
 
-    /** Chance that a brew doesn't use up fuel, redstone or glowstone. */
+    /** Chance that a brew doesn't use up fuel, the ingredient, redstone or glowstone. */
     public static float saveChance(IItemHandler items) {
         return 0.15F * upgrades(items, UpgradeItem.Kind.EFFICIENCY);
     }

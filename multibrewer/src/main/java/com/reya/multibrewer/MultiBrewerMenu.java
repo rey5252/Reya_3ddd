@@ -12,23 +12,26 @@ import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraftforge.common.brewing.BrewingRecipeRegistry;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.items.SlotItemHandler;
 
 /**
- * Three potion slots over the flask, the result under it, blaze powder on the left, redstone and
- * glowstone on the right, two upgrade slots under the effect list; player inventory centred below.
+ * Brewing-stand layout: ingredient over the flask, three potions under it, the mixed result to its
+ * right, blaze powder, redstone and glowstone on the left, two upgrade slots under the effect list;
+ * player inventory centred below.
  */
 public class MultiBrewerMenu extends AbstractContainerMenu {
     public static final int WIDTH = 256;
     public static final int HEIGHT = 236;
     public static final int[][] POS = {
-            {22, 18}, {48, 14}, {74, 18},   // potions
-            {48, 108},                     // result
-            {18, 108},                     // blaze powder
-            {88, 50}, {88, 76},            // redstone, glowstone
-            {196, 108}, {218, 108}};       // upgrades
+            {36, 108}, {64, 108}, {92, 108}, // potions, under the flask like on a brewing stand
+            {104, 64},                       // mixed result, to the right of the flask
+            {20, 14},                        // blaze powder
+            {20, 52}, {20, 76},              // redstone, glowstone
+            {196, 108}, {218, 108},          // upgrades
+            {64, 12}};                       // ingredient, over the flask
     public static final int INV_X = 47;
     public static final int INV_Y = 154;
 
@@ -99,6 +102,8 @@ public class MultiBrewerMenu extends AbstractContainerMenu {
             if (!moveItemStackTo(stack, BrewLogic.POWER, BrewLogic.POWER + 1, false)) return ItemStack.EMPTY;
         } else if (stack.getItem() instanceof UpgradeItem) {
             if (!moveItemStackTo(stack, BrewLogic.UP_1, BrewLogic.UP_2 + 1, false)) return ItemStack.EMPTY;
+        } else if (BrewingRecipeRegistry.isValidIngredient(stack)) {
+            if (!moveItemStackTo(stack, BrewLogic.INGREDIENT, BrewLogic.INGREDIENT + 1, false)) return ItemStack.EMPTY;
         } else {
             return ItemStack.EMPTY;
         }

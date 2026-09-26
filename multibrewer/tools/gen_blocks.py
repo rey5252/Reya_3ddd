@@ -70,15 +70,27 @@ def glass_liquid(liquid, rows_glass, h, w=16):
     return px
 
 
+def liquid_tex(col):
+    """Opaque liquid body: light edge on the left and top, darker bottom, a white shine."""
+    px = grid()
+    for y in range(16):
+        for x in range(16):
+            f = 1.15 - y / 16 * 0.45
+            px[y][x] = tuple(min(255, int(v * f)) for v in col)
+    for i in range(16):
+        px[i][0] = tuple(min(255, int(v * 1.35)) for v in col)
+        px[0][i] = tuple(min(255, int(v * 1.35)) for v in col)
+    px[1][1] = (245, 240, 255)
+    return px
+
+
 PURPLE = (160, 60, 210)
-flask = glass_liquid(PURPLE, 2, 6)
-flask[3][1] = (255, 255, 255, 200)
-flask[4][1] = (255, 255, 255, 160)
-png(f"{ROOT}/textures/block/flask.png", flask)
-neck = grid((210, 240, 250, 110))
+png(f"{ROOT}/textures/block/flask.png", liquid_tex(PURPLE))
+glass = grid((200, 232, 240))
 for y in range(16):
-    neck[y][0] = (235, 250, 255, 170)
-png(f"{ROOT}/textures/block/neck.png", neck)
+    glass[y][0] = (240, 252, 255)
+    glass[y][15] = (150, 190, 205)
+png(f"{ROOT}/textures/block/neck.png", glass)
 cork = grid((150, 104, 60))
 for y in range(16):
     for x in range(16):
@@ -86,11 +98,7 @@ for y in range(16):
             cork[y][x] = (120, 80, 44)
 png(f"{ROOT}/textures/block/cork.png", cork)
 for name, col in (("red", (220, 50, 60)), ("green", (70, 200, 80)), ("blue", (60, 120, 230))):
-    b = glass_liquid(col, 2, 4)
-    for y in range(8, 16):
-        for x in range(16):
-            b[y][x] = (150, 104, 60, 255) if (x + y) % 3 else (120, 80, 44, 255)
-    png(f"{ROOT}/textures/block/bottle_{name}.png", b)
+    png(f"{ROOT}/textures/block/bottle_{name}.png", liquid_tex(col))
 fire = grid()
 for y in range(16):
     for x in range(16):
@@ -104,36 +112,42 @@ for y in range(16):
 png(f"{ROOT}/textures/block/coal.png", coal)
 
 
-def box(frm, to, tex, faces=("north", "south", "east", "west", "up", "down"), side_uv=None, top_uv=None):
-    w, h, d = to[0] - frm[0], to[1] - frm[1], to[2] - frm[2]
+def box(frm, to, tex, faces=("north", "south", "east", "west", "up", "down"), rel=False):
     f = {}
+    w, h, d = to[0] - frm[0], to[1] - frm[1], to[2] - frm[2]
     for s in faces:
-        if s in ("up", "down"):
-            f[s] = {"uv": top_uv or [0, 0, w, d], "texture": tex}
+        if rel:
+            f[s] = {"uv": [0, 0, w, d] if s in ("up", "down") else [0, 0, w if s in ("north", "south") else d, h], "texture": tex}
+        elif s in ("up", "down"):
+            f[s] = {"uv": [frm[0], frm[2], to[0], to[2]], "texture": tex}
+        elif s in ("north", "south"):
+            f[s] = {"uv": [frm[0], 16 - to[1], to[0], 16 - frm[1]], "texture": tex}
         else:
-            span = w if s in ("north", "south") else d
-            f[s] = {"uv": side_uv or [0, 0, span, h], "texture": tex}
+            f[s] = {"uv": [frm[2], 16 - to[1], to[2], 16 - frm[1]], "texture": tex}
     return {"from": frm, "to": to, "faces": f}
 
 
 def model(lit):
+    sides = ("north", "south", "east", "west")
     els = [
-        box([1, 0, 1], [15, 2, 15], "#base_side", ("north", "south", "east", "west", "down"), side_uv=[0, 0, 14, 2]),
+        box([1, 0, 1], [15, 2, 15], "#base_side", sides + ("down",), rel=True),
         {"from": [1, 0, 1], "to": [15, 2, 15], "faces": {"up": {"uv": [1, 1, 15, 15], "texture": "#base_top"}}},
-        box([6, 2, 6], [10, 4, 10], "#fire" if lit else "#coal", ("north", "south", "east", "west", "up")),
-        box([5, 4, 5], [11, 10, 11], "#flask", ("north", "south", "east", "west"), side_uv=[0, 0, 6, 6]),
-        {"from": [5, 4, 5], "to": [11, 10, 11], "faces": {"up": {"uv": [0, 8, 6, 14], "texture": "#flask"}}},
-        box([7, 10, 7], [9, 13, 9], "#neck", ("north", "south", "east", "west")),
-        box([7, 13, 7], [9, 14, 9], "#cork"),
-        box([4, 10, 7], [7, 11, 9], "#gold"),
-        box([9, 10, 7], [12, 11, 9], "#gold"),
+        box([6, 2, 6], [10, 3, 10], "#fire" if lit else "#coal", sides + ("up",)),
+        # four gold legs holding the flask
+        box([5, 2, 5], [6, 4, 6], "#gold", sides), box([10, 2, 5], [11, 4, 6], "#gold", sides),
+        box([5, 2, 10], [6, 4, 11], "#gold", sides), box([10, 2, 10], [11, 4, 11], "#gold", sides),
+        box([5, 4, 5], [11, 9, 11], "#flask", rel=True),
+        box([7, 9, 7], [9, 12, 9], "#neck", sides),
+        box([6, 10, 6], [10, 11, 10], "#gold"),
+        box([7, 12, 7], [9, 13, 9], "#cork"),
     ]
-    for (x, z, col) in ((2, 2, "red"), (11, 2, "green"), (2, 11, "blue")):
-        els.append(box([x, 2, z], [x + 3, 6, z + 3], f"#b_{col}", ("north", "south", "east", "west"), side_uv=[0, 0, 3, 4]))
-        els.append({"from": [x, 2, z], "to": [x + 3, 6, z + 3], "faces": {"up": {"uv": [0, 8, 3, 11], "texture": f"#b_{col}"}}})
+    for (x, z, col) in ((2, 2, "red"), (12, 2, "green"), (2, 12, "blue")):
+        els.append(box([x, 2, z], [x + 2, 5, z + 2], f"#b_{col}", rel=True))
+        els.append(box([x, 5, z], [x + 2, 6, z + 2], "#neck", sides))
+        els.append(box([x, 6, z], [x + 2, 7, z + 2], "#cork"))
     return {
         "parent": "minecraft:block/block",
-        "render_type": "minecraft:translucent",
+        "render_type": "minecraft:cutout",
         "textures": {
             "particle": "multibrewer:block/base_top",
             "base_top": "multibrewer:block/base_top", "base_side": "multibrewer:block/base_side",

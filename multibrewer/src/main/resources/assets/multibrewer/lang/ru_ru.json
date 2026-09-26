@@ -10,7 +10,7 @@
   "item.multibrewer.mixed_potion": "Смешанное зелье",
   "itemGroup.multibrewer": "Multi Brewer",
   "container.multibrewer.brewer": "Мульти зельеварка",
-  "gui.multibrewer.hint": "Положи 2-3 зелья, чтобы смешать, или 1 зелье с редстоуном или светопылью",
+  "gui.multibrewer.hint": "Ингредиент сверху + зелья снизу — обычная варка. 2-3 зелья — смешать. 1 зелье с редстоуном или светопылью — удлинить или усилить",
   "gui.multibrewer.result": "Получится:",
   "gui.multibrewer.brewing": "Варится: %s%%",
   "gui.multibrewer.ready": "Ждёт топливо",
@@ -27,5 +27,8 @@
   "gui.multibrewer.slot.duration.more": "+%s%% времени",
   "gui.multibrewer.slot.power": "Светопыль — сильнее действие",
   "gui.multibrewer.slot.power.more": "+%s уровень (максимум %s)",
-  "gui.multibrewer.slot.upgrade": "Улучшение"
+  "gui.multibrewer.slot.upgrade": "Улучшение",
+  "gui.multibrewer.result_vanilla": "Зелья станут:",
+  "gui.multibrewer.brewing_vanilla": "Варится: %s%%",
+  "gui.multibrewer.slot.ingredient": "Ингредиент (как в обычной зельеварке)"
 }
