@@ -15,6 +15,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
 
 /**
  * Mirror-symmetric farm GUI, coloured by tier: lasso on the left, a window with the caught mob
@@ -92,6 +93,14 @@ public class MobFarmScreen extends AbstractContainerScreen<MobFarmMenu> {
 
     @Override
     protected void renderBg(GuiGraphics g, float partialTick, int mouseX, int mouseY) {
+        updateSmoothBars(partialTick);
+        // Thousands of 1px fills: draw them as one batch instead of one draw call each (that was the lag).
+        g.drawManaged(() -> drawFrameParts(g));
+        drawWindow(g, leftPos + WINDOW_X, topPos + PANEL_Y, menu.tier());
+        g.drawManaged(() -> drawSlotsAndBars(g));
+    }
+
+    private void drawFrameParts(GuiGraphics g) {
         FarmTier tier = menu.tier();
         Palette p = palette(tier);
         drawTab(g, leftPos, topPos + TAB_Y, p, true);
@@ -103,21 +112,44 @@ public class MobFarmScreen extends AbstractContainerScreen<MobFarmMenu> {
         int y2 = y + imageHeight;
         drawOrnateBox(g, x, y, x2, y2, p);
 
-        // Title banner
+        // Title banner that fades out softly at both ends
         int mid = x + MobFarmMenu.BODY_W / 2;
-        int tw = font.width(title) / 2 + 10;
+        int tw = font.width(title) / 2 + 6;
         g.fill(mid - tw, y + 4, mid + tw, y + 16, p.bgDark);
         g.fill(mid - tw, y + 16, mid + tw, y + 17, p.trimDark);
-        drawDiamond(g, mid - tw - 3, y + 10, p);
-        drawDiamond(g, mid + tw + 2, y + 10, p);
+        int fade = 14;
+        for (int i = 0; i < fade; i++) {
+            float a = 1.0F - (i + 1) / (float) (fade + 1);
+            int bg = withAlpha(p.bgDark, a);
+            int line = withAlpha(p.trimDark, a);
+            g.fill(mid - tw - 1 - i, y + 4, mid - tw - i, y + 16, bg);
+            g.fill(mid + tw + i, y + 4, mid + tw + i + 1, y + 16, bg);
+            g.fill(mid - tw - 1 - i, y + 16, mid - tw - i, y + 17, line);
+            g.fill(mid + tw + i, y + 16, mid + tw + i + 1, y + 17, line);
+        }
+        drawDiamond(g, mid - tw - fade - 3, y + 10, p);
+        drawDiamond(g, mid + tw + fade + 2, y + 10, p);
 
         // Lasso socket, loot box and the mob window, mirrored around the middle
         drawSocketBox(g, leftPos + LEFT_PANEL_X, y + PANEL_Y, PANEL_W, PANEL_H, p);
         drawSocketBox(g, leftPos + RIGHT_PANEL_X, y + PANEL_Y, PANEL_W, PANEL_H, p);
-        drawWindow(g, leftPos + WINDOW_X, y + PANEL_Y, tier);
-        drawCurl(g, leftPos + WINDOW_X - 1, y + PANEL_Y + 2, p, true);
-        drawCurl(g, leftPos + WINDOW_X + WINDOW_W + 1, y + PANEL_Y + 2, p, false);
+        drawCurl(g, leftPos + WINDOW_X - 3, y + PANEL_Y + 2, p, true);
+        drawCurl(g, leftPos + WINDOW_X + WINDOW_W + 2, y + PANEL_Y + 2, p, false);
 
+        // Ornament line above the inventory
+        int dy = y + MobFarmMenu.INV_Y - 8;
+        g.fill(x + 16, dy, x2 - 16, dy + 1, p.trimDark);
+        drawDiamond(g, x + 13, dy, p);
+        drawDiamond(g, x2 - 14, dy, p);
+        drawDiamond(g, mid, dy, p);
+
+        // Lock in the top-right corner while redstone holds the farm
+        if (menu.status() == MobFarmBlockEntity.STATUS_REDSTONE) drawLock(g, x2 - 20, y + 5, p);
+    }
+
+    private void drawSlotsAndBars(GuiGraphics g) {
+        Palette p = palette(menu.tier());
+        int y = topPos;
         for (Slot slot : menu.slots) {
             boolean machine = slot.index < MobFarmBlockEntity.SLOT_COUNT;
             if (machine) {
@@ -130,16 +162,52 @@ public class MobFarmScreen extends AbstractContainerScreen<MobFarmMenu> {
         }
 
         drawBars(g, leftPos + BAR_X, y, p);
+    }
 
-        // Ornament line above the inventory
-        int dy = y + MobFarmMenu.INV_Y - 8;
-        g.fill(x + 16, dy, x2 - 16, dy + 1, p.trimDark);
-        drawDiamond(g, x + 13, dy, p);
-        drawDiamond(g, x2 - 14, dy, p);
-        drawDiamond(g, mid, dy, p);
+    private static int withAlpha(int color, float alpha) {
+        return ((int) (((color >>> 24) & 0xFF) * alpha) << 24) | (color & 0xFFFFFF);
+    }
 
-        // Lock in the top-right corner while redstone holds the farm
-        if (menu.status() == MobFarmBlockEntity.STATUS_REDSTONE) drawLock(g, x2 - 20, y + 5, p);
+    // ---------------------------------------------------------------- smooth bars
+
+    private float shownProgress;
+    private float shownFullness;
+    private long lastFrame = Util.getMillis();
+
+    /**
+     * The server only sends numbers once a tick, so the bars would step. Progress is advanced
+     * with the partial tick between updates, and fullness eases toward its new value.
+     */
+    private void updateSmoothBars(float partialTick) {
+        long now = Util.getMillis();
+        float dt = Math.min(0.1F, (now - lastFrame) / 1000.0F);
+        lastFrame = now;
+
+        float progress = 0.0F;
+        if (menu.status() == MobFarmBlockEntity.STATUS_RUNNING) {
+            progress = Mth.clamp((menu.progress() + partialTick) / menu.maxProgress(), 0.0F, 1.0F);
+        } else if (menu.status() != MobFarmBlockEntity.STATUS_NO_MOB) {
+            progress = Mth.clamp(menu.progress() / (float) menu.maxProgress(), 0.0F, 1.0F);
+        }
+        // A new cycle starts: snap back instead of sliding backwards across the bar.
+        if (progress < shownProgress - 0.25F) {
+            shownProgress = progress;
+        } else {
+            shownProgress += (progress - shownProgress) * Math.min(1.0F, dt * 20.0F);
+        }
+
+        float fullness = fillFraction();
+        shownFullness += (fullness - shownFullness) * Math.min(1.0F, dt * 6.0F);
+    }
+
+    /** How full the loot slots are, counting stack sizes, not just occupied slots. */
+    private float fillFraction() {
+        float total = 0.0F;
+        for (int i = MobFarmBlockEntity.OUTPUT_START; i < MobFarmBlockEntity.OUTPUT_START + MobFarmBlockEntity.OUTPUT_COUNT; i++) {
+            ItemStack stack = menu.slots.get(i).getItem();
+            if (!stack.isEmpty()) total += stack.getCount() / (float) stack.getMaxStackSize();
+        }
+        return total / MobFarmBlockEntity.OUTPUT_COUNT;
     }
 
     /** Double trim with filigree corners and diamonds halfway down the sides. */
@@ -339,15 +407,8 @@ public class MobFarmScreen extends AbstractContainerScreen<MobFarmMenu> {
     /** Two bars with orb icons: red = time to the next loot, cyan = how full the loot slots are. */
     private void drawBars(GuiGraphics g, int x, int top, Palette p) {
         int status = menu.status();
-        float progress = status == MobFarmBlockEntity.STATUS_NO_MOB ? 0.0F
-                : Mth.clamp(menu.progress() / (float) menu.maxProgress(), 0.0F, 1.0F);
-        int used = 0;
-        for (int i = MobFarmBlockEntity.OUTPUT_START; i < MobFarmBlockEntity.OUTPUT_START + MobFarmBlockEntity.OUTPUT_COUNT; i++) {
-            if (menu.slots.get(i).hasItem()) used++;
-        }
-        float fullness = used / (float) MobFarmBlockEntity.OUTPUT_COUNT;
-        drawBar(g, x, top + BAR_Y, progress, 0xFFE0403A, 0xFF7A1410, p, status == MobFarmBlockEntity.STATUS_RUNNING);
-        drawBar(g, x, top + BAR2_Y, fullness, 0xFF5FE0F0, 0xFF126A7A, p, false);
+        drawBar(g, x, top + BAR_Y, shownProgress, 0xFFE0403A, 0xFF7A1410, p, status == MobFarmBlockEntity.STATUS_RUNNING);
+        drawBar(g, x, top + BAR2_Y, shownFullness, 0xFF5FE0F0, 0xFF126A7A, p, false);
     }
 
     private static void drawBar(GuiGraphics g, int x, int y, float fraction, int bright, int deep, Palette p, boolean shimmer) {
@@ -363,9 +424,9 @@ public class MobFarmScreen extends AbstractContainerScreen<MobFarmMenu> {
         g.fill(bx - 1, y - 1, bx + bw + 1, y + BAR_H + 1, p.trimDark);
         g.fill(bx, y, bx + bw, y + BAR_H, 0xFF141016);
         int filled = Math.round(bw * fraction);
-        for (int i = 0; i < filled; i++) {
+        for (int i = 0; i < filled; i += 2) {
             float t = (float) i / Math.max(1, bw - 1);
-            g.fill(bx + i, y, bx + i + 1, y + BAR_H, lerp(deep, bright, t));
+            g.fill(bx + i, y, bx + Math.min(filled, i + 2), y + BAR_H, lerp(deep, bright, t));
         }
         g.fill(bx, y, bx + filled, y + 1, 0x70FFFFFF);
         if (shimmer && filled > 0) {

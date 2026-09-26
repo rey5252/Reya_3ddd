@@ -179,7 +179,8 @@ public final class BossPanelOverlay {
         // Text with an alpha below 4 is drawn fully opaque by the font renderer, so skip the last frames.
         if (alpha < 0.05F) return height;
 
-        drawBox(g, st, x, y, x2, y2, boss.entityId(), alpha, now);
+        // many 1px fills: batch them into one draw
+        g.drawManaged(() -> drawBox(g, st, x, y, x2, y2, boss.entityId(), alpha, now));
 
         // Portrait
         int px = x + 5;
@@ -200,7 +201,7 @@ public final class BossPanelOverlay {
         g.drawString(font, name, textLeft, y + 6, fade(st.nameText, alpha), st.textShadow);
         g.drawString(font, hp, x2 - 7 - hpWidth, y + 6, fade(st.hpText, alpha), st.textShadow);
 
-        drawHealthBar(g, st, anim, textLeft, y + 18, x2 - 7 - textLeft, alpha, now);
+        g.drawManaged(() -> drawHealthBar(g, st, anim, textLeft, y + 18, x2 - 7 - textLeft, alpha, now));
 
         if (rows.isEmpty()) return height;
 
