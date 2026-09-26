@@ -326,7 +326,8 @@ for n, (name, (bg, rim, sym, glow, rows)) in enumerate(CARDS.items()):
             elif x == 14 or y == 14:
                 c = shade(edge, 0.62)
             elif x == 1 or y == 1:
-                c = frame
+                # knurled top/left frame
+                c = frame if (x + y) % 2 else shade(frame, 0.84)
             elif x == 2 or y == 2 or x == 13 or y == 13:
                 c = edge
             else:
@@ -342,7 +343,25 @@ for n, (name, (bg, rim, sym, glow, rows)) in enumerate(CARDS.items()):
                     c = tuple(int(c[i] * 0.3 + bright[i] * 0.7) for i in range(3))
                 elif x - y == 3 and y <= 8:
                     c = tuple(int(c[i] * 0.65 + bright[i] * 0.35) for i in range(3))
+                elif x - y == 7 and y <= 5:
+                    c = tuple(int(c[i] * 0.5 + bright[i] * 0.5) for i in range(3))
             px[y][x] = c + (255,)
+    # rivets in the frame corners and small bright inlays in the middle of each side
+    for (x, y) in ((1, 1), (14, 1), (1, 14), (14, 14)):
+        px[y][x] = tuple(int(v * 0.6 + 255 * 0.4) for v in bright) + (255,)
+    for (x, y) in ((1, 2), (2, 1)):
+        px[y][x] = shade(frame, 0.7) + (255,)
+    for (x, y) in ((7, 2), (8, 2), (2, 7), (2, 8)):
+        px[y][x] = bright + (255,)
+    for (x, y) in ((7, 13), (8, 13), (13, 7), (13, 8)):
+        px[y][x] = shade(edge, 0.7) + (255,)
+    # fine scratches across the plate
+    for k in range(3):
+        sx, sy = 4 + hsh(k, n, 17) % 7, 5 + hsh(n, k, 19) % 6
+        for j in range(2):
+            x, y = sx + j, sy - j
+            if 3 <= x <= 12 and 3 <= y <= 12:
+                px[y][x] = shade(px[y][x], 1.12 if k % 2 else 0.9)
     # white shine dots
     for (x, y) in ((3, 3), (4, 3), (3, 4), (4, 4), (11, 11), (12, 11), (11, 12), (12, 12)):
         px[y][x] = (255, 255, 250, 255)
