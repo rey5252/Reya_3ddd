@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "MGM",
+    "GPG",
+    "MGM"
+  ],
+  "key": {
+    "M": {
+      "tag": "forge:ingots/iron"
+    },
+    "G": {
+      "tag": "forge:glass"
+    },
+    "P": {
+      "item": "mobfarm:stone_mob_farm"
+    }
+  },
+  "result": {
+    "item": "mobfarm:iron_mob_farm",
+    "count": 1
+  }
+}

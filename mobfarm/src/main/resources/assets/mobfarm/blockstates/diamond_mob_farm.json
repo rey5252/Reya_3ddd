@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "mobfarm:block/diamond_mob_farm"
+    }
+  }
+}

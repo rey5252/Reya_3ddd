@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "mobfarm:block/golden_mob_farm"
+    }
+  }
+}

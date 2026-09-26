@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "MGM",
+    "GPG",
+    "MGM"
+  ],
+  "key": {
+    "M": {
+      "tag": "forge:gems/diamond"
+    },
+    "G": {
+      "tag": "forge:glass"
+    },
+    "P": {
+      "item": "mobfarm:golden_mob_farm"
+    }
+  },
+  "result": {
+    "item": "mobfarm:diamond_mob_farm",
+    "count": 1
+  }
+}

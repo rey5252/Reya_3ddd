@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "mobfarm:block/iron_mob_farm"
+    }
+  }
+}

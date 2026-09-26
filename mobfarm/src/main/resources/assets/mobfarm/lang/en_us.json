@@ -1,0 +1,22 @@
+{
+  "item.mobfarm.lasso": "Lasso",
+  "item.mobfarm.lasso.empty": "Right-click a mob to catch it",
+  "item.mobfarm.lasso.captured": "Caught: %s",
+  "item.mobfarm.lasso.release": "Right-click a block to release, or put it into a mob farm",
+  "itemGroup.mobfarm": "Tiny Mob Farm",
+  "block.mobfarm.tooltip.speed": "One round of loot every %s s",
+  "block.mobfarm.tooltip.use": "Put a lasso with a mob inside; loot goes to adjacent chests",
+  "gui.mobfarm.lasso": "Lasso",
+  "gui.mobfarm.speed": "%s s",
+  "gui.mobfarm.insert_lasso": "Put in a lasso with a mob",
+  "gui.mobfarm.status.running": "%s%%  ·  %s s left",
+  "gui.mobfarm.status.no_mob": "No mob — insert a lasso",
+  "gui.mobfarm.status.redstone": "Stopped by redstone",
+  "gui.mobfarm.status.full": "Output is full",
+  "block.mobfarm.wooden_mob_farm": "Wooden Mob Farm",
+  "block.mobfarm.stone_mob_farm": "Stone Mob Farm",
+  "block.mobfarm.iron_mob_farm": "Iron Mob Farm",
+  "block.mobfarm.golden_mob_farm": "Golden Mob Farm",
+  "block.mobfarm.diamond_mob_farm": "Diamond Mob Farm",
+  "block.mobfarm.netherite_mob_farm": "Netherite Mob Farm"
+}

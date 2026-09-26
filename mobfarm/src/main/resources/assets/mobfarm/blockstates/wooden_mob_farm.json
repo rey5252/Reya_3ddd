@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "mobfarm:block/wooden_mob_farm"
+    }
+  }
+}

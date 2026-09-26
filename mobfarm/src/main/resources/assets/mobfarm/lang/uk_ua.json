@@ -1,0 +1,22 @@
+{
+  "item.mobfarm.lasso": "Ласо",
+  "item.mobfarm.lasso.empty": "ПКМ по мобу, щоб спіймати",
+  "item.mobfarm.lasso.captured": "Спіймано: %s",
+  "item.mobfarm.lasso.release": "ПКМ по блоку — випустити, або встав у ферму мобів",
+  "itemGroup.mobfarm": "Tiny Mob Farm",
+  "block.mobfarm.tooltip.speed": "Здобич кожні %s с",
+  "block.mobfarm.tooltip.use": "Встав ласо з мобом; здобич іде в сусідні скрині",
+  "gui.mobfarm.lasso": "Ласо",
+  "gui.mobfarm.speed": "%s с",
+  "gui.mobfarm.insert_lasso": "Встав ласо з мобом",
+  "gui.mobfarm.status.running": "%s%%  ·  ще %s с",
+  "gui.mobfarm.status.no_mob": "Немає моба — встав ласо",
+  "gui.mobfarm.status.redstone": "Зупинено редстоуном",
+  "gui.mobfarm.status.full": "Вихід заповнений",
+  "block.mobfarm.wooden_mob_farm": "Дерев'яна ферма мобів",
+  "block.mobfarm.stone_mob_farm": "Кам'яна ферма мобів",
+  "block.mobfarm.iron_mob_farm": "Залізна ферма мобів",
+  "block.mobfarm.golden_mob_farm": "Золота ферма мобів",
+  "block.mobfarm.diamond_mob_farm": "Діамантова ферма мобів",
+  "block.mobfarm.netherite_mob_farm": "Незеритова ферма мобів"
+}

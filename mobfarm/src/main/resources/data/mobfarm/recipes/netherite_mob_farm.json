@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "MGM",
+    "GPG",
+    "MGM"
+  ],
+  "key": {
+    "M": {
+      "tag": "forge:ingots/netherite"
+    },
+    "G": {
+      "tag": "forge:glass"
+    },
+    "P": {
+      "item": "mobfarm:diamond_mob_farm"
+    }
+  },
+  "result": {
+    "item": "mobfarm:netherite_mob_farm",
+    "count": 1
+  }
+}

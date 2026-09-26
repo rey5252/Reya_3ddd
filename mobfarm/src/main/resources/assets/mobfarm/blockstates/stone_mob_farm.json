@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "mobfarm:block/stone_mob_farm"
+    }
+  }
+}

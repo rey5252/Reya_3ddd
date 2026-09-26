@@ -1,0 +1,10 @@
+{
+  "replace": false,
+  "values": [
+    "mobfarm:stone_mob_farm",
+    "mobfarm:iron_mob_farm",
+    "mobfarm:golden_mob_farm",
+    "mobfarm:diamond_mob_farm",
+    "mobfarm:netherite_mob_farm"
+  ]
+}

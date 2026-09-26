@@ -20,6 +20,8 @@ jobs:
             dir: attributeeditor
           - mod: bossdamage
             dir: bossdamage
+          - mod: mobfarm
+            dir: mobfarm
     defaults:
       run:
         working-directory: ${{ matrix.dir }}

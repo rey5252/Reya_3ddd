@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "mobfarm:block/netherite_mob_farm"
+    }
+  }
+}
