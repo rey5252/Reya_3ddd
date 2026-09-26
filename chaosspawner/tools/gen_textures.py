@@ -312,7 +312,7 @@ METALS = {
     "quantity":   ((52, 20, 70), (76, 36, 98), (120, 50, 160), (190, 120, 232), (248, 220, 255), (50, 16, 70)),
     "experience": ((26, 58, 20), (40, 84, 30), (62, 138, 34), (150, 222, 76), (232, 255, 172), (26, 62, 18)),
 }
-# The tokens are 24x24 and follow the reference token pixel for pixel: a dark frame on the top and
+# The tokens are 32x32 and follow the reference token: a dark frame on the top and
 # left, an orange band, a dark groove and a pale lip on the right and bottom, a plate going from pale
 # yellow at the top to orange at the bottom, a diagonal glint, a white shine in the top-left and
 # bottom-right corners, and a symbol engraved in thin dark lines. The gold token is the reference;
@@ -333,71 +333,74 @@ def ramp(stops, v):
     return stops[-1][1]
 
 
-PLATE = [(5, (250, 236, 140)), (7, (248, 228, 120)), (9, (242, 208, 86)), (11, (238, 190, 62)),
-         (13, (234, 172, 50)), (15, (230, 160, 40)), (17, (230, 155, 38)), (19, (224, 145, 32))]
+N = 32                     # token size
+P1, P2 = 5, 25             # plate columns/rows (inclusive)
+PLATE = [(5, (250, 236, 140)), (8, (248, 228, 120)), (11, (242, 208, 86)), (14, (238, 190, 62)),
+         (17, (234, 172, 50)), (20, (230, 160, 40)), (23, (230, 155, 38)), (25, (224, 145, 32))]
+TOP = [(109, 68, 36), (118, 76, 45), (128, 80, 40)]          # outer rows/columns of the top-left frame
 
 
-def gold_token24():
-    px = [[None] * 24 for _ in range(24)]
-    for y in range(24):
-        for x in range(24):
-            mid_x = 1.0 - abs(x - 11.5) / 11.5
-            mid_y = 1.0 - abs(y - 11.5) / 11.5
-            if x >= 22:
-                c = (196, 150, 88) if x == 22 else (207, 166, 108)
-                if y >= 22:
-                    c = (210, 172, 104) if (x, y) != (23, 23) else (201, 160, 99)
-            elif y >= 22:
-                c = (164, 123, 55) if y == 22 else (218, 180, 123)
+def gold_token32():
+    px = [[None] * N for _ in range(N)]
+    for y in range(N):
+        for x in range(N):
+            mid_x = 1.0 - abs(x - 15.5) / 15.5
+            mid_y = 1.0 - abs(y - 15.5) / 15.5
+            if x >= 29:
+                c = [(196, 150, 88), (207, 166, 108), (214, 176, 118)][x - 29]
+                if y >= 29:
+                    c = (210, 172, 104)
+            elif y >= 29:
+                c = [(164, 123, 55), (218, 180, 123), (224, 188, 130)][y - 29]
                 if x == 0:
-                    c = (130, 92, 60) if y == 22 else (143, 103, 70)
-            elif y <= 3 and not (x <= 3 and x < y):
-                c = [(109, 68, 36), (118, 76, 45),
-                     lerp3((145, 88, 36), (165, 106, 40), mid_x),
-                     lerp3((178, 112, 26), (222, 160, 58), mid_x)][y]
-                if x >= 20:
-                    c = [(110, 70, 43), (128, 79, 49), (148, 89, 48), (167, 100, 46)][y] if x == 20 else \
-                        [(109, 70, 39), (123, 74, 36), (133, 80, 35), (134, 79, 26)][y]
-            elif x <= 3:
-                c = [(111, 71, 46), (106, 66, 40), (138, 86, 42),
-                     lerp3((165, 99, 32), (200, 138, 50), mid_y)][x]
-                if y >= 20:
-                    c = [(115, 75, 45), (112, 68, 43), (132, 79, 50), (155, 94, 48)][x] if y == 20 else \
-                        [(112, 72, 41), (103, 62, 31), (121, 77, 39), (129, 80, 31)][x]
-            elif x == 21 or y == 21:
+                    c = (140, 100, 66)
+            elif y <= 4 and not (x <= 4 and x < y):
+                c = TOP[y] if y < 3 else [lerp3((145, 88, 36), (165, 106, 40), mid_x),
+                                          lerp3((178, 112, 26), (222, 160, 58), mid_x)][y - 3]
+                if x >= 26:
+                    c = lerp3(TOP[min(y, 2)], (150, 90, 44), (x - 26) / 3.0 * (y / 4.0))
+            elif x <= 4:
+                c = (TOP[x] if x < 3 else [(138, 86, 42), lerp3((165, 99, 32), (200, 138, 50), mid_y)][x - 3])
+                if y >= 26:
+                    c = shade(c, 0.9)
+            elif x == 28 or y == 28:
                 c = (137, 84, 17)
-            elif x == 20 or y == 20:
-                c = lerp3((165, 104, 30), (190, 125, 42), mid_y if x == 20 else mid_x)
+            elif x == 27 or y == 27:
+                c = lerp3((150, 94, 24), (170, 110, 32), mid_y if x == 27 else mid_x)
+            elif x == 26 or y == 26:
+                c = lerp3((165, 104, 30), (192, 128, 44), mid_y if x == 26 else mid_x)
             else:
-                c = ramp(PLATE, max(5, y))
-                if y < 13 and x < 10:
-                    c = lerp3(c, (255, 248, 175), (10 - x) / 10.0 * 0.3)
-                if x == 4:
+                c = ramp(PLATE, max(P1, y))
+                if y < 17 and x < 13:
+                    c = lerp3(c, (255, 248, 175), (13 - x) / 13.0 * 0.3)
+                if x == P1:
                     c = lerp3(c, (205, 140, 40), 0.35)
-                elif x == 19:
+                elif x == P2:
                     c = lerp3(c, (205, 140, 40), 0.3)
-                if y == 4:
+                if y == P1:
                     c = lerp3((244, 212, 96), (250, 232, 120), mid_x)
-                elif y == 19:
-                    c = (224, 145, 32) if 4 < x < 19 else (206, 130, 30)
-                # the glint running down from the top edge to the right edge
-                if 4 <= y <= 13 and 5 <= x <= 19:
-                    k = {5: 0.2, 6: 0.55, 7: 0.85, 8: 0.55, 9: 0.2}.get(x - y, 0.0)
+                elif y == P2:
+                    c = (224, 145, 32) if P1 < x < P2 else (206, 130, 30)
+                # the glint running from the top edge down to the right edge
+                if P1 <= y <= 17 and P1 <= x <= P2:
+                    k = {6: 0.2, 7: 0.5, 8: 0.85, 9: 0.85, 10: 0.5, 11: 0.2}.get(x - y, 0.0)
                     c = lerp3(c, (255, 252, 150), k)
             px[y][x] = c
     # shine: a white square top left and a smaller one bottom right, each with a pale halo
-    for y in range(5, 10):
-        for x in range(5, 10):
+    for y in range(6, 13):
+        for x in range(6, 13):
             px[y][x] = lerp3(px[y][x], (252, 246, 196), 0.5)
-    for y in range(6, 9):
-        for x in range(6, 9):
+    for y in range(7, 12):
+        for x in range(7, 12):
             px[y][x] = (255, 255, 236)
-    px[7][7] = (255, 255, 255)
-    for y in range(15, 19):
-        for x in range(15, 19):
+    for (x, y) in ((8, 8), (9, 8), (8, 9), (9, 9)):
+        px[y][x] = (255, 255, 255)
+    for y in range(20, 25):
+        for x in range(20, 25):
             px[y][x] = lerp3(px[y][x], (250, 232, 170), 0.4)
-    for (x, y) in ((16, 16), (17, 16), (16, 17), (17, 17)):
-        px[y][x] = (253, 248, 204)
+    for y in range(21, 24):
+        for x in range(21, 24):
+            px[y][x] = (253, 248, 204)
     return px
 
 
@@ -410,66 +413,75 @@ def square_outline(x1, y1, x2, y2):
     return pts
 
 
-GLYPH24 = {
-    "speed": ["#...#....",
-              ".#...#...",
-              "..#...#..",
-              "...#...#.",
-              "....#...#",
-              "...#...#.",
-              "..#...#..",
-              ".#...#...",
-              "#...#...."],
-    "looting": [".......##",
-                "......#.#",
-                ".....#.#.",
-                "....#.#..",
-                "..##.#...",
-                "...##....",
-                "..#.##...",
-                ".#.......",
-                "#........"],
+GLYPH32 = {
+    "speed": ["#.....#.....",
+              ".#.....#....",
+              "..#.....#...",
+              "...#.....#..",
+              "....#.....#.",
+              ".....#.....#",
+              ".....#.....#",
+              "....#.....#.",
+              "...#.....#..",
+              "..#.....#...",
+              ".#.....#....",
+              "#.....#....."],
+    "looting": ["..........##",
+                ".........#.#",
+                "........#.#.",
+                ".......#.#..",
+                "......#.#...",
+                ".....#.#....",
+                "..#.#.#.....",
+                "...#.#......",
+                "...##.......",
+                "..#..#......",
+                ".#..........",
+                "#..........."],
     "quantity": None,
-    "experience": ["..#####..",
-                   ".#.....#.",
-                   "#.......#",
-                   "#...#...#",
-                   "#..###..#",
-                   "#...#...#",
-                   "#.......#",
-                   ".#.....#.",
-                   "..#####.."],
+    "experience": ["...######...",
+                   "..#......#..",
+                   ".#........#.",
+                   "#..........#",
+                   "#....##....#",
+                   "#...####...#",
+                   "#...####...#",
+                   "#....##....#",
+                   "#..........#",
+                   ".#........#.",
+                   "..#......#..",
+                   "...######..."],
 }
-HUE24 = {"speed": (190, 0.95), "looting": None, "quantity": (285, 0.9), "experience": (100, 0.9)}
+HUE = {"speed": (190, 0.95), "looting": None, "quantity": (285, 0.9), "experience": (100, 0.9)}
 
 
-def rehue24(c, hue, sat):
+def rehue(c, hue, sat):
     h, l, s_ = colorsys.rgb_to_hls(*(v / 255.0 for v in c))
     r, g, b = colorsys.hls_to_rgb(hue / 360.0, l, min(1.0, s_ * sat))
     return (int(r * 255), int(g * 255), int(b * 255))
 
 
 for n, name in enumerate(CARDS):
-    tok = gold_token24()
-    rows = GLYPH24[name]
+    tok = gold_token32()
+    rows = GLYPH32[name]
     if rows is None:
-        pts = square_outline(0, 0, 5, 5) | square_outline(3, 3, 8, 8)
+        pts = square_outline(0, 0, 7, 7) | square_outline(4, 4, 11, 11)
     else:
         pts = {(c, r) for r, row in enumerate(rows) for c, ch in enumerate(row) if ch == "#"}
     ink = (100, 78, 38)
+    ox = oy = 10
     for (gx, gy) in pts:
-        x, y = 8 + gx, 8 + gy
-        tok[y][x] = ink
-    # soft half-tone beside the lines so the engraving reads as bold as in the reference
+        tok[oy + gy][ox + gx] = ink
+    # soft half-tone beside the lines so the engraving reads bold, as in the reference
     for (gx, gy) in pts:
         for (dx, dy, k) in ((1, 0, 0.38), (0, 1, 0.38), (1, 1, 0.18)):
             q = (gx + dx, gy + dy)
-            x, y = 8 + q[0], 8 + q[1]
-            if q not in pts and x <= 19 and y <= 19:
+            x, y = ox + q[0], oy + q[1]
+            if q not in pts and x <= P2 and y <= P2:
                 tok[y][x] = lerp3(tok[y][x], ink, k)
-    if HUE24[name]:
-        hue, sat = HUE24[name]
-        tok = [[rehue24(c, hue, sat) for c in row] for row in tok]
+    if HUE[name]:
+        hue, sat = HUE[name]
+        tok = [[rehue(c, hue, sat) for c in row] for row in tok]
     px = [[c + (255,) for c in row] for row in tok]
     png(f"{ROOT}/textures/item/{name}_upgrade.png", px)
     json.dump({"parent": "minecraft:item/generated", "textures": {"layer0": f"chaosspawner:item/{name}_upgrade"}},
