@@ -30,6 +30,8 @@ jobs:
             dir: advancedenchanting
           - mod: multibrewer
             dir: multibrewer
+          - mod: chaosspawner
+            dir: chaosspawner
     defaults:
       run:
         working-directory: ${{ matrix.dir }}

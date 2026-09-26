@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "chaosspawner:block/chaos_spawner"
+    }
+  }
+}
