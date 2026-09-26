@@ -1,5 +1,8 @@
 package com.reya.attributeeditor.client;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.reya.attributeeditor.AttributeValues;
 import com.reya.attributeeditor.ItemAttributeEditing;
 import com.reya.attributeeditor.table.AttributeTableMenu;
@@ -9,22 +12,21 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
 /**
- * Dark panel with a gold studded frame. Left: item slot, Reset / Unbreakable buttons and a
- * levels/cost box. Right: a scrollable list of attribute cards with -/+ buttons.
- * Everything is drawn in code, so no GUI texture is needed.
+ * Dark panel with a gold studded frame. Left: item slot, Apply / Reset and a levels/cost box.
+ * Right: a scrollable list of attribute cards, each with -, a slider and +. Changes stay pending
+ * ("3 > 10") until Apply sends them to the server. Everything is drawn in code, no GUI texture.
  */
 public class AttributeTableScreen extends AbstractContainerScreen<AttributeTableMenu> {
     // Palette
     private static final int BG = 0xFF15122A;
     private static final int CARD = 0xFF2B2445;
-    private static final int CARD_HOVER = 0xFF362D57;
     private static final int SLOT = 0xFF2A2440;
     private static final int SLOT_EDGE = 0xFF1C182F;
     private static final int GOLD = 0xFFD9A93A;
@@ -33,35 +35,52 @@ public class AttributeTableScreen extends AbstractContainerScreen<AttributeTable
     private static final int GEM = 0xFF7FE8F0;
     private static final int GEM_DARK = 0xFF2A8A9A;
     private static final int TEXT = 0xFFE8E0F0;
+    private static final int NAME = 0xFFCDE8F5;
+    private static final int VALUE = 0xFFB0A8C0;
+    private static final int CHANGED = 0xFF6FE3F0;
     private static final int TEXT_DIM = 0xFF9A90B0;
     private static final int TEXT_DISABLED = 0xFF5E5675;
     private static final int TITLE = 0xFFF0C040;
     private static final int GREEN = 0xFF7CFC7C;
+    private static final int RED = 0xFFFF6060;
     private static final int BUTTON = 0xFF3E355E;
     private static final int BUTTON_HOVER = 0xFF5A4C8A;
     private static final int BUTTON_OFF = 0xFF221D38;
+    private static final int APPLY = 0xFFE0B040;
+    private static final int APPLY_HOVER = 0xFFF2C85A;
+    private static final int TRACK = 0xFF0E0C1C;
 
     // Layout (relative to leftPos/topPos)
     private static final int BORDER = 6;
     private static final int LEFT_X = 10;
     private static final int LEFT_W = 90;
-    private static final int RESET_Y = 52;
-    private static final int UNBREAKABLE_Y = 74;
-    private static final int BUTTON_H = 18;
-    private static final int INFO_Y = 97;
-    private static final int INFO_H = 50;
+    private static final int APPLY_Y = 50;
+    private static final int RESET_Y = 74;
+    private static final int BUTTON_H = 20;
+    private static final int INFO_Y = 100;
+    private static final int INFO_H = 46;
     private static final int LIST_X = 106;
     private static final int LIST_Y = 20;
     private static final int CARD_W = 176;
-    private static final int CARD_H = 23;
-    private static final int CARD_GAP = 2;
-    private static final int VISIBLE_ROWS = 5;
+    private static final int CARD_H = 29;
+    private static final int CARD_GAP = 3;
+    private static final int VISIBLE_ROWS = 4;
     private static final int SCROLL_X = LIST_X + CARD_W + 3;
     private static final int SCROLL_W = 4;
-    private static final int SMALL_W = 16;
-    private static final int SMALL_H = 14;
+    private static final int SMALL_W = 14;
+    private static final int SMALL_H = 12;
+    private static final int SLIDER_PAD = 4;
 
+    /** Index of the extra "Unbreakable" card after the attribute rows. */
+    private static final int UNBREAKABLE_CARD = TableRow.ROWS.size();
+    private static final int CARD_COUNT = TableRow.ROWS.size() + 1;
+
+    /** Pending slider positions per row; only rows the player changed. */
+    private final Map<Integer, Integer> pending = new HashMap<>();
+    private boolean pendingUnbreakable;
+    private ItemStack lastItem = ItemStack.EMPTY;
     private int scroll;
+    private int dragging = -1;
 
     public AttributeTableScreen(AttributeTableMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
@@ -73,12 +92,35 @@ public class AttributeTableScreen extends AbstractContainerScreen<AttributeTable
         inventoryLabelY = AttributeTableMenu.INVENTORY_Y - 11;
     }
 
-    private int maxScroll() {
-        return Math.max(0, TableRow.ROWS.size() - VISIBLE_ROWS);
-    }
+    // ---------------------------------------------------------------- state
 
     private ItemStack item() {
         return menu.getItem();
+    }
+
+    private EquipmentSlot itemSlot() {
+        return AttributeValues.defaultSlot(item());
+    }
+
+    private double current(int row) {
+        return ItemAttributeEditing.value(item(), TableRow.ROWS.get(row).attribute().get(), itemSlot());
+    }
+
+    private int currentSteps(int row) {
+        return TableRow.ROWS.get(row).stepsFor(current(row));
+    }
+
+    private int shownSteps(int row) {
+        return pending.getOrDefault(row, currentSteps(row));
+    }
+
+    private boolean isUnbreakable() {
+        ItemStack stack = item();
+        return stack.hasTag() && stack.getTag().getBoolean("Unbreakable");
+    }
+
+    private boolean hasPending() {
+        return !pending.isEmpty() || pendingUnbreakable;
     }
 
     private boolean freeEdits() {
@@ -89,8 +131,44 @@ public class AttributeTableScreen extends AbstractContainerScreen<AttributeTable
         return minecraft != null && minecraft.player != null ? minecraft.player.experienceLevel : 0;
     }
 
-    private boolean canAfford() {
-        return freeEdits() || playerLevels() >= AttributeTableMenu.LEVEL_COST;
+    private int pendingCost() {
+        if (freeEdits()) return 0;
+        int cost = pendingUnbreakable ? AttributeTableMenu.LEVEL_COST : 0;
+        for (Map.Entry<Integer, Integer> e : pending.entrySet()) {
+            TableRow row = TableRow.ROWS.get(e.getKey());
+            cost += row.cost(current(e.getKey()), row.valueAt(e.getValue()));
+        }
+        return cost;
+    }
+
+    private boolean canApply() {
+        return !item().isEmpty() && hasPending() && pendingCost() <= (freeEdits() ? Integer.MAX_VALUE : playerLevels());
+    }
+
+    private void setPending(int row, int steps) {
+        steps = Mth.clamp(steps, 0, TableRow.ROWS.get(row).maxSteps());
+        if (steps == currentSteps(row)) {
+            pending.remove(row);
+        } else {
+            pending.put(row, steps);
+        }
+    }
+
+    /** A new or edited item in the slot drops all pending changes. */
+    @Override
+    protected void containerTick() {
+        super.containerTick();
+        ItemStack stack = item();
+        if (!ItemStack.matches(stack, lastItem)) {
+            pending.clear();
+            pendingUnbreakable = false;
+            dragging = -1;
+            lastItem = stack.copy();
+        }
+    }
+
+    private int maxScroll() {
+        return Math.max(0, CARD_COUNT - VISIBLE_ROWS);
     }
 
     // ---------------------------------------------------------------- rendering
@@ -109,7 +187,6 @@ public class AttributeTableScreen extends AbstractContainerScreen<AttributeTable
         int y = topPos;
         drawFrame(graphics, x, y, imageWidth, imageHeight);
 
-        // Slots: the item slot gets a gold frame, the inventory plain dark squares.
         for (Slot slot : menu.slots) {
             if (slot.index == 0) {
                 drawItemSlot(graphics, x + slot.x, y + slot.y);
@@ -118,14 +195,11 @@ public class AttributeTableScreen extends AbstractContainerScreen<AttributeTable
             }
         }
 
-        boolean hasItem = !item().isEmpty();
+        drawApplyButton(graphics, x + LEFT_X, y + APPLY_Y, mouseX, mouseY);
         drawButton(graphics, x + LEFT_X, y + RESET_Y, LEFT_W, BUTTON_H,
-                Component.translatable("gui.attributeeditor.reset"), hasItem, mouseX, mouseY);
-        drawButton(graphics, x + LEFT_X, y + UNBREAKABLE_Y, LEFT_W, BUTTON_H,
-                Component.translatable("gui.attributeeditor.unbreakable"), hasItem && canAfford(), mouseX, mouseY);
-
+                Component.translatable("gui.attributeeditor.reset"), !item().isEmpty(), mouseX, mouseY);
         drawInfoBox(graphics, x + LEFT_X, y + INFO_Y);
-        drawAttributeList(graphics, x, y, mouseX, mouseY);
+        drawCards(graphics, x, y, mouseX, mouseY);
     }
 
     private void drawFrame(GuiGraphics g, int x, int y, int w, int h) {
@@ -135,7 +209,6 @@ public class AttributeTableScreen extends AbstractContainerScreen<AttributeTable
         g.fill(x + BORDER - 1, y + BORDER - 1, x + w - BORDER + 1, y + h - BORDER + 1, GOLD_DARK);
         g.fill(x + BORDER, y + BORDER, x + w - BORDER, y + h - BORDER, BG);
 
-        // Studs along the gold border.
         for (int i = 12; i < w - 12; i += 10) {
             g.fill(x + i, y + 2, x + i + 2, y + 4, GOLD_DARK);
             g.fill(x + i, y + h - 4, x + i + 2, y + h - 2, GOLD_DARK);
@@ -172,91 +245,167 @@ public class AttributeTableScreen extends AbstractContainerScreen<AttributeTable
     private void drawButton(GuiGraphics g, int x, int y, int w, int h, Component label, boolean active,
                             int mouseX, int mouseY) {
         boolean hover = active && inside(mouseX, mouseY, x, y, w, h);
+        g.fill(x - 1, y - 1, x + w + 1, y + h + 1, 0xFF0E0C1C);
         g.fill(x, y, x + w, y + h, active ? (hover ? BUTTON_HOVER : BUTTON) : BUTTON_OFF);
         if (active) g.fill(x, y, x + w, y + 1, hover ? 0xFF7A6AB0 : 0xFF514676);
-        int color = active ? TEXT : TEXT_DISABLED;
-        g.drawString(font, label, x + (w - font.width(label)) / 2, y + (h - 8) / 2, color, false);
+        g.drawString(font, label, x + (w - font.width(label)) / 2 + 1, y + (h - 8) / 2 + 1,
+                active ? TEXT : TEXT_DISABLED, false);
+    }
+
+    private void drawApplyButton(GuiGraphics g, int x, int y, int mouseX, int mouseY) {
+        boolean active = canApply();
+        boolean hover = active && inside(mouseX, mouseY, x, y, LEFT_W, BUTTON_H);
+        g.fill(x - 1, y - 1, x + LEFT_W + 1, y + BUTTON_H + 1, active ? GOLD_DARK : 0xFF0E0C1C);
+        g.fill(x, y, x + LEFT_W, y + BUTTON_H, active ? (hover ? APPLY_HOVER : APPLY) : BUTTON_OFF);
+        if (active) g.fill(x, y, x + LEFT_W, y + 1, GOLD_LIGHT);
+        Component label = Component.translatable("gui.attributeeditor.apply");
+        g.drawString(font, label, x + (LEFT_W - font.width(label)) / 2 + 1, y + (BUTTON_H - 8) / 2 + 1,
+                active ? 0xFF2A1E05 : TEXT_DISABLED, false);
     }
 
     private void drawInfoBox(GuiGraphics g, int x, int y) {
         g.fill(x - 1, y - 1, x + LEFT_W + 1, y + INFO_H + 1, 0xFF3A3358);
-        g.fill(x, y, x + LEFT_W, y + INFO_H, 0xFF0E0C1C);
+        g.fill(x, y, x + LEFT_W, y + INFO_H, TRACK);
 
         g.drawString(font, Component.translatable("gui.attributeeditor.levels"), x + 5, y + 5, TEXT, false);
-        g.drawString(font, freeEdits() ? "∞" : String.valueOf(playerLevels()), x + 5, y + 15, GREEN, false);
+        g.drawString(font, freeEdits() ? "∞" : String.valueOf(playerLevels()), x + 5, y + 16, GREEN, false);
 
-        int cost = freeEdits() ? 0 : AttributeTableMenu.LEVEL_COST;
+        int cost = pendingCost();
         Component costLabel = Component.translatable("gui.attributeeditor.cost_label");
-        g.drawString(font, costLabel, x + 5, y + 27, TEXT, false);
-        g.drawString(font, String.valueOf(cost), x + 5 + font.width(costLabel) + 3, y + 27, TITLE, false);
-
-        ItemStack stack = item();
-        if (stack.hasTag() && stack.getTag().getBoolean("Unbreakable")) {
-            g.drawString(font, Component.translatable("gui.attributeeditor.is_unbreakable"), x + 5, y + 39, 0xFFC080F0, false);
-        }
+        g.drawString(font, costLabel, x + 5, y + 31, TEXT, false);
+        boolean tooExpensive = !freeEdits() && cost > playerLevels();
+        g.drawString(font, String.valueOf(cost), x + 5 + font.width(costLabel) + 4, y + 31,
+                tooExpensive ? RED : TITLE, false);
     }
 
-    private void drawAttributeList(GuiGraphics g, int x, int y, int mouseX, int mouseY) {
-        ItemStack stack = item();
-        EquipmentSlot slot = stack.isEmpty() ? EquipmentSlot.MAINHAND : AttributeValues.defaultSlot(stack);
+    private int cardY(int visibleIndex) {
+        return LIST_Y + visibleIndex * (CARD_H + CARD_GAP);
+    }
 
+    private void drawCards(GuiGraphics g, int x, int y, int mouseX, int mouseY) {
+        boolean hasItem = !item().isEmpty();
         for (int i = 0; i < VISIBLE_ROWS; i++) {
             int cx = x + LIST_X;
-            int cy = y + LIST_Y + i * (CARD_H + CARD_GAP);
-            int rowIndex = i + scroll;
-            boolean hover = !stack.isEmpty() && inside(mouseX, mouseY, cx, cy, CARD_W, CARD_H);
-            g.fill(cx, cy, cx + CARD_W, cy + CARD_H, hover ? CARD_HOVER : CARD);
+            int cy = y + cardY(i);
+            g.fill(cx, cy, cx + CARD_W, cy + CARD_H, CARD);
 
-            if (stack.isEmpty()) {
+            int card = i + scroll;
+            if (!hasItem) {
                 if (i == 0) {
                     g.drawWordWrap(font, Component.translatable("gui.attributeeditor.place_item"),
-                            cx + 6, cy + 3, CARD_W - 12, TEXT);
+                            cx + 6, cy + 5, CARD_W - 12, TEXT);
                 }
                 continue;
             }
-            if (rowIndex >= TableRow.ROWS.size()) continue;
-
-            TableRow row = TableRow.ROWS.get(rowIndex);
-            Attribute attribute = row.attribute().get();
-            double value = ItemAttributeEditing.value(stack, attribute, slot);
-
-            String name = font.plainSubstrByWidth(Component.translatable(attribute.getDescriptionId()).getString(),
-                    CARD_W - 2 * SMALL_W - 18);
-            g.drawString(font, name, cx + 6, cy + 3, TEXT, false);
-            g.drawString(font, format(value), cx + 6, cy + 13, GREEN, false);
-
-            int bx = cx + CARD_W - 2 * SMALL_W - 8;
-            int by = cy + (CARD_H - SMALL_H) / 2;
-            boolean canLower = value - row.step() >= row.min() - 1.0E-6;
-            drawButton(g, bx, by, SMALL_W, SMALL_H, Component.literal("-"), canLower, mouseX, mouseY);
-            drawButton(g, bx + SMALL_W + 3, by, SMALL_W, SMALL_H, Component.literal("+"), canAfford(), mouseX, mouseY);
+            if (card == UNBREAKABLE_CARD) {
+                drawUnbreakableCard(g, cx, cy, mouseX, mouseY);
+            } else if (card < TableRow.ROWS.size()) {
+                drawAttributeCard(g, card, cx, cy, mouseX, mouseY);
+            }
         }
 
         // Scrollbar
         int trackX = x + SCROLL_X;
         int trackY = y + LIST_Y;
         int trackH = VISIBLE_ROWS * (CARD_H + CARD_GAP) - CARD_GAP;
-        g.fill(trackX, trackY, trackX + SCROLL_W, trackY + trackH, 0xFF0E0C1C);
-        int thumbH = Math.max(12, trackH * VISIBLE_ROWS / TableRow.ROWS.size());
+        g.fill(trackX, trackY, trackX + SCROLL_W, trackY + trackH, TRACK);
+        int thumbH = Math.max(12, trackH * VISIBLE_ROWS / CARD_COUNT);
         int thumbY = trackY + (maxScroll() == 0 ? 0 : (trackH - thumbH) * scroll / maxScroll());
         g.fill(trackX, thumbY, trackX + SCROLL_W, thumbY + thumbH, 0xFF4A4068);
     }
 
+    private void drawAttributeCard(GuiGraphics g, int rowIndex, int cx, int cy, int mouseX, int mouseY) {
+        TableRow row = TableRow.ROWS.get(rowIndex);
+        int now = currentSteps(rowIndex);
+        int shown = shownSteps(rowIndex);
+        boolean changed = pending.containsKey(rowIndex);
+
+        String valueText = changed
+                ? format(current(rowIndex)) + " > " + format(row.valueAt(shown))
+                : format(current(rowIndex));
+        int valueWidth = font.width(valueText);
+        g.drawString(font, valueText, cx + CARD_W - 5 - valueWidth, cy + 3, changed ? CHANGED : VALUE, false);
+
+        String name = font.plainSubstrByWidth(Component.translatable(row.attribute().get().getDescriptionId()).getString(),
+                CARD_W - valueWidth - 16);
+        g.drawString(font, name, cx + 5, cy + 3, NAME, false);
+
+        int by = cy + 14;
+        drawButton(g, cx + SLIDER_PAD, by, SMALL_W, SMALL_H, Component.literal("-"), shown > 0, mouseX, mouseY);
+        drawButton(g, cx + CARD_W - SLIDER_PAD - SMALL_W, by, SMALL_W, SMALL_H, Component.literal("+"),
+                shown < row.maxSteps(), mouseX, mouseY);
+
+        int sx = sliderX(cx);
+        int sw = sliderWidth();
+        int sy = by + 3;
+        drawSlider(g, sx, sy, sw, shown, row.maxSteps(), now);
+    }
+
+    private void drawSlider(GuiGraphics g, int sx, int sy, int sw, int steps, int maxSteps, int currentSteps) {
+        g.fill(sx - 1, sy - 1, sx + sw + 1, sy + 7, 0xFF3A3358);
+        g.fill(sx, sy, sx + sw, sy + 6, TRACK);
+
+        int filled = maxSteps == 0 ? 0 : sw * steps / maxSteps;
+        boolean full = steps >= maxSteps && maxSteps > 0;
+        for (int px = 0; px < filled; px++) {
+            float t = (float) px / Math.max(1, sw - 1);
+            int color = full
+                    ? 0xFF000000 | Mth.hsvToRgb(0.78F - t * 0.78F, 0.75F, 1.0F)
+                    : lerpColor(0xFF4B2A9A, 0xFFE04060, filled <= 1 ? 1.0F : (float) px / (filled - 1));
+            g.fill(sx + px, sy, sx + px + 1, sy + 6, color);
+        }
+
+        // Sparkles along the track.
+        for (int px = 6; px < sw - 2; px += 17) {
+            int dy = (px / 17) % 2 == 0 ? 2 : 3;
+            g.fill(sx + px, sy + dy, sx + px + 1, sy + dy + 1, px < filled ? 0xAAFFFFFF : 0x66FFFFFF);
+        }
+
+        // Tick for the item's current value, when a change is pending.
+        if (currentSteps != steps && maxSteps > 0) {
+            int cxp = sx + sw * currentSteps / maxSteps;
+            g.fill(cxp, sy - 1, cxp + 1, sy + 7, 0xFFFFFFFF);
+        }
+
+        int knob = sx + filled - 2;
+        g.fill(knob - 1, sy - 3, knob + 5, sy + 9, GOLD_DARK);
+        g.fill(knob, sy - 2, knob + 4, sy + 8, GOLD_LIGHT);
+        g.fill(knob + 1, sy - 1, knob + 3, sy + 7, GOLD);
+    }
+
+    private void drawUnbreakableCard(GuiGraphics g, int cx, int cy, int mouseX, int mouseY) {
+        boolean now = isUnbreakable();
+        boolean shown = now != pendingUnbreakable;
+        Component yes = Component.translatable("gui.attributeeditor.yes");
+        Component no = Component.translatable("gui.attributeeditor.no");
+        String valueText = pendingUnbreakable
+                ? (now ? yes : no).getString() + " > " + (shown ? yes : no).getString()
+                : (now ? yes : no).getString();
+        int valueWidth = font.width(valueText);
+        g.drawString(font, valueText, cx + CARD_W - 5 - valueWidth, cy + 3, pendingUnbreakable ? CHANGED : VALUE, false);
+        g.drawString(font, Component.translatable("gui.attributeeditor.unbreakable"), cx + 5, cy + 3, NAME, false);
+
+        drawButton(g, cx + SLIDER_PAD, cy + 14, CARD_W - 2 * SLIDER_PAD, SMALL_H,
+                Component.translatable(shown ? "gui.attributeeditor.unbreakable.off" : "gui.attributeeditor.unbreakable.on"),
+                true, mouseX, mouseY);
+    }
+
+    private static int sliderX(int cardX) {
+        return cardX + SLIDER_PAD + SMALL_W + 6;
+    }
+
+    private static int sliderWidth() {
+        return CARD_W - 2 * (SLIDER_PAD + SMALL_W + 6);
+    }
+
     private void renderHoverTooltips(GuiGraphics g, int mouseX, int mouseY) {
         if (item().isEmpty()) return;
-        if (inside(mouseX, mouseY, leftPos + LEFT_X, topPos + UNBREAKABLE_Y, LEFT_W, BUTTON_H)) {
-            g.renderTooltip(font, Component.translatable("gui.attributeeditor.unbreakable.tooltip",
-                    AttributeTableMenu.LEVEL_COST), mouseX, mouseY);
-            return;
-        }
-        for (int i = 0; i < VISIBLE_ROWS && i + scroll < TableRow.ROWS.size(); i++) {
-            int cy = topPos + LIST_Y + i * (CARD_H + CARD_GAP) + (CARD_H - SMALL_H) / 2;
-            int plusX = leftPos + LIST_X + CARD_W - SMALL_W - 5;
-            if (inside(mouseX, mouseY, plusX, cy, SMALL_W, SMALL_H)) {
-                g.renderTooltip(font, Component.translatable("gui.attributeeditor.cost", AttributeTableMenu.LEVEL_COST),
-                        mouseX, mouseY);
-                return;
-            }
+        if (inside(mouseX, mouseY, leftPos + LEFT_X, topPos + RESET_Y, LEFT_W, BUTTON_H)) {
+            g.renderTooltip(font, Component.translatable(hasPending()
+                    ? "gui.attributeeditor.reset.pending" : "gui.attributeeditor.reset.item"), mouseX, mouseY);
+        } else if (inside(mouseX, mouseY, leftPos + LEFT_X, topPos + APPLY_Y, LEFT_W, BUTTON_H) && !freeEdits()) {
+            g.renderTooltip(font, Component.translatable("gui.attributeeditor.cost", AttributeTableMenu.LEVEL_COST),
+                    mouseX, mouseY);
         }
     }
 
@@ -270,55 +419,136 @@ public class AttributeTableScreen extends AbstractContainerScreen<AttributeTable
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (button == 0 && !item().isEmpty()) {
-            int id = buttonAt(mouseX, mouseY);
-            if (id >= 0) {
-                send(id);
-                return true;
-            }
+        if (button == 0 && !item().isEmpty() && handleClick(mouseX, mouseY)) {
+            return true;
         }
         return super.mouseClicked(mouseX, mouseY, button);
     }
 
-    /** Which menu button id is under the mouse, or -1. */
-    private int buttonAt(double mouseX, double mouseY) {
+    private boolean handleClick(double mouseX, double mouseY) {
+        if (inside(mouseX, mouseY, leftPos + LEFT_X, topPos + APPLY_Y, LEFT_W, BUTTON_H)) {
+            if (canApply()) apply();
+            return true;
+        }
         if (inside(mouseX, mouseY, leftPos + LEFT_X, topPos + RESET_Y, LEFT_W, BUTTON_H)) {
-            return AttributeTableMenu.RESET;
+            click();
+            if (hasPending()) {
+                pending.clear();
+                pendingUnbreakable = false;
+            } else {
+                send(AttributeTableMenu.RESET);
+            }
+            return true;
         }
-        if (inside(mouseX, mouseY, leftPos + LEFT_X, topPos + UNBREAKABLE_Y, LEFT_W, BUTTON_H)) {
-            return AttributeTableMenu.UNBREAKABLE;
+
+        for (int i = 0; i < VISIBLE_ROWS; i++) {
+            int card = i + scroll;
+            int cx = leftPos + LIST_X;
+            int cy = topPos + cardY(i);
+            int by = cy + 14;
+
+            if (card == UNBREAKABLE_CARD) {
+                if (inside(mouseX, mouseY, cx + SLIDER_PAD, by, CARD_W - 2 * SLIDER_PAD, SMALL_H)) {
+                    click();
+                    pendingUnbreakable = !pendingUnbreakable;
+                    return true;
+                }
+                continue;
+            }
+            if (card >= TableRow.ROWS.size()) continue;
+
+            if (inside(mouseX, mouseY, cx + SLIDER_PAD, by, SMALL_W, SMALL_H)) {
+                click();
+                setPending(card, shownSteps(card) - 1);
+                return true;
+            }
+            if (inside(mouseX, mouseY, cx + CARD_W - SLIDER_PAD - SMALL_W, by, SMALL_W, SMALL_H)) {
+                click();
+                setPending(card, shownSteps(card) + 1);
+                return true;
+            }
+            if (inside(mouseX, mouseY, sliderX(cx) - 3, by - 2, sliderWidth() + 6, SMALL_H + 4)) {
+                dragging = card;
+                dragTo(card, mouseX);
+                return true;
+            }
         }
-        for (int i = 0; i < VISIBLE_ROWS && i + scroll < TableRow.ROWS.size(); i++) {
-            int by = topPos + LIST_Y + i * (CARD_H + CARD_GAP) + (CARD_H - SMALL_H) / 2;
-            int bx = leftPos + LIST_X + CARD_W - 2 * SMALL_W - 8;
-            if (inside(mouseX, mouseY, bx, by, SMALL_W, SMALL_H)) return (i + scroll) * 2;
-            if (inside(mouseX, mouseY, bx + SMALL_W + 3, by, SMALL_W, SMALL_H)) return (i + scroll) * 2 + 1;
-        }
-        return -1;
+        return false;
     }
 
-    private void send(int id) {
-        if (minecraft == null || minecraft.gameMode == null) return;
-        minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
-        minecraft.gameMode.handleInventoryButtonClick(menu.containerId, id);
+    @Override
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
+        if (dragging >= 0 && button == 0) {
+            dragTo(dragging, mouseX);
+            return true;
+        }
+        return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
+    }
+
+    @Override
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        if (dragging >= 0 && button == 0) {
+            dragging = -1;
+            return true;
+        }
+        return super.mouseReleased(mouseX, mouseY, button);
+    }
+
+    private void dragTo(int row, double mouseX) {
+        int sx = sliderX(leftPos + LIST_X);
+        double t = Mth.clamp((mouseX - sx) / sliderWidth(), 0.0D, 1.0D);
+        setPending(row, (int) Math.round(t * TableRow.ROWS.get(row).maxSteps()));
     }
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
         if (inside(mouseX, mouseY, leftPos + LIST_X, topPos + LIST_Y, CARD_W + 10,
                 VISIBLE_ROWS * (CARD_H + CARD_GAP))) {
-            scroll = Math.max(0, Math.min(maxScroll(), scroll - (int) Math.signum(delta)));
+            scroll = Mth.clamp(scroll - (int) Math.signum(delta), 0, maxScroll());
+            dragging = -1;
             return true;
         }
         return super.mouseScrolled(mouseX, mouseY, delta);
+    }
+
+    /** Sends every pending change; the server validates and charges each one. */
+    private void apply() {
+        click();
+        for (Map.Entry<Integer, Integer> e : pending.entrySet()) {
+            send(AttributeTableMenu.setId(e.getKey(), e.getValue()));
+        }
+        if (pendingUnbreakable) {
+            send(AttributeTableMenu.UNBREAKABLE);
+        }
+        pending.clear();
+        pendingUnbreakable = false;
+    }
+
+    private void send(int id) {
+        if (minecraft != null && minecraft.gameMode != null) {
+            minecraft.gameMode.handleInventoryButtonClick(menu.containerId, id);
+        }
+    }
+
+    private void click() {
+        if (minecraft != null) {
+            minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+        }
     }
 
     private static boolean inside(double mouseX, double mouseY, int x, int y, int w, int h) {
         return mouseX >= x && mouseX < x + w && mouseY >= y && mouseY < y + h;
     }
 
+    private static int lerpColor(int from, int to, float t) {
+        int r = (int) Mth.lerp(t, (from >> 16) & 0xFF, (to >> 16) & 0xFF);
+        int gr = (int) Mth.lerp(t, (from >> 8) & 0xFF, (to >> 8) & 0xFF);
+        int b = (int) Mth.lerp(t, from & 0xFF, to & 0xFF);
+        return 0xFF000000 | (r << 16) | (gr << 8) | b;
+    }
+
     private static String format(double value) {
-        double rounded = Math.round(value * 100.0D) / 100.0D;
+        double rounded = TableRow.round(value);
         return rounded == Math.rint(rounded) ? String.valueOf((long) rounded) : String.valueOf(rounded);
     }
 }

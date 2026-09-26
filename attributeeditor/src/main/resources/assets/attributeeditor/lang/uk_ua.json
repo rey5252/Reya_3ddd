@@ -12,12 +12,19 @@
   "commands.attributeeditor.reload.failed": "Не вдалося прочитати config/attributeeditor.json, дивись лог",
   "block.attributeeditor.attribute_table": "Стіл атрибутів",
   "container.attributeeditor.attribute_table": "Стіл атрибутів",
-  "gui.attributeeditor.cost": "Коштує %s рів. досвіду",
+  "gui.attributeeditor.cost": "%s рів. за кожен крок вгору; зменшення безкоштовне",
   "gui.attributeeditor.reset": "Скинути",
   "gui.attributeeditor.unbreakable": "Незламність",
   "gui.attributeeditor.unbreakable.tooltip": "Увімк./вимк. незламність (%s рів.)",
   "gui.attributeeditor.levels": "Твої рівні:",
   "gui.attributeeditor.cost_label": "Ціна:",
   "gui.attributeeditor.place_item": "Поклади предмет у слот",
-  "gui.attributeeditor.is_unbreakable": "Незламний"
+  "gui.attributeeditor.is_unbreakable": "Незламний",
+  "gui.attributeeditor.apply": "Застосувати",
+  "gui.attributeeditor.yes": "Так",
+  "gui.attributeeditor.no": "Ні",
+  "gui.attributeeditor.unbreakable.on": "Зробити незламним",
+  "gui.attributeeditor.unbreakable.off": "Зробити ламким",
+  "gui.attributeeditor.reset.pending": "Скасувати незастосовані зміни",
+  "gui.attributeeditor.reset.item": "Повернути предмету стандартні атрибути"
 }

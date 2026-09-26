@@ -12,12 +12,19 @@
   "commands.attributeeditor.reload.failed": "Не удалось прочитать config/attributeeditor.json, смотри лог",
   "block.attributeeditor.attribute_table": "Стол атрибутов",
   "container.attributeeditor.attribute_table": "Стол атрибутов",
-  "gui.attributeeditor.cost": "Стоит %s ур. опыта",
+  "gui.attributeeditor.cost": "%s ур. за каждый шаг вверх; уменьшение бесплатно",
   "gui.attributeeditor.reset": "Сброс",
   "gui.attributeeditor.unbreakable": "Неразрушимость",
   "gui.attributeeditor.unbreakable.tooltip": "Вкл./выкл. неразрушимость (%s ур.)",
   "gui.attributeeditor.levels": "Твои уровни:",
   "gui.attributeeditor.cost_label": "Цена:",
   "gui.attributeeditor.place_item": "Положи предмет в слот",
-  "gui.attributeeditor.is_unbreakable": "Неразрушимый"
+  "gui.attributeeditor.is_unbreakable": "Неразрушимый",
+  "gui.attributeeditor.apply": "Применить",
+  "gui.attributeeditor.yes": "Да",
+  "gui.attributeeditor.no": "Нет",
+  "gui.attributeeditor.unbreakable.on": "Сделать неразрушимым",
+  "gui.attributeeditor.unbreakable.off": "Сделать ломким",
+  "gui.attributeeditor.reset.pending": "Отменить непримененные изменения",
+  "gui.attributeeditor.reset.item": "Вернуть предмету стандартные атрибуты"
 }

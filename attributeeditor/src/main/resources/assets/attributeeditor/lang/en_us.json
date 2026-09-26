@@ -12,12 +12,19 @@
   "commands.attributeeditor.reload.failed": "Could not read config/attributeeditor.json, see the log",
   "block.attributeeditor.attribute_table": "Attribute Table",
   "container.attributeeditor.attribute_table": "Attribute Table",
-  "gui.attributeeditor.cost": "Costs %s level",
+  "gui.attributeeditor.cost": "%s level per step up; lowering is free",
   "gui.attributeeditor.reset": "Reset",
   "gui.attributeeditor.unbreakable": "Unbreakable",
   "gui.attributeeditor.unbreakable.tooltip": "Toggle unbreakable (%s level)",
   "gui.attributeeditor.levels": "Your levels:",
   "gui.attributeeditor.cost_label": "Cost:",
   "gui.attributeeditor.place_item": "Put an item in the slot",
-  "gui.attributeeditor.is_unbreakable": "Unbreakable"
+  "gui.attributeeditor.is_unbreakable": "Unbreakable",
+  "gui.attributeeditor.apply": "Apply",
+  "gui.attributeeditor.yes": "Yes",
+  "gui.attributeeditor.no": "No",
+  "gui.attributeeditor.unbreakable.on": "Make unbreakable",
+  "gui.attributeeditor.unbreakable.off": "Make breakable",
+  "gui.attributeeditor.reset.pending": "Cancel unapplied changes",
+  "gui.attributeeditor.reset.item": "Reset the item to its default attributes"
 }
