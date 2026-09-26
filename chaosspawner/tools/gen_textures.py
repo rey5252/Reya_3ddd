@@ -303,123 +303,61 @@ CARDS = {
         "............",
         "............"]),
 }
-# upgrades: cards like the reference - a dark outline (lighter in the middle of the top edge), a pale
-# highlight along the top and left, a plate lighter in its upper half and darker below, white shine
-# squares in the top-left and bottom-right corners, and a bright neon symbol with its own shading
-CARD_PAL = {
-    # outline, highlight, band under the highlight, plate top, plate bottom
-    "speed":      ((26, 26, 35), (194, 255, 217), (85, 100, 105), (60, 65, 79), (40, 40, 55)),
-    "looting":    ((25, 38, 62), (129, 238, 255), (58, 161, 194), (41, 143, 180), (45, 82, 134)),
-    "quantity":   ((35, 25, 62), (255, 170, 249), (161, 72, 182), (139, 49, 166), (80, 41, 116)),
-    "experience": ((16, 42, 28), (170, 255, 196), (68, 172, 104), (42, 140, 84), (26, 88, 56)),
+# upgrades: built from the button tiles in tools/upgrade_tiles.png (20x20 tiles, 6 columns, two rows
+# per colour; the first column is blank). The blank tile of each colour is folded down to 16x16 -
+# outline, light rim, highlight and dark bottom/right kept, the plate sampled to keep its shading and
+# the shine pixels - and a symbol is drawn in the tiles' style: 2px dark strokes with a shade on the right.
+from PIL import Image as _Image
+
+_TILES = _Image.open("tools/upgrade_tiles.png").convert("RGBA")
+_MAP = [0, 1, 2, 3, 4, 5, 6, 7, 9, 11, 13, 15, 16, 17, 18, 19]     # 16 -> 20 source rows/columns
+TILE_ROW = {"speed": 2, "looting": 0, "quantity": 4, "experience": 6}
+INK = {"speed": ((11, 53, 46), (36, 156, 144)), "looting": ((62, 33, 6), (180, 112, 24)),
+       "quantity": ((28, 11, 53), (94, 36, 156)), "experience": ((25, 53, 11), (67, 156, 36))}
+GLYPHS = {
+    "speed": ["XX..XX..",
+              ".XX..XX.",
+              "..XX..XX",
+              "..XX..XX",
+              ".XX..XX.",
+              "XX..XX.."],
+    "looting": ["......XX",
+                ".....XXX",
+                "....XXX.",
+                ".X.XXX..",
+                "..XXX...",
+                "..XX....",
+                ".X..X...",
+                "X......."],
+    "quantity": ["...XX...",
+                 "...XX...",
+                 "XXXXXXXX",
+                 "XXXXXXXX",
+                 "...XX...",
+                 "...XX..."],
+    "experience": ["..XXXX..",
+                   ".XX..XX.",
+                   "XX....XX",
+                   "X..XX..X",
+                   "X..XX..X",
+                   "XX....XX",
+                   ".XX..XX.",
+                   "..XXXX.."],
 }
-# symbol colours: core, bright, main, low, shadow
-SYM_PAL = {
-    "speed":      ((225, 255, 255), (78, 249, 255), (72, 182, 191), (54, 115, 127), (40, 40, 55)),
-    "looting":    ((255, 250, 214), (255, 222, 92), (232, 162, 42), (150, 92, 30), (29, 34, 52)),
-    "quantity":   ((254, 255, 236), (244, 255, 93), (174, 225, 52), (110, 140, 60), (91, 58, 111)),
-    "experience": ((255, 250, 196), (224, 255, 110), (140, 240, 90), (70, 205, 160), (18, 50, 34)),
-}
-# W core, H bright, M main, L low, D shadow on the plate
-SYM = {
-    "speed": ["HM...HM..",
-              ".HM...HM.",
-              "..HM...HM",
-              "...WM...W",
-              "..ML...ML",
-              ".ML...ML.",
-              "ML...ML..",
-              "D...D...."],
-    "looting": ["......HW",
-                ".....HWM",
-                "....HWM.",
-                ".M.HWM..",
-                "..MWM...",
-                "..LMM...",
-                ".L..M...",
-                "L.......",
-                ".D......"],
-    "quantity": ["...HM...",
-                 "...WM...",
-                 "...WM...",
-                 "HHHWWHHM",
-                 "MMMWWMML",
-                 "...WL...",
-                 "...ML...",
-                 "...LL...",
-                 "....D..."],
-    "experience": [".LMML.",
-                   "LHHHML",
-                   "MHWWHM",
-                   "MHWWHM",
-                   "LMHHML",
-                   ".LMML.",
-                   "..DD..",
-                   ".DDDD."],
-}
-SYM_AT = {"speed": (4, 3), "looting": (5, 3), "quantity": (5, 3), "experience": (6, 3)}
-
-
-def mixp(a, b, t):
-    t = max(0.0, min(1.0, t))
-    return tuple(int(a[i] + (b[i] - a[i]) * t) for i in range(3))
-
-
-for n, name in enumerate(CARDS):
-    O, H, H2, P1, P2 = CARD_PAL[name]
-    px = grid()
-    for y in range(16):
-        for x in range(16):
-            mid = 1.0 - abs(x - 7.5) / 7.5
-            if y == 0:
-                c = mixp(O, P1, 0.15 + 0.55 * mid) if 0 < x < 15 else O
-            elif y == 15 or x == 0:
-                c = O
-            elif x == 15:
-                c = mixp(O, P2, 0.35 + 0.25 * (y / 15.0))
-            elif y == 1:
-                c = mixp(H, P1, 0.12) if x == 1 else H
-            elif x == 1:
-                c = mixp(H, P1, 0.12) if y <= 8 else mixp(H, P2, min(1.0, (y - 8) / 4.0))
-            elif y == 14:
-                c = mixp(P2, O, 0.12)
-            else:
-                # plate: upper half lighter, lower half darker, a soft seam between
-                c = P1 if y <= 8 else P2 if y >= 10 else mixp(P1, P2, 0.5)
-                if y == 2 and x >= 5:
-                    c = H2
-                c = shade(c, 1.0 + ((hsh(x, y, n) % 3) - 1) * 0.015)
-            px[y][x] = c + (255,)
-    # white shine squares with a pale halo
-    for (x, y, k) in ((2, 2, 0.6), (3, 2, 0.85), (4, 2, 0.85), (2, 3, 0.7), (2, 4, 0.7),
-                      (5, 2, 0.5), (5, 3, 0.55), (5, 4, 0.55), (2, 5, 0.3), (3, 5, 0.3), (4, 5, 0.3)):
-        px[y][x] = mixp(px[y][x][:3], (255, 255, 255), k) + (255,)
-    for (x, y) in ((3, 3), (4, 3), (3, 4), (4, 4)):
-        px[y][x] = (255, 255, 255, 255)
-    for (x, y, k) in ((11, 11, 0.3), (12, 11, 0.6), (13, 11, 0.5), (11, 12, 0.5), (13, 12, 0.8),
-                      (11, 13, 0.35), (12, 13, 0.7), (13, 13, 0.6)):
-        px[y][x] = mixp(px[y][x][:3], (255, 255, 255), k) + (255,)
-    px[12][12] = (255, 255, 255, 255)
-    # the neon symbol, with a faint glow of its main colour on the plate round it
-    Wc, Hc, Mc, Lc, Dc = SYM_PAL[name]
-    ox, oy = SYM_AT[name]
-    cols = {"W": Wc, "H": Hc, "M": Mc, "L": Lc}
-    rows = SYM[name]
-    pts = {(ox + c, oy + r) for r, row in enumerate(rows) for c, ch in enumerate(row) if ch in cols}
+for name in CARDS:
+    ty = TILE_ROW[name] * 20
+    px = [[_TILES.getpixel((_MAP[x], ty + _MAP[y])) for x in range(16)] for y in range(16)]
+    ink, shade_c = INK[name]
+    rows = GLYPHS[name]
+    gx = 4
+    gy = 4 + (8 - len(rows)) // 2
+    pts = {(gx + c, gy + r) for r, row in enumerate(rows) for c, ch in enumerate(row) if ch == "X"}
     for (x, y) in pts:
-        for (dx, dy) in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-            q = (x + dx, y + dy)
-            if q not in pts and 2 <= q[0] <= 14 and 2 <= q[1] <= 13:
-                px[q[1]][q[0]] = mixp(px[q[1]][q[0]][:3], Mc, 0.25) + (255,)
-    for r, row in enumerate(rows):
-        for c, ch in enumerate(row):
-            x, y = ox + c, oy + r
-            if not (1 <= x <= 14 and 1 <= y <= 14):
-                continue
-            if ch in cols:
-                px[y][x] = cols[ch] + (255,)
-            elif ch == "D":
-                px[y][x] = mixp(px[y][x][:3], Dc, 0.7) + (255,)
+        q = (x + 1, y)
+        if q not in pts and q[0] <= 12:
+            px[y][q[0]] = shade_c + (255,)
+    for (x, y) in pts:
+        px[y][x] = ink + (255,)
     png(f"{ROOT}/textures/item/{name}_upgrade.png", px)
     json.dump({"parent": "minecraft:item/generated", "textures": {"layer0": f"chaosspawner:item/{name}_upgrade"}},
               open(f"{ROOT}/models/item/{name}_upgrade.json", "w"), indent=2)
