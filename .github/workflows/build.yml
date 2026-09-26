@@ -18,6 +18,8 @@ jobs:
             dir: extraenchants
           - mod: attributeeditor
             dir: attributeeditor
+          - mod: bossdamage
+            dir: bossdamage
     defaults:
       run:
         working-directory: ${{ matrix.dir }}
