@@ -28,13 +28,13 @@ public class MobFarmMenu extends AbstractContainerMenu {
     public static final int BODY_X = 26;
     public static final int BODY_W = 216;
     public static final int WIDTH = BODY_W + 2 * BODY_X;
-    public static final int HEIGHT = 206;
+    public static final int HEIGHT = 218;
     public static final int LASSO_X = BODY_X + 29;
     public static final int LASSO_Y = 42;
     public static final int GRID_X = BODY_X + 153;
     public static final int GRID_Y = 24;
     public static final int INV_X = BODY_X + 27;
-    public static final int INV_Y = 124;
+    public static final int INV_Y = 136;
     /** Upgrade slots: two in the left tab, two mirrored in the right tab. */
     public static final int UPGRADE_LEFT_X = 5;
     public static final int UPGRADE_RIGHT_X = WIDTH - 5 - 16;

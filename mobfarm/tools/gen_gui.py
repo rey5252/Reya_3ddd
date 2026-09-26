@@ -7,7 +7,7 @@ coordinates as the screen) and, with --preview, a 3x preview image.
 import math, struct, sys, zlib
 
 M = 4                       # margin around the screen area (caps and clips stick out)
-SW, SH = 268, 206           # screen area, same coordinates as the menu
+SW, SH = 268, 218           # screen area, same coordinates as the menu
 W, H = SW + 2 * M, SH + 2 * M
 B = 26                      # body starts after the left upgrade tab
 BODY_W = 216
@@ -22,8 +22,11 @@ TIERS = {
     "netherite": ((58, 35, 64), (72, 46, 80), (35, 20, 41), (224, 160, 128), (255, 210, 186), (136, 88, 70)),
 }
 BLACK = (10, 9, 12)
-BAND = (30, 27, 38)
-BAND_HI = (50, 45, 60)
+BAND = (44, 46, 58)
+BAND_HI = (78, 82, 98)
+BAND_LO = (30, 31, 40)
+ORANGE, ORANGE_HI, ORANGE_LO = (240, 150, 40), (255, 206, 110), (150, 76, 16)
+INV_BG, INV_HI, INV_LO = (198, 198, 198), (255, 255, 255), (85, 85, 85)
 CLIP, CLIP_HI, CLIP_LO = (140, 145, 157), (204, 208, 218), (86, 90, 102)
 STONE_OUT, STONE, STONE_HI, STONE_LO, STONE_ENG = (38, 42, 40), (152, 166, 154), (196, 208, 197), (110, 122, 112), (128, 142, 130)
 TRACK_OUT, TRACK_RIM, TRACK = (12, 10, 12), (126, 131, 141), (38, 24, 26)
@@ -88,66 +91,85 @@ def rnd(i, salt):
 
 # ------------------------------------------------------------------ pieces
 
-def framed_panel(cv, x1, y1, x2, y2, pal, band=3):
-    """Black edge, dark band with a lit top, thin trim line, then the tier background."""
+def framed_panel(cv, x1, y1, x2, y2, pal, band=4):
+    """Black edge, thick dark metal band (lit top, light inner edge), dark line, background."""
     bg, bgl, bgd, tr, trl, trd = pal
     cv.rect(x1, y1, x2, y2, BLACK)
     cv.rect(x1 + 1, y1 + 1, x2 - 1, y2 - 1, BAND)
     cv.rect(x1 + 1, y1 + 1, x2 - 1, y1 + 2, BAND_HI)
+    cv.rect(x1 + 1, y2 - 2, x2 - 1, y2 - 1, BAND_LO)
     i = band + 1
-    cv.rect(x1 + i, y1 + i, x2 - i, y2 - i, tr)
-    cv.rect(x1 + i, y1 + i, x2 - i, y1 + i + 1, trl)
-    cv.rect(x1 + i + 1, y1 + i + 1, x2 - i - 1, y2 - i - 1, bgd)
-    # background with a soft vertical gradient
-    top, bottom = y1 + i + 2, y2 - i - 1
+    cv.outline(x1 + i - 1, y1 + i - 1, x2 - i + 1, y2 - i + 1, BAND_HI)
+    cv.rect(x1 + i, y1 + i, x2 - i, y2 - i, bgd)
+    cv.rect(x1 + i, y1 + i, x2 - i, y1 + i + 1, trd)
+    top, bottom = y1 + i + 1, y2 - i - 1
     for y in range(top, bottom):
         t = (y - top) / max(1, bottom - top - 1)
-        cv.rect(x1 + i + 2, y, x2 - i - 1, y + 1, mix(bgl, bg, min(1.0, t * 1.6)))
+        cv.rect(x1 + i + 1, y, x2 - i - 1, y + 1, mix(bgl, bg, min(1.0, t * 1.6)))
 
 
-def corner_cap(cv, cx, cy, pal):
-    """5x5 trim square sitting on an outer corner."""
-    tr, trl, trd = pal[3], pal[4], pal[5]
-    cv.rect(cx - 3, cy - 3, cx + 3, cy + 3, BLACK)
-    cv.rect(cx - 2, cy - 2, cx + 2, cy + 2, tr)
-    cv.rect(cx - 2, cy - 2, cx + 2, cy - 1, trl)
-    cv.rect(cx - 2, cy - 2, cx - 1, cy + 2, trl)
-    cv.rect(cx + 1, cy - 1, cx + 2, cy + 2, trd)
+def corner_cap(cv, cx, cy, pal=None):
+    """Orange square cap sticking out of a corner."""
+    cv.rect(cx - 3, cy - 3, cx + 4, cy + 4, BLACK)
+    cv.rect(cx - 2, cy - 2, cx + 3, cy + 3, ORANGE)
+    cv.rect(cx - 2, cy - 2, cx + 3, cy - 1, ORANGE_HI)
+    cv.rect(cx - 2, cy - 2, cx - 1, cy + 3, ORANGE_HI)
+    cv.rect(cx + 2, cy - 1, cx + 3, cy + 3, ORANGE_LO)
+    cv.rect(cx - 1, cy + 2, cx + 3, cy + 3, ORANGE_LO)
 
 
-KEY = ["1111111",
-       "1000001",
-       "1011101",
-       "1010101",
-       "1010001",
-       "1011111",
-       "1000000"]
+KEY = ["111111111",
+       "100000001",
+       "101111101",
+       "101000101",
+       "101011101",
+       "101010001",
+       "101011111",
+       "101000000",
+       "101111111"]
 
 
 def key_spiral(cv, x, y, pal, flip_x=False, flip_y=False):
-    """Square spiral on a dark tile, like the ones sitting on the reference frame."""
-    tr, trl = pal[3], pal[4]
-    cv.rect(x - 1, y - 1, x + 8, y + 8, BLACK)
-    cv.rect(x, y, x + 7, y + 7, BAND)
-    for r in range(7):
-        for c in range(7):
+    """Gold square spiral on a dark tile with a black outline (11x11 incl. outline)."""
+    tr, trl, trd = pal[3], pal[4], pal[5]
+    cv.rect(x - 1, y - 1, x + 10, y + 10, BLACK)
+    cv.rect(x, y, x + 9, y + 9, BAND_LO)
+    for r in range(9):
+        for c in range(9):
             if KEY[r][c] == "1":
-                xx = x + (6 - c if flip_x else c)
-                yy = y + (6 - r if flip_y else r)
-                cv.set(xx, yy, trl if (r == 0 or c == 0) else tr)
+                xx = x + (8 - c if flip_x else c)
+                yy = y + (8 - r if flip_y else r)
+                edge_top = r == 0 or KEY[r - 1][c] != "1"
+                cv.set(xx, yy, trl if edge_top else tr)
 
 
 def clip(cv, x, y, vertical=True):
-    if vertical:
-        cv.rect(x, y, x + 3, y + 8, BLACK)
-        cv.rect(x, y + 1, x + 3, y + 7, CLIP)
-        cv.rect(x, y + 1, x + 3, y + 2, CLIP_HI)
-        cv.rect(x, y + 4, x + 3, y + 5, CLIP_LO)
-    else:
-        cv.rect(x, y, x + 8, y + 3, BLACK)
-        cv.rect(x + 1, y, x + 7, y + 3, CLIP)
-        cv.rect(x + 1, y, x + 2, y + 3, CLIP_HI)
-        cv.rect(x + 4, y, x + 5, y + 3, CLIP_LO)
+    """Grey metal clip: three stacked plates on the outside of the frame."""
+    cv.rect(x - 1, y - 1, x + 4, y + 11, BLACK)
+    for k in range(3):
+        yy = y + k * 4
+        cv.rect(x, yy, x + 3, yy + 3, CLIP)
+        cv.rect(x, yy, x + 3, yy + 1, CLIP_HI)
+        cv.rect(x, yy + 2, x + 3, yy + 3, CLIP_LO)
+
+
+def vanilla_slot(cv, x, y):
+    cv.rect(x - 1, y - 1, x + 17, y + 17, (139, 139, 139))
+    cv.rect(x - 1, y - 1, x + 17, y, (55, 55, 55))
+    cv.rect(x - 1, y - 1, x, y + 17, (55, 55, 55))
+    cv.rect(x - 1, y + 16, x + 17, y + 17, (255, 255, 255))
+    cv.rect(x + 16, y - 1, x + 17, y + 17, (255, 255, 255))
+
+
+def inventory_panel(cv, x1, y1, x2, y2):
+    """Plain light-grey panel like vanilla, with the usual bevel and rounded corners."""
+    cv.rect(x1 + 1, y1, x2 - 1, y2, BLACK)
+    cv.rect(x1, y1 + 1, x2, y2 - 1, BLACK)
+    cv.rect(x1 + 1, y1 + 1, x2 - 1, y2 - 1, INV_BG)
+    cv.rect(x1 + 1, y1 + 1, x2 - 2, y1 + 3, INV_HI)
+    cv.rect(x1 + 1, y1 + 1, x1 + 3, y2 - 2, INV_HI)
+    cv.rect(x1 + 3, y2 - 3, x2 - 1, y2 - 1, INV_LO)
+    cv.rect(x2 - 3, y1 + 3, x2 - 1, y2 - 1, INV_LO)
 
 
 def stone_slot(cv, x, y, dark=False):
@@ -271,51 +293,69 @@ def bar_track(cv, x1, y, x2, h):
 def build(pal):
     cv = Canvas(W, H)
     bx1, bx2 = B, B + BODY_W
+    top_h = 124                      # ornate panel height; the inventory panel hangs below
 
-    # upgrade tabs (behind the body)
+    # player inventory panel below, with frame "legs" reaching down to it
+    ix1, ix2, iy1, iy2 = B + 19, B + 197, 128, SH
+    for (lx, dx) in ((bx1 + 3, 1), (bx2 - 8, -1)):
+        cv.rect(lx - 1, top_h - 4, lx + 6, 136, BLACK)
+        cv.rect(lx, top_h - 4, lx + 5, 135, BAND)
+        cv.rect(lx, top_h - 4, lx + 1, 135, BAND_HI)
+        end = ix1 + 2 if dx > 0 else ix2 - 2
+        hx1, hx2 = (lx, end) if dx > 0 else (end, lx + 5)
+        cv.rect(hx1 - 1, 130, hx2 + 1, 137, BLACK)
+        cv.rect(hx1, 131, hx2, 136, BAND)
+        cv.rect(hx1, 131, hx2, 132, BAND_HI)
+        corner_cap(cv, lx + 2, 136)
+    inventory_panel(cv, ix1, iy1, ix2, iy2)
+    for r in range(3):
+        for c in range(9):
+            vanilla_slot(cv, B + 27 + c * 18, 136 + r * 18)
+    for c in range(9):
+        vanilla_slot(cv, B + 27 + c * 18, 194)
+
+    # upgrade tabs (behind the ornate panel)
     for tx in (0, SW - B - 4):
-        framed_panel(cv, tx, 22, tx + B + 4, 80, pal, band=2)
-    clip(cv, 0, 30, True)
-    clip(cv, SW - 3, 30, True)
+        framed_panel(cv, tx, 22, tx + B + 4, 80, pal, band=3)
+    clip(cv, -3, 36)
+    clip(cv, SW, 36)
 
-    # body
-    framed_panel(cv, bx1, 0, bx2, SH, pal, band=3)
+    # ornate panel
+    framed_panel(cv, bx1, 0, bx2, top_h, pal, band=4)
 
-    # sparkles: dense near the inner edge, a few spread over the panel
-    inner = (bx1 + 7, 7, bx2 - 7, SH - 7)
-    for i in range(420):
+    # sparkles: a dense strip just inside the frame, a few spread over the panel
+    inner = (bx1 + 7, 7, bx2 - 7, top_h - 7)
+    for i in range(520):
         x = inner[0] + rnd(i, 1) % (inner[2] - inner[0])
         y = inner[1] + rnd(i, 2) % (inner[3] - inner[1])
         edge = min(x - inner[0], inner[2] - x, y - inner[1], inner[3] - y)
-        if edge > 6 and rnd(i, 3) % 9 != 0:
+        if edge > 4 and rnd(i, 3) % 12 != 0:
             continue
-        sparkle(cv, x, y, pal, big=(rnd(i, 4) % 11 == 0))
+        sparkle(cv, x, y, pal, big=(rnd(i, 4) % 9 == 0))
 
-    # corner caps and key spirals with clips on the sides
-    for (cx, cy) in ((bx1, 0), (bx2 - 1, 0), (bx1, SH - 1), (bx2 - 1, SH - 1)):
-        corner_cap(cv, cx, cy, pal)
-    for (y, fy) in ((12, False), (SH - 20, True)):
+    # key spirals across the side frame with clips outside, near top and bottom
+    for (y, fy) in ((10, False), (top_h - 15, True)):
         key_spiral(cv, bx1 + 1, y, pal, flip_x=False, flip_y=fy)
-        key_spiral(cv, bx2 - 8, y, pal, flip_x=True, flip_y=fy)
-        clip(cv, bx1 - 3, y + (9 if not fy else -10), True)
-        clip(cv, bx2, y + (9 if not fy else -10), True)
+        key_spiral(cv, bx2 - 10, y, pal, flip_x=True, flip_y=fy)
+        cy = y - 12 if not fy else y + 11
+        clip(cv, bx1 - 3, cy + (0 if not fy else 1))
+        clip(cv, bx2, cy + (0 if not fy else 1))
+    for (cx, cy) in ((bx1 - 1, -1), (bx2, -1), (bx1 - 1, top_h), (bx2, top_h)):
+        corner_cap(cv, cx, cy)
 
-    # horns curling up beside the window top
+    # horns first, then the window over them
     horn(cv, B + 72 - 3, 18 - 2, pal, mirror=False)
     horn(cv, B + 144 + 2, 18 - 2, pal, mirror=True)
-
-    # mob window: framed dark pane with small caps
     wx1, wy1, wx2, wy2 = B + 72, 18, B + 144, 82
     cv.rect(wx1 - 3, wy1 - 3, wx2 + 3, wy2 + 3, BLACK)
     cv.rect(wx1 - 2, wy1 - 2, wx2 + 2, wy2 + 2, BAND)
-    cv.rect(wx1 - 1, wy1 - 1, wx2 + 1, wy2 + 1, pal[3])
-    cv.rect(wx1 - 1, wy1 - 1, wx2 + 1, wy1, pal[4])
+    cv.rect(wx1 - 2, wy1 - 2, wx2 + 2, wy1 - 1, BAND_HI)
+    cv.rect(wx1 - 1, wy1 - 1, wx2 + 1, wy2 + 1, pal[5])
     for y in range(wy1, wy2):
         t = (y - wy1) / (wy2 - wy1 - 1)
         cv.rect(wx1, y, wx2, y + 1, mix((12, 10, 16), pal[2], t))
-    for (cx, cy) in ((wx1 - 1, wy1 - 1), (wx2, wy1 - 1), (wx1 - 1, wy2), (wx2, wy2)):
-        corner_cap(cv, cx, cy, pal)
-    # pedestal
+    for (cx, cy) in ((wx1 - 2, wy1 - 2), (wx2 + 1, wy1 - 2), (wx1 - 2, wy2 + 1), (wx2 + 1, wy2 + 1)):
+        corner_cap(cv, cx, cy)
     mid = (wx1 + wx2) // 2
     cv.rect(mid - 18, wy2 - 9, mid + 18, wy2 - 7, pal[5])
     cv.rect(mid - 16, wy2 - 10, mid + 16, wy2 - 9, pal[3])
@@ -338,20 +378,6 @@ def build(pal):
     for (y, bright, deep) in ((88, (232, 70, 60), (128, 22, 18)), (99, (100, 226, 240), (18, 108, 124))):
         gem_icon(cv, B + 11, y + 3, bright, deep)
         bar_track(cv, B + 18, y, B + 208, 6)
-
-    # divider above the inventory
-    dy = 116
-    cv.rect(bx1 + 16, dy, bx2 - 16, dy + 1, pal[5])
-    for x in (bx1 + 13, (bx1 + bx2) // 2, bx2 - 14):
-        cv.set(x, dy - 1, pal[3]); cv.set(x, dy + 1, pal[3]); cv.set(x - 1, dy, pal[3]); cv.set(x + 1, dy, pal[3])
-        cv.set(x, dy, pal[4])
-
-    # player inventory
-    for r in range(3):
-        for c in range(9):
-            stone_slot(cv, B + 27 + c * 18, 124 + r * 18, dark=True)
-    for c in range(9):
-        stone_slot(cv, B + 27 + c * 18, 182, dark=True)
     return cv
 
 
