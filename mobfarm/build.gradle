@@ -37,6 +37,12 @@ minecraft {
             property 'forge.enabledGameTestNamespaces', mod_id
             args '--nogui'
         }
+
+        // ./gradlew runGameTestServer starts a headless server, runs the mod's game tests and exits.
+        gameTestServer {
+            property 'forge.enabledGameTestNamespaces', mod_id
+            property 'forge.logging.console.level', 'info'
+        }
     }
 }
 

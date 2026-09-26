@@ -55,6 +55,13 @@ public class LassoItem extends Item {
         tag.putString(TAG, EntityType.getKey(entity.getType()).toString());
     }
 
+    /** A lasso that already holds a mob of this type. */
+    public static ItemStack withMob(Item lasso, EntityType<?> type) {
+        ItemStack stack = new ItemStack(lasso);
+        stack.getOrCreateTag().putString(TAG, EntityType.getKey(type).toString());
+        return stack;
+    }
+
     @Override
     public boolean isFoil(ItemStack stack) {
         return hasMob(stack);
