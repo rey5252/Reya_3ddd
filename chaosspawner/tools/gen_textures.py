@@ -303,124 +303,102 @@ CARDS = {
         "............",
         "............"]),
 }
-# upgrades: metal tokens copied from the reference token - dark top/left frame, orange rim, a plate
-# running from pale yellow (top left) to orange (bottom right), a diagonal glint, two shine dots, a
-# dark orange band and a pale raised lip on the right and bottom, and a thin engraved symbol. The gold
-# token is the reference; the others are the same token turned to another hue.
-import colorsys
-
-
-def lerp(a, b, t):
-    t = max(0.0, min(1.0, t))
-    return tuple(int(a[i] + (b[i] - a[i]) * t) for i in range(3))
-
-
-def gold_token():
-    px = [[None] * 16 for _ in range(16)]
+# upgrades: shiny metal tokens like the reference - a dark frame, a plate glowing from the orange
+# rim to a bright middle, a diagonal glint, white shine dots in two corners and an engraved symbol
+METALS = {
+    # frame dark, frame, rim, middle, bright, engraving
+    "speed":      ((14, 44, 58), (24, 74, 92), (30, 120, 150), (80, 200, 225), (205, 250, 255), (12, 46, 62)),
+    "looting":    ((96, 56, 24), (117, 77, 46), (163, 99, 35), (232, 190, 70), (255, 246, 160), (72, 46, 18)),
+    "quantity":   ((52, 20, 70), (76, 36, 98), (120, 50, 160), (190, 120, 232), (248, 220, 255), (50, 16, 70)),
+    "experience": ((26, 58, 20), (40, 84, 30), (62, 138, 34), (150, 222, 76), (232, 255, 172), (26, 62, 18)),
+}
+for n, (name, (bg, rim, sym, glow, rows)) in enumerate(CARDS.items()):
+    fdark, frame, edge, mid, bright, ink = METALS[name]
+    px = grid()
     for y in range(16):
         for x in range(16):
+            pale = tuple(int(bright[i] * 0.7 + edge[i] * 0.3) for i in range(3))
+            along = 1.0 - abs((x if y in (0, 1, 2, 13, 14, 15) else y) - 7.5) / 7.5   # 1 mid-side, 0 at corners
+            diag = (x + y) / 30.0                                                         # 0 top-left .. 1 bottom-right
             if x == 15 or y == 15:
-                c = (214, 178, 122) if x > 0 and y > 0 else (150, 110, 70)
+                # raised light lip on the right and bottom, brightest near its middle
+                c = shade(pale, 0.9 + 0.2 * along) if not (x == 0 or y == 0) else shade(frame, 1.1)
             elif x == 0 or y == 0:
-                c = (107, 67, 40)
+                c = shade(fdark, 0.9 + 0.3 * along)
             elif x == 14 or y == 14:
-                c = (176, 128, 62) if x > 1 and y > 1 else (138, 96, 50)
+                c = shade(edge, 0.55 + 0.15 * along)
             elif x == 1 or y == 1:
-                c = (138, 86, 40)
-            elif x == 13 or y == 13:
-                c = (168, 100, 28)
-            elif x == 2 or y == 2:
-                c = lerp((212, 162, 52), (182, 112, 26), (x + y - 4) / 18.0)
-            elif x == 12 or y == 12:
-                c = lerp((214, 150, 40), (186, 118, 32), (x + y - 12) / 12.0)
+                # knurled top/left frame, lighter in the middle of each side
+                c = shade(frame, (1.0 if (x + y) % 2 else 0.84) * (0.92 + 0.22 * along))
+            elif x == 2 or y == 2 or x == 13 or y == 13:
+                # rim: lit from the top left, in shadow at the bottom right
+                c = shade(edge, 1.22 - 0.5 * diag + 0.08 * along)
             else:
-                c = lerp((250, 238, 140), (228, 152, 38), (x + y - 6) / 16.0)
+                # plate: a soft glow in the middle, lit from the top left, darker to the bottom right
+                d = max(abs(x - 7.5), abs(y - 7.0)) / 5.0
+                t = max(0.0, min(1.0, 1.0 - d))
+                c = tuple(int(mid[i] * (1 - t * 0.7) + bright[i] * t * 0.7) for i in range(3))
+                c = shade(c, 1.12 - 0.3 * diag)
+                if d > 0.85:
+                    c = tuple(int(c[i] * 0.55 + edge[i] * 0.45) for i in range(3))
+                # inner bevel of the plate
                 if x == 3 or y == 3:
-                    c = lerp(c, (236, 190, 70), 0.35)
-            px[y][x] = c
-    # diagonal glint across the upper right
-    for y in range(3, 9):
-        for x, k in ((y + 4, 0.75), (y + 5, 0.45), (y + 3, 0.3)):
-            if 3 <= x <= 12:
-                px[y][x] = lerp(px[y][x], (255, 252, 160), k)
-    # shine dots: top left and bottom right
-    for (x, y) in ((3, 3), (4, 3), (3, 4), (4, 4)):
-        px[y][x] = (253, 252, 228)
-    px[4][4] = (250, 244, 200)
-    for (x, y) in ((10, 10), (11, 10), (10, 11), (11, 11)):
-        px[y][x] = (250, 238, 190)
-    px[10][10] = (242, 214, 150)
-    return px
-
-
-def rehue(c, hue, sat=1.0):
-    h, l, s_ = colorsys.rgb_to_hls(*(v / 255.0 for v in c))
-    r, g, b = colorsys.hls_to_rgb(hue / 360.0, l, min(1.0, s_ * sat))
-    return (int(r * 255), int(g * 255), int(b * 255))
-
-
-GLYPHS = {
-    "speed": [
-        "..........",
-        "..#...#...",
-        "...#...#..",
-        "....#...#.",
-        ".....#...#",
-        "....#...#.",
-        "...#...#..",
-        "..#...#...",
-        "..........",
-        ".........."],
-    "looting": [
-        "..........",
-        "........#.",
-        ".......#..",
-        "......#...",
-        ".....#....",
-        "..#.#.....",
-        "...#......",
-        "..#.#.....",
-        ".#........",
-        ".........."],
-    "quantity": [
-        "..........",
-        ".#####....",
-        ".#...#....",
-        ".#..#####.",
-        ".#..#.#.#.",
-        ".####.#.#.",
-        "....#...#.",
-        "....#####.",
-        "..........",
-        ".........."],
-    "experience": [
-        "..........",
-        "...####...",
-        "..#....#..",
-        ".#..##..#.",
-        ".#.#..#.#.",
-        ".#.#..#.#.",
-        ".#..##..#.",
-        "..#....#..",
-        "...####...",
-        ".........."],
-}
-HUES = {"speed": (186, 0.9), "looting": None, "quantity": (285, 0.85), "experience": (95, 0.85)}
-for name in CARDS:
-    tok = gold_token()
-    ink = (104, 76, 32)
-    for r, row in enumerate(GLYPHS[name]):
-        for c, ch in enumerate(row):
-            if ch == "#":
-                x, y = 3 + c, 3 + r
-                tok[y][x] = ink
-                # a faint bright lip under each engraved line
-                if y + 1 <= 12 and GLYPHS[name][r + 1][c] != "#" if r + 1 < len(GLYPHS[name]) else False:
-                    tok[y + 1][x] = lerp(tok[y + 1][x], (255, 245, 170), 0.35)
-    if HUES[name]:
-        hue, sat = HUES[name]
-        tok = [[rehue(c, hue, sat) for c in row] for row in tok]
-    px = [[c + (255,) for c in row] for row in tok]
+                    c = tuple(int(c[i] * 0.7 + bright[i] * 0.3) for i in range(3))
+                elif x == 12 or y == 12:
+                    c = shade(c, 0.86)
+                c = shade(c, 1.0 + ((hsh(x, y, n) % 5) - 2) * 0.02)
+                # diagonal glints across the upper right, strongest in their middle
+                g = 1.0 - abs(y - 5.5) / 5.0
+                if x - y in (4, 5) and y <= 9:
+                    c = tuple(int(c[i] * (1 - 0.75 * g) + bright[i] * 0.75 * g) for i in range(3))
+                elif x - y == 3 and y <= 8:
+                    c = tuple(int(c[i] * (1 - 0.4 * g) + bright[i] * 0.4 * g) for i in range(3))
+                elif x - y == 6 and y <= 7:
+                    c = tuple(int(c[i] * 0.8 + bright[i] * 0.2) for i in range(3))
+                elif x - y == 7 and y <= 5:
+                    c = tuple(int(c[i] * 0.5 + bright[i] * 0.5) for i in range(3))
+            px[y][x] = c + (255,)
+    # rivets in the frame corners and small bright inlays in the middle of each side
+    for (x, y) in ((1, 1), (14, 1), (1, 14), (14, 14)):
+        px[y][x] = tuple(int(v * 0.6 + 255 * 0.4) for v in bright) + (255,)
+    for (x, y) in ((1, 2), (2, 1)):
+        px[y][x] = shade(frame, 0.7) + (255,)
+    for (x, y) in ((7, 2), (8, 2), (2, 7), (2, 8)):
+        px[y][x] = bright + (255,)
+    for (x, y) in ((7, 13), (8, 13), (13, 7), (13, 8)):
+        px[y][x] = shade(edge, 0.7) + (255,)
+    # fine scratches across the plate
+    for k in range(3):
+        sx, sy = 4 + hsh(k, n, 17) % 7, 5 + hsh(n, k, 19) % 6
+        for j in range(2):
+            x, y = sx + j, sy - j
+            if 3 <= x <= 12 and 3 <= y <= 12:
+                px[y][x] = shade(px[y][x], 1.12 if k % 2 else 0.9)
+    # white shine dots
+    for (x, y) in ((3, 3), (4, 3), (3, 4), (4, 4), (11, 11), (12, 11), (11, 12), (12, 12)):
+        px[y][x] = (255, 255, 250, 255)
+    px[4][4] = tuple(int(v * 0.5 + 255 * 0.5) for v in bright) + (255,)
+    px[12][12] = tuple(int(v * 0.5 + 255 * 0.5) for v in bright) + (255,)
+    # the symbol, engraved: dark lines with a bright lip below-right
+    pts = {(2 + c, 2 + r) for r, row in enumerate(rows) for c, ch in enumerate(row) if ch == "#"}
+    # only the outline of a solid shape is cut in (thin lines like the reference); its inside stays
+    # plate, just a shade deeper
+    edge_pts = {(x, y) for (x, y) in pts
+                if name == "looting" or any((x + dx, y + dy) not in pts for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)))}
+    for (x, y) in edge_pts:
+        q = (x + 1, y + 1)
+        if q not in edge_pts and q not in pts and 3 <= q[0] <= 12 and 3 <= q[1] <= 12:
+            px[q[1]][q[0]] = tuple(int(px[q[1]][q[0]][i] * 0.4 + bright[i] * 0.6) for i in range(3)) + (255,)
+    for (x, y) in pts - edge_pts:
+        px[y][x] = shade(px[y][x], 0.9 - 0.012 * (x + y))
+    for (x, y) in edge_pts:
+        # engraved lines: a touch lighter towards the top left, deepest at the bottom right
+        k = (x + y - 6) / 18.0
+        px[y][x] = tuple(int(ink[i] * (1.35 - 0.55 * k) + edge[i] * 0.12) for i in range(3)) + (255,)
+    # a tiny four-point sparkle next to the top-left shine
+    for (x, y) in ((5, 3), (3, 5)):
+        if (x, y) not in pts:
+            px[y][x] = tuple(int(px[y][x][i] * 0.5 + 255 * 0.5) for i in range(3)) + (255,)
     png(f"{ROOT}/textures/item/{name}_upgrade.png", px)
     json.dump({"parent": "minecraft:item/generated", "textures": {"layer0": f"chaosspawner:item/{name}_upgrade"}},
               open(f"{ROOT}/models/item/{name}_upgrade.json", "w"), indent=2)
