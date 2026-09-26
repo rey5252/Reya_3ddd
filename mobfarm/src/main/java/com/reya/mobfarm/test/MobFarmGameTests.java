@@ -31,7 +31,7 @@ public class MobFarmGameTests {
 
     private static MobFarmBlockEntity placeFarm(GameTestHelper helper, FarmTier tier, EntityType<?> mob) {
         helper.setBlock(FARM, ModRegistry.FARMS.get(tier).get());
-        MobFarmBlockEntity farm = helper.getBlockEntity(FARM);
+        MobFarmBlockEntity farm = (MobFarmBlockEntity) helper.getBlockEntity(FARM);
         farm.setLasso(LassoItem.withMob(ModRegistry.LASSO.get(), mob));
         return farm;
     }

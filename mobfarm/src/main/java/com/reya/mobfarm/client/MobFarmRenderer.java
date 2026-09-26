@@ -22,8 +22,9 @@ public class MobFarmRenderer implements BlockEntityRenderer<MobFarmBlockEntity> 
         LivingEntity entity = ClientEntities.get(farm.mobType());
         if (entity == null || farm.getLevel() == null) return;
 
-        float size = Math.max(entity.getBbWidth(), entity.getBbHeight());
-        float scale = 0.6F / Math.max(0.4F, size);
+        // Fit inside the glass case: 12/16 wide, 11/16 tall above the base plate.
+        float scale = Math.min(0.62F / Math.max(0.3F, entity.getBbHeight()),
+                0.7F / Math.max(0.3F, entity.getBbWidth()));
         float angle = ((farm.getLevel().getGameTime() + partialTick) * 1.5F) % 360.0F;
 
         pose.pushPose();
