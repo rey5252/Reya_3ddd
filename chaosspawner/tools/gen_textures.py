@@ -252,16 +252,16 @@ CARDS = {
     # background, rim, symbol, glow, symbol rows (12x12, "#" symbol, "o" darker symbol edge)
     "speed": ((18, 104, 118), (80, 220, 230), (225, 255, 255), (90, 240, 250), [
         "............",
-        "............",
-        "..#...#.....",
-        "..##..##....",
-        "..###.###...",
-        "..####.###..",
-        "..####.###..",
-        "..###.###...",
-        "..##..##....",
-        "..#...#.....",
-        "............",
+        ".#....#.....",
+        ".##...##....",
+        ".###..###...",
+        ".####.####..",
+        ".#####.####.",
+        ".#####.####.",
+        ".####.####..",
+        ".###..###...",
+        ".##...##....",
+        ".#....#.....",
         "............"]),
     "looting": ((26, 44, 120), (110, 140, 250), (255, 222, 120), (255, 190, 80), [
         "............",
@@ -278,57 +278,86 @@ CARDS = {
         "............"]),
     "quantity": ((84, 30, 118), (210, 110, 240), (150, 255, 110), (120, 255, 90), [
         "............",
-        "............",
-        "..##....##..",
-        "..##....##..",
-        "............",
-        "............",
-        "............",
-        "............",
-        "..##....##..",
-        "..##....##..",
-        "............",
+        "..#......#..",
+        ".###....###.",
+        "..#......#..",
+        ".....##.....",
+        "....####....",
+        "....####....",
+        ".....##.....",
+        "..#......#..",
+        ".###....###.",
+        "..#......#..",
         "............"]),
     "experience": ((30, 96, 34), (130, 230, 90), (240, 255, 120), (200, 255, 80), [
         "............",
+        "............",
         "....####....",
-        "...#....#...",
-        "..#..##..#..",
-        ".#..#..#..#.",
-        ".#.#....#.#.",
-        ".#.#....#.#.",
-        ".#..#..#..#.",
-        "..#..##..#..",
-        "...#....#...",
+        "...######...",
+        "..########..",
+        "..########..",
+        "..########..",
+        "..########..",
+        "...######...",
         "....####....",
+        "............",
         "............"]),
 }
 for n, (name, (bg, rim, sym, glow, rows)) in enumerate(CARDS.items()):
     px = grid()
+    pts = {(2 + c, 2 + r) for r, row in enumerate(rows) for c, ch in enumerate(row) if ch == "#"}
+    cx = sum(p[0] for p in pts) / len(pts)
+    cy = sum(p[1] for p in pts) / len(pts)
     for y in range(16):
         for x in range(16):
             if (x in (0, 15)) and (y in (0, 15)):
                 continue
             if x in (0, 15) or y in (0, 15):
                 px[y][x] = (8, 10, 18, 255)
-            elif x in (1, 14) or y in (1, 14):
-                px[y][x] = (shade(rim, 1.15) if (x == 1 or y == 1) and not (x == 14 or y == 14) else shade(rim, 0.6)) + (255,)
+            elif x == 1 or y == 1:
+                px[y][x] = shade(rim, 1.2 if not (x == 14 or y == 14) else 0.8) + (255,)
+            elif x == 14 or y == 14:
+                px[y][x] = shade(rim, 0.55) + (255,)
+            elif x == 2 or y == 2:
+                px[y][x] = shade(bg, 0.45) + (255,)
             else:
+                # dark vignette, speckled noise and a soft halo of the glow colour round the symbol
                 d = math.hypot(x - 7.5, y - 7.5) / 7.0
-                k = 1.25 - 0.55 * d + (hsh(x, y, n) % 5 - 2) * 0.06
-                px[y][x] = shade(bg, k) + (255,)
-    pts = {(2 + c, 2 + r) for r, row in enumerate(rows) for c, ch in enumerate(row) if ch == "#"}
+                k = 1.05 - 0.45 * d + (hsh(x, y, n) % 7 - 3) * 0.05
+                c = shade(bg, k)
+                g = max(0.0, 1.0 - math.hypot(x - cx, y - cy) / 5.5) * 0.45
+                px[y][x] = tuple(int(c[i] * (1 - g) + glow[i] * g) for i in range(3)) + (255,)
     glowed = set()
     for (x, y) in pts:
         for (dx, dy) in ((1, 0), (-1, 0), (0, 1), (0, -1)):
             q = (x + dx, y + dy)
-            if q not in pts and q not in glowed and 2 <= q[0] <= 13 and 2 <= q[1] <= 13:
+            if q not in pts and q not in glowed and 3 <= q[0] <= 13 and 3 <= q[1] <= 13:
                 glowed.add(q)
                 o = px[q[1]][q[0]]
-                px[q[1]][q[0]] = tuple(int(o[i] * 0.62 + glow[i] * 0.38) for i in range(3)) + (255,)
+                px[q[1]][q[0]] = tuple(int(o[i] * 0.6 + glow[i] * 0.4) for i in range(3)) + (255,)
+    # the symbol: pale highlight on its top-left edges, base colour, deeper tone on bottom-right edges
+    deep = tuple(int(sym[i] * 0.55 + glow[i] * 0.25) for i in range(3))
     for (x, y) in pts:
-        top = (x, y - 1) not in pts
-        px[y][x] = (shade(sym, 1.1) if top else sym) + (255,)
+        if name == "experience":
+            # a glossy orb: white-hot highlight up and left, darkening towards the lower rim
+            t = min(1.0, math.hypot(x - (cx - 1.5), y - (cy - 1.5)) / 5.0)
+            c = tuple(int(255 * (1 - t) + sym[i] * t) for i in range(3)) if t < 0.55 else \
+                tuple(int(sym[i] * (1.6 - t) + deep[i] * (t - 0.6)) for i in range(3))
+            c = tuple(max(0, min(255, v)) for v in c)
+        elif (x, y - 1) not in pts or (x - 1, y) not in pts:
+            c = tuple(min(255, int(v * 0.6 + 255 * 0.4)) for v in sym)
+        elif (x, y + 1) not in pts or (x + 1, y) not in pts:
+            c = deep
+        else:
+            c = sym
+        px[y][x] = c + (255,)
+    tl = min(pts, key=lambda p: (p[0] + p[1], p[1]))
+    px[tl[1]][tl[0]] = (255, 255, 255, 255)
+    # a few sparkles in the free corners of the card
+    for i in range(3):
+        sx, sy = 3 + hsh(i, n, 5) % 11, 3 + hsh(n, i, 9) % 11
+        if (sx, sy) not in pts and (sx, sy) not in glowed and math.hypot(sx - cx, sy - cy) > 5:
+            px[sy][sx] = tuple(min(255, int(v * 0.5 + 255 * 0.5)) for v in glow) + (255,)
     png(f"{ROOT}/textures/item/{name}_upgrade.png", px)
     json.dump({"parent": "minecraft:item/generated", "textures": {"layer0": f"chaosspawner:item/{name}_upgrade"}},
               open(f"{ROOT}/models/item/{name}_upgrade.json", "w"), indent=2)
