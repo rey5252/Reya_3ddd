@@ -9,3 +9,4 @@ runs/
 bin/
 classes/
 logs/
+*.zip
