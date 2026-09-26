@@ -250,7 +250,7 @@ def shade(c, k):
 
 CARDS = {
     # background, rim, symbol, glow, symbol rows (12x12, "#" symbol, "o" darker symbol edge)
-    "speed": ((18, 104, 118), (80, 220, 230), (40, 200, 225), (90, 240, 250), [
+    "speed": ((18, 104, 118), (80, 220, 230), (225, 255, 255), (90, 240, 250), [
         "............",
         ".#....#.....",
         ".##...##....",
@@ -263,7 +263,7 @@ CARDS = {
         ".##...##....",
         ".#....#.....",
         "............"]),
-    "looting": ((26, 44, 120), (110, 140, 250), (240, 180, 50), (255, 190, 80), [
+    "looting": ((26, 44, 120), (110, 140, 250), (255, 222, 120), (255, 190, 80), [
         "............",
         ".........##.",
         "........###.",
@@ -276,7 +276,7 @@ CARDS = {
         "..#..#......",
         ".#..........",
         "............"]),
-    "quantity": ((84, 30, 118), (210, 110, 240), (190, 70, 230), (120, 255, 90), [
+    "quantity": ((84, 30, 118), (210, 110, 240), (150, 255, 110), (120, 255, 90), [
         "............",
         "..#......#..",
         ".###....###.",
@@ -289,7 +289,7 @@ CARDS = {
         ".###....###.",
         "..#......#..",
         "............"]),
-    "experience": ((30, 96, 34), (130, 230, 90), (110, 220, 40), (200, 255, 80), [
+    "experience": ((30, 96, 34), (130, 230, 90), (240, 255, 120), (200, 255, 80), [
         "............",
         "............",
         "....####....",
@@ -304,42 +304,59 @@ CARDS = {
         "............"]),
 }
 STEEL_HI, STEEL, STEEL_LO = (226, 232, 238), (158, 166, 176), (92, 99, 110)
+
+
+def steel(x, y):
+    """Polished steel for the plate frame: lighter up-left, darker down-right, with diagonal glints."""
+    t = (x + y) / 30.0
+    c = tuple(int(STEEL_HI[i] * (1 - t) + STEEL_LO[i] * t) for i in range(3))
+    if (x + y) % 9 in (3, 4):
+        c = tuple(int(v * 0.4 + 250 * 0.6) for v in c)
+    return c
+
+
 for n, (name, (bg, rim, sym, glow, rows)) in enumerate(CARDS.items()):
-    # a polished steel sheet: bevelled edge, brushed grain, two diagonal glints and rivets in the corners
     px = grid()
+    pts = {(2 + c, 2 + r) for r, row in enumerate(rows) for c, ch in enumerate(row) if ch == "#"}
+    cx = sum(p[0] for p in pts) / len(pts)
+    cy = sum(p[1] for p in pts) / len(pts)
     for y in range(16):
         for x in range(16):
             if (x in (0, 15)) and (y in (0, 15)):
                 continue
             if x in (0, 15) or y in (0, 15):
                 px[y][x] = (24, 26, 32, 255)
-                continue
-            if x == 1 or y == 1:
-                c = (244, 247, 250) if not (x == 14 or y == 14) else STEEL
+            elif x == 1 or y == 1:
+                # outer bevel of the steel frame
+                px[y][x] = ((246, 249, 252) if not (x == 14 or y == 14) else STEEL) + (255,)
             elif x == 14 or y == 14:
-                c = (70, 76, 86)
+                px[y][x] = (72, 78, 88, 255)
+            elif x in (2, 13) or y in (2, 13):
+                c = steel(x, y)
+                if x == 13 or y == 13:
+                    c = shade(c, 0.8)
+                px[y][x] = c + (255,)
+            elif x == 3 or y == 3:
+                px[y][x] = shade(bg, 0.4) + (255,)
             else:
-                t = (x + y - 4) / 22.0
-                c = tuple(int(STEEL_HI[i] * (1 - t) + STEEL_LO[i] * t) for i in range(3))
-                c = shade(c, 1.0 + ((hsh(0, y, 3) % 5) - 2) * 0.025 + ((hsh(x, y, 4) % 3) - 1) * 0.015)
-                band = x + y
-                if band in (8, 9):
-                    c = tuple(int(v * 0.35 + 250 * 0.65) for v in c)
-                elif band == 11 or band == 20:
-                    c = tuple(int(v * 0.6 + 245 * 0.4) for v in c)
-            px[y][x] = c + (255,)
+                # the card inside, as before: dark vignette, speckles and a halo round the symbol
+                d = math.hypot(x - 7.5, y - 7.5) / 7.0
+                k = 1.05 - 0.45 * d + (hsh(x, y, n) % 7 - 3) * 0.05
+                c = shade(bg, k)
+                g = max(0.0, 1.0 - math.hypot(x - cx, y - cy) / 5.5) * 0.45
+                px[y][x] = tuple(int(c[i] * (1 - g) + glow[i] * g) for i in range(3)) + (255,)
+    # rivets on the frame corners
     for (rx, ry) in ((2, 2), (13, 2), (2, 13), (13, 13)):
-        px[ry][rx] = (60, 64, 72, 255)
-    # the emblem, stamped into the sheet: dark groove below-right, coloured face, bright top-left edges
-    pts = {(2 + c, 2 + r) for r, row in enumerate(rows) for c, ch in enumerate(row) if ch == "#"}
+        px[ry][rx] = (58, 62, 70, 255)
+    glowed = set()
     for (x, y) in pts:
-        for (dx, dy) in ((1, 0), (0, 1), (1, 1)):
+        for (dx, dy) in ((1, 0), (-1, 0), (0, 1), (0, -1)):
             q = (x + dx, y + dy)
-            if q not in pts and 2 <= q[0] <= 13 and 2 <= q[1] <= 13:
-                px[q[1]][q[0]] = (40, 44, 52, 255)
-    cx = sum(p[0] for p in pts) / len(pts)
-    cy = sum(p[1] for p in pts) / len(pts)
-    deep = shade(sym, 0.62)
+            if q not in pts and q not in glowed and 4 <= q[0] <= 12 and 4 <= q[1] <= 12:
+                glowed.add(q)
+                o = px[q[1]][q[0]]
+                px[q[1]][q[0]] = tuple(int(o[i] * 0.6 + glow[i] * 0.4) for i in range(3)) + (255,)
+    deep = tuple(int(sym[i] * 0.55 + glow[i] * 0.25) for i in range(3))
     for (x, y) in pts:
         if name == "experience":
             t = min(1.0, math.hypot(x - (cx - 1.5), y - (cy - 1.5)) / 5.0)
@@ -347,7 +364,7 @@ for n, (name, (bg, rim, sym, glow, rows)) in enumerate(CARDS.items()):
                 tuple(int(sym[i] * (1.6 - t) + deep[i] * (t - 0.6)) for i in range(3))
             c = tuple(max(0, min(255, v)) for v in c)
         elif (x, y - 1) not in pts or (x - 1, y) not in pts:
-            c = tuple(min(255, int(v * 0.55 + 255 * 0.45)) for v in sym)
+            c = tuple(min(255, int(v * 0.6 + 255 * 0.4)) for v in sym)
         elif (x, y + 1) not in pts or (x + 1, y) not in pts:
             c = deep
         else:
