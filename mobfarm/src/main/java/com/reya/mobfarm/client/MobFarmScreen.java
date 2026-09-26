@@ -22,15 +22,16 @@ import net.minecraft.world.inventory.Slot;
  * inventory centred at the bottom. Drawn entirely in code.
  */
 public class MobFarmScreen extends AbstractContainerScreen<MobFarmMenu> {
-    // Symmetric layout, all mirrored around x = 108
-    private static final int LEFT_PANEL_X = 8;
-    private static final int RIGHT_PANEL_X = 150;
+    // Symmetric layout, all mirrored around the middle of the body (x = BODY_X + 108)
+    private static final int B = MobFarmMenu.BODY_X;
+    private static final int LEFT_PANEL_X = B + 8;
+    private static final int RIGHT_PANEL_X = B + 150;
     private static final int PANEL_W = 58;
-    private static final int WINDOW_X = 72;
+    private static final int WINDOW_X = B + 72;
     private static final int WINDOW_W = 72;
     private static final int PANEL_Y = 18;
     private static final int PANEL_H = 64;
-    private static final int BAR_X = 8;
+    private static final int BAR_X = B + 8;
     private static final int BAR_Y = 88;
     private static final int BAR_W = 200;
     private static final int BAR_H = 8;
@@ -49,19 +50,39 @@ public class MobFarmScreen extends AbstractContainerScreen<MobFarmMenu> {
         imageHeight = MobFarmMenu.HEIGHT;
     }
 
+    // Upgrade tabs on both sides
+    private static final int TAB_Y = 24;
+    private static final int TAB_H = 52;
+
     @Override
     public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
         renderBackground(g);
         super.render(g, mouseX, mouseY, partialTick);
         renderTooltip(g, mouseX, mouseY);
+        // Over an empty spot of a tab: explain what the books do / what's active.
+        if (hoveredSlot == null || !hoveredSlot.hasItem()) {
+            boolean overTab = inside(mouseX, mouseY, leftPos, topPos + TAB_Y, B, TAB_H)
+                    || inside(mouseX, mouseY, leftPos + imageWidth - B, topPos + TAB_Y, B, TAB_H);
+            if (overTab) {
+                g.renderComponentTooltip(font, menu.upgrades().describe(menu.tier()), mouseX, mouseY);
+            }
+        }
+    }
+
+    private static boolean inside(double mx, double my, int x, int y, int w, int h) {
+        return mx >= x && mx < x + w && my >= y && my < y + h;
     }
 
     @Override
     protected void renderBg(GuiGraphics g, float partialTick, int mouseX, int mouseY) {
         FarmTier tier = menu.tier();
-        int x = leftPos;
+        // Upgrade tabs first, so the body's frame overlaps their inner edge.
+        drawTab(g, leftPos, topPos + TAB_Y, tier, true);
+        drawTab(g, leftPos + imageWidth - B - 3, topPos + TAB_Y, tier, false);
+
+        int x = leftPos + B;
         int y = topPos;
-        int x2 = x + imageWidth;
+        int x2 = x + MobFarmMenu.BODY_W;
         int y2 = y + imageHeight;
 
         // Body with a tier-coloured frame, mirrored gems in the corners and a crest on top.
@@ -74,28 +95,55 @@ public class MobFarmScreen extends AbstractContainerScreen<MobFarmMenu> {
         drawGem(g, x2 - 6, y + 1, tier);
         drawGem(g, x + 1, y2 - 6, tier);
         drawGem(g, x2 - 6, y2 - 6, tier);
-        int mid = x + imageWidth / 2;
+        int mid = x + MobFarmMenu.BODY_W / 2;
         for (int i = 0; i < 4; i++) {
             g.fill(mid - 5 + i, y - 1 - i, mid + 5 - i, y - i, i == 3 ? tier.light : tier.color);
         }
 
         // Three panels, mirrored around the middle.
-        drawPanel(g, x + LEFT_PANEL_X, y + PANEL_Y, PANEL_W, PANEL_H, tier);
-        drawPanel(g, x + RIGHT_PANEL_X, y + PANEL_Y, PANEL_W, PANEL_H, tier);
-        drawWindow(g, x + WINDOW_X, y + PANEL_Y, tier);
+        drawPanel(g, leftPos + LEFT_PANEL_X, y + PANEL_Y, PANEL_W, PANEL_H, tier);
+        drawPanel(g, leftPos + RIGHT_PANEL_X, y + PANEL_Y, PANEL_W, PANEL_H, tier);
+        drawWindow(g, leftPos + WINDOW_X, y + PANEL_Y, tier);
 
-        // Slots
+        // Slots; empty upgrade slots show a faint book
         for (Slot slot : menu.slots) {
-            drawSlot(g, x + slot.x, y + slot.y, slot.index == 0 ? tier : null);
+            drawSlot(g, leftPos + slot.x, y + slot.y, slot.index == 0 ? tier : null);
+            boolean upgrade = slot.index >= MobFarmBlockEntity.UPGRADE_START
+                    && slot.index < MobFarmBlockEntity.UPGRADE_START + MobFarmBlockEntity.UPGRADE_COUNT;
+            if (upgrade && !slot.hasItem()) drawGhostBook(g, leftPos + slot.x, y + slot.y);
         }
 
-        drawProgress(g, x + BAR_X, y + BAR_Y, tier);
+        drawProgress(g, leftPos + BAR_X, y + BAR_Y, tier);
 
         // Divider above the inventory, with little diamonds at both ends
         int dy = y + MobFarmMenu.INV_Y - 16;
         g.fill(x + 12, dy, x2 - 12, dy + 1, tier.dark);
         g.fill(x + 10, dy - 1, x + 12, dy + 2, tier.color);
         g.fill(x2 - 12, dy - 1, x2 - 10, dy + 2, tier.color);
+    }
+
+    /** Side tab holding two upgrade slots, with a sparkle that glows when books are in. */
+    private void drawTab(GuiGraphics g, int x, int y, FarmTier tier, boolean left) {
+        int w = B + 3;
+        g.fill(x - 1, y - 1, x + w + 1, y + TAB_H + 1, 0xFF000000);
+        g.fill(x, y, x + w, y + TAB_H, tier.dark);
+        g.fill(x + 1, y + 1, x + w - 1, y + TAB_H - 1, tier.color);
+        g.fillGradient(x + 2, y + 2, x + w - 2, y + TAB_H - 2, BG_TOP, BG_BOTTOM);
+        boolean active = !menu.upgrades().isEmpty();
+        float pulse = active ? 0.5F + 0.5F * Mth.sin(Util.getMillis() / 300.0F) : 0.0F;
+        int glow = ((int) (0x60 + 0x9F * pulse) << 24) | (tier.light & 0xFFFFFF);
+        int cx = x + w / 2 + (left ? -1 : 1);
+        g.fill(cx - 1, y + 3, cx + 2, y + 4, glow);
+        g.fill(cx, y + 2, cx + 1, y + 5, glow);
+        g.fill(cx - 1, y + TAB_H - 4, cx + 2, y + TAB_H - 3, glow);
+        g.fill(cx, y + TAB_H - 5, cx + 1, y + TAB_H - 2, glow);
+    }
+
+    private static void drawGhostBook(GuiGraphics g, int x, int y) {
+        int c = 0x40FFFFFF;
+        g.fill(x + 4, y + 3, x + 12, y + 13, c);
+        g.fill(x + 5, y + 4, x + 11, y + 12, 0x20FFFFFF);
+        g.fill(x + 7, y + 3, x + 8, y + 13, 0x30000000);
     }
 
     private static void drawGem(GuiGraphics g, int x, int y, FarmTier tier) {

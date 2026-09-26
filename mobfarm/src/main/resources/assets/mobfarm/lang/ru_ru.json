@@ -18,5 +18,15 @@
   "block.mobfarm.iron_mob_farm": "Железная ферма мобов",
   "block.mobfarm.golden_mob_farm": "Золотая ферма мобов",
   "block.mobfarm.diamond_mob_farm": "Алмазная ферма мобов",
-  "block.mobfarm.netherite_mob_farm": "Незеритовая ферма мобов"
+  "block.mobfarm.netherite_mob_farm": "Незеритовая ферма мобов",
+  "gui.mobfarm.upgrades": "Улучшения (зачарованные книги)",
+  "gui.mobfarm.upgrades.none": "Книг нет. Положи:",
+  "gui.mobfarm.upgrades.hint.efficiency": "Эффективность — быстрее",
+  "gui.mobfarm.upgrades.hint.looting": "Добыча — больше лута",
+  "gui.mobfarm.upgrades.hint.fire": "Заговор огня — жареное мясо",
+  "gui.mobfarm.upgrades.hint.sweeping": "Разящий клинок — больше мобов за цикл",
+  "gui.mobfarm.upgrades.efficiency": "Скорость +%s%% (%s с на цикл)",
+  "gui.mobfarm.upgrades.looting": "Добыча %s",
+  "gui.mobfarm.upgrades.fire": "Добыча выпадает жареной",
+  "gui.mobfarm.upgrades.sweeping": "%s мобов за цикл"
 }

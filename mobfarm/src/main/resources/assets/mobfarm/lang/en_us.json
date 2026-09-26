@@ -18,5 +18,15 @@
   "block.mobfarm.iron_mob_farm": "Iron Mob Farm",
   "block.mobfarm.golden_mob_farm": "Golden Mob Farm",
   "block.mobfarm.diamond_mob_farm": "Diamond Mob Farm",
-  "block.mobfarm.netherite_mob_farm": "Netherite Mob Farm"
+  "block.mobfarm.netherite_mob_farm": "Netherite Mob Farm",
+  "gui.mobfarm.upgrades": "Upgrades (enchanted books)",
+  "gui.mobfarm.upgrades.none": "No books yet. Put in:",
+  "gui.mobfarm.upgrades.hint.efficiency": "Efficiency - faster",
+  "gui.mobfarm.upgrades.hint.looting": "Looting - more loot",
+  "gui.mobfarm.upgrades.hint.fire": "Fire Aspect - cooked meat",
+  "gui.mobfarm.upgrades.hint.sweeping": "Sweeping Edge - more kills per cycle",
+  "gui.mobfarm.upgrades.efficiency": "Speed +%s%% (%s s per cycle)",
+  "gui.mobfarm.upgrades.looting": "Looting %s",
+  "gui.mobfarm.upgrades.fire": "Drops come out cooked",
+  "gui.mobfarm.upgrades.sweeping": "%s kills per cycle"
 }

@@ -14,7 +14,11 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.Cow;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.EnchantedBookItem;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.EnchantmentInstance;
+import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
@@ -110,6 +114,43 @@ public class MobFarmGameTests {
             ResourceLocation id = new ResourceLocation(MobFarm.MOD_ID, tier.id + "_mob_farm");
             helper.assertTrue(recipes.byKey(id).isPresent(), "recipe missing: " + id);
         }
+        helper.succeed();
+    }
+
+    private static void addBook(MobFarmBlockEntity farm, int slot, Enchantment enchantment, int level) {
+        farm.getItems().setStackInSlot(MobFarmBlockEntity.UPGRADE_START + slot,
+                EnchantedBookItem.createForEnchantment(new EnchantmentInstance(enchantment, level)));
+    }
+
+    /** A Fire Aspect book makes cows drop cooked beef. */
+    @GameTest(template = "empty", timeoutTicks = 300)
+    public static void fireAspectCooksMeat(GameTestHelper helper) {
+        helper.setBlock(CHEST, Blocks.CHEST);
+        MobFarmBlockEntity farm = placeFarm(helper, FarmTier.NETHERITE, EntityType.COW);
+        addBook(farm, 0, Enchantments.FIRE_ASPECT, 1);
+        helper.succeedWhen(() -> helper.assertContainerContains(CHEST, Items.COOKED_BEEF));
+    }
+
+    /** Efficiency books shorten the cycle, and levels from two books add up. */
+    @GameTest(template = "empty", timeoutTicks = 20)
+    public static void efficiencySpeedsUpFarm(GameTestHelper helper) {
+        MobFarmBlockEntity farm = placeFarm(helper, FarmTier.WOODEN, EntityType.COW);
+        int base = farm.maxProgress();
+        addBook(farm, 0, Enchantments.BLOCK_EFFICIENCY, 2);
+        addBook(farm, 3, Enchantments.BLOCK_EFFICIENCY, 2);
+        helper.assertTrue(farm.upgrades().efficiency() == 4, "two Efficiency II books should give level 4");
+        helper.assertTrue(farm.maxProgress() * 3 == base, "Efficiency 4 should make the wooden farm 3x faster");
+        helper.succeed();
+    }
+
+    /** Upgrade slots only take enchanted books. */
+    @GameTest(template = "empty", timeoutTicks = 20)
+    public static void upgradeSlotsOnlyTakeBooks(GameTestHelper helper) {
+        MobFarmBlockEntity farm = placeFarm(helper, FarmTier.WOODEN, EntityType.COW);
+        int slot = MobFarmBlockEntity.UPGRADE_START;
+        helper.assertFalse(farm.getItems().isItemValid(slot, new ItemStack(Items.DIAMOND)), "diamond accepted as upgrade");
+        helper.assertTrue(farm.getItems().isItemValid(slot,
+                EnchantedBookItem.createForEnchantment(new EnchantmentInstance(Enchantments.MOB_LOOTING, 3))), "book refused");
         helper.succeed();
     }
 

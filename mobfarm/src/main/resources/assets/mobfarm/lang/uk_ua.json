@@ -18,5 +18,15 @@
   "block.mobfarm.iron_mob_farm": "Залізна ферма мобів",
   "block.mobfarm.golden_mob_farm": "Золота ферма мобів",
   "block.mobfarm.diamond_mob_farm": "Діамантова ферма мобів",
-  "block.mobfarm.netherite_mob_farm": "Незеритова ферма мобів"
+  "block.mobfarm.netherite_mob_farm": "Незеритова ферма мобів",
+  "gui.mobfarm.upgrades": "Покращення (зачаровані книги)",
+  "gui.mobfarm.upgrades.none": "Книг немає. Поклади:",
+  "gui.mobfarm.upgrades.hint.efficiency": "Ефективність — швидше",
+  "gui.mobfarm.upgrades.hint.looting": "Добича — більше луту",
+  "gui.mobfarm.upgrades.hint.fire": "Вогняний аспект — смажене м'ясо",
+  "gui.mobfarm.upgrades.hint.sweeping": "Змах — більше мобів за цикл",
+  "gui.mobfarm.upgrades.efficiency": "Швидкість +%s%% (%s с на цикл)",
+  "gui.mobfarm.upgrades.looting": "Добича %s",
+  "gui.mobfarm.upgrades.fire": "Здобич випадає смаженою",
+  "gui.mobfarm.upgrades.sweeping": "%s мобів за цикл"
 }

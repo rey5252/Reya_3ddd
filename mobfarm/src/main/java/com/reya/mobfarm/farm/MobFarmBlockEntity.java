@@ -15,6 +15,7 @@ import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -25,6 +26,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -53,15 +56,19 @@ public class MobFarmBlockEntity extends BlockEntity implements MenuProvider {
     public static final int LASSO_SLOT = 0;
     public static final int OUTPUT_START = 1;
     public static final int OUTPUT_COUNT = 9;
+    public static final int UPGRADE_START = OUTPUT_START + OUTPUT_COUNT;
+    public static final int UPGRADE_COUNT = 4;
+    public static final int SLOT_COUNT = UPGRADE_START + UPGRADE_COUNT;
 
     public static final int STATUS_NO_MOB = 0;
     public static final int STATUS_RUNNING = 1;
     public static final int STATUS_REDSTONE = 2;
     public static final int STATUS_FULL = 3;
 
-    private final ItemStackHandler items = new ItemStackHandler(OUTPUT_START + OUTPUT_COUNT) {
+    private final ItemStackHandler items = new ItemStackHandler(SLOT_COUNT) {
         @Override
         protected void onContentsChanged(int slot) {
+            if (loading) return;
             setChanged();
             if (slot == LASSO_SLOT) {
                 progress = 0;
@@ -72,12 +79,14 @@ public class MobFarmBlockEntity extends BlockEntity implements MenuProvider {
 
         @Override
         public boolean isItemValid(int slot, ItemStack stack) {
-            return slot == LASSO_SLOT && LassoItem.hasMob(stack);
+            if (slot == LASSO_SLOT) return LassoItem.hasMob(stack);
+            if (slot >= UPGRADE_START) return FarmUpgrades.isUpgrade(stack);
+            return false;
         }
 
         @Override
         public int getSlotLimit(int slot) {
-            return slot == LASSO_SLOT ? 1 : 64;
+            return slot == LASSO_SLOT || slot >= UPGRADE_START ? 1 : 64;
         }
     };
 
@@ -87,6 +96,7 @@ public class MobFarmBlockEntity extends BlockEntity implements MenuProvider {
 
     private int progress;
     private int status;
+    private boolean loading;
     @Nullable
     private LivingEntity lootEntity;
 
@@ -121,8 +131,12 @@ public class MobFarmBlockEntity extends BlockEntity implements MenuProvider {
         return getBlockState().getBlock() instanceof MobFarmBlock block ? block.tier : FarmTier.WOODEN;
     }
 
+    public FarmUpgrades upgrades() {
+        return FarmUpgrades.of(items);
+    }
+
     public int maxProgress() {
-        return tier().ticks;
+        return upgrades().ticks(tier());
     }
 
     public ItemStackHandler getItems() {
@@ -192,8 +206,13 @@ public class MobFarmBlockEntity extends BlockEntity implements MenuProvider {
         return false;
     }
 
-    /** Rolls the mob's loot table as a player kill (so blaze rods, wither skulls etc. can drop). */
+    /**
+     * Rolls the mob's loot table as a player kill (so blaze rods, wither skulls etc. can drop),
+     * once per kill. Looting books arm the fake killer with a looting sword; Fire Aspect sets the
+     * mob on fire so meat comes out cooked.
+     */
     private void produceLoot(ServerLevel level, EntityType<?> type) {
+        FarmUpgrades upgrades = upgrades();
         if (lootEntity == null || lootEntity.getType() != type) {
             Entity created = type.create(level);
             if (!(created instanceof LivingEntity living)) return;
@@ -203,6 +222,11 @@ public class MobFarmBlockEntity extends BlockEntity implements MenuProvider {
         lootEntity.setPos(center.x, center.y, center.z);
 
         FakePlayer killer = FakePlayerFactory.getMinecraft(level);
+        ItemStack weapon = new ItemStack(Items.NETHERITE_SWORD);
+        if (upgrades.looting() > 0) weapon.enchant(Enchantments.MOB_LOOTING, upgrades.looting());
+        killer.setItemInHand(InteractionHand.MAIN_HAND, weapon);
+        lootEntity.setRemainingFireTicks(upgrades.fire() ? 100 : 0);
+
         LootParams params = new LootParams.Builder(level)
                 .withParameter(LootContextParams.THIS_ENTITY, lootEntity)
                 .withParameter(LootContextParams.ORIGIN, center)
@@ -212,12 +236,16 @@ public class MobFarmBlockEntity extends BlockEntity implements MenuProvider {
                 .withParameter(LootContextParams.LAST_DAMAGE_PLAYER, killer)
                 .create(LootContextParamSets.ENTITY);
         LootTable table = level.getServer().getLootData().getLootTable(lootEntity.getLootTable());
-        for (ItemStack stack : table.getRandomItems(params)) {
-            ItemStack rest = insertOutput(stack);
-            if (!rest.isEmpty()) {
-                level.addFreshEntity(new ItemEntity(level, center.x, worldPosition.getY() + 1.1D, center.z, rest));
+        for (int kill = 0; kill < upgrades.kills(); kill++) {
+            for (ItemStack stack : table.getRandomItems(params)) {
+                ItemStack rest = insertOutput(stack);
+                if (!rest.isEmpty()) {
+                    level.addFreshEntity(new ItemEntity(level, center.x, worldPosition.getY() + 1.1D, center.z, rest));
+                }
             }
         }
+        killer.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+        lootEntity.setRemainingFireTicks(0);
         setChanged();
     }
 
@@ -271,7 +299,16 @@ public class MobFarmBlockEntity extends BlockEntity implements MenuProvider {
     @Override
     public void load(CompoundTag tag) {
         super.load(tag);
-        if (tag.contains("Items")) items.deserializeNBT(tag.getCompound("Items"));
+        if (tag.contains("Items")) {
+            // Copy slot by slot, so farms saved before the upgrade slots existed keep all 14 slots.
+            ItemStackHandler saved = new ItemStackHandler();
+            saved.deserializeNBT(tag.getCompound("Items"));
+            loading = true;
+            for (int i = 0; i < SLOT_COUNT; i++) {
+                items.setStackInSlot(i, i < saved.getSlots() ? saved.getStackInSlot(i) : ItemStack.EMPTY);
+            }
+            loading = false;
+        }
         progress = tag.getInt("Progress");
     }
 
