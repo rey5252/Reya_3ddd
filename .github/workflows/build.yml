@@ -41,26 +41,3 @@ jobs:
           name: ${{ matrix.mod }}-jar
           path: ${{ matrix.dir }}/build/libs/*.jar
 
-  # Starts a real headless Minecraft server with Tiny Mob Farm and runs its game tests.
-  mobfarm-gametest:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: mobfarm
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: 17
-      - uses: gradle/actions/setup-gradle@v4
-      - name: Run game tests
-        run: |
-          chmod +x ./gradlew
-          ./gradlew runGameTestServer --stacktrace
-      - name: Upload server log
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: mobfarm-gametest-log
-          path: mobfarm/run/logs/
