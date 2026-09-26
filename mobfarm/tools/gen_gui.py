@@ -505,8 +505,8 @@ def build(pal, warm=True):
     gold_brackets(cv, gx - 2, gy - 2, gx + 54, gy + 54, pal, arm=7)
 
     # --- upgrade slots in the tabs
-    for (sx, sy) in ((5, 32), (5, 52), (SW - 21, 32), (SW - 21, 52)):
-        stone_slot(cv, sx, sy, bgd, shadow=True)
+    for (sx, sy) in ((6, 33), (6, 53), (SW - 22, 33), (SW - 22, 53)):
+        stone_slot(cv, sx, sy)
 
     # --- bars with gems
     for (y, bright, deep) in ((88, (232, 70, 60), (128, 22, 18)), (99, (100, 226, 240), (18, 108, 124))):

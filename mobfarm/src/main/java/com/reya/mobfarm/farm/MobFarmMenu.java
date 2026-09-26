@@ -36,10 +36,10 @@ public class MobFarmMenu extends AbstractContainerMenu {
     public static final int INV_X = BODY_X + 27;
     public static final int INV_Y = 142;
     /** Upgrade slots: two in the left tab, two mirrored in the right tab. */
-    public static final int UPGRADE_LEFT_X = 5;
-    public static final int UPGRADE_RIGHT_X = WIDTH - 5 - 16;
-    public static final int UPGRADE_Y1 = 32;
-    public static final int UPGRADE_Y2 = 52;
+    public static final int UPGRADE_LEFT_X = 6;
+    public static final int UPGRADE_RIGHT_X = WIDTH - 6 - 16;
+    public static final int UPGRADE_Y1 = 33;
+    public static final int UPGRADE_Y2 = 53;
 
     @Nullable
     private final MobFarmBlockEntity farm;
