@@ -434,6 +434,12 @@ public final class BossPanelOverlay {
         g.fill(x2 - 2, y + 1, x2 - 1, y + 2, c);
         g.fill(x + 1, y2 - 2, x + 2, y2 - 1, c);
         g.fill(x2 - 2, y2 - 2, x2 - 1, y2 - 1, c);
+        if (st.frameType == PanelStyle.Frame.RAINBOW) {
+            g.fill(x, y, x + 2, y + 2, c);
+            g.fill(x2 - 2, y, x2, y + 2, c);
+            g.fill(x, y2 - 2, x + 2, y2, c);
+            g.fill(x2 - 2, y2 - 2, x2, y2, c);
+        }
 
         int inner = fade(st.frameInner, alpha);
         g.fill(x + 2, y + t + 1, x2 - 2, y + t + 2, inner);
@@ -522,35 +528,41 @@ public final class BossPanelOverlay {
                 g.fill(x2 - 5, y + 2, x2 - 2, y + 5, accent);
             }
             case RAINBOW -> {
-                g.fill(x + 2, y + 2, x + 4, y + 4, accent);
-                g.fill(x2 - 4, y + 2, x2 - 2, y + 4, accent);
-                g.fill(x + 2, y2 - 4, x + 4, y2 - 2, accent);
-                g.fill(x2 - 4, y2 - 4, x2 - 2, y2 - 2, accent);
+                // the rim is the decoration
             }
             case SIMPLE -> {
             }
         }
     }
 
-    /** A rim just outside the frame whose colours flow around like a jukebox. */
+    /**
+     * A 2px rim hugging the frame from outside, drawn one pixel at a time so it lines up exactly,
+     * with only the outermost corner pixel cut. Colours flow around it.
+     */
     private static void drawRainbowRim(GuiGraphics g, int x, int y, int x2, int y2, float alpha) {
-        float t = Util.getMillis() / 3000.0F;
-        int w = x2 - x;
-        int h = y2 - y;
-        int perimeter = 2 * (w + h);
-        for (int i = 0; i < perimeter; i += 2) {
-            int color = 0xFF000000 | Mth.hsvToRgb(((float) i / perimeter + t) % 1.0F, 0.75F, 1.0F);
-            int c = fade(color, alpha);
-            if (i < w) {
-                g.fill(x + i, y - 2, x + i + 2, y, c);
-            } else if (i < w + h) {
-                g.fill(x2, y + (i - w), x2 + 2, y + (i - w) + 2, c);
-            } else if (i < 2 * w + h) {
-                g.fill(x2 - (i - w - h), y2, x2 - (i - w - h) + 2, y2 + 2, c);
-            } else {
-                g.fill(x - 2, y2 - (i - 2 * w - h), x, y2 - (i - 2 * w - h) + 2, c);
-            }
+        float shift = Util.getMillis() / 3000.0F;
+        float perimeter = 2.0F * ((x2 - x) + (y2 - y)) + 16.0F;
+        for (int px = x - 2; px < x2 + 2; px++) {
+            float top = px - (x - 2);
+            float bottom = (x2 - x + 4) + (y2 - y + 4) + (x2 + 1 - px);
+            boolean end = px == x - 2 || px == x2 + 1;
+            // outer row skips the corner pixel, inner row is full
+            if (!end) g.fill(px, y - 2, px + 1, y - 1, rainbow(top, perimeter, shift, alpha));
+            g.fill(px, y - 1, px + 1, y, rainbow(top, perimeter, shift, alpha));
+            g.fill(px, y2, px + 1, y2 + 1, rainbow(bottom, perimeter, shift, alpha));
+            if (!end) g.fill(px, y2 + 1, px + 1, y2 + 2, rainbow(bottom, perimeter, shift, alpha));
         }
+        for (int py = y; py < y2; py++) {
+            float right = (x2 - x + 4) + (py - y);
+            float left = 2 * (x2 - x + 4) + (y2 - y) + (y2 - 1 - py);
+            g.fill(x2, py, x2 + 2, py + 1, rainbow(right, perimeter, shift, alpha));
+            g.fill(x - 2, py, x, py + 1, rainbow(left, perimeter, shift, alpha));
+        }
+    }
+
+    private static int rainbow(float position, float perimeter, float shift, float alpha) {
+        float hue = (position / perimeter + shift) % 1.0F;
+        return fade(0xFF000000 | Mth.hsvToRgb(hue, 0.75F, 1.0F), alpha);
     }
 
     private static void drawSnowflake(GuiGraphics g, int cx, int cy, int c) {
