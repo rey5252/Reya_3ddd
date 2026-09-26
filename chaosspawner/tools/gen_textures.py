@@ -304,35 +304,39 @@ CARDS = {
         "............"]),
 }
 # upgrades: built from the button tiles in tools/upgrade_tiles.png (20x20 tiles, 6 columns, two rows
-# per colour; the first column is blank). The blank tile of each colour is folded down to 16x16 -
-# outline, light rim, highlight and dark bottom/right kept, the plate sampled to keep its shading and
-# the shine pixels - and a symbol is drawn in the tiles' style: 2px dark strokes with a shade on the right.
+# per colour; the first column is blank). The blank tile of each colour is kept whole, a symbol is drawn
+# on it in the tiles' own style (2px dark strokes with a mid-tone shade on the right), and the result is
+# scaled up 4x to 80x80 so the pixels stay identical while the texture size still allows full mipmaps.
 from PIL import Image as _Image
 
 _TILES = _Image.open("tools/upgrade_tiles.png").convert("RGBA")
-_MAP = [0, 1, 2, 3, 4, 5, 6, 7, 9, 11, 13, 15, 16, 17, 18, 19]     # 16 -> 20 source rows/columns
 TILE_ROW = {"speed": 2, "looting": 0, "quantity": 4, "experience": 6}
 INK = {"speed": ((11, 53, 46), (36, 156, 144)), "looting": ((62, 33, 6), (180, 112, 24)),
        "quantity": ((28, 11, 53), (94, 36, 156)), "experience": ((25, 53, 11), (67, 156, 36))}
 GLYPHS = {
-    "speed": ["XX..XX..",
-              ".XX..XX.",
-              "..XX..XX",
-              "..XX..XX",
-              ".XX..XX.",
-              "XX..XX.."],
-    "looting": ["......XX",
-                ".....XXX",
-                "....XXX.",
-                ".X.XXX..",
-                "..XXX...",
-                "..XX....",
-                ".X..X...",
-                "X......."],
+    "speed": ["XX...XX...",
+              ".XX...XX..",
+              "..XX...XX.",
+              "...XX...XX",
+              "...XX...XX",
+              "..XX...XX.",
+              ".XX...XX..",
+              "XX...XX..."],
+    "looting": [".......XX",
+                "......XXX",
+                ".....XXX.",
+                "....XXX..",
+                ".X.XXX...",
+                "..XXX....",
+                "..XX.....",
+                ".X..X....",
+                "X........"],
     "quantity": ["...XX...",
+                 "...XX...",
                  "...XX...",
                  "XXXXXXXX",
                  "XXXXXXXX",
+                 "...XX...",
                  "...XX...",
                  "...XX..."],
     "experience": ["..XXXX..",
@@ -344,20 +348,26 @@ GLYPHS = {
                    ".XX..XX.",
                    "..XXXX.."],
 }
+SCALE = 4
 for name in CARDS:
     ty = TILE_ROW[name] * 20
-    px = [[_TILES.getpixel((_MAP[x], ty + _MAP[y])) for x in range(16)] for y in range(16)]
+    tile = [[_TILES.getpixel((x, ty + y)) for x in range(20)] for y in range(20)]
     ink, shade_c = INK[name]
     rows = GLYPHS[name]
-    gx = 4
-    gy = 4 + (8 - len(rows)) // 2
+    w, h = len(rows[0]), len(rows)
+    gx = 3 + (14 - w) // 2
+    gy = 3 + (14 - h) // 2
     pts = {(gx + c, gy + r) for r, row in enumerate(rows) for c, ch in enumerate(row) if ch == "X"}
     for (x, y) in pts:
-        q = (x + 1, y)
-        if q not in pts and q[0] <= 12:
-            px[y][q[0]] = shade_c + (255,)
+        for dx in (1, 2):
+            q = (x + dx, y)
+            if q in pts:
+                break
+            if q[0] <= 15:
+                tile[y][q[0]] = shade_c + (255,)
     for (x, y) in pts:
-        px[y][x] = ink + (255,)
+        tile[y][x] = ink + (255,)
+    px = [[tile[y // SCALE][x // SCALE] for x in range(20 * SCALE)] for y in range(20 * SCALE)]
     png(f"{ROOT}/textures/item/{name}_upgrade.png", px)
     json.dump({"parent": "minecraft:item/generated", "textures": {"layer0": f"chaosspawner:item/{name}_upgrade"}},
               open(f"{ROOT}/models/item/{name}_upgrade.json", "w"), indent=2)
