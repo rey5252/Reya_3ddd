@@ -38,6 +38,11 @@ for i in range(1, 15):
     top[1][i] = GL; top[i][1] = GL; top[14][i] = GD; top[i][14] = GD
 for (x, y) in ((3, 3), (12, 3), (3, 12), (12, 12)):
     top[y][x] = G
+for x in range(16):
+    for y in range(16):
+        d = ((x - 7.5) ** 2 + (y - 7.5) ** 2) ** 0.5
+        if 4.6 <= d <= 5.4:
+            top[y][x] = G if (x + y) % 2 else GD
 png(f"{ROOT}/textures/block/base_top.png", top)
 side = grid(IRON_D)
 for x in range(16):
@@ -85,7 +90,10 @@ def liquid_tex(col):
 
 
 PURPLE = (160, 60, 210)
-png(f"{ROOT}/textures/block/flask.png", liquid_tex(PURPLE))
+flask_tex = liquid_tex(PURPLE)
+for (x, y) in ((4, 2),):
+    flask_tex[y][x] = tuple(min(255, int(v * 1.45)) for v in PURPLE)
+png(f"{ROOT}/textures/block/flask.png", flask_tex)
 glass = grid((200, 232, 240))
 for y in range(16):
     glass[y][0] = (240, 252, 255)
@@ -98,7 +106,40 @@ for y in range(16):
             cork[y][x] = (120, 80, 44)
 png(f"{ROOT}/textures/block/cork.png", cork)
 for name, col in (("red", (220, 50, 60)), ("green", (70, 200, 80)), ("blue", (60, 120, 230))):
-    png(f"{ROOT}/textures/block/bottle_{name}.png", liquid_tex(col))
+    b = liquid_tex(col)
+    for x in range(16):
+        b[1][x] = (236, 222, 190)          # paper label round the bottle
+        b[2][x] = tuple(int(v * 0.95) for v in col)
+    b[1][1] = (120, 90, 60)
+    png(f"{ROOT}/textures/block/bottle_{name}.png", b)
+iron = grid(IRON_D)
+for y in range(16):
+    for x in range(16):
+        if rnd(x, y, 9) % 4 == 0:
+            iron[y][x] = IRON
+for i in range(16):
+    iron[0][i] = IRON_L
+png(f"{ROOT}/textures/block/iron.png", iron)
+stone = grid((120, 118, 112))
+for y in range(16):
+    for x in range(16):
+        if rnd(x, y, 10) % 3 == 0:
+            stone[y][x] = (96, 94, 90)
+for i in range(16):
+    stone[0][i] = (150, 148, 142)
+png(f"{ROOT}/textures/block/stone.png", stone)
+mortar = grid((96, 94, 90))
+for y in range(1, 3):
+    for x in range(1, 3):
+        mortar[y][x] = (40, 30, 26)
+mortar[1][1] = (90, 170, 70)
+mortar[2][2] = (60, 130, 50)
+mortar[1][2] = (200, 80, 90)
+png(f"{ROOT}/textures/block/mortar_top.png", mortar)
+wood = grid((110, 76, 44))
+for y in range(16):
+    wood[y][0] = (140, 100, 60)
+png(f"{ROOT}/textures/block/wood.png", wood)
 fire = grid()
 for y in range(16):
     for x in range(16):
@@ -130,21 +171,35 @@ def box(frm, to, tex, faces=("north", "south", "east", "west", "up", "down"), re
 def model(lit):
     sides = ("north", "south", "east", "west")
     els = [
-        box([1, 0, 1], [15, 2, 15], "#base_side", sides + ("down",), rel=True),
-        {"from": [1, 0, 1], "to": [15, 2, 15], "faces": {"up": {"uv": [1, 1, 15, 15], "texture": "#base_top"}}},
-        box([6, 2, 6], [10, 3, 10], "#fire" if lit else "#coal", sides + ("up",)),
-        # four gold legs holding the flask
-        box([5, 2, 5], [6, 4, 6], "#gold", sides), box([10, 2, 5], [11, 4, 6], "#gold", sides),
-        box([5, 2, 10], [6, 4, 11], "#gold", sides), box([10, 2, 10], [11, 4, 11], "#gold", sides),
-        box([5, 4, 5], [11, 9, 11], "#flask", rel=True),
-        box([7, 9, 7], [9, 12, 9], "#neck", sides),
-        box([6, 10, 6], [10, 11, 10], "#gold"),
-        box([7, 12, 7], [9, 13, 9], "#cork"),
+        # two-step base with gold studs on the corners
+        box([0, 0, 0], [16, 1, 16], "#base_side", sides + ("down", "up"), rel=True),
+        box([1, 1, 1], [15, 2, 15], "#base_side", sides, rel=True),
+        {"from": [1, 1, 1], "to": [15, 2, 15], "faces": {"up": {"uv": [1, 1, 15, 15], "texture": "#base_top"}}},
+        box([0, 1, 0], [2, 3, 2], "#gold", sides + ("up",)), box([14, 1, 0], [16, 3, 2], "#gold", sides + ("up",)),
+        box([0, 1, 14], [2, 3, 16], "#gold", sides + ("up",)), box([14, 1, 14], [16, 3, 16], "#gold", sides + ("up",)),
+        # burner: iron ring round the fire, four gold legs up to the flask
+        box([5, 2, 5], [11, 3, 6], "#iron", sides + ("up",)), box([5, 2, 10], [11, 3, 11], "#iron", sides + ("up",)),
+        box([5, 2, 6], [6, 3, 10], "#iron", sides + ("up",)), box([10, 2, 6], [11, 3, 10], "#iron", sides + ("up",)),
+        box([6, 2, 6], [10, 3, 10], "#fire" if lit else "#coal", ("up",)),
+        box([5, 3, 5], [6, 5, 6], "#gold", sides), box([10, 3, 5], [11, 5, 6], "#gold", sides),
+        box([5, 3, 10], [6, 5, 11], "#gold", sides), box([10, 3, 10], [11, 5, 11], "#gold", sides),
+        # round-bellied flask: narrow bottom, wide belly, narrow shoulder, glass neck, gold ring, cork
+        box([6, 5, 6], [10, 6, 10], "#flask", sides + ("down",), rel=True),
+        box([5, 6, 5], [11, 10, 11], "#flask", sides + ("down", "up"), rel=True),
+        box([6, 10, 6], [10, 11, 10], "#flask", sides + ("up",), rel=True),
+        box([7, 11, 7], [9, 14, 9], "#neck", sides),
+        box([6, 12, 6], [10, 13, 10], "#gold", sides + ("up", "down")),
+        box([7, 14, 7], [9, 15, 9], "#cork", sides + ("up",)),
+        # mortar with herbs and a pestle in the fourth corner
+        box([11, 2, 11], [14, 4, 14], "#stone", sides, rel=True),
+        {"from": [11, 2, 11], "to": [14, 4, 14], "faces": {"up": {"uv": [0, 0, 3, 3], "texture": "#mortar_top"}}},
+        box([13, 4, 12], [14, 7, 13], "#wood", sides + ("up",)),
     ]
-    for (x, z, col) in ((2, 2, "red"), (12, 2, "green"), (2, 12, "blue")):
-        els.append(box([x, 2, z], [x + 2, 5, z + 2], f"#b_{col}", rel=True))
-        els.append(box([x, 5, z], [x + 2, 6, z + 2], "#neck", sides))
-        els.append(box([x, 6, z], [x + 2, 7, z + 2], "#cork"))
+    for (x, z, col) in ((2, 2, "red"), (11, 2, "green"), (2, 11, "blue")):
+        els.append(box([x, 2, z], [x + 3, 6, z + 3], f"#b_{col}", sides, rel=True))
+        els.append({"from": [x, 2, z], "to": [x + 3, 6, z + 3], "faces": {"up": {"uv": [4, 4, 7, 7], "texture": f"#b_{col}"}}})
+        els.append(box([x + 1, 6, z + 1], [x + 2, 7, z + 2], "#neck", sides))
+        els.append(box([x + 1, 7, z + 1], [x + 2, 8, z + 2], "#cork", sides + ("up",)))
     return {
         "parent": "minecraft:block/block",
         "render_type": "minecraft:cutout",
@@ -153,6 +208,8 @@ def model(lit):
             "base_top": "multibrewer:block/base_top", "base_side": "multibrewer:block/base_side",
             "gold": "multibrewer:block/gold", "flask": "multibrewer:block/flask", "neck": "multibrewer:block/neck",
             "cork": "multibrewer:block/cork", "fire": "multibrewer:block/fire", "coal": "multibrewer:block/coal",
+            "iron": "multibrewer:block/iron", "stone": "multibrewer:block/stone", "wood": "multibrewer:block/wood",
+            "mortar_top": "multibrewer:block/mortar_top",
             "b_red": "multibrewer:block/bottle_red", "b_green": "multibrewer:block/bottle_green",
             "b_blue": "multibrewer:block/bottle_blue",
         },
