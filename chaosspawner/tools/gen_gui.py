@@ -153,6 +153,14 @@ def clip(cv, x, y):
             cv.rect(x, yy + 2, x + 3, yy + 3, CLIP_LO)
 
 
+def stud(cv, x, y):
+    """Small teal rivet sitting on the frame pipe (2 wide, 4 tall with a black edge)."""
+    cv.rect(x - 1, y - 1, x + 3, y + 5, BLACK)
+    cv.rect(x, y, x + 2, y + 4, CYAN)
+    cv.rect(x, y, x + 2, y + 1, CYAN_L)
+    cv.rect(x, y + 3, x + 2, y + 4, CYAN_D)
+
+
 def vanilla_slot(cv, x, y):
     cv.rect(x - 1, y - 1, x + 17, y + 17, (139, 139, 139))
     cv.rect(x - 1, y - 1, x + 17, y, (55, 55, 55))
@@ -329,10 +337,9 @@ PAL = ((16, 28, 46), (24, 42, 64), (8, 16, 30), (80, 220, 230), (190, 250, 255),
 CYAN, CYAN_L, CYAN_D = (80, 220, 230), (190, 250, 255), (30, 120, 140)
 SOUL, OUT, UP = (29, 16), (29, 46), (173, 46)
 XP_BAR = (29, 108, 125, 117)
-BUTTON = (150, 104, 228, 122)
-MOB = ["..####..", "..#..#..", "..####..", "........", ".######.", "##.##.##", "##.##.##", "..#..#..", "..#..#.."]
-SLASH = ["......##", ".....##.", "....##..", "...##...", "..##....", ".##.....", "##......"]
-TARGET = ["##....##", "#......#", "...##...", "..#..#..", "..#..#..", "...##...", "#......#", "##....##"]
+BUTTON = (134, 104, 228, 122)
+WISP = ["...#....", "...##...", "..###...", "..####..", ".#####..", ".##.###.", "##..###.", "##...##.", ".##.##..", "..###..."]
+ARROW = ["...##...", "..####..", ".######.", "...##...", "...##...", "...##...", "........", ".######."]
 
 
 def gem_medallion(cv, x, y, flip_x=False):
@@ -445,32 +452,30 @@ def build(pal=PAL):
             cv.set(f(x), iy1 + 7, GREY_LO)
             cv.set(f(x), iy1 + 8, BLACK)
 
-    # hollow squares and dots running down both side strips, like the reference
+    # a thin rail down each side strip with small cyan diamonds strung on it at even steps
     for side in (False, True):
         f = (lambda x: mx(x)) if side else (lambda x: x)
-        for i, y in enumerate(range(24, top_h - 22, 7)):
-            kind = rnd(i, 21) % 4
-            x = 11 + rnd(i, 22) % 4
-            if kind == 0:
-                for d in range(4):
-                    for (px_, py_) in ((x + d, y), (x + d, y + 3), (x, y + d), (x + 3, y + d)):
-                        cv.set(f(px_), py_, CYAN)
-            elif kind == 1:
-                for (dx, dy) in ((0, 0), (1, 0), (0, 1), (1, 1)):
-                    cv.set(f(x + dx), y + dy, CYAN)
-                cv.set(f(x + 3), y + 2, CYAN_D)
-            elif kind == 2:
-                cv.set(f(x), y, CYAN_D); cv.set(f(x + 2), y + 1, CYAN)
-            else:
-                for d in range(3):
-                    cv.set(f(x), y + d, CYAN); cv.set(f(x + d), y + 2, CYAN)
+        cxr = 13
+        for y in range(22, top_h - 19):
+            cv.set(f(cxr), y, CYAN_D)
+        for k, y in enumerate(range(28, top_h - 24, 12)):
+            big = k % 2 == 0
+            r = 2 if big else 1
+            for dy in range(-r - 1, r + 2):
+                for dx in range(-r - 1, r + 2):
+                    d = abs(dx) + abs(dy)
+                    if d == r + 1:
+                        cv.set(f(cxr + dx), y + dy, BLACK)
+                    elif d <= r:
+                        c = CYAN_L if (dy < 0 or (dy == 0 and dx < 0)) else CYAN if d < r or dy <= 0 else CYAN_D
+                        cv.set(f(cxr + dx), y + dy, c)
 
     # corner caps, clips, gem medallions, leg caps
     for side in (False, True):
         f = (lambda x: mx(x)) if side else (lambda x: x)
         corner_cap(cv, f(bx1), 0)
-        clip(cv, f(bx1 - 3) - (2 if side else 0), 5)
-        clip(cv, f(bx1 - 3) - (2 if side else 0), top_h - 12)
+        for y in (40, top_h // 2, top_h - 40):
+            stud(cv, f(bx1 + 1) - (1 if side else 0), y)
         for y in (8, top_h - 17):
             gem_medallion(cv, f(bx1 + 4) - (8 if side else 0), y, flip_x=side)
         cap_notch(cv, f(ix1 - 11), iy1 + 5, side)
@@ -487,7 +492,7 @@ def build(pal=PAL):
     for i in range(11):
         sx, sy = SOUL[0] + i * 18, SOUL[1]
         stone_slot(cv, sx, sy, plain=True)
-        engrave(cv, sx + 4, sy + 3, MOB)
+        engrave(cv, sx + 4, sy + 3, WISP)
     # a thin progress track under the souls
     recess(cv, SOUL[0] - 1, 36, SOUL[0] + 11 * 18 + 1, 41, (8, 14, 24), pal)
     # loot 7x3 with a slash, upgrades 3x3 with a target
@@ -495,11 +500,10 @@ def build(pal=PAL):
         for c in range(7):
             sx, sy = OUT[0] + c * 18, OUT[1] + r * 18
             stone_slot(cv, sx, sy, plain=True)
-            engrave(cv, sx + 4, sy + 4, SLASH)
         for c in range(3):
             sx, sy = UP[0] + c * 18, UP[1] + r * 18
             stone_slot(cv, sx, sy, plain=True)
-            engrave(cv, sx + 4, sy + 4, TARGET)
+            engrave(cv, sx + 4, sy + 4, ARROW)
     # experience bar: six segments in a sunken track
     x1, y1, x2, y2 = XP_BAR
     recess(cv, x1, y1, x2, y2, (8, 14, 24), pal)
@@ -508,7 +512,7 @@ def build(pal=PAL):
         cv.rect(sx, y1 + 1, sx + 1, y2 - 1, BLACK)
     # button plate (the screen draws the face and text over it)
     x1, y1, x2, y2 = BUTTON
-    cv.rect(x1 - 1, y1 - 1, x2 + 1, y2 + 1, BLACK)
+    cv.rect(x1 - 1, y1 - 1, x2 - 1, y2 + 1, BLACK)
     return cv
 
 

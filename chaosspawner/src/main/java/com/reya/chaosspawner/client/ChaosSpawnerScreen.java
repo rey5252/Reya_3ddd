@@ -48,7 +48,7 @@ public class ChaosSpawnerScreen extends AbstractContainerScreen<ChaosSpawnerMenu
     @Override
     protected void init() {
         super.init();
-        collect = addRenderableWidget(new TealButton(leftPos + 150, topPos + 104, 78, 18,
+        collect = addRenderableWidget(new TealButton(leftPos + 134, topPos + 104, 94, 18,
                 Component.translatable("gui.chaosspawner.collect"),
                 b -> minecraft.gameMode.handleInventoryButtonClick(menu.containerId, ChaosSpawnerMenu.BUTTON_COLLECT)));
     }
@@ -178,14 +178,24 @@ public class ChaosSpawnerScreen extends AbstractContainerScreen<ChaosSpawnerMenu
             g.fill(x + 1, y + 1, x2 - 1, y + 2, active ? CYAN_L : 0xFF6A7E8E);
             g.fill(x + 1, y2 - 2, x2 - 1, y2 - 1, active ? CYAN_D : 0xFF26323C);
             int b = active ? CYAN_L : 0xFF8A9EAE;
-            for (int[] c : new int[][]{{x + 3, y + 3, 1, 1}, {x2 - 4, y + 3, -1, 1}, {x + 3, y2 - 4, 1, -1}, {x2 - 4, y2 - 4, -1, -1}}) {
-                for (int i = 0; i < 3; i++) {
-                    g.fill(c[0] + i * c[2], c[1], c[0] + i * c[2] + 1, c[1] + 1, b);
-                    g.fill(c[0], c[1] + i * c[3], c[0] + 1, c[1] + i * c[3] + 1, b);
-                }
+            for (int[] c : new int[][]{{x + 2, y + 3, 1, 1}, {x2 - 3, y + 3, -1, 1}, {x + 2, y2 - 4, 1, -1}, {x2 - 3, y2 - 4, -1, -1}}) {
+                g.fill(c[0], c[1], c[0] + 1, c[1] + 1, b);
+                g.fill(c[0], c[1] + c[3], c[0] + 1, c[1] + c[3] + 1, b);
+                g.fill(c[0] + c[2], c[1], c[0] + c[2] + 1, c[1] + 1, b);
             }
             Component m = getMessage();
-            g.drawString(font, m, x + (width - font.width(m)) / 2, y + (height - 8) / 2 + 1, active ? 0xFFFFFFFF : 0xFF9AA8B4, true);
+            int tw = font.width(m), room = width - 12;
+            int color = active ? 0xFFFFFFFF : 0xFF9AA8B4;
+            if (tw <= room) {
+                g.drawString(font, m, x + (width - tw) / 2, y + (height - 8) / 2 + 1, color, true);
+            } else {
+                float k = room / (float) tw;
+                g.pose().pushPose();
+                g.pose().translate(x + width / 2.0F - tw * k / 2.0F, y + height / 2.0F - 4.0F * k + 0.5F, 0.0F);
+                g.pose().scale(k, k, 1.0F);
+                g.drawString(font, m, 0, 0, color, true);
+                g.pose().popPose();
+            }
         }
     }
 }

@@ -62,12 +62,13 @@ public class ChaosSpawnerBlock extends BaseEntityBlock {
         super.onRemove(state, level, pos, newState, moving);
     }
 
-    /** Soul flames drifting round the cage. */
+    /** Flames and souls flicker over the glowing floor. */
     @Override
     public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
-        if (random.nextInt(3) != 0) return;
-        level.addParticle(random.nextBoolean() ? ParticleTypes.SOUL_FIRE_FLAME : ParticleTypes.SOUL,
-                pos.getX() + 0.2D + random.nextDouble() * 0.6D, pos.getY() + 0.3D + random.nextDouble() * 0.6D,
-                pos.getZ() + 0.2D + random.nextDouble() * 0.6D, 0.0D, 0.02D, 0.0D);
+        for (int i = 0; i < 2; i++) {
+            level.addParticle(random.nextInt(4) == 0 ? ParticleTypes.SOUL : ParticleTypes.FLAME,
+                    pos.getX() + 0.2D + random.nextDouble() * 0.6D, pos.getY() + 0.15D + random.nextDouble() * 0.5D,
+                    pos.getZ() + 0.2D + random.nextDouble() * 0.6D, 0.0D, 0.01D, 0.0D);
+        }
     }
 }
