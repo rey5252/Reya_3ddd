@@ -321,18 +321,21 @@ for n, (name, (bg, rim, sym, glow, rows)) in enumerate(CARDS.items()):
             along = 1.0 - abs((x if y in (0, 1, 2, 13, 14, 15) else y) - 7.5) / 7.5   # 1 mid-side, 0 at corners
             diag = (x + y) / 30.0                                                         # 0 top-left .. 1 bottom-right
             if x == 15 or y == 15:
-                # raised light lip on the right and bottom, brightest near its middle
-                c = shade(pale, 0.9 + 0.2 * along) if not (x == 0 or y == 0) else shade(frame, 1.1)
+                # raised pale lip on the right and bottom, brightest near its middle
+                c = shade(pale, 0.88 + 0.2 * along) if not (x == 0 or y == 0) else shade(frame, 1.05)
             elif x == 0 or y == 0:
-                c = shade(fdark, 0.9 + 0.3 * along)
+                c = shade(fdark, 0.85 + 0.3 * along)
             elif x == 14 or y == 14:
-                c = shade(edge, 0.55 + 0.15 * along)
+                # dark groove between the plate and the lip
+                c = shade(edge, 0.5 + 0.12 * along)
             elif x == 1 or y == 1:
-                # knurled top/left frame, lighter in the middle of each side
-                c = shade(frame, (1.0 if (x + y) % 2 else 0.84) * (0.92 + 0.22 * along))
-            elif x == 2 or y == 2 or x == 13 or y == 13:
-                # rim: lit from the top left, in shadow at the bottom right
-                c = shade(edge, 1.22 - 0.5 * diag + 0.08 * along)
+                # smooth frame bevel, lit in the middle of each side
+                c = shade(frame, 0.9 + 0.3 * along)
+            elif x == 13 or y == 13:
+                c = shade(edge, 0.82 + 0.1 * along)
+            elif x == 2 or y == 2:
+                # rim: bright near the top-left, fading along each side
+                c = shade(edge, 1.3 - 0.45 * diag + 0.08 * along)
             else:
                 # plate: a soft glow in the middle, lit from the top left, darker to the bottom right
                 d = max(abs(x - 7.5), abs(y - 7.0)) / 5.0
@@ -358,15 +361,15 @@ for n, (name, (bg, rim, sym, glow, rows)) in enumerate(CARDS.items()):
                 elif x - y == 7 and y <= 5:
                     c = tuple(int(c[i] * 0.5 + bright[i] * 0.5) for i in range(3))
             px[y][x] = c + (255,)
-    # rivets in the frame corners and small bright inlays in the middle of each side
-    for (x, y) in ((1, 1), (14, 1), (1, 14), (14, 14)):
-        px[y][x] = tuple(int(v * 0.6 + 255 * 0.4) for v in bright) + (255,)
-    for (x, y) in ((1, 2), (2, 1)):
-        px[y][x] = shade(frame, 0.7) + (255,)
-    for (x, y) in ((7, 2), (8, 2), (2, 7), (2, 8)):
-        px[y][x] = bright + (255,)
-    for (x, y) in ((7, 13), (8, 13), (13, 7), (13, 8)):
-        px[y][x] = shade(edge, 0.7) + (255,)
+    # rounded corners: the outermost corner pixels are cut, the next ones blend frame and lip
+    px[0][0] = T
+    px[15][15] = T
+    px[0][15] = T
+    px[15][0] = T
+    px[1][1] = shade(frame, 0.8) + (255,)
+    px[14][14] = shade(pale, 0.85) + (255,)
+    px[1][14] = shade(edge, 0.55) + (255,)
+    px[14][1] = shade(edge, 0.55) + (255,)
     # fine scratches across the plate
     for k in range(3):
         sx, sy = 4 + hsh(k, n, 17) % 7, 5 + hsh(n, k, 19) % 6
