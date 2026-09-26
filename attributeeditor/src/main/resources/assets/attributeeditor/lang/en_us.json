@@ -26,5 +26,6 @@
   "gui.attributeeditor.unbreakable.on": "Make unbreakable",
   "gui.attributeeditor.unbreakable.off": "Make breakable",
   "gui.attributeeditor.reset.pending": "Cancel unapplied changes",
-  "gui.attributeeditor.reset.item": "Reset the item to its default attributes"
+  "gui.attributeeditor.reset.item": "Reset the item to its default attributes",
+  "gui.attributeeditor.type_value": "Click to type any number"
 }

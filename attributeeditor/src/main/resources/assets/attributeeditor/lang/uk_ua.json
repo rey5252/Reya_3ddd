@@ -26,5 +26,6 @@
   "gui.attributeeditor.unbreakable.on": "Зробити незламним",
   "gui.attributeeditor.unbreakable.off": "Зробити ламким",
   "gui.attributeeditor.reset.pending": "Скасувати незастосовані зміни",
-  "gui.attributeeditor.reset.item": "Повернути предмету стандартні атрибути"
+  "gui.attributeeditor.reset.item": "Повернути предмету стандартні атрибути",
+  "gui.attributeeditor.type_value": "Клікни, щоб ввести будь-яке число"
 }

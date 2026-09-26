@@ -17,14 +17,13 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
 /**
- * One item slot plus the player inventory. The screen's "Apply" arrives through
- * {@link #clickMenuButton}: {@link #setId} per changed attribute, plus RESET and UNBREAKABLE.
+ * One item slot plus the player inventory. The screen's "Apply" sends one
+ * {@link com.reya.attributeeditor.network.SetAttributePacket} per changed attribute, and
+ * RESET / UNBREAKABLE through {@link #clickMenuButton}.
  */
 public class AttributeTableMenu extends AbstractContainerMenu {
     public static final int RESET = 100;
     public static final int UNBREAKABLE = 101;
-    public static final int SET_BASE = 1000;
-    public static final int SET_ROW_STRIDE = 100000;
     /** Experience levels each step upwards (and the unbreakable toggle) costs in survival. */
     public static final int LEVEL_COST = 1;
 
@@ -72,9 +71,19 @@ public class AttributeTableMenu extends AbstractContainerMenu {
         return input.getItem(0);
     }
 
-    /** Button id that sets {@code row} to slider position {@code steps}. */
-    public static int setId(int row, int steps) {
-        return SET_BASE + row * SET_ROW_STRIDE + steps;
+    /** Sets one attribute of the item to any value; called from {@link com.reya.attributeeditor.network.SetAttributePacket}. */
+    public void setValue(Player player, int row, double value) {
+        ItemStack stack = input.getItem(0);
+        if (stack.isEmpty() || row < 0 || row >= TableRow.ROWS.size() || !TableRow.isValid(value)) return;
+
+        TableRow tableRow = TableRow.ROWS.get(row);
+        Attribute attribute = tableRow.attribute().get();
+        EquipmentSlot slot = AttributeValues.defaultSlot(stack);
+        double current = ItemAttributeEditing.value(stack, attribute, slot);
+        if (!payLevels(player, tableRow.cost(current, value))) return;
+
+        ItemAttributeEditing.set(stack, attribute, slot, value);
+        changed();
     }
 
     @Override
@@ -87,35 +96,25 @@ public class AttributeTableMenu extends AbstractContainerMenu {
         } else if (id == UNBREAKABLE) {
             if (!payLevels(player, LEVEL_COST)) return false;
             ItemAttributeEditing.toggleUnbreakable(stack);
-        } else if (id >= SET_BASE) {
-            int row = (id - SET_BASE) / SET_ROW_STRIDE;
-            int steps = (id - SET_BASE) % SET_ROW_STRIDE;
-            if (row >= TableRow.ROWS.size()) return false;
-            TableRow tableRow = TableRow.ROWS.get(row);
-            if (steps > tableRow.maxSteps()) return false;
-
-            Attribute attribute = tableRow.attribute().get();
-            EquipmentSlot slot = AttributeValues.defaultSlot(stack);
-            double current = ItemAttributeEditing.value(stack, attribute, slot);
-            double target = tableRow.valueAt(steps);
-            if (!payLevels(player, tableRow.cost(current, target))) return false;
-
-            ItemAttributeEditing.set(stack, attribute, slot, target);
         } else {
             return false;
         }
 
+        changed();
+        return true;
+    }
+
+    private void changed() {
         input.setChanged();
         access.execute((level, pos) -> level.playSound(null, pos, SoundEvents.ENCHANTMENT_TABLE_USE, SoundSource.BLOCKS,
                 0.6F, 1.0F + level.random.nextFloat() * 0.2F));
         broadcastChanges();
-        return true;
     }
 
-    private static boolean payLevels(Player player, int cost) {
+    private static boolean payLevels(Player player, long cost) {
         if (cost <= 0 || player.getAbilities().instabuild) return true;
         if (player.experienceLevel < cost) return false;
-        player.giveExperienceLevels(-cost);
+        player.giveExperienceLevels((int) -cost);
         return true;
     }
 

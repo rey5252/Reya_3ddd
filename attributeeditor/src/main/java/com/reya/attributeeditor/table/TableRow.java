@@ -7,11 +7,17 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraftforge.common.ForgeMod;
 
-/** One editable line in the Attribute Table: which attribute, its slider range and step. */
-public record TableRow(Supplier<Attribute> attribute, double min, double max, double step) {
+/**
+ * One editable line in the Attribute Table. {@code sliderMin}/{@code sliderMax} only set the
+ * slider's range; -/+ and typed values can go past them in either direction.
+ */
+public record TableRow(Supplier<Attribute> attribute, double sliderMin, double sliderMax, double step) {
+    /** Values beyond this are rejected as nonsense (and would overflow the level cost). */
+    public static final double MAX_ABS_VALUE = 1.0E9D;
+
     public static final List<TableRow> ROWS = List.of(
             new TableRow(() -> Attributes.ATTACK_DAMAGE, 0.0D, 50.0D, 1.0D),
-            new TableRow(() -> Attributes.ATTACK_SPEED, 0.1D, 10.0D, 0.1D),
+            new TableRow(() -> Attributes.ATTACK_SPEED, 0.0D, 10.0D, 0.1D),
             new TableRow(() -> Attributes.ATTACK_KNOCKBACK, 0.0D, 10.0D, 0.5D),
             new TableRow(() -> Attributes.ARMOR, 0.0D, 30.0D, 1.0D),
             new TableRow(() -> Attributes.ARMOR_TOUGHNESS, 0.0D, 20.0D, 1.0D),
@@ -22,22 +28,24 @@ public record TableRow(Supplier<Attribute> attribute, double min, double max, do
             new TableRow(ForgeMod.ENTITY_REACH, 0.0D, 10.0D, 0.5D),
             new TableRow(ForgeMod.BLOCK_REACH, 0.0D, 10.0D, 0.5D));
 
-    /** Number of slider positions above the minimum. */
-    public int maxSteps() {
-        return (int) Math.round((max - min) / step);
+    public static boolean isValid(double value) {
+        return Double.isFinite(value) && Math.abs(value) <= MAX_ABS_VALUE;
     }
 
-    public double valueAt(int steps) {
-        return round(min + Math.max(0, Math.min(maxSteps(), steps)) * step);
+    /** Levels needed to go from {@code from} to {@code to}: one per started step upwards, lowering is free. */
+    public long cost(double from, double to) {
+        double steps = (to - from) / step;
+        return steps <= 1.0E-6D ? 0L : (long) Math.ceil(steps - 1.0E-6D) * AttributeTableMenu.LEVEL_COST;
     }
 
-    public int stepsFor(double value) {
-        return Math.max(0, Math.min(maxSteps(), (int) Math.round((value - min) / step)));
+    /** Position of {@code value} on the slider, 0..1. */
+    public double sliderFraction(double value) {
+        return Math.max(0.0D, Math.min(1.0D, (value - sliderMin) / (sliderMax - sliderMin)));
     }
 
-    /** Levels needed to go from {@code from} to {@code to}: one per step upwards, lowering is free. */
-    public int cost(double from, double to) {
-        return Math.max(0, (int) Math.round((to - from) / step)) * AttributeTableMenu.LEVEL_COST;
+    /** Slider position 0..1 to a value snapped to the step grid. */
+    public double sliderValue(double fraction) {
+        return round(sliderMin + Math.round(fraction * (sliderMax - sliderMin) / step) * step);
     }
 
     public static double round(double value) {

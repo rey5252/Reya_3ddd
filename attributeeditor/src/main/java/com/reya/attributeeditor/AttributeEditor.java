@@ -1,5 +1,6 @@
 package com.reya.attributeeditor;
 
+import com.reya.attributeeditor.network.ModNetwork;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
@@ -19,6 +20,7 @@ public class AttributeEditor {
         ModRegistry.BLOCKS.register(modBus);
         ModRegistry.ITEMS.register(modBus);
         ModRegistry.MENUS.register(modBus);
+        ModNetwork.register();
         modBus.addListener(this::onSetup);
         modBus.addListener(this::addCreative);
         MinecraftForge.EVENT_BUS.addListener(this::onRegisterCommands);

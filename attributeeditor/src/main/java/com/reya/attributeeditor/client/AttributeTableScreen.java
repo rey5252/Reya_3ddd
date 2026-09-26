@@ -3,11 +3,16 @@ package com.reya.attributeeditor.client;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.lwjgl.glfw.GLFW;
+
 import com.reya.attributeeditor.AttributeValues;
 import com.reya.attributeeditor.ItemAttributeEditing;
+import com.reya.attributeeditor.network.ModNetwork;
+import com.reya.attributeeditor.network.SetAttributePacket;
 import com.reya.attributeeditor.table.AttributeTableMenu;
 import com.reya.attributeeditor.table.TableRow;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
@@ -20,8 +25,9 @@ import net.minecraft.world.item.ItemStack;
 
 /**
  * Dark panel with a gold studded frame. Left: item slot, Apply / Reset and a levels/cost box.
- * Right: a scrollable list of attribute cards, each with -, a slider and +. Changes stay pending
- * ("3 > 10") until Apply sends them to the server. Everything is drawn in code, no GUI texture.
+ * Right: a scrollable list of attribute cards, each with -, a slider and +; clicking the value lets
+ * you type any number. Changes stay pending ("3 > 10") until Apply sends them to the server.
+ * Everything is drawn in code, no GUI texture.
  */
 public class AttributeTableScreen extends AbstractContainerScreen<AttributeTableMenu> {
     // Palette
@@ -75,8 +81,12 @@ public class AttributeTableScreen extends AbstractContainerScreen<AttributeTable
     private static final int UNBREAKABLE_CARD = TableRow.ROWS.size();
     private static final int CARD_COUNT = TableRow.ROWS.size() + 1;
 
-    /** Pending slider positions per row; only rows the player changed. */
-    private final Map<Integer, Integer> pending = new HashMap<>();
+    private static final int EDIT_W = 64;
+
+    /** Pending values per row; only rows the player changed. */
+    private final Map<Integer, Double> pending = new HashMap<>();
+    private EditBox editBox;
+    private int editingRow = -1;
     private boolean pendingUnbreakable;
     private ItemStack lastItem = ItemStack.EMPTY;
     private int scroll;
@@ -106,12 +116,8 @@ public class AttributeTableScreen extends AbstractContainerScreen<AttributeTable
         return ItemAttributeEditing.value(item(), TableRow.ROWS.get(row).attribute().get(), itemSlot());
     }
 
-    private int currentSteps(int row) {
-        return TableRow.ROWS.get(row).stepsFor(current(row));
-    }
-
-    private int shownSteps(int row) {
-        return pending.getOrDefault(row, currentSteps(row));
+    private double shown(int row) {
+        return pending.getOrDefault(row, current(row));
     }
 
     private boolean isUnbreakable() {
@@ -131,27 +137,93 @@ public class AttributeTableScreen extends AbstractContainerScreen<AttributeTable
         return minecraft != null && minecraft.player != null ? minecraft.player.experienceLevel : 0;
     }
 
-    private int pendingCost() {
-        if (freeEdits()) return 0;
-        int cost = pendingUnbreakable ? AttributeTableMenu.LEVEL_COST : 0;
-        for (Map.Entry<Integer, Integer> e : pending.entrySet()) {
-            TableRow row = TableRow.ROWS.get(e.getKey());
-            cost += row.cost(current(e.getKey()), row.valueAt(e.getValue()));
+    private long pendingCost() {
+        if (freeEdits()) return 0L;
+        long cost = pendingUnbreakable ? AttributeTableMenu.LEVEL_COST : 0L;
+        for (Map.Entry<Integer, Double> e : pending.entrySet()) {
+            cost += TableRow.ROWS.get(e.getKey()).cost(current(e.getKey()), e.getValue());
         }
         return cost;
     }
 
     private boolean canApply() {
-        return !item().isEmpty() && hasPending() && pendingCost() <= (freeEdits() ? Integer.MAX_VALUE : playerLevels());
+        return !item().isEmpty() && hasPending() && (freeEdits() || pendingCost() <= playerLevels());
     }
 
-    private void setPending(int row, int steps) {
-        steps = Mth.clamp(steps, 0, TableRow.ROWS.get(row).maxSteps());
-        if (steps == currentSteps(row)) {
+    private void setPending(int row, double value) {
+        value = TableRow.round(value);
+        if (!TableRow.isValid(value)) return;
+        if (Math.abs(value - current(row)) < 1.0E-9D) {
             pending.remove(row);
         } else {
-            pending.put(row, steps);
+            pending.put(row, value);
         }
+    }
+
+    // ---------------------------------------------------------------- typing a value
+
+    @Override
+    protected void init() {
+        super.init();
+        editingRow = -1;
+        editBox = new EditBox(font, 0, 0, EDIT_W, 11, Component.empty());
+        editBox.setMaxLength(16);
+        editBox.setFilter(text -> text.matches("-?[0-9]*([.,][0-9]*)?"));
+        editBox.setVisible(false);
+        addRenderableWidget(editBox);
+    }
+
+    private void startEdit(int row, int cardX, int cardY) {
+        editingRow = row;
+        editBox.setValue(format(shown(row)));
+        editBox.setX(cardX + CARD_W - 5 - EDIT_W);
+        editBox.setY(cardY + 1);
+        editBox.setVisible(true);
+        editBox.setFocused(true);
+        setFocused(editBox);
+    }
+
+    private void commitEdit() {
+        if (editingRow < 0) return;
+        String text = editBox.getValue().replace(',', '.');
+        try {
+            if (!text.isEmpty() && !text.equals("-") && !text.equals(".") && !text.equals("-.")) {
+                setPending(editingRow, Double.parseDouble(text));
+            }
+        } catch (NumberFormatException ignored) {
+            // keep the old value
+        }
+        stopEdit();
+    }
+
+    private void stopEdit() {
+        editingRow = -1;
+        editBox.setVisible(false);
+        editBox.setFocused(false);
+        setFocused(null);
+    }
+
+    @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (editingRow >= 0) {
+            if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
+                commitEdit();
+            } else if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
+                stopEdit();
+            } else {
+                editBox.keyPressed(keyCode, scanCode, modifiers);
+            }
+            return true; // swallow everything, so "E" does not close the screen while typing
+        }
+        return super.keyPressed(keyCode, scanCode, modifiers);
+    }
+
+    @Override
+    public boolean charTyped(char codePoint, int modifiers) {
+        if (editingRow >= 0) {
+            return editBox.charTyped(codePoint, modifiers);
+        }
+        return super.charTyped(codePoint, modifiers);
     }
 
     /** A new or edited item in the slot drops all pending changes. */
@@ -159,7 +231,9 @@ public class AttributeTableScreen extends AbstractContainerScreen<AttributeTable
     protected void containerTick() {
         super.containerTick();
         ItemStack stack = item();
+        editBox.tick();
         if (!ItemStack.matches(stack, lastItem)) {
+            if (editingRow >= 0) stopEdit();
             pending.clear();
             pendingUnbreakable = false;
             dragging = -1;
@@ -316,37 +390,43 @@ public class AttributeTableScreen extends AbstractContainerScreen<AttributeTable
 
     private void drawAttributeCard(GuiGraphics g, int rowIndex, int cx, int cy, int mouseX, int mouseY) {
         TableRow row = TableRow.ROWS.get(rowIndex);
-        int now = currentSteps(rowIndex);
-        int shown = shownSteps(rowIndex);
+        double now = current(rowIndex);
+        double value = shown(rowIndex);
         boolean changed = pending.containsKey(rowIndex);
 
-        String valueText = changed
-                ? format(current(rowIndex)) + " > " + format(row.valueAt(shown))
-                : format(current(rowIndex));
-        int valueWidth = font.width(valueText);
-        g.drawString(font, valueText, cx + CARD_W - 5 - valueWidth, cy + 3, changed ? CHANGED : VALUE, false);
+        String valueText = changed ? format(now) + " > " + format(value) : format(now);
+        int valueWidth = editingRow == rowIndex ? EDIT_W : font.width(valueText);
+        if (editingRow != rowIndex) {
+            boolean hover = inside(mouseX, mouseY, cx + CARD_W / 2, cy, CARD_W / 2, 13);
+            g.drawString(font, valueText, cx + CARD_W - 5 - valueWidth, cy + 3,
+                    hover ? 0xFFFFFFFF : changed ? CHANGED : VALUE, false);
+            if (hover) {
+                g.fill(cx + CARD_W - 5 - valueWidth, cy + 12, cx + CARD_W - 5, cy + 13, 0x88FFFFFF);
+            }
+        }
 
         String name = font.plainSubstrByWidth(Component.translatable(row.attribute().get().getDescriptionId()).getString(),
                 CARD_W - valueWidth - 16);
         g.drawString(font, name, cx + 5, cy + 3, NAME, false);
 
         int by = cy + 14;
-        drawButton(g, cx + SLIDER_PAD, by, SMALL_W, SMALL_H, Component.literal("-"), shown > 0, mouseX, mouseY);
-        drawButton(g, cx + CARD_W - SLIDER_PAD - SMALL_W, by, SMALL_W, SMALL_H, Component.literal("+"),
-                shown < row.maxSteps(), mouseX, mouseY);
+        drawButton(g, cx + SLIDER_PAD, by, SMALL_W, SMALL_H, Component.literal("-"), true, mouseX, mouseY);
+        drawButton(g, cx + CARD_W - SLIDER_PAD - SMALL_W, by, SMALL_W, SMALL_H, Component.literal("+"), true, mouseX, mouseY);
 
-        int sx = sliderX(cx);
-        int sw = sliderWidth();
-        int sy = by + 3;
-        drawSlider(g, sx, sy, sw, shown, row.maxSteps(), now);
+        drawSlider(g, sliderX(cx), by + 3, sliderWidth(), row.sliderFraction(value),
+                value >= row.sliderMax() - 1.0E-9D, changed ? row.sliderFraction(now) : -1.0D);
     }
 
-    private void drawSlider(GuiGraphics g, int sx, int sy, int sw, int steps, int maxSteps, int currentSteps) {
+    /**
+     * @param fraction knob position 0..1
+     * @param full     at or past the slider's top: draw the fill as a rainbow
+     * @param marker   position 0..1 of the item's current value, or negative for none
+     */
+    private void drawSlider(GuiGraphics g, int sx, int sy, int sw, double fraction, boolean full, double marker) {
         g.fill(sx - 1, sy - 1, sx + sw + 1, sy + 7, 0xFF3A3358);
         g.fill(sx, sy, sx + sw, sy + 6, TRACK);
 
-        int filled = maxSteps == 0 ? 0 : sw * steps / maxSteps;
-        boolean full = steps >= maxSteps && maxSteps > 0;
+        int filled = (int) Math.round(sw * fraction);
         for (int px = 0; px < filled; px++) {
             float t = (float) px / Math.max(1, sw - 1);
             int color = full
@@ -362,8 +442,8 @@ public class AttributeTableScreen extends AbstractContainerScreen<AttributeTable
         }
 
         // Tick for the item's current value, when a change is pending.
-        if (currentSteps != steps && maxSteps > 0) {
-            int cxp = sx + sw * currentSteps / maxSteps;
+        if (marker >= 0.0D) {
+            int cxp = sx + (int) Math.round(sw * marker);
             g.fill(cxp, sy - 1, cxp + 1, sy + 7, 0xFFFFFFFF);
         }
 
@@ -406,6 +486,8 @@ public class AttributeTableScreen extends AbstractContainerScreen<AttributeTable
         } else if (inside(mouseX, mouseY, leftPos + LEFT_X, topPos + APPLY_Y, LEFT_W, BUTTON_H) && !freeEdits()) {
             g.renderTooltip(font, Component.translatable("gui.attributeeditor.cost", AttributeTableMenu.LEVEL_COST),
                     mouseX, mouseY);
+        } else if (editingRow < 0 && valueRowAt(mouseX, mouseY) >= 0) {
+            g.renderTooltip(font, Component.translatable("gui.attributeeditor.type_value"), mouseX, mouseY);
         }
     }
 
@@ -425,7 +507,31 @@ public class AttributeTableScreen extends AbstractContainerScreen<AttributeTable
         return super.mouseClicked(mouseX, mouseY, button);
     }
 
+    /** Attribute row whose value text (top-right of its card) is under the mouse, or -1. */
+    private int valueRowAt(double mouseX, double mouseY) {
+        for (int i = 0; i < VISIBLE_ROWS; i++) {
+            int card = i + scroll;
+            if (card >= TableRow.ROWS.size()) break;
+            if (inside(mouseX, mouseY, leftPos + LIST_X + CARD_W / 2, topPos + cardY(i), CARD_W / 2, 13)) return card;
+        }
+        return -1;
+    }
+
     private boolean handleClick(double mouseX, double mouseY) {
+        if (editingRow >= 0) {
+            if (editBox.isMouseOver(mouseX, mouseY)) {
+                return editBox.mouseClicked(mouseX, mouseY, 0);
+            }
+            commitEdit();
+        }
+
+        int valueRow = valueRowAt(mouseX, mouseY);
+        if (valueRow >= 0) {
+            click();
+            startEdit(valueRow, leftPos + LIST_X, topPos + cardY(valueRow - scroll));
+            return true;
+        }
+
         if (inside(mouseX, mouseY, leftPos + LEFT_X, topPos + APPLY_Y, LEFT_W, BUTTON_H)) {
             if (canApply()) apply();
             return true;
@@ -459,12 +565,12 @@ public class AttributeTableScreen extends AbstractContainerScreen<AttributeTable
 
             if (inside(mouseX, mouseY, cx + SLIDER_PAD, by, SMALL_W, SMALL_H)) {
                 click();
-                setPending(card, shownSteps(card) - 1);
+                setPending(card, shown(card) - TableRow.ROWS.get(card).step());
                 return true;
             }
             if (inside(mouseX, mouseY, cx + CARD_W - SLIDER_PAD - SMALL_W, by, SMALL_W, SMALL_H)) {
                 click();
-                setPending(card, shownSteps(card) + 1);
+                setPending(card, shown(card) + TableRow.ROWS.get(card).step());
                 return true;
             }
             if (inside(mouseX, mouseY, sliderX(cx) - 3, by - 2, sliderWidth() + 6, SMALL_H + 4)) {
@@ -497,7 +603,7 @@ public class AttributeTableScreen extends AbstractContainerScreen<AttributeTable
     private void dragTo(int row, double mouseX) {
         int sx = sliderX(leftPos + LIST_X);
         double t = Mth.clamp((mouseX - sx) / sliderWidth(), 0.0D, 1.0D);
-        setPending(row, (int) Math.round(t * TableRow.ROWS.get(row).maxSteps()));
+        setPending(row, TableRow.ROWS.get(row).sliderValue(t));
     }
 
     @Override
@@ -506,6 +612,7 @@ public class AttributeTableScreen extends AbstractContainerScreen<AttributeTable
                 VISIBLE_ROWS * (CARD_H + CARD_GAP))) {
             scroll = Mth.clamp(scroll - (int) Math.signum(delta), 0, maxScroll());
             dragging = -1;
+            if (editingRow >= 0) commitEdit();
             return true;
         }
         return super.mouseScrolled(mouseX, mouseY, delta);
@@ -514,8 +621,8 @@ public class AttributeTableScreen extends AbstractContainerScreen<AttributeTable
     /** Sends every pending change; the server validates and charges each one. */
     private void apply() {
         click();
-        for (Map.Entry<Integer, Integer> e : pending.entrySet()) {
-            send(AttributeTableMenu.setId(e.getKey(), e.getValue()));
+        for (Map.Entry<Integer, Double> e : pending.entrySet()) {
+            ModNetwork.CHANNEL.sendToServer(new SetAttributePacket(e.getKey(), e.getValue()));
         }
         if (pendingUnbreakable) {
             send(AttributeTableMenu.UNBREAKABLE);
