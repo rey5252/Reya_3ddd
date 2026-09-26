@@ -201,6 +201,16 @@ public class UpgraderScreen extends AbstractContainerScreen<UpgraderMenu> {
     protected void renderBg(GuiGraphics g, float partialTick, int mouseX, int mouseY) {
         g.blit(TEXTURE, leftPos - MARGIN, topPos - MARGIN, 0, 0, TEX_W, TEX_H, TEX_W, TEX_H);
         drawTitlePlaque(g, leftPos + imageWidth / 2, topPos - 13);
+        if (entries.isEmpty()) {
+            int x1 = leftPos + LIST_X;
+            int y1 = topPos + LIST_Y;
+            int x2 = x1 + LIST_W;
+            int y2 = y1 + ROWS * ROW_H - 2;
+            g.fill(x1, y1, x2, y2, BLACK);
+            g.fill(x1 + 1, y1 + 1, x2 - 1, y2 - 1, 0xFF2C1416);
+            g.fill(x1 + 1, y1 + 1, x2 - 1, y1 + 2, 0xFF190B0C);
+            g.fill(x1 + 1, y2 - 2, x2 - 1, y2 - 1, 0xFF4A2A28);
+        }
     }
 
     @Override
@@ -221,11 +231,12 @@ public class UpgraderScreen extends AbstractContainerScreen<UpgraderMenu> {
         if (entries.isEmpty()) {
             boolean empty = menu.getSlot(0).getItem().isEmpty();
             Component msg = Component.translatable(empty ? "gui.overenchant.insert" : "gui.overenchant.none");
-            List<FormattedCharSequence> lines = font.split(msg, LIST_W - 12);
-            int ty = LIST_Y + 8;
+            List<FormattedCharSequence> lines = font.split(msg, LIST_W - 16);
+            int cy = LIST_Y + (ROWS * ROW_H - 2) / 2;
+            int ty = cy - lines.size() * 11 / 2 + 1;
             for (FormattedCharSequence line : lines) {
-                g.drawString(font, line, LIST_X + 6, ty, TEXT_DIM, true);
-                ty += 10;
+                g.drawString(font, line, LIST_X + (LIST_W - font.width(line)) / 2, ty, TEXT_DIM, true);
+                ty += 11;
             }
         }
         for (int i = 0; i < ROWS; i++) {
@@ -288,17 +299,6 @@ public class UpgraderScreen extends AbstractContainerScreen<UpgraderMenu> {
         return super.mouseScrolled(mx, my, delta);
     }
 
-    private static int rainbow(float h) {
-        return 0xFF000000 | Mth.hsvToRgb(h - (float) Math.floor(h), 0.78F, 1.0F);
-    }
-
-    private static int shade(int argb, float f) {
-        int r = Math.min(255, (int) (((argb >> 16) & 0xFF) * f));
-        int gr = Math.min(255, (int) (((argb >> 8) & 0xFF) * f));
-        int b = Math.min(255, (int) ((argb & 0xFF) * f));
-        return 0xFF000000 | r << 16 | gr << 8 | b;
-    }
-
     private record Entry(String name, int level, boolean curse) {
     }
 
@@ -338,7 +338,7 @@ public class UpgraderScreen extends AbstractContainerScreen<UpgraderMenu> {
         }
     }
 
-    /** Level slider on a sunken track: rainbow fill from 0 to the new level, gold knob. */
+    /** Level slider on a sunken track: gold up to the current level, glowing cyan for what gets added, gold knob. */
     private class LevelSlider extends AbstractWidget {
         private static final int HW = 5;
         int index = -1;
@@ -377,19 +377,37 @@ public class UpgraderScreen extends AbstractContainerScreen<UpgraderMenu> {
             int y = getY();
             int ty = y + 2;
             int th = height - 4;
-            g.fill(x, ty - 1, x + width, ty + th + 1, BLACK);
-            g.fill(x + 1, ty, x + width - 1, ty + th, 0xFF2A1416);
-            int cx = handleX(level) + HW / 2;
-            int tx = handleX(level + pending[index]) + HW / 2;
-            int right = Math.min(tx, x + width - 1);
-            float anim = (Util.getMillis() % 8000L) / 8000.0F;
-            for (int px = x + 1; px < right; px += 2) {
-                int px2 = Math.min(px + 2, right);
-                int base = rainbow((px - x) / (float) width + anim);
-                if (px < cx) base = shade(base, 0.55F);
-                g.fill(px, ty, px2, ty + 1, shade(base, 1.3F));
-                g.fill(px, ty + 1, px2, ty + th - 1, base);
-                g.fill(px, ty + th - 1, px2, ty + th, shade(base, 0.7F));
+            int x2 = x + width;
+            g.fill(x, ty - 1, x2, ty + th + 1, BLACK);
+            g.fill(x + 1, ty, x2 - 1, ty + th, 0xFF2A1416);
+            g.fill(x + 1, ty, x2 - 1, ty + 1, 0xFF180A0B);
+            for (int k = 1; k < 4; k++) {
+                int tick = x + 1 + (width - 2) * k / 4;
+                g.fill(tick, ty + 1, tick + 1, ty + th, 0xFF3C2224);
+            }
+            int cx = Math.min(x2 - 1, handleX(level) + HW / 2);
+            int tx = Math.min(x2 - 1, handleX(level + pending[index]) + HW / 2);
+            // what the item already has: gold
+            if (cx > x + 1) {
+                g.fill(x + 1, ty, cx, ty + th, GOLD);
+                g.fill(x + 1, ty, cx, ty + 1, GOLD_L);
+                g.fill(x + 1, ty + th - 1, cx, ty + th, GOLD_D);
+            }
+            // what will be added: glowing cyan with stripes sliding along
+            if (tx > cx) {
+                int from = Math.max(cx, x + 1);
+                g.fill(from, ty, tx, ty + th, 0xFF3FC4DA);
+                g.fill(from, ty, tx, ty + 1, 0xFFD2FBFF);
+                g.fill(from, ty + th - 1, tx, ty + th, 0xFF17708A);
+                int shift = (int) (Util.getMillis() / 90L % 6L);
+                for (int px = from - 6 + shift; px < tx; px += 6) {
+                    for (int row = 1; row < th - 1; row++) {
+                        int sx = px + row;
+                        if (sx >= from && sx < tx) g.fill(sx, ty + row, sx + 1, ty + row + 1, 0x60FFFFFF);
+                    }
+                }
+                float pulse = 0.5F + 0.5F * Mth.sin(Util.getMillis() / 180.0F);
+                g.fill(Math.max(from, tx - 2), ty, tx, ty + th, ((int) (0x60 + 0x9F * pulse) << 24) | 0xFFFFFF);
             }
             int hx = handleX(level + pending[index]);
             boolean hot = isHoveredOrFocused() && active;
@@ -397,6 +415,7 @@ public class UpgraderScreen extends AbstractContainerScreen<UpgraderMenu> {
             g.fill(hx + 1, y + 1, hx + HW - 1, y + height - 1, active ? (hot ? GOLD_L : GOLD) : 0xFF6E6A66);
             g.fill(hx + 1, y + 1, hx + HW - 1, y + 2, active ? 0xFFFFF4C8 : 0xFF86827E);
             g.fill(hx + 1, y + height - 2, hx + HW - 1, y + height - 1, active ? GOLD_D : 0xFF4E4A47);
+            g.fill(hx + 2, y + 3, hx + 3, y + height - 3, active ? GOLD_D : 0xFF4E4A47);
         }
 
         @Override
