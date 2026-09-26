@@ -120,8 +120,6 @@ public class MobFarmScreen extends AbstractContainerScreen<MobFarmMenu> {
         // Lasso socket, loot box and the mob window, mirrored around the middle
         drawSocketBox(g, leftPos + LEFT_PANEL_X, y + PANEL_Y, PANEL_W, PANEL_H, p);
         drawSocketBox(g, leftPos + RIGHT_PANEL_X, y + PANEL_Y, PANEL_W, PANEL_H, p);
-        drawCurl(g, leftPos + WINDOW_X - 3, y + PANEL_Y + 2, p, true);
-        drawCurl(g, leftPos + WINDOW_X + WINDOW_W + 2, y + PANEL_Y + 2, p, false);
 
         // Ornament line above the inventory
         int dy = y + MobFarmMenu.INV_Y - 8;
@@ -311,37 +309,36 @@ public class MobFarmScreen extends AbstractContainerScreen<MobFarmMenu> {
         px(g, cx, cy, p.trimLight);
     }
 
-    /** Swirl beside the mob window; mirrored for the right side. */
-    private static void drawCurl(GuiGraphics g, int x, int y, Palette p, boolean left) {
-        int d = left ? -1 : 1;
-        int[][] shape = {{0, 0}, {1, 0}, {2, 1}, {3, 2}, {3, 3}, {2, 4}, {1, 4}, {1, 3}, {2, 2}, {0, 5}, {0, 6}, {1, 7}, {2, 8}};
-        for (int[] s : shape) px(g, x + s[0] * d, y + s[1], p.trim);
-        px(g, x + 2 * d, y + 3, p.trimLight);
+    /** Same frame as the outer border, smaller: black edge, dark band, thin trim line. */
+    private static void drawDarkFrame(GuiGraphics g, int x, int y, int x2, int y2, Palette p) {
+        g.fill(x - 3, y - 2, x2 + 3, y2 + 2, 0xFF000000);
+        g.fill(x - 2, y - 3, x2 + 2, y2 + 3, 0xFF000000);
+        g.fill(x - 2, y - 2, x2 + 2, y2 + 2, BORDER_DARK);
+        g.fill(x - 2, y - 2, x2 + 2, y - 1, BORDER_MID);
+        g.fill(x - 1, y - 1, x2 + 1, y2 + 1, p.trim);
     }
 
-    /** Recessed box with gold corner brackets and a gem stud in the middle of each side. */
-    private static void drawSocketBox(GuiGraphics g, int x, int y, int w, int h, Palette p) {
-        g.fill(x - 1, y - 1, x + w + 1, y + h + 1, p.trimDark);
-        g.fill(x, y, x + w, y + h, p.bgDark);
-        g.fill(x, y, x + w, y + 1, (p.trim & 0xFFFFFF) | 0x90000000);
-        int x2 = x + w - 1;
-        int y2 = y + h - 1;
-        for (int i = 0; i < 5; i++) {
-            px(g, x - 1 + i, y - 1, p.trim);
-            px(g, x - 1, y - 1 + i, p.trim);
-            px(g, x2 + 1 - i, y - 1, p.trim);
-            px(g, x2 + 1, y - 1 + i, p.trim);
-            px(g, x - 1 + i, y2 + 1, p.trim);
-            px(g, x - 1, y2 + 1 - i, p.trim);
-            px(g, x2 + 1 - i, y2 + 1, p.trim);
-            px(g, x2 + 1, y2 + 1 - i, p.trim);
+    /** 5x5 square spiral in a box corner, oriented by (dx, dy). */
+    private static void drawMiniKey(GuiGraphics g, int x, int y, int dx, int dy, Palette p) {
+        String[] key = {"11111", "00001", "11101", "10001", "11111"};
+        for (int r = 0; r < 5; r++) {
+            for (int c = 0; c < 5; c++) {
+                if (key[r].charAt(c) == '1') px(g, x + c * dx, y + r * dy, (r + c) % 4 == 0 ? p.trimLight : p.trim);
+            }
         }
-        px(g, x - 1, y - 1, p.trimLight);
-        px(g, x2 + 1, y - 1, p.trimLight);
-        px(g, x - 1, y2 + 1, p.trimLight);
-        px(g, x2 + 1, y2 + 1, p.trimLight);
-        drawDiamond(g, x + w / 2, y - 1, p);
-        drawDiamond(g, x + w / 2, y2 + 1, p);
+    }
+
+    /** Recessed box in the outer-frame style, with small key spirals in its corners. */
+    private static void drawSocketBox(GuiGraphics g, int x, int y, int w, int h, Palette p) {
+        int x2 = x + w;
+        int y2 = y + h;
+        drawDarkFrame(g, x, y, x2, y2, p);
+        g.fill(x, y, x2, y2, p.bgDark);
+        g.fill(x, y, x2, y + 1, 0x40000000);
+        drawMiniKey(g, x + 1, y + 1, 1, 1, p);
+        drawMiniKey(g, x2 - 2, y + 1, -1, 1, p);
+        drawMiniKey(g, x + 1, y2 - 2, 1, -1, p);
+        drawMiniKey(g, x2 - 2, y2 - 2, -1, -1, p);
     }
 
     /** Title plaque: framed dark plate with rivets, hanging from two short chains. */
@@ -445,9 +442,7 @@ public class MobFarmScreen extends AbstractContainerScreen<MobFarmMenu> {
         int x2 = x + WINDOW_W;
         int y2 = y + PANEL_H;
         Palette p = palette(tier);
-        g.fill(x - 2, y - 2, x2 + 2, y2 + 2, p.trimDark);
-        g.fill(x - 1, y - 1, x2 + 1, y2 + 1, p.trim);
-        g.fill(x - 1, y - 1, x2 + 1, y, p.trimLight);
+        drawDarkFrame(g, x, y, x2, y2, p);
         g.fillGradient(x, y, x2, y2, 0xFF0C0A10, p.bgDark);
         // pedestal
         int cx = x + WINDOW_W / 2;
@@ -537,33 +532,72 @@ public class MobFarmScreen extends AbstractContainerScreen<MobFarmMenu> {
         drawBar(g, x, top + BAR2_Y, shownFullness, 0xFF5FE0F0, 0xFF126A7A, p, false);
     }
 
-    private static void drawBar(GuiGraphics g, int x, int y, float fraction, int bright, int deep, Palette p, boolean shimmer) {
-        // orb icon
-        g.fill(x + 1, y - 1, x + 5, y + BAR_H + 1, p.trimDark);
-        g.fill(x, y, x + 6, y + BAR_H, p.trimDark);
-        g.fill(x + 1, y, x + 5, y + BAR_H, bright);
-        g.fill(x + 1, y + BAR_H - 2, x + 5, y + BAR_H, deep);
-        px(g, x + 2, y + 1, 0xFFFFFFFF);
-        // track
+    /**
+     * Capsule bar: dark rounded frame with a trim line, glossy fill (highlight on top, shade at
+     * the bottom, colour deepening to the left), a glowing tip, 10% notches, moving diagonal
+     * stripes while the farm works, and a round gem icon in front.
+     */
+    private static void drawBar(GuiGraphics g, int x, int y, float fraction, int bright, int deep, Palette p, boolean animate) {
+        drawGemIcon(g, x + 3, y + BAR_H / 2, bright, deep);
+
         int bx = x + 10;
         int bw = BAR_W - 10;
-        g.fill(bx - 1, y - 1, bx + bw + 1, y + BAR_H + 1, p.trimDark);
-        g.fill(bx, y, bx + bw, y + BAR_H, 0xFF141016);
+        int bx2 = bx + bw;
+        int y2 = y + BAR_H;
+        // rounded frame
+        g.fill(bx - 2, y - 2, bx2 + 2, y2 + 2, 0xFF000000);
+        g.fill(bx - 1, y - 2, bx2 + 1, y - 1, BORDER_DARK);
+        g.fill(bx - 2, y - 1, bx2 + 2, y2 + 1, BORDER_DARK);
+        g.fill(bx - 1, y2 + 1, bx2 + 1, y2 + 2, BORDER_DARK);
+        g.fill(bx - 1, y - 1, bx2 + 1, y2 + 1, withAlpha(p.trim, 0.9F));
+        // inset track
+        g.fillGradient(bx, y, bx2, y2, 0xFF08070B, 0xFF1B1720);
+
         int filled = fraction > 0.002F ? Math.max(2, Math.round(bw * fraction)) : 0;
-        for (int i = 0; i < filled; i += 2) {
-            float t = (float) i / Math.max(1, bw - 1);
-            g.fill(bx + i, y, bx + Math.min(filled, i + 2), y + BAR_H, lerp(deep, bright, t));
-        }
-        g.fill(bx, y, bx + filled, y + 1, 0x70FFFFFF);
-        if (shimmer && filled > 0) {
-            int sweep = (int) ((Util.getMillis() % 1600L) / 1600.0F * (bw + 20)) - 10;
-            for (int d = -5; d <= 5; d++) {
-                int sx = sweep + d;
-                if (sx < 0 || sx >= filled) continue;
-                int alpha = (int) (0x50 * (1.0F - Math.abs(d) / 6.0F));
-                g.fill(bx + sx, y, bx + sx + 1, y + BAR_H, (alpha << 24) | 0xFFFFFF);
+        if (filled > 0) {
+            int mid = lerp(deep, bright, 0.5F);
+            for (int i = 0; i < filled; i += 2) {
+                float t = 0.35F + 0.65F * i / Math.max(1, bw - 1);
+                int c = lerp(deep, bright, t);
+                int w2 = Math.min(filled, i + 2);
+                g.fill(bx + i, y + 1, bx + w2, y2 - 1, c);
             }
+            g.fill(bx, y, bx + filled, y + 1, lerp(bright, 0xFFFFFFFF, 0.55F));   // glossy top
+            g.fill(bx, y2 - 1, bx + filled, y2, lerp(deep, 0xFF000000, 0.35F));   // shaded bottom
+            g.fill(bx, y + 1, bx + 1, y2 - 1, mid);
+
+            if (animate) {
+                // diagonal stripes drifting to the right
+                int shift = (int) ((Util.getMillis() / 60L) % 8L);
+                for (int i = -8 + shift; i < filled; i += 8) {
+                    for (int r = 0; r < BAR_H - 2; r++) {
+                        int sx = i + r;
+                        if (sx >= 0 && sx < filled) g.fill(bx + sx, y + 1 + r, bx + sx + 2, y + 2 + r, 0x22FFFFFF);
+                    }
+                }
+            }
+            // glowing tip
+            int tip = bx + filled;
+            g.fill(tip - 1, y, tip, y2, lerp(bright, 0xFFFFFFFF, 0.7F));
+            if (filled < bw) g.fill(tip, y, Math.min(bx2, tip + 2), y2, withAlpha(bright, 0.35F));
         }
+        // notches every 10%
+        for (int k = 1; k < 10; k++) {
+            int nx = bx + bw * k / 10;
+            g.fill(nx, y2 - 2, nx + 1, y2, 0x55000000);
+        }
+    }
+
+    /** Round gem: dark outline, coloured body shaded to the bottom, white glint. */
+    private static void drawGemIcon(GuiGraphics g, int cx, int cy, int bright, int deep) {
+        g.fill(cx - 2, cy - 4, cx + 3, cy + 5, 0xFF000000);
+        g.fill(cx - 3, cy - 3, cx + 4, cy + 4, 0xFF000000);
+        g.fill(cx - 2, cy - 3, cx + 3, cy + 4, bright);
+        g.fill(cx - 3, cy - 2, cx + 4, cy + 3, bright);
+        g.fill(cx - 2, cy + 1, cx + 3, cy + 4, deep);
+        g.fill(cx - 3, cy + 1, cx + 4, cy + 3, deep);
+        px(g, cx - 1, cy - 2, 0xFFFFFFFF);
+        px(g, cx - 2, cy - 1, 0xC0FFFFFF);
     }
 
     @Override
