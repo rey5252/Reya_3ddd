@@ -29,6 +29,7 @@ public class AttributeEditor {
 
     private void onSetup(FMLCommonSetupEvent event) {
         ItemAttributeConfig.load();
+        event.enqueueWork(AttributeLimits::lift);
     }
 
     private void addCreative(BuildCreativeModeTabContentsEvent event) {
