@@ -312,96 +312,179 @@ METALS = {
     "quantity":   ((52, 20, 70), (76, 36, 98), (120, 50, 160), (190, 120, 232), (248, 220, 255), (50, 16, 70)),
     "experience": ((26, 58, 20), (40, 84, 30), (62, 138, 34), (150, 222, 76), (232, 255, 172), (26, 62, 18)),
 }
-for n, (name, (bg, rim, sym, glow, rows)) in enumerate(CARDS.items()):
+# The tokens are 32x32 so there is room for detail: a mitred metal frame (dark bevel top/left, dark
+# groove and pale lip bottom/right), rivets in the corners, a small gem set in the middle of each side,
+# a glowing plate with glints, shine stars and corner filigree, and an engraved symbol with an inner
+# highlight and a bright lip under it.
+TS = 32
+
+
+def seg_dist(px_, py_, ax, ay, bx, by):
+    dx, dy = bx - ax, by - ay
+    t = max(0.0, min(1.0, ((px_ - ax) * dx + (py_ - ay) * dy) / float(dx * dx + dy * dy)))
+    return math.hypot(px_ - (ax + t * dx), py_ - (ay + t * dy))
+
+
+def chevron(x, y, ox):
+    # a solid ">" between x = ox and ox + 9, rows 9..22
+    if not (9 <= y <= 22):
+        return False
+    k = abs(y - 15.5) / 6.5          # 0 at the point row, 1 at the ends
+    left = ox + 5.5 * (1 - k)
+    return left <= x <= left + 3.6
+
+
+SYMBOLS32 = {
+    "speed": lambda x, y: chevron(x, y, 7) or chevron(x, y, 14),
+    "looting": lambda x, y: (seg_dist(x, y, 13.5, 17.5, 22.5, 8.5) <= 1.9 - 0.08 * max(0.0, (x - 18))
+                             or seg_dist(x, y, 9.5, 15.5, 15.5, 21.5) <= 1.25
+                             or seg_dist(x, y, 12.0, 19.0, 9.0, 22.0) <= 1.15
+                             or math.hypot(x - 8.2, y - 22.8) <= 1.8),
+    "quantity": lambda x, y: (abs(x - 15.5) + abs(y - 15.5) <= 4.6
+                              or any(abs(x - cx) + abs(y - cy) <= 2.3 for cx, cy in ((10.5, 10.5), (20.5, 10.5), (10.5, 20.5), (20.5, 20.5)))),
+    "experience": lambda x, y: math.hypot(x - 15.5, y - 15.5) <= 7.6,
+}
+
+
+def mask_of(fn):
+    m = set()
+    for y in range(TS):
+        for x in range(TS):
+            hits = sum(fn(x + ox, y + oy) for ox in (0.25, 0.75) for oy in (0.25, 0.75))
+            if hits >= 2:
+                m.add((x, y))
+    return m
+
+
+def mix3(a, b, t):
+    t = max(0.0, min(1.0, t))
+    return tuple(int(a[i] * (1 - t) + b[i] * t) for i in range(3))
+
+
+for n, name in enumerate(CARDS):
     fdark, frame, edge, mid, bright, ink = METALS[name]
-    px = grid()
-    for y in range(16):
-        for x in range(16):
-            pale = tuple(int(bright[i] * 0.7 + edge[i] * 0.3) for i in range(3))
-            along = 1.0 - abs((x if y in (0, 1, 2, 13, 14, 15) else y) - 7.5) / 7.5   # 1 mid-side, 0 at corners
-            diag = (x + y) / 30.0                                                         # 0 top-left .. 1 bottom-right
-            if x == 15 or y == 15:
-                # raised pale lip on the right and bottom, brightest near its middle
-                c = shade(pale, 0.88 + 0.2 * along) if not (x == 0 or y == 0) else shade(frame, 1.05)
-            elif x == 0 or y == 0:
-                c = shade(fdark, 0.85 + 0.3 * along)
-            elif x == 14 or y == 14:
-                # dark groove between the plate and the lip
-                c = shade(edge, 0.5 + 0.12 * along)
-            elif x == 1 or y == 1:
-                # smooth frame bevel, lit in the middle of each side
-                c = shade(frame, 0.9 + 0.3 * along)
-            elif x == 13 or y == 13:
-                c = shade(edge, 0.82 + 0.1 * along)
-            elif x == 2 or y == 2:
-                # rim: bright near the top-left, fading along each side
-                c = shade(edge, 1.3 - 0.45 * diag + 0.08 * along)
+    pale = mix3(edge, bright, 0.7)
+    px = [[T] * TS for _ in range(TS)]
+    L = TS - 1
+    for y in range(TS):
+        for x in range(TS):
+            dl, dt, dr, db = x, y, L - x, L - y
+            if min(dl, dr) + min(dt, db) < 2:
+                continue                                    # rounded outer corners
+            d = min(dl, dt, dr, db)
+            # which side of the mitred frame this pixel belongs to
+            lit = min(dl, dt) < min(dr, db) or (min(dl, dt) == min(dr, db) and x + y < L)
+            along = 1.0 - abs(((x if min(dt, db) <= min(dl, dr) else y)) - 15.5) / 15.5
+            diag = (x + y) / (2.0 * L)
+            if d <= 5 and lit:
+                if d == 0:
+                    c = shade(fdark, 0.85 + 0.3 * along)
+                elif d in (1, 2):
+                    c = shade(frame, (1.12 if d == 1 else 0.95) * (0.88 + 0.3 * along))
+                elif d == 3:
+                    c = shade(fdark, 1.1)
+                else:
+                    c = shade(edge, (1.32 if d == 4 else 1.12) - 0.4 * diag + 0.08 * along)
+            elif d <= 5:
+                if d == 0:
+                    c = shade(pale, 0.72)
+                elif d in (1, 2):
+                    c = shade(pale, (1.0 if d == 2 else 0.9) * (0.86 + 0.2 * along))
+                elif d in (3, 4):
+                    c = shade(edge, (0.46 if d == 3 else 0.58) + 0.1 * along)
+                else:
+                    c = shade(edge, 0.85 + 0.1 * along)
             else:
-                # plate: a soft glow in the middle, lit from the top left, darker to the bottom right
-                d = max(abs(x - 7.5), abs(y - 7.0)) / 5.0
-                t = max(0.0, min(1.0, 1.0 - d))
-                c = tuple(int(mid[i] * (1 - t * 0.7) + bright[i] * t * 0.7) for i in range(3))
-                c = shade(c, 1.12 - 0.3 * diag)
-                if d > 0.85:
-                    c = tuple(int(c[i] * 0.55 + edge[i] * 0.45) for i in range(3))
-                # inner bevel of the plate
-                if x == 3 or y == 3:
-                    c = tuple(int(c[i] * 0.7 + bright[i] * 0.3) for i in range(3))
-                elif x == 12 or y == 12:
-                    c = shade(c, 0.86)
-                c = shade(c, 1.0 + ((hsh(x, y, n) % 5) - 2) * 0.02)
-                # diagonal glints across the upper right, strongest in their middle
-                g = 1.0 - abs(y - 5.5) / 5.0
-                if x - y in (4, 5) and y <= 9:
-                    c = tuple(int(c[i] * (1 - 0.75 * g) + bright[i] * 0.75 * g) for i in range(3))
-                elif x - y == 3 and y <= 8:
-                    c = tuple(int(c[i] * (1 - 0.4 * g) + bright[i] * 0.4 * g) for i in range(3))
-                elif x - y == 6 and y <= 7:
-                    c = tuple(int(c[i] * 0.8 + bright[i] * 0.2) for i in range(3))
-                elif x - y == 7 and y <= 5:
-                    c = tuple(int(c[i] * 0.5 + bright[i] * 0.5) for i in range(3))
+                # the plate: glow in the middle, lit from the top left, a fine brushed grain
+                r = max(abs(x - 15.5), abs(y - 15.0)) / 10.0
+                t = max(0.0, min(1.0, 1.0 - r))
+                c = mix3(mid, bright, t * 0.72)
+                c = shade(c, 1.14 - 0.32 * diag + ((hsh(0, y, n + 7) % 5) - 2) * 0.012 + ((hsh(x, y, n) % 5) - 2) * 0.018)
+                if r > 0.88:
+                    c = mix3(c, edge, 0.42)
+                if x == 6 or y == 6:
+                    c = mix3(c, bright, 0.35)
+                elif x == 25 or y == 25:
+                    c = shade(c, 0.84)
+                # glints across the upper right, strongest in their middle
+                g = max(0.0, 1.0 - abs(y - 11.0) / 9.0)
+                k = x - y
+                if k in (9, 10, 11) and y <= 18:
+                    c = mix3(c, bright, (0.85 if k == 10 else 0.5) * g)
+                elif k in (8, 12) and y <= 17:
+                    c = mix3(c, bright, 0.22 * g)
+                elif k in (14, 15) and y <= 10:
+                    c = mix3(c, bright, 0.55 * g)
             px[y][x] = c + (255,)
-    # rounded corners: the outermost corner pixels are cut, the next ones blend frame and lip
-    px[0][0] = T
-    px[15][15] = T
-    px[0][15] = T
-    px[15][0] = T
-    px[1][1] = shade(frame, 0.8) + (255,)
-    px[14][14] = shade(pale, 0.85) + (255,)
-    px[1][14] = shade(edge, 0.55) + (255,)
-    px[14][1] = shade(edge, 0.55) + (255,)
-    # fine scratches across the plate
-    for k in range(3):
-        sx, sy = 4 + hsh(k, n, 17) % 7, 5 + hsh(n, k, 19) % 6
-        for j in range(2):
-            x, y = sx + j, sy - j
-            if 3 <= x <= 12 and 3 <= y <= 12:
-                px[y][x] = shade(px[y][x], 1.12 if k % 2 else 0.9)
-    # white shine dots
-    for (x, y) in ((3, 3), (4, 3), (3, 4), (4, 4), (11, 11), (12, 11), (11, 12), (12, 12)):
-        px[y][x] = (255, 255, 250, 255)
-    px[4][4] = tuple(int(v * 0.5 + 255 * 0.5) for v in bright) + (255,)
-    px[12][12] = tuple(int(v * 0.5 + 255 * 0.5) for v in bright) + (255,)
-    # the symbol, engraved: dark lines with a bright lip below-right
-    pts = {(2 + c, 2 + r) for r, row in enumerate(rows) for c, ch in enumerate(row) if ch == "#"}
-    # only the outline of a solid shape is cut in (thin lines like the reference); its inside stays
-    # plate, just a shade deeper
-    edge_pts = {(x, y) for (x, y) in pts
-                if name == "looting" or any((x + dx, y + dy) not in pts for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)))}
-    for (x, y) in edge_pts:
+
+    # rivets in the four frame corners
+    for (rx, ry) in ((2, 2), (L - 4, 2), (2, L - 4), (L - 4, L - 4)):
+        for yy in range(ry, ry + 3):
+            for xx in range(rx, rx + 3):
+                px[yy][xx] = shade(fdark, 0.9) + (255,)
+        px[ry][rx] = shade(frame, 1.3) + (255,)
+        px[ry][rx + 1] = mix3(frame, pale, 0.6) + (255,)
+        px[ry + 1][rx] = mix3(frame, pale, 0.6) + (255,)
+        px[ry + 1][rx + 1] = mix3(pale, (255, 255, 255), 0.5) + (255,)
+        px[ry + 2][rx + 2] = shade(fdark, 0.6) + (255,)
+
+    # a small cut gem set in the middle of each side
+    gem = [".##.", "####", "####", ".##."]
+    for (gx, gy) in ((14, 1), (14, L - 4), (1, 14), (L - 4, 14)):
+        for r_, row in enumerate(gem):
+            for c_, ch in enumerate(row):
+                if ch != "#":
+                    continue
+                xx, yy = gx + c_, gy + r_
+                col = mix3(bright, (255, 255, 255), 0.55) if (r_ + c_) <= 1 else bright if (r_ + c_) <= 3 else mid if (r_ + c_) <= 4 else edge
+                px[yy][xx] = col + (255,)
+        for (ox, oy) in ((0, 0), (3, 0), (0, 3), (3, 3)):
+            px[gy + oy][gx + ox] = shade(fdark, 0.8) + (255,)
+
+    # filigree in the free plate corners (top right and bottom left): small engraved brackets
+    for (fx, fy, sx_, sy_) in ((24, 7, -1, 1), (7, 24, 1, -1)):
+        for i in range(4):
+            for (xx, yy) in ((fx + sx_ * i, fy), (fx, fy + sy_ * i)):
+                px[yy][xx] = mix3(ink, edge, 0.35) + (255,)
+        px[fy + sy_ * 2][fx + sx_ * 2] = mix3(bright, (255, 255, 255), 0.4) + (255,)
+
+    # the symbol: engraved outline, a slightly deeper inside with a highlight along its upper-left
+    # edge, and a bright lip below-right of the cut
+    m = mask_of(SYMBOLS32[name])
+    edge_m = {(x, y) for (x, y) in m if any((x + dx, y + dy) not in m for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)))}
+    inner = m - edge_m
+    for (x, y) in m:
         q = (x + 1, y + 1)
-        if q not in edge_pts and q not in pts and 3 <= q[0] <= 12 and 3 <= q[1] <= 12:
-            px[q[1]][q[0]] = tuple(int(px[q[1]][q[0]][i] * 0.4 + bright[i] * 0.6) for i in range(3)) + (255,)
-    for (x, y) in pts - edge_pts:
-        px[y][x] = shade(px[y][x], 0.9 - 0.012 * (x + y))
-    for (x, y) in edge_pts:
-        # engraved lines: a touch lighter towards the top left, deepest at the bottom right
-        k = (x + y - 6) / 18.0
-        px[y][x] = tuple(int(ink[i] * (1.35 - 0.55 * k) + edge[i] * 0.12) for i in range(3)) + (255,)
-    # a tiny four-point sparkle next to the top-left shine
-    for (x, y) in ((5, 3), (3, 5)):
-        if (x, y) not in pts:
-            px[y][x] = tuple(int(px[y][x][i] * 0.5 + 255 * 0.5) for i in range(3)) + (255,)
+        if q not in m and 6 <= q[0] <= 25 and 6 <= q[1] <= 25:
+            px[q[1]][q[0]] = mix3(px[q[1]][q[0]][:3], bright, 0.6) + (255,)
+    for (x, y) in inner:
+        base = shade(px[y][x][:3], 0.86 - 0.006 * (x + y))
+        if (x - 1, y) in edge_m or (x, y - 1) in edge_m:
+            base = mix3(base, bright, 0.35)
+        elif (x + 1, y) in edge_m or (x, y + 1) in edge_m:
+            base = shade(base, 0.88)
+        px[y][x] = base + (255,)
+    if name == "experience":
+        for (x, y) in inner:
+            if 4.4 <= math.hypot(x + 0.5 - 15.5, y + 0.5 - 15.5) <= 5.5:
+                px[y][x] = mix3(ink, edge, 0.25) + (255,)
+        for (x, y) in ((12, 12), (13, 12), (12, 13)):
+            px[y][x] = mix3(bright, (255, 255, 255), 0.6) + (255,)
+    for (x, y) in edge_m:
+        k = (x + y - 14) / 30.0
+        px[y][x] = shade(ink, 1.45 - 0.7 * k) + (255,)
+
+    # shine: a four-point star top left, a soft dot bottom right, and a few twinkles
+    for (xx, yy, a) in ((8, 8, 1.0), (7, 8, 0.7), (9, 8, 0.7), (8, 7, 0.7), (8, 9, 0.7), (6, 8, 0.3), (8, 6, 0.3), (10, 8, 0.3), (8, 10, 0.3)):
+        if (xx, yy) not in m:
+            px[yy][xx] = mix3(px[yy][xx][:3], (255, 255, 250), a) + (255,)
+    for (xx, yy, a) in ((22, 22, 0.9), (23, 22, 0.6), (22, 23, 0.6), (23, 23, 0.4)):
+        if (xx, yy) not in m:
+            px[yy][xx] = mix3(px[yy][xx][:3], (255, 255, 245), a) + (255,)
+    for i in range(3):
+        xx, yy = 7 + hsh(i, n, 23) % 18, 7 + hsh(n, i, 29) % 18
+        if (xx, yy) not in m and all((xx + dx, yy + dy) not in m for dx in (-1, 0, 1) for dy in (-1, 0, 1)):
+            px[yy][xx] = mix3(px[yy][xx][:3], (255, 255, 255), 0.55) + (255,)
     png(f"{ROOT}/textures/item/{name}_upgrade.png", px)
     json.dump({"parent": "minecraft:item/generated", "textures": {"layer0": f"chaosspawner:item/{name}_upgrade"}},
               open(f"{ROOT}/models/item/{name}_upgrade.json", "w"), indent=2)
