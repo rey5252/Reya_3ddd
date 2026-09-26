@@ -252,16 +252,16 @@ CARDS = {
     # background, rim, symbol, glow, symbol rows (12x12, "#" symbol, "o" darker symbol edge)
     "speed": ((18, 104, 118), (80, 220, 230), (225, 255, 255), (90, 240, 250), [
         "............",
-        ".#....#.....",
-        ".##...##....",
-        ".###..###...",
-        ".####.####..",
-        ".#####.####.",
-        ".#####.####.",
-        ".####.####..",
-        ".###..###...",
-        ".##...##....",
-        ".#....#.....",
+        "............",
+        "..##..##....",
+        "...##..##...",
+        "....##..##..",
+        ".....##..##.",
+        ".....##..##.",
+        "....##..##..",
+        "...##..##...",
+        "..##..##....",
+        "............",
         "............"]),
     "looting": ((26, 44, 120), (110, 140, 250), (255, 222, 120), (255, 190, 80), [
         "............",
@@ -278,16 +278,16 @@ CARDS = {
         "............"]),
     "quantity": ((84, 30, 118), (210, 110, 240), (150, 255, 110), (120, 255, 90), [
         "............",
-        "..#......#..",
-        ".###....###.",
+        "............",
         "..#......#..",
         ".....##.....",
-        "....####....",
-        "....####....",
+        "....#..#....",
+        "...#.##.#...",
+        "...#.##.#...",
+        "....#..#....",
         ".....##.....",
         "..#......#..",
-        ".###....###.",
-        "..#......#..",
+        "............",
         "............"]),
     "experience": ((30, 96, 34), (130, 230, 90), (240, 255, 120), (200, 255, 80), [
         "............",
@@ -303,132 +303,101 @@ CARDS = {
         "............",
         "............"]),
 }
-# upgrades: tilted 3D medallions, 64x64 and animated (12 frames): a thick engraved metal rim with a
-# visible edge, a glowing dome that fades from white to the upgrade's colour, a symbol on the dome and
-# a shimmer that sweeps across the medallion.
-import colorsys
-
-MED = {
-    # rim dark, rim, rim light, dome colour, symbol
-    "speed":      ((10, 60, 62), (30, 150, 150), (150, 250, 240), (60, 230, 220), (10, 110, 120)),
-    "looting":    ((80, 50, 8), (190, 140, 30), (255, 235, 150), (250, 200, 60), (120, 70, 10)),
-    "quantity":   ((50, 14, 70), (150, 60, 200), (240, 190, 255), (220, 120, 255), (90, 20, 130)),
-    "experience": ((20, 60, 10), (80, 170, 40), (210, 255, 160), (150, 240, 80), (40, 110, 20)),
+# upgrades: shiny metal tokens like the reference - a dark frame, a plate glowing from the orange
+# rim to a bright middle, a diagonal glint, white shine dots in two corners and an engraved symbol
+METALS = {
+    # frame dark, frame, rim, middle, bright, engraving
+    "speed":      ((14, 44, 58), (24, 74, 92), (30, 120, 150), (80, 200, 225), (205, 250, 255), (12, 46, 62)),
+    "looting":    ((96, 56, 24), (117, 77, 46), (163, 99, 35), (232, 190, 70), (255, 246, 160), (72, 46, 18)),
+    "quantity":   ((52, 20, 70), (76, 36, 98), (120, 50, 160), (190, 120, 232), (248, 220, 255), (50, 16, 70)),
+    "experience": ((26, 58, 20), (40, 84, 30), (62, 138, 34), (150, 222, 76), (232, 255, 172), (26, 62, 18)),
 }
-FR, SZ = 12, 64
-ANG = math.radians(-24)
-CX, CY, RX, RY = 31.0, 32.0, 24.0, 27.0
-
-
-def ell(x, y, ox=0.0, oy=0.0, scale=1.0):
-    """Normalised radius of (x, y) in the tilted medallion ellipse (1 = its edge)."""
-    dx, dy = x - CX - ox, y - CY - oy
-    u = dx * math.cos(ANG) + dy * math.sin(ANG)
-    v = -dx * math.sin(ANG) + dy * math.cos(ANG)
-    return math.hypot(u / (RX * scale), v / (RY * scale)), math.atan2(v, u)
-
-
-def symbol(name, x, y):
-    # coordinates relative to the dome centre, a little up-left of the medallion centre
-    X, Y = x - 30.5, y - 30.0
-    if name == "speed":      # an arrow pointing up and right
-        return (seg_dist(X, Y, -9, 8, 6, -7) <= 2.3 or seg_dist(X, Y, 8, -9, -2, -8) <= 2.0
-                or seg_dist(X, Y, 8, -9, 7, 1) <= 2.0)
-    if name == "looting":    # a sword: long blade to the top right, short guard, grip and pommel
-        return (seg_dist(X, Y, -3.5, 3.5, 10, -10) <= 2.0 - max(0.0, X - 6) * 0.25
-                or seg_dist(X, Y, -6.5, 0.5, -0.5, 6.5) <= 1.4
-                or seg_dist(X, Y, -4, 4, -8, 8) <= 1.3 or math.hypot(X + 9.3, Y - 9.3) <= 2.0)
-    if name == "quantity":   # a bold plus
-        return (abs(X) <= 2.6 and abs(Y) <= 10) or (abs(Y) <= 2.6 and abs(X) <= 10)
-    # experience: a four-point star inside a ring
-    r = math.hypot(X, Y)
-    star = abs(X) * abs(Y) <= 5.0 and abs(X) + abs(Y) <= 9.0
-    return star or 9.5 <= r <= 11.5
-
-
-def seg_dist(px_, py_, ax, ay, bx, by):
-    dx, dy = bx - ax, by - ay
-    t = max(0.0, min(1.0, ((px_ - ax) * dx + (py_ - ay) * dy) / float(dx * dx + dy * dy)))
-    return math.hypot(px_ - (ax + t * dx), py_ - (ay + t * dy))
-
-
-def mixc(a, b, t):
-    t = max(0.0, min(1.0, t))
-    return tuple(a[i] + (b[i] - a[i]) * t for i in range(3))
-
-
-for n, name in enumerate(CARDS):
-    rdark, rim, rlight, dome, sym = MED[name]
-    sheet = [[T] * SZ for _ in range(SZ * FR)]
-    # symbol coverage (4x supersampled) is the same in every frame
-    cov = [[sum(symbol(name, x + (i + 0.5) / 4, y + (j + 0.5) / 4) for i in range(4) for j in range(4)) / 16.0
-            for x in range(SZ)] for y in range(SZ)]
-    # a soft halo of the dome colour round the symbol
-    glow = [[0.0] * SZ for _ in range(SZ)]
-    for y in range(SZ):
-        for x in range(SZ):
-            if cov[y][x] < 1:
-                near = max(cov[yy][xx] for yy in range(max(0, y - 2), min(SZ, y + 3))
-                           for xx in range(max(0, x - 2), min(SZ, x + 3)))
-                glow[y][x] = near
-    for f in range(FR):
-        sweep = -40 + f * (150 / FR)            # position of the shimmer band along x + y
-        for y in range(SZ):
-            for x in range(SZ):
-                acc, alpha = [0.0, 0.0, 0.0], 0.0
-                for (sx, sy) in ((0.25, 0.25), (0.75, 0.25), (0.25, 0.75), (0.75, 0.75)):
-                    fx, fy = x + sx, y + sy
-                    r, a = ell(fx, fy)
-                    if r <= 1.0:
-                        if r > 0.95:
-                            c = rdark                               # outline
-                        elif r > 0.72:
-                            # the rim: lit from the top left, engraved with rings and notches
-                            lightk = 0.5 + 0.5 * math.cos(a + 2.4)
-                            h0, l0, s0 = colorsys.rgb_to_hls(*(v / 255.0 for v in rim))
-                            hr = colorsys.hls_to_rgb((h0 + 0.09 * math.sin(a * 2 + 1)) % 1.0, l0, min(1.0, s0 * 1.1))
-                            rim_c = tuple(v * 255 for v in hr)
-                            c = mixc(rdark, rim_c, 0.35 + 0.65 * lightk)
-                            c = mixc(c, rlight, max(0.0, lightk - 0.55) * 1.6)
-                            if abs(r - 0.84) < 0.018 or abs(r - 0.76) < 0.02:
-                                c = mixc(c, rdark, 0.6)
-                            notch = (int((a + math.pi) / (2 * math.pi) * 28) % 3 == 0) and 0.79 < r < 0.83
-                            if notch:
-                                c = mixc(c, rlight, 0.45)
-                            grain = ((hsh(int(fx * 2), int(fy * 2), n) % 9) - 4) / 60.0
-                            c = mixc(c, (255, 255, 255) if grain > 0 else (0, 0, 0), abs(grain))
-                        elif r > 0.69:
-                            c = mixc(rdark, (0, 0, 0), 0.3)          # groove round the dome
-                        else:
-                            # the dome: white-hot up and to the left, the upgrade colour at its edge
-                            dx, dy = fx - 25.0, fy - 23.0
-                            h = min(1.0, math.hypot(dx, dy) / 26.0)
-                            c = mixc((255, 255, 255), dome, (h - 0.15) * 1.5)
-                            c = mixc(c, rdark, max(0.0, r - 0.55) * 1.4)
-                            g = glow[y][x]
-                            if g > 0:
-                                c = mixc(c, dome, g * 0.6)
-                            k = cov[y][x]
-                            if k > 0:
-                                c = mixc(c, sym, k)
-                        # shimmer
-                        band = abs((fx + fy) - sweep)
-                        if band < 7:
-                            c = mixc(c, (255, 255, 255), (1 - band / 7) * 0.6)
-                    else:
-                        # the medallion's edge, seen below and right of it
-                        r2, a2 = ell(fx, fy, 2.2, 3.0)
-                        if r2 > 1.0:
-                            continue
-                        c = mixc(rdark, rim, 0.25 + 0.2 * math.sin(a2 * 6))
-                        if r2 > 0.96:
-                            c = mixc(rdark, (0, 0, 0), 0.5)
-                    acc = [acc[i] + c[i] for i in range(3)]
-                    alpha += 1
-                if alpha:
-                    sheet[f * SZ + y][x] = tuple(int(v / alpha) for v in acc) + (int(255 * min(1.0, alpha / 2.0)) if alpha < 4 else 255,)
-    # the symbol's soft outer glow is baked in above; write the strip and its animation file
-    png(f"{ROOT}/textures/item/{name}_upgrade.png", sheet)
-    json.dump({"animation": {"frametime": 2}}, open(f"{ROOT}/textures/item/{name}_upgrade.png.mcmeta", "w"), indent=2)
+for n, (name, (bg, rim, sym, glow, rows)) in enumerate(CARDS.items()):
+    fdark, frame, edge, mid, bright, ink = METALS[name]
+    px = grid()
+    for y in range(16):
+        for x in range(16):
+            pale = tuple(int(bright[i] * 0.7 + edge[i] * 0.3) for i in range(3))
+            along = 1.0 - abs((x if y in (0, 1, 2, 13, 14, 15) else y) - 7.5) / 7.5
+            diag = (x + y) / 30.0
+            if x == 15 or y == 15:
+                # raised light lip on the right and bottom, brightest in its middle
+                c = shade(pale, 0.86 + 0.22 * along) if not (x == 0 or y == 0) else shade(frame, 1.1)
+            elif x == 0 or y == 0:
+                c = shade(fdark, 0.85 + 0.3 * along)
+            elif x == 14 or y == 14:
+                c = shade(edge, 0.52 + 0.14 * along)
+            elif x == 1 or y == 1:
+                # knurled top/left frame, lit in the middle of each side
+                c = shade(frame, (1.0 if (x + y) % 2 else 0.82) * (0.9 + 0.28 * along))
+            elif x == 2 or y == 2 or x == 13 or y == 13:
+                # rim: bright at the top left, in shadow at the bottom right
+                c = shade(edge, 1.28 - 0.5 * diag + 0.06 * along)
+            else:
+                # plate: glow in the middle, lit from the top left
+                d = max(abs(x - 7.5), abs(y - 7.0)) / 5.0
+                t = max(0.0, min(1.0, 1.0 - d))
+                c = tuple(int(mid[i] * (1 - t * 0.7) + bright[i] * t * 0.7) for i in range(3))
+                c = shade(c, 1.1 - 0.26 * diag)
+                if d > 0.85:
+                    c = tuple(int(c[i] * 0.6 + edge[i] * 0.4) for i in range(3))
+                if x == 3 or y == 3:
+                    c = tuple(int(c[i] * 0.72 + bright[i] * 0.28) for i in range(3))
+                elif x == 12 or y == 12:
+                    c = shade(c, 0.86)
+                c = shade(c, 1.0 + ((hsh(x, y, n) % 5) - 2) * 0.018)
+                # glints across the upper right, strongest in their middle
+                g = 1.0 - abs(y - 5.5) / 5.0
+                if x - y in (4, 5) and y <= 9:
+                    c = tuple(int(c[i] * (1 - 0.7 * g) + bright[i] * 0.7 * g) for i in range(3))
+                elif x - y == 3 and y <= 8:
+                    c = tuple(int(c[i] * (1 - 0.35 * g) + bright[i] * 0.35 * g) for i in range(3))
+                elif x - y == 7 and y <= 5:
+                    c = tuple(int(c[i] * 0.55 + bright[i] * 0.45) for i in range(3))
+            px[y][x] = c + (255,)
+    # rivets in the frame corners and small bright inlays in the middle of each side
+    for (x, y) in ((1, 1), (14, 1), (1, 14), (14, 14)):
+        px[y][x] = tuple(int(v * 0.55 + 255 * 0.45) for v in bright) + (255,)
+    for (x, y) in ((2, 2), (13, 2), (2, 13)):
+        px[y][x] = shade(edge, 0.7) + (255,)
+    for (x, y) in ((7, 2), (8, 2), (2, 7), (2, 8)):
+        px[y][x] = bright + (255,)
+    for (x, y) in ((7, 13), (8, 13), (13, 7), (13, 8)):
+        px[y][x] = shade(edge, 0.7) + (255,)
+    # fine scratches across the plate
+    for k in range(3):
+        sx, sy = 4 + hsh(k, n, 17) % 7, 5 + hsh(n, k, 19) % 6
+        for j in range(2):
+            x, y = sx + j, sy - j
+            if 3 <= x <= 12 and 3 <= y <= 12:
+                px[y][x] = shade(px[y][x], 1.08 if k % 2 else 0.93)
+    # white shine dots
+    for (x, y) in ((3, 3), (4, 3), (3, 4), (4, 4), (11, 11), (12, 11), (11, 12), (12, 12)):
+        px[y][x] = (255, 255, 250, 255)
+    px[4][4] = tuple(int(v * 0.5 + 255 * 0.5) for v in bright) + (255,)
+    px[12][12] = tuple(int(v * 0.5 + 255 * 0.5) for v in bright) + (255,)
+    # the symbol, engraved: dark lines with a bright lip below-right
+    pts = {(2 + c, 2 + r) for r, row in enumerate(rows) for c, ch in enumerate(row) if ch == "#"}
+    # only the outline of a solid shape is cut in (thin lines like the reference); its inside stays
+    # plate, just a shade deeper
+    edge_pts = {(x, y) for (x, y) in pts
+                if name == "looting" or any((x + dx, y + dy) not in pts for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)))}
+    for (x, y) in edge_pts:
+        q = (x + 1, y + 1)
+        if q not in edge_pts and q not in pts and 3 <= q[0] <= 12 and 3 <= q[1] <= 12:
+            px[q[1]][q[0]] = tuple(int(px[q[1]][q[0]][i] * 0.4 + bright[i] * 0.6) for i in range(3)) + (255,)
+    for (x, y) in pts - edge_pts:
+        base = shade(px[y][x][:3], 0.84)
+        if (x - 1, y) in edge_pts and (x, y - 1) in edge_pts:
+            base = tuple(int(base[i] * 0.7 + bright[i] * 0.3) for i in range(3))
+        px[y][x] = base + (255,)
+    for (x, y) in edge_pts:
+        k = (x + y - 6) / 18.0
+        px[y][x] = shade(ink, 1.35 - 0.5 * k) + (255,)
+    # a tiny sparkle beside the top-left shine
+    for (x, y) in ((5, 3), (3, 5)):
+        if (x, y) not in pts:
+            px[y][x] = tuple(int(px[y][x][i] * 0.5 + 255 * 0.5) for i in range(3)) + (255,)
+    png(f"{ROOT}/textures/item/{name}_upgrade.png", px)
     json.dump({"parent": "minecraft:item/generated", "textures": {"layer0": f"chaosspawner:item/{name}_upgrade"}},
               open(f"{ROOT}/models/item/{name}_upgrade.json", "w"), indent=2)
