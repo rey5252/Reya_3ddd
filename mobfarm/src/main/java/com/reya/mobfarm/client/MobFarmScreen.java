@@ -200,29 +200,97 @@ public class MobFarmScreen extends AbstractContainerScreen<MobFarmMenu> {
         return total / MobFarmBlockEntity.OUTPUT_COUNT;
     }
 
-    /** Double trim with filigree corners and diamonds halfway down the sides. */
-    private static void drawOrnateBox(GuiGraphics g, int x, int y, int x2, int y2, Palette p) {
+    private static final int BORDER_DARK = 0xFF1C1822;
+    private static final int BORDER_MID = 0xFF2C2634;
+    private static final int CLIP = 0xFF8A8E9A;
+    private static final int CLIP_LIGHT = 0xFFC8CCD6;
+
+    /**
+     * Wide dark border with a thin trim line inside, square-spiral (Greek key) ornaments in the
+     * corners, metal clips on the outer edge and twinkling sparks on the background.
+     */
+    private void drawOrnateBox(GuiGraphics g, int x, int y, int x2, int y2, Palette p) {
         g.fill(x - 1, y - 1, x2 + 1, y2 + 1, 0xFF000000);
-        g.fill(x, y, x2, y2, p.trimDark);
-        g.fill(x + 1, y + 1, x2 - 1, y2 - 1, p.trim);
-        g.fill(x + 1, y + 1, x2 - 1, y + 2, p.trimLight);
-        g.fill(x + 2, y + 2, x2 - 2, y2 - 2, p.bgDark);
-        g.fill(x + 3, y + 3, x2 - 3, y2 - 3, p.bg);
-        // faint woven pattern
-        for (int py = y + 6; py < y2 - 6; py += 4) {
-            for (int px = x + 6 + (py / 4 % 2) * 2; px < x2 - 6; px += 4) {
-                g.fill(px, py, px + 1, py + 1, (p.bgDark & 0xFFFFFF) | 0x60000000);
+        g.fill(x, y, x2, y2, BORDER_DARK);
+        g.fill(x + 1, y + 1, x2 - 1, y + 2, BORDER_MID);
+        g.fill(x + 1, y + 1, x + 2, y2 - 1, BORDER_MID);
+        // thin trim line, then the background
+        g.fill(x + 3, y + 3, x2 - 3, y2 - 3, p.trim);
+        g.fill(x + 4, y + 4, x2 - 4, y2 - 4, p.bg);
+        g.fill(x + 4, y + 4, x2 - 4, y + 5, p.bgDark);
+
+        drawSparks(g, x + 6, y + 6, x2 - 6, y2 - 6, p);
+
+        drawKey(g, x + 3, y + 3, 1, 1, p);
+        drawKey(g, x2 - 4, y + 3, -1, 1, p);
+        drawKey(g, x + 3, y2 - 4, 1, -1, p);
+        drawKey(g, x2 - 4, y2 - 4, -1, -1, p);
+
+        // metal clips on the outer edge, near each corner (mirrored)
+        for (int cy : new int[]{y + 14, y2 - 20}) {
+            drawClip(g, x - 3, cy);
+            drawClip(g, x2, cy);
+        }
+        // little accent triangles in the outermost corners
+        for (int i = 0; i < 3; i++) {
+            g.fill(x2 - 3 + i, y + i, x2, y + i + 1, p.trim);
+            g.fill(x, y + i, x + 3 - i, y + i + 1, p.trim);
+            g.fill(x2 - 3 + i, y2 - 1 - i, x2, y2 - i, p.trim);
+            g.fill(x, y2 - 1 - i, x + 3 - i, y2 - i, p.trim);
+        }
+    }
+
+    /** Square spiral (Greek key) 7x7 sitting on the inner corner, oriented by (dx, dy). */
+    private static void drawKey(GuiGraphics g, int x, int y, int dx, int dy, Palette p) {
+        String[] key = {
+                "1111111",
+                "1000000",
+                "1011111",
+                "1010001",
+                "1010101",
+                "1010111",
+                "1010000"};
+        for (int r = 0; r < key.length; r++) {
+            for (int c = 0; c < key[r].length(); c++) {
+                int px = x + c * dx;
+                int py = y + r * dy;
+                if (key[r].charAt(c) == '1') {
+                    px(g, px, py, (r + c) % 3 == 0 ? p.trimLight : p.trim);
+                } else {
+                    px(g, px, py, BORDER_DARK);
+                }
             }
         }
-        // inner thin trim line
-        outline(g, x + 4, y + 4, x2 - 4, y2 - 4, (p.trimDark & 0xFFFFFF) | 0xC0000000);
-        drawCorner(g, x + 2, y + 2, 1, 1, p);
-        drawCorner(g, x2 - 3, y + 2, -1, 1, p);
-        drawCorner(g, x + 2, y2 - 3, 1, -1, p);
-        drawCorner(g, x2 - 3, y2 - 3, -1, -1, p);
-        int my = (y + y2) / 2;
-        drawDiamond(g, x + 1, my, p);
-        drawDiamond(g, x2 - 2, my, p);
+    }
+
+    private static void drawClip(GuiGraphics g, int x, int y) {
+        g.fill(x, y, x + 3, y + 7, 0xFF000000);
+        g.fill(x, y + 1, x + 3, y + 6, CLIP);
+        g.fill(x, y + 1, x + 3, y + 2, CLIP_LIGHT);
+        g.fill(x, y + 3, x + 3, y + 4, 0xFF5A5E6A);
+    }
+
+    /** Scattered gold sparks that slowly twinkle, always in the same places. */
+    private static void drawSparks(GuiGraphics g, int x, int y, int x2, int y2, Palette p) {
+        long now = Util.getMillis();
+        int count = (x2 - x) * (y2 - y) / 220;
+        for (int i = 0; i < count; i++) {
+            int h = i * 0x9E3779B1;
+            h ^= h >>> 15;
+            h *= 0x2C1B3C6D;
+            h ^= h >>> 13;
+            int sx = x + Math.floorMod(h, x2 - x);
+            int sy = y + Math.floorMod(h >>> 8, y2 - y);
+            float twinkle = 0.35F + 0.65F * Mth.square(Mth.sin(now / 900.0F + (h & 0xFF) * 0.1F));
+            int c = withAlpha((i % 3 == 0 ? p.trimLight : p.trim), twinkle * 0.8F);
+            px(g, sx, sy, c);
+            if (i % 7 == 0) {
+                px(g, sx - 1, sy, withAlpha(p.trim, twinkle * 0.4F));
+                px(g, sx + 1, sy, withAlpha(p.trim, twinkle * 0.4F));
+                px(g, sx, sy - 1, withAlpha(p.trim, twinkle * 0.4F));
+                px(g, sx, sy + 1, withAlpha(p.trim, twinkle * 0.4F));
+            }
+        }
     }
 
     private static void outline(GuiGraphics g, int x, int y, int x2, int y2, int c) {
@@ -230,24 +298,6 @@ public class MobFarmScreen extends AbstractContainerScreen<MobFarmMenu> {
         g.fill(x, y2 - 1, x2, y2, c);
         g.fill(x, y, x + 1, y2, c);
         g.fill(x2 - 1, y, x2, y2, c);
-    }
-
-    /** Filigree corner: an L of trim with a curl and a dot, pointing inward along (dx, dy). */
-    private static void drawCorner(GuiGraphics g, int x, int y, int dx, int dy, Palette p) {
-        for (int i = 0; i < 9; i++) {
-            px(g, x + i * dx, y, p.trim);
-            px(g, x, y + i * dy, p.trim);
-            px(g, x + i * dx, y + dy, i < 7 ? p.trimLight : p.trim);
-            px(g, x + dx, y + i * dy, i < 7 ? p.trimLight : p.trim);
-        }
-        // little square gem in the corner
-        for (int i = 2; i < 5; i++) for (int j = 2; j < 5; j++) px(g, x + i * dx, y + j * dy, p.trim);
-        px(g, x + 3 * dx, y + 3 * dy, p.trimLight);
-        // curl
-        px(g, x + 6 * dx, y + 3 * dy, p.trim);
-        px(g, x + 7 * dx, y + 4 * dy, p.trim);
-        px(g, x + 3 * dx, y + 6 * dy, p.trim);
-        px(g, x + 4 * dx, y + 7 * dy, p.trim);
     }
 
     private static void px(GuiGraphics g, int x, int y, int c) {
@@ -363,9 +413,9 @@ public class MobFarmScreen extends AbstractContainerScreen<MobFarmMenu> {
     private void drawTab(GuiGraphics g, int x, int y, Palette p, boolean left) {
         int w = B + 3;
         g.fill(x - 1, y - 1, x + w + 1, y + TAB_H + 1, 0xFF000000);
-        g.fill(x, y, x + w, y + TAB_H, p.trimDark);
-        g.fill(x + 1, y + 1, x + w - 1, y + TAB_H - 1, p.trim);
-        g.fill(x + 2, y + 2, x + w - 2, y + TAB_H - 2, p.bg);
+        g.fill(x, y, x + w, y + TAB_H, BORDER_DARK);
+        g.fill(x + 2, y + 2, x + w - 2, y + TAB_H - 2, p.trim);
+        g.fill(x + 3, y + 3, x + w - 3, y + TAB_H - 3, p.bg);
         boolean active = !menu.upgrades().isEmpty();
         float pulse = active ? 0.5F + 0.5F * Mth.sin(Util.getMillis() / 300.0F) : 0.0F;
         int glow = ((int) (0x60 + 0x9F * pulse) << 24) | (p.trimLight & 0xFFFFFF);
