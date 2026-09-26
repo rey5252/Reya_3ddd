@@ -45,7 +45,7 @@ jobs:
   # Puts the freshly built jars into jars/ on this branch, so they can be handed out directly.
   publish-jars:
     needs: build
-    if: github.event_name == 'push'
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       contents: write
