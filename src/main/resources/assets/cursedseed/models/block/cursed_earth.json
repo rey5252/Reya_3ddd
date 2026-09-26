@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "cursedseed:block/cursed_earth_top",
+    "side": "cursedseed:block/cursed_earth_side",
+    "bottom": "cursedseed:block/cursed_earth_bottom"
+  }
+}
