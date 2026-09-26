@@ -1,4 +1,19 @@
 {
   "bossdamage.damage_progress": "Прогрес шкоди",
-  "bossdamage.defeated": "%s переможено! Найбільше шкоди:"
+  "bossdamage.defeated": "%s переможено! Найбільше шкоди:",
+  "key.bossdamage.change_style": "Змінити стиль панелі",
+  "key.categories.bossdamage": "Boss Damage Tracker",
+  "bossdamage.style_changed": "Стиль панелі: %s",
+  "bossdamage.style.night_sky": "Нічне небо",
+  "bossdamage.style.royal_gold": "Королівське золото",
+  "bossdamage.style.inferno": "Пекло",
+  "bossdamage.style.frost": "Мороз",
+  "bossdamage.style.sakura": "Сакура",
+  "bossdamage.style.forest": "Ліс",
+  "bossdamage.style.cosmic": "Космос",
+  "bossdamage.style.ocean": "Океан",
+  "bossdamage.style.pirate": "Піратська карта",
+  "bossdamage.style.steel": "Сталь",
+  "bossdamage.style.rainbow": "Веселка",
+  "bossdamage.style.minimal": "Мінімалізм"
 }

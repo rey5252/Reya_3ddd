@@ -48,6 +48,10 @@ public final class DamageNumbers {
 
     public static void render(RenderLevelStageEvent event) {
         if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_PARTICLES || NUMBERS.isEmpty()) return;
+        if (!ClientConfig.damageNumbers()) {
+            NUMBERS.clear();
+            return;
+        }
 
         Minecraft mc = Minecraft.getInstance();
         Font font = mc.font;

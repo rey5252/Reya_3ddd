@@ -26,8 +26,8 @@ import net.minecraftforge.common.ForgeSpawnEggItem;
 import net.minecraftforge.registries.ForgeRegistries;
 
 /**
- * Mob / boss panels at the top of the screen in a translucent "night sky" style: gradient sky,
- * twinkling stars, a pink city skyline, a light frame with snowflake corners. Panels fade and
+ * Mob / boss panels at the top of the screen in one of several translucent {@link PanelStyle}s
+ * (night sky, royal gold, inferno, frost, sakura, forest, minimal). Panels fade and
  * slide in and out, the health bar eases towards the real value and leaves a pale "ghost" of
  * the damage just taken, and a shimmer sweeps across it. Boss panels add "Damage Progress";
  * below them sits the same panel for the mob under the crosshair.
@@ -38,29 +38,6 @@ public final class BossPanelOverlay {
     private static final int GAP = 6;
     private static final int MAX_PANELS = 3;
     private static final long FADE_MS = 220L;
-
-    // Night-sky palette (ARGB; alpha is multiplied by the panel's fade)
-    private static final int SKY_TOP = 0xB0101030;
-    private static final int SKY_BOTTOM = 0xB0331C55;
-    private static final int FRAME = 0xF0E4E4FA;
-    private static final int FRAME_INNER = 0x50FFFFFF;
-    private static final int SKYLINE = 0x70C2489A;
-    private static final int SKYLINE_BACK = 0x40E070C0;
-    private static final int WINDOW = 0xB0FFE08A;
-    private static final int STAR = 0xFFFFFFFF;
-    private static final int STAR_MINT = 0xFFBFFFF0;
-    private static final int PORTRAIT_BG = 0x60080820;
-    private static final int PORTRAIT_EDGE = 0xB0DCDCF5;
-    private static final int NAME = 0xFFFFFFFF;
-    private static final int HP_TEXT = 0xFFD9D4F2;
-    private static final int BAR_BG = 0x90200A24;
-    private static final int BAR_FROM = 0xFFB0103A;
-    private static final int BAR_TO = 0xFFFF5C8A;
-    private static final int BAR_GHOST = 0xFFFFD6E6;
-    private static final int DIVIDER = 0x60E4E4FA;
-    private static final int HEADER = 0xFFFFD27A;
-    private static final int SELF = 0xFF7CFFB0;
-    private static final int OTHER = 0xFFEDEAFF;
 
     /** Per-panel animation state, keyed by entity id. */
     private static final class Anim {
@@ -80,12 +57,19 @@ public final class BossPanelOverlay {
     }
 
     private static final Map<Integer, Anim> ANIMS = new HashMap<>();
+    private static long previewUntil;
+
+    /** Show a panel for the player for a moment, so a newly picked style can be seen. */
+    public static void preview() {
+        previewUntil = Util.getMillis() + 2500L;
+    }
     private static long lastFrame = Util.getMillis();
 
     public static void render(ForgeGui gui, GuiGraphics g, float partialTick, int screenWidth, int screenHeight) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.options.hideGui || mc.player == null) return;
 
+        PanelStyle style = ClientConfig.style();
         long now = Util.getMillis();
         float dt = Math.min(0.1F, (now - lastFrame) / 1000.0F);
         lastFrame = now;
@@ -95,8 +79,10 @@ public final class BossPanelOverlay {
         List<BossInfoPacket> bosses = ClientBossData.current();
         for (int i = 0; i < bosses.size() && i < MAX_PANELS; i++) wanted.add(bosses.get(i));
         LivingEntity hovered = HoveredEntity.find(partialTick);
-        if (hovered != null && bosses.stream().noneMatch(b -> b.entityId() == hovered.getId())) {
-            wanted.add(hoverInfo(hovered));
+        if (hovered == null && now < previewUntil) hovered = mc.player; // preview after switching style
+        LivingEntity shownMob = hovered;
+        if (shownMob != null && bosses.stream().noneMatch(b -> b.entityId() == shownMob.getId())) {
+            wanted.add(hoverInfo(shownMob));
         }
 
         for (BossInfoPacket info : wanted) {
@@ -128,7 +114,7 @@ public final class BossPanelOverlay {
             updateHealth(anim, dt, now);
             int width = panelWidth(mc.font, anim.info, screenWidth);
             int slide = Math.round((1.0F - ease) * -10.0F);
-            int height = drawPanel(g, mc, anim, (screenWidth - width) / 2, y + slide, width, alpha, now);
+            int height = drawPanel(g, mc, style, anim, (screenWidth - width) / 2, y + slide, width, alpha, now);
             if (anim.goneAt < 0) y += height + GAP;
         }
 
@@ -175,7 +161,8 @@ public final class BossPanelOverlay {
     // ------------------------------------------------------------------ drawing
 
     /** Draws one panel and returns its height. */
-    private static int drawPanel(GuiGraphics g, Minecraft mc, Anim anim, int x, int y, int width, float alpha, long now) {
+    private static int drawPanel(GuiGraphics g, Minecraft mc, PanelStyle st, Anim anim, int x, int y, int width,
+                                 float alpha, long now) {
         Font font = mc.font;
         BossInfoPacket boss = anim.info;
         List<BossInfoPacket.Row> rows = boss.rows();
@@ -185,14 +172,16 @@ public final class BossPanelOverlay {
         // Text with an alpha below 4 is drawn fully opaque by the font renderer, so skip the last frames.
         if (alpha < 0.05F) return height;
 
-        drawSky(g, x, y, x2, y2, boss.entityId(), alpha, now);
-        drawFrame(g, x, y, x2, y2, alpha);
+        g.fillGradient(x + 1, y + 1, x2 - 1, y2 - 1, fade(st.bgTop, alpha), fade(st.bgBottom, alpha));
+        drawScenery(g, st, x, y, x2, y2, boss.entityId(), alpha, now);
+        drawParticles(g, st, x, y, x2, y2, boss.entityId(), alpha, now);
+        drawFrame(g, st, x, y, x2, y2, alpha);
 
         // Portrait
         int px = x + 5;
         int py = y + 5;
-        g.fill(px - 1, py - 1, px + 23, py + 23, fade(PORTRAIT_EDGE, alpha));
-        g.fill(px, py, px + 22, py + 22, fade(PORTRAIT_BG, alpha));
+        g.fill(px - 1, py - 1, px + 23, py + 23, fade(st.portraitEdge, alpha));
+        g.fill(px, py, px + 22, py + 22, fade(st.portraitBg, alpha));
         if (alpha > 0.6F) drawPortrait(g, mc, boss, px, py, px + 22, py + 22);
 
         // Name and health numbers
@@ -200,97 +189,334 @@ public final class BossPanelOverlay {
         String hp = hpText(boss);
         int hpWidth = font.width(hp);
         String name = font.plainSubstrByWidth(boss.name().getString(), width - 32 - hpWidth - 14);
-        g.drawString(font, name, textLeft, y + 6, fade(NAME, alpha), true);
-        g.drawString(font, hp, x2 - 7 - hpWidth, y + 6, fade(HP_TEXT, alpha), true);
+        g.drawString(font, name, textLeft, y + 6, fade(st.nameText, alpha), st.textShadow);
+        g.drawString(font, hp, x2 - 7 - hpWidth, y + 6, fade(st.hpText, alpha), st.textShadow);
 
-        drawHealthBar(g, anim, textLeft, y + 18, x2 - 7 - textLeft, alpha, now);
+        drawHealthBar(g, st, anim, textLeft, y + 18, x2 - 7 - textLeft, alpha, now);
 
         if (rows.isEmpty()) return height;
 
         // "Damage Progress"
         Component header = Component.translatable("bossdamage.damage_progress");
-        g.drawString(font, header, x + 7, y + 35, fade(HEADER, alpha), true);
+        g.drawString(font, header, x + 7, y + 35, fade(st.header, alpha), st.textShadow);
         int lineX = x + 7 + font.width(header) + 5;
-        g.fill(lineX, y + 39, x2 - 7, y + 40, fade(DIVIDER, alpha));
+        g.fill(lineX, y + 39, x2 - 7, y + 40, fade(st.divider, alpha));
 
         String self = mc.player.getGameProfile().getName();
         for (int i = 0; i < rows.size(); i++) {
             BossInfoPacket.Row row = rows.get(i);
             int ry = y + 47 + i * 10;
-            int color = fade(row.name().equals(self) ? SELF : OTHER, alpha);
+            int color = fade(row.name().equals(self) ? st.self : st.other, alpha);
             // little person icon
             g.fill(x + 8, ry + 1, x + 10, ry + 3, color);
             g.fill(x + 7, ry + 4, x + 11, ry + 7, color);
             String label = (i + 1) + " : " + font.plainSubstrByWidth(row.name(), 110);
-            g.drawString(font, label, x + 14, ry, color, true);
+            g.drawString(font, label, x + 14, ry, color, st.textShadow);
             String percent = String.format("%.2f%%", row.percent());
-            g.drawString(font, percent, x2 - 8 - font.width(percent), ry, color, true);
+            g.drawString(font, percent, x2 - 8 - font.width(percent), ry, color, st.textShadow);
         }
         return height;
     }
 
-    /** Gradient night sky with twinkling stars and a city skyline along the bottom. */
-    private static void drawSky(GuiGraphics g, int x, int y, int x2, int y2, int seed, float alpha, long now) {
-        g.fillGradient(x + 1, y + 1, x2 - 1, y2 - 1, fade(SKY_TOP, alpha), fade(SKY_BOTTOM, alpha));
-
-        // Skyline: two layers of buildings with a few lit windows.
+    /** Scenery along the bottom edge: city skyline, hills, flames or grass. */
+    private static void drawScenery(GuiGraphics g, PanelStyle st, int x, int y, int x2, int y2, int seed,
+                                    float alpha, long now) {
         int base = y2 - 1;
-        for (int bx = x + 2; bx < x2 - 2; ) {
-            int w = 5 + hash(seed, bx, 1) % 7;
-            int h = 4 + hash(seed, bx, 2) % 9;
-            g.fill(bx, base - h - 3, Math.min(bx + w, x2 - 2), base, fade(SKYLINE_BACK, alpha));
-            bx += w + 1;
-        }
-        for (int bx = x + 4; bx < x2 - 3; ) {
-            int w = 4 + hash(seed, bx, 3) % 6;
-            int h = 2 + hash(seed, bx, 4) % 7;
-            int right = Math.min(bx + w, x2 - 2);
-            g.fill(bx, base - h, right, base, fade(SKYLINE, alpha));
-            if (h > 4 && hash(seed, bx, 5) % 3 == 0) {
-                g.fill(bx + 1, base - h + 2, bx + 2, base - h + 3, fade(WINDOW, alpha));
+        float t = now / 1000.0F;
+        switch (st.scenery) {
+            case SKYLINE -> {
+                for (int bx = x + 2; bx < x2 - 2; ) {
+                    int w = 5 + hash(seed, bx, 1) % 7;
+                    int h = 4 + hash(seed, bx, 2) % 9;
+                    g.fill(bx, base - h - 3, Math.min(bx + w, x2 - 2), base, fade(st.sceneryBack, alpha));
+                    bx += w + 1;
+                }
+                for (int bx = x + 4; bx < x2 - 3; ) {
+                    int w = 4 + hash(seed, bx, 3) % 6;
+                    int h = 2 + hash(seed, bx, 4) % 7;
+                    g.fill(bx, base - h, Math.min(bx + w, x2 - 2), base, fade(st.sceneryFront, alpha));
+                    if (h > 4 && hash(seed, bx, 5) % 3 == 0) {
+                        g.fill(bx + 1, base - h + 2, bx + 2, base - h + 3, fade(st.window, alpha));
+                    }
+                    bx += w + 2 + hash(seed, bx, 6) % 4;
+                }
             }
-            bx += w + 2 + hash(seed, bx, 6) % 4;
-        }
-
-        // Stars: 1px dots and a few mint "plus" sparkles, each twinkling at its own pace.
-        int area = (x2 - x) * (y2 - y);
-        int count = Math.max(6, area / 260);
-        for (int i = 0; i < count; i++) {
-            int sx = x + 3 + hash(seed, i, 7) % Math.max(1, x2 - x - 6);
-            int sy = y + 3 + hash(seed, i, 8) % Math.max(1, (y2 - y) - 14);
-            float phase = (hash(seed, i, 9) % 1000) / 1000.0F * Mth.TWO_PI;
-            float speed = 1.2F + (hash(seed, i, 10) % 100) / 60.0F;
-            float twinkle = 0.25F + 0.75F * Mth.square(Mth.sin(now / 1000.0F * speed + phase));
-            if (i % 5 == 0) {
-                int c = fade(STAR_MINT, alpha * twinkle);
-                g.fill(sx, sy - 1, sx + 1, sy + 2, c);
-                g.fill(sx - 1, sy, sx + 2, sy + 1, c);
-            } else {
-                g.fill(sx, sy, sx + 1, sy + 1, fade(STAR, alpha * twinkle * 0.8F));
+            case HILLS -> {
+                float phase = (seed % 100) * 0.37F;
+                for (int cx = x + 1; cx < x2 - 1; cx++) {
+                    int back = 6 + Math.round(Mth.sin(cx * 0.05F + phase) * 3 + Mth.sin(cx * 0.13F) * 2);
+                    int front = 3 + Math.round(Mth.sin(cx * 0.09F + phase * 2) * 2 + Mth.sin(cx * 0.23F + 1) * 1.5F);
+                    g.fill(cx, base - back, cx + 1, base, fade(st.sceneryBack, alpha));
+                    g.fill(cx, base - front, cx + 1, base, fade(st.sceneryFront, alpha));
+                }
+            }
+            case FLAMES -> {
+                for (int cx = x + 1; cx < x2 - 1; cx++) {
+                    float n = hash(seed, cx, 11) % 100 / 100.0F;
+                    int back = 4 + Math.round(Math.abs(Mth.sin(cx * 0.31F + t * 5.0F + n * 3)) * 6);
+                    int front = 2 + Math.round(Math.abs(Mth.sin(cx * 0.47F - t * 7.0F + n * 5)) * 4);
+                    g.fill(cx, base - back, cx + 1, base, fade(st.sceneryBack, alpha));
+                    g.fill(cx, base - front, cx + 1, base, fade(st.sceneryFront, alpha));
+                }
+            }
+            case GRASS -> {
+                g.fill(x + 1, base - 1, x2 - 1, base, fade(st.sceneryFront, alpha));
+                for (int cx = x + 2; cx < x2 - 2; cx += 2) {
+                    int h = 2 + hash(seed, cx, 12) % 5;
+                    int sway = Math.round(Mth.sin(t * 2.0F + cx * 0.2F));
+                    int color = fade(cx % 4 == 0 ? st.sceneryFront : st.sceneryBack, alpha);
+                    g.fill(cx, base - h + 1, cx + 1, base, color);
+                    g.fill(cx + sway, base - h, cx + sway + 1, base - h + 1, color);
+                }
+            }
+            case NEBULA -> {
+                // Soft drifting clouds of colour.
+                for (int i = 0; i < 3; i++) {
+                    int cx = x + (int) ((hash(seed, i, 13) % 1000 / 1000.0F * (x2 - x)) + Mth.sin(t * 0.15F + i) * 12);
+                    int cy = y + 6 + hash(seed, i, 14) % Math.max(1, y2 - y - 12);
+                    int color = i % 2 == 0 ? st.sceneryFront : st.sceneryBack;
+                    for (int r = 16; r > 0; r -= 4) {
+                        g.fill(Math.max(x + 1, cx - r * 2), Math.max(y + 1, cy - r / 2),
+                                Math.min(x2 - 1, cx + r * 2), Math.min(y2 - 1, cy + r / 2), fade(color, alpha * 0.6F));
+                    }
+                }
+            }
+            case WAVES -> {
+                for (int cx = x + 1; cx < x2 - 1; cx++) {
+                    int back = 5 + Math.round(Mth.sin(cx * 0.12F + t * 1.6F) * 2.0F);
+                    int front = 3 + Math.round(Mth.sin(cx * 0.18F - t * 2.3F + 1.0F) * 1.6F);
+                    g.fill(cx, base - back, cx + 1, base, fade(st.sceneryBack, alpha));
+                    g.fill(cx, base - front, cx + 1, base, fade(st.sceneryFront, alpha));
+                    g.fill(cx, base - front, cx + 1, base - front + 1, fade(0xA0FFFFFF, alpha));
+                }
+            }
+            case STAINS -> {
+                // Old-map blotches and a faint dashed route.
+                for (int i = 0; i < 4; i++) {
+                    int cx = x + 30 + hash(seed, i, 15) % Math.max(1, x2 - x - 40);
+                    int cy = y + 4 + hash(seed, i, 16) % Math.max(1, y2 - y - 8);
+                    int r = 3 + hash(seed, i, 17) % 5;
+                    g.fill(cx - r, cy - r / 2, cx + r, cy + r / 2, fade(st.sceneryFront, alpha));
+                    g.fill(cx - r / 2, cy - r, cx + r / 2, cy + r, fade(st.sceneryBack, alpha));
+                }
+                for (int cx = x + 32; cx < x2 - 8; cx += 6) {
+                    int cy = y2 - 5 - Math.round(Mth.sin(cx * 0.08F + seed) * 2);
+                    g.fill(cx, cy, cx + 3, cy + 1, fade(0x406A3E1E, alpha));
+                }
+            }
+            case NONE -> {
             }
         }
     }
 
-    /** Light frame with rounded corners and little snowflakes on the corners. */
-    private static void drawFrame(GuiGraphics g, int x, int y, int x2, int y2, float alpha) {
-        int c = fade(FRAME, alpha);
-        g.fill(x + 2, y, x2 - 2, y + 1, c);
-        g.fill(x + 2, y2 - 1, x2 - 2, y2, c);
-        g.fill(x, y + 2, x + 1, y2 - 2, c);
-        g.fill(x2 - 1, y + 2, x2, y2 - 2, c);
+    /** Animated decorations: twinkling stars/sparkles, rising embers, falling snow/petals, fireflies. */
+    private static void drawParticles(GuiGraphics g, PanelStyle st, int x, int y, int x2, int y2, int seed,
+                                      float alpha, long now) {
+        if (st.particles == PanelStyle.Particles.NONE) return;
+        float t = now / 1000.0F;
+        int w = Math.max(1, x2 - x - 6);
+        int h = Math.max(1, y2 - y - 6);
+        int count = Math.max(6, w * h / 260);
+        for (int i = 0; i < count; i++) {
+            float phase = hash(seed, i, 9) % 1000 / 1000.0F;
+            float speed = 0.6F + hash(seed, i, 10) % 100 / 100.0F;
+            int bx = x + 3 + hash(seed, i, 7) % w;
+            int by = y + 3 + hash(seed, i, 8) % h;
+            switch (st.particles) {
+                case STARS, SPARKLES -> {
+                    float twinkle = 0.25F + 0.75F * Mth.square(Mth.sin(t * (1.2F + speed) + phase * Mth.TWO_PI));
+                    boolean plus = st.particles == PanelStyle.Particles.SPARKLES ? i % 2 == 0 : i % 5 == 0;
+                    int c = fade(plus ? st.accent : st.particle, alpha * twinkle);
+                    if (plus) {
+                        g.fill(bx, by - 1, bx + 1, by + 2, c);
+                        g.fill(bx - 1, by, bx + 2, by + 1, c);
+                    } else {
+                        g.fill(bx, by, bx + 1, by + 1, c);
+                    }
+                }
+                case EMBERS -> {
+                    float p = (t * speed * 0.35F + phase) % 1.0F;
+                    int py = y2 - 3 - Math.round(p * h);
+                    int px = bx + Math.round(Mth.sin(t * 2.0F + i) * 2);
+                    int c = fade(p < 0.5F ? st.particle : st.accent, alpha * (1.0F - p));
+                    g.fill(px, py, px + 1, py + 1, c);
+                }
+                case SNOW, PETALS -> {
+                    float p = (t * speed * 0.18F + phase) % 1.0F;
+                    int py = y + 3 + Math.round(p * h);
+                    int drift = st.particles == PanelStyle.Particles.PETALS ? 5 : 2;
+                    int px = bx + Math.round(Mth.sin(t * 1.3F + i * 1.7F) * drift);
+                    float fadeEdges = Math.min(1.0F, Math.min(p, 1.0F - p) * 6.0F);
+                    int c = fade(st.particle, alpha * fadeEdges * 0.9F);
+                    if (st.particles == PanelStyle.Particles.PETALS) {
+                        g.fill(px, py, px + 2, py + 1, c);
+                    } else {
+                        g.fill(px, py, px + 1, py + 1, c);
+                    }
+                }
+                case FIREFLIES -> {
+                    if (i % 2 == 1) continue;
+                    int px = bx + Math.round(Mth.sin(t * 0.7F * speed + i) * 8);
+                    int py = by + Math.round(Mth.cos(t * 0.9F * speed + i * 1.3F) * 4);
+                    float glow = 0.3F + 0.7F * Mth.square(Mth.sin(t * 2.2F + phase * Mth.TWO_PI));
+                    g.fill(px - 1, py - 1, px + 2, py + 2, fade(st.particle, alpha * glow * 0.25F));
+                    g.fill(px, py, px + 1, py + 1, fade(st.particle, alpha * glow));
+                }
+                case BUBBLES -> {
+                    if (i % 2 == 1) continue;
+                    float p = (t * speed * 0.3F + phase) % 1.0F;
+                    int py = y2 - 3 - Math.round(p * h);
+                    int px = bx + Math.round(Mth.sin(t * 3.0F + i) * 1.5F);
+                    int c = fade(st.particle, alpha * (1.0F - p) * 0.9F);
+                    if (i % 4 == 0) {
+                        g.fill(px, py - 1, px + 2, py, c);
+                        g.fill(px, py + 2, px + 2, py + 3, c);
+                        g.fill(px - 1, py, px, py + 2, c);
+                        g.fill(px + 2, py, px + 3, py + 2, c);
+                    } else {
+                        g.fill(px, py, px + 1, py + 1, c);
+                    }
+                }
+                case NONE -> {
+                }
+            }
+        }
+    }
+
+    /** Rounded frame with style-specific corner ornaments. */
+    private static void drawFrame(GuiGraphics g, PanelStyle st, int x, int y, int x2, int y2, float alpha) {
+        if (st.frameType == PanelStyle.Frame.RAINBOW) {
+            drawRainbowRim(g, x, y, x2, y2, alpha);
+        }
+        int c = fade(st.frame, alpha);
+        boolean thick = st.frameType == PanelStyle.Frame.GEMS || st.frameType == PanelStyle.Frame.WOOD
+                || st.frameType == PanelStyle.Frame.RIVETS || st.frameType == PanelStyle.Frame.RAINBOW;
+        int t = thick ? 2 : 1;
+        g.fill(x + 2, y, x2 - 2, y + t, c);
+        g.fill(x + 2, y2 - t, x2 - 2, y2, c);
+        g.fill(x, y + 2, x + t, y2 - 2, c);
+        g.fill(x2 - t, y + 2, x2, y2 - 2, c);
         g.fill(x + 1, y + 1, x + 2, y + 2, c);
         g.fill(x2 - 2, y + 1, x2 - 1, y + 2, c);
         g.fill(x + 1, y2 - 2, x + 2, y2 - 1, c);
         g.fill(x2 - 2, y2 - 2, x2 - 1, y2 - 1, c);
 
-        int inner = fade(FRAME_INNER, alpha);
-        g.fill(x + 2, y + 2, x2 - 2, y + 3, inner);
-        g.fill(x + 2, y2 - 3, x2 - 2, y2 - 2, inner);
+        int inner = fade(st.frameInner, alpha);
+        g.fill(x + 2, y + t + 1, x2 - 2, y + t + 2, inner);
+        g.fill(x + 2, y2 - t - 2, x2 - 2, y2 - t - 1, inner);
 
-        drawSnowflake(g, x + 3, y + 3, c);
-        drawSnowflake(g, x2 - 4, y + 3, c);
-        drawSnowflake(g, x + 3, y2 - 4, c);
-        drawSnowflake(g, x2 - 4, y2 - 4, c);
+        int accent = fade(st.accent, alpha);
+        switch (st.frameType) {
+            case SNOWFLAKES -> {
+                drawSnowflake(g, x + 3, y + 3, c);
+                drawSnowflake(g, x2 - 4, y + 3, c);
+                drawSnowflake(g, x + 3, y2 - 4, c);
+                drawSnowflake(g, x2 - 4, y2 - 4, c);
+            }
+            case GEMS -> {
+                int stud = fade(0xFF8C6A1E, alpha);
+                for (int i = x + 10; i < x2 - 10; i += 10) {
+                    g.fill(i, y, i + 1, y + 1, stud);
+                    g.fill(i, y2 - 1, i + 1, y2, stud);
+                }
+                drawGem(g, x - 2, y - 2, accent, alpha);
+                drawGem(g, x2 - 4, y - 2, accent, alpha);
+                drawGem(g, x - 2, y2 - 4, accent, alpha);
+                drawGem(g, x2 - 4, y2 - 4, accent, alpha);
+            }
+            case FLOWERS -> {
+                drawFlower(g, x + 3, y + 3, c, accent);
+                drawFlower(g, x2 - 4, y + 3, c, accent);
+                drawFlower(g, x + 3, y2 - 4, c, accent);
+                drawFlower(g, x2 - 4, y2 - 4, c, accent);
+            }
+            case EMBERS -> {
+                g.fill(x + 2, y + 2, x + 4, y + 4, accent);
+                g.fill(x2 - 4, y + 2, x2 - 2, y + 4, accent);
+                g.fill(x + 2, y2 - 4, x + 4, y2 - 2, accent);
+                g.fill(x2 - 4, y2 - 4, x2 - 2, y2 - 2, accent);
+            }
+            case ORNATE -> {
+                // Glow around the frame and a pointed crest on top.
+                int glow = fade(st.frame, alpha * 0.25F);
+                g.fill(x - 1, y + 2, x, y2 - 2, glow);
+                g.fill(x2, y + 2, x2 + 1, y2 - 2, glow);
+                g.fill(x + 2, y - 1, x2 - 2, y, glow);
+                g.fill(x + 2, y2, x2 - 2, y2 + 1, glow);
+                int mid = (x + x2) / 2;
+                for (int i = 0; i < 4; i++) g.fill(mid - 4 + i, y - 1 - i, mid + 5 - i, y - i, c);
+                g.fill(mid, y - 3, mid + 1, y - 2, accent);
+                for (int i = 0; i < 3; i++) g.fill(mid - 3 + i, y2 + i, mid + 4 - i, y2 + i + 1, c);
+                drawSnowflake(g, x + 3, y + 3, accent);
+                drawSnowflake(g, x2 - 4, y + 3, accent);
+                drawSnowflake(g, x + 3, y2 - 4, accent);
+                drawSnowflake(g, x2 - 4, y2 - 4, accent);
+            }
+            case FOAM -> {
+                // Bubbly foam along the top edge.
+                for (int fx = x + 3; fx < x2 - 3; fx += 5) {
+                    int r = 1 + (fx / 5) % 2;
+                    g.fill(fx, y - r, fx + r + 2, y + 1, c);
+                }
+                for (int fx = x + 6; fx < x2 - 6; fx += 9) {
+                    g.fill(fx, y2 - 1, fx + 3, y2 + 1, c);
+                }
+            }
+            case WOOD -> {
+                // Plank grain and dark corner brackets.
+                int grain = fade(0xFF4A2A10, alpha);
+                for (int gx = x + 8; gx < x2 - 8; gx += 12) {
+                    g.fill(gx, y, gx + 5, y + 1, grain);
+                    g.fill(gx + 4, y2 - 1, gx + 9, y2, grain);
+                }
+                int metal = fade(st.accent, alpha);
+                g.fill(x - 1, y - 1, x + 4, y + 4, metal);
+                g.fill(x2 - 4, y - 1, x2 + 1, y + 4, metal);
+                g.fill(x - 1, y2 - 4, x + 4, y2 + 1, metal);
+                g.fill(x2 - 4, y2 - 4, x2 + 1, y2 + 1, metal);
+            }
+            case RIVETS -> {
+                int rivet = fade(0xFFC8CCD8, alpha);
+                int dark = fade(0xFF3A3C44, alpha);
+                for (int rx = x + 6; rx < x2 - 5; rx += 12) {
+                    g.fill(rx, y, rx + 2, y + 2, rivet);
+                    g.fill(rx + 1, y + 1, rx + 2, y + 2, dark);
+                    g.fill(rx, y2 - 2, rx + 2, y2, rivet);
+                    g.fill(rx + 1, y2 - 1, rx + 2, y2, dark);
+                }
+                g.fill(x + 2, y + 2, x + 5, y + 5, accent);
+                g.fill(x2 - 5, y + 2, x2 - 2, y + 5, accent);
+            }
+            case RAINBOW -> {
+                g.fill(x + 2, y + 2, x + 4, y + 4, accent);
+                g.fill(x2 - 4, y + 2, x2 - 2, y + 4, accent);
+                g.fill(x + 2, y2 - 4, x + 4, y2 - 2, accent);
+                g.fill(x2 - 4, y2 - 4, x2 - 2, y2 - 2, accent);
+            }
+            case SIMPLE -> {
+            }
+        }
+    }
+
+    /** A rim just outside the frame whose colours flow around like a jukebox. */
+    private static void drawRainbowRim(GuiGraphics g, int x, int y, int x2, int y2, float alpha) {
+        float t = Util.getMillis() / 3000.0F;
+        int w = x2 - x;
+        int h = y2 - y;
+        int perimeter = 2 * (w + h);
+        for (int i = 0; i < perimeter; i += 2) {
+            int color = 0xFF000000 | Mth.hsvToRgb(((float) i / perimeter + t) % 1.0F, 0.75F, 1.0F);
+            int c = fade(color, alpha);
+            if (i < w) {
+                g.fill(x + i, y - 2, x + i + 2, y, c);
+            } else if (i < w + h) {
+                g.fill(x2, y + (i - w), x2 + 2, y + (i - w) + 2, c);
+            } else if (i < 2 * w + h) {
+                g.fill(x2 - (i - w - h), y2, x2 - (i - w - h) + 2, y2 + 2, c);
+            } else {
+                g.fill(x - 2, y2 - (i - 2 * w - h), x, y2 - (i - 2 * w - h) + 2, c);
+            }
+        }
     }
 
     private static void drawSnowflake(GuiGraphics g, int cx, int cy, int c) {
@@ -302,7 +528,21 @@ public final class BossPanelOverlay {
         g.fill(cx + 1, cy + 1, cx + 2, cy + 2, c);
     }
 
-    private static void drawHealthBar(GuiGraphics g, Anim anim, int bx, int by, int bw, float alpha, long now) {
+    private static void drawFlower(GuiGraphics g, int cx, int cy, int petal, int center) {
+        g.fill(cx - 1, cy - 2, cx + 2, cy - 1, petal);
+        g.fill(cx - 1, cy + 2, cx + 2, cy + 3, petal);
+        g.fill(cx - 2, cy - 1, cx - 1, cy + 2, petal);
+        g.fill(cx + 2, cy - 1, cx + 3, cy + 2, petal);
+        g.fill(cx, cy, cx + 1, cy + 1, center);
+    }
+
+    private static void drawGem(GuiGraphics g, int x, int y, int gem, float alpha) {
+        g.fill(x, y, x + 6, y + 6, fade(0xFF2A8A9A, alpha));
+        g.fill(x + 1, y + 1, x + 5, y + 5, gem);
+        g.fill(x + 1, y + 1, x + 3, y + 3, fade(0xFFFFFFFF, alpha));
+    }
+
+    private static void drawHealthBar(GuiGraphics g, PanelStyle st, Anim anim, int bx, int by, int bw, float alpha, long now) {
         float max = Math.max(1.0F, anim.info.maxHealth());
         int filled = Math.round(bw * Mth.clamp(anim.shownHealth / max, 0.0F, 1.0F));
         int ghost = Math.round(bw * Mth.clamp(anim.ghostHealth / max, 0.0F, 1.0F));
@@ -313,15 +553,15 @@ public final class BossPanelOverlay {
         g.fill(bx, by + 6, bx + bw, by + 7, edge);
         g.fill(bx - 1, by, bx, by + 6, edge);
         g.fill(bx + bw, by, bx + bw + 1, by + 6, edge);
-        g.fill(bx, by, bx + bw, by + 6, fade(BAR_BG, alpha));
+        g.fill(bx, by, bx + bw, by + 6, fade(st.barBg, alpha));
 
         // Ghost of recent damage
-        if (ghost > filled) g.fill(bx + filled, by, bx + ghost, by + 6, fade(BAR_GHOST, alpha * 0.85F));
+        if (ghost > filled) g.fill(bx + filled, by, bx + ghost, by + 6, fade(st.barGhost, alpha * 0.85F));
 
         // Gradient fill with a highlight on top
         for (int px = 0; px < filled; px++) {
             float t = bw <= 1 ? 1.0F : (float) px / (bw - 1);
-            g.fill(bx + px, by, bx + px + 1, by + 6, fade(lerp(BAR_FROM, BAR_TO, t), alpha));
+            g.fill(bx + px, by, bx + px + 1, by + 6, fade(lerp(st.barFrom, st.barTo, t), alpha));
         }
         g.fill(bx, by, bx + filled, by + 1, fade(0x70FFFFFF, alpha));
 
