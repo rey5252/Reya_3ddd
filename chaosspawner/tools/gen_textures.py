@@ -303,101 +303,123 @@ CARDS = {
         "............",
         "............"]),
 }
-# upgrades: shiny metal tokens like the reference - a dark frame, a plate glowing from the orange
-# rim to a bright middle, a diagonal glint, white shine dots in two corners and an engraved symbol
-METALS = {
-    # frame dark, frame, rim, middle, bright, engraving
-    "speed":      ((14, 44, 58), (24, 74, 92), (30, 120, 150), (80, 200, 225), (205, 250, 255), (12, 46, 62)),
-    "looting":    ((96, 56, 24), (117, 77, 46), (163, 99, 35), (232, 190, 70), (255, 246, 160), (72, 46, 18)),
-    "quantity":   ((52, 20, 70), (76, 36, 98), (120, 50, 160), (190, 120, 232), (248, 220, 255), (50, 16, 70)),
-    "experience": ((26, 58, 20), (40, 84, 30), (62, 138, 34), (150, 222, 76), (232, 255, 172), (26, 62, 18)),
+# upgrades: cards like the reference - a dark outline (lighter in the middle of the top edge), a pale
+# highlight along the top and left, a plate lighter in its upper half and darker below, white shine
+# squares in the top-left and bottom-right corners, and a bright neon symbol with its own shading
+CARD_PAL = {
+    # outline, highlight, band under the highlight, plate top, plate bottom
+    "speed":      ((26, 26, 35), (194, 255, 217), (85, 100, 105), (60, 65, 79), (40, 40, 55)),
+    "looting":    ((25, 38, 62), (129, 238, 255), (58, 161, 194), (41, 143, 180), (45, 82, 134)),
+    "quantity":   ((35, 25, 62), (255, 170, 249), (161, 72, 182), (139, 49, 166), (80, 41, 116)),
+    "experience": ((16, 42, 28), (170, 255, 196), (68, 172, 104), (42, 140, 84), (26, 88, 56)),
 }
-for n, (name, (bg, rim, sym, glow, rows)) in enumerate(CARDS.items()):
-    fdark, frame, edge, mid, bright, ink = METALS[name]
+# symbol colours: core, bright, main, low, shadow
+SYM_PAL = {
+    "speed":      ((225, 255, 255), (78, 249, 255), (72, 182, 191), (54, 115, 127), (40, 40, 55)),
+    "looting":    ((255, 250, 214), (255, 222, 92), (232, 162, 42), (150, 92, 30), (29, 34, 52)),
+    "quantity":   ((254, 255, 236), (244, 255, 93), (174, 225, 52), (110, 140, 60), (91, 58, 111)),
+    "experience": ((255, 250, 196), (224, 255, 110), (140, 240, 90), (70, 205, 160), (18, 50, 34)),
+}
+# W core, H bright, M main, L low, D shadow on the plate
+SYM = {
+    "speed": ["HM...HM..",
+              ".HM...HM.",
+              "..HM...HM",
+              "...WM...W",
+              "..ML...ML",
+              ".ML...ML.",
+              "ML...ML..",
+              "D...D...."],
+    "looting": ["......HW",
+                ".....HWM",
+                "....HWM.",
+                ".M.HWM..",
+                "..MWM...",
+                "..LMM...",
+                ".L..M...",
+                "L.......",
+                ".D......"],
+    "quantity": ["...HM...",
+                 "...WM...",
+                 "...WM...",
+                 "HHHWWHHM",
+                 "MMMWWMML",
+                 "...WL...",
+                 "...ML...",
+                 "...LL...",
+                 "....D..."],
+    "experience": [".LMML.",
+                   "LHHHML",
+                   "MHWWHM",
+                   "MHWWHM",
+                   "LMHHML",
+                   ".LMML.",
+                   "..DD..",
+                   ".DDDD."],
+}
+SYM_AT = {"speed": (4, 3), "looting": (5, 3), "quantity": (5, 3), "experience": (6, 3)}
+
+
+def mixp(a, b, t):
+    t = max(0.0, min(1.0, t))
+    return tuple(int(a[i] + (b[i] - a[i]) * t) for i in range(3))
+
+
+for n, name in enumerate(CARDS):
+    O, H, H2, P1, P2 = CARD_PAL[name]
     px = grid()
     for y in range(16):
         for x in range(16):
-            pale = tuple(int(bright[i] * 0.7 + edge[i] * 0.3) for i in range(3))
-            along = 1.0 - abs((x if y in (0, 1, 2, 13, 14, 15) else y) - 7.5) / 7.5
-            diag = (x + y) / 30.0
-            if x == 15 or y == 15:
-                # raised light lip on the right and bottom, brightest in its middle
-                c = shade(pale, 0.86 + 0.22 * along) if not (x == 0 or y == 0) else shade(frame, 1.1)
-            elif x == 0 or y == 0:
-                c = shade(fdark, 0.85 + 0.3 * along)
-            elif x == 14 or y == 14:
-                c = shade(edge, 0.52 + 0.14 * along)
-            elif x == 1 or y == 1:
-                # knurled top/left frame, lit in the middle of each side
-                c = shade(frame, (1.0 if (x + y) % 2 else 0.82) * (0.9 + 0.28 * along))
-            elif x == 2 or y == 2 or x == 13 or y == 13:
-                # rim: bright at the top left, in shadow at the bottom right
-                c = shade(edge, 1.28 - 0.5 * diag + 0.06 * along)
+            mid = 1.0 - abs(x - 7.5) / 7.5
+            if y == 0:
+                c = mixp(O, P1, 0.15 + 0.55 * mid) if 0 < x < 15 else O
+            elif y == 15 or x == 0:
+                c = O
+            elif x == 15:
+                c = mixp(O, P2, 0.35 + 0.25 * (y / 15.0))
+            elif y == 1:
+                c = mixp(H, P1, 0.12) if x == 1 else H
+            elif x == 1:
+                c = mixp(H, P1, 0.12) if y <= 8 else mixp(H, P2, min(1.0, (y - 8) / 4.0))
+            elif y == 14:
+                c = mixp(P2, O, 0.12)
             else:
-                # plate: glow in the middle, lit from the top left
-                d = max(abs(x - 7.5), abs(y - 7.0)) / 5.0
-                t = max(0.0, min(1.0, 1.0 - d))
-                c = tuple(int(mid[i] * (1 - t * 0.7) + bright[i] * t * 0.7) for i in range(3))
-                c = shade(c, 1.1 - 0.26 * diag)
-                if d > 0.85:
-                    c = tuple(int(c[i] * 0.6 + edge[i] * 0.4) for i in range(3))
-                if x == 3 or y == 3:
-                    c = tuple(int(c[i] * 0.72 + bright[i] * 0.28) for i in range(3))
-                elif x == 12 or y == 12:
-                    c = shade(c, 0.86)
-                c = shade(c, 1.0 + ((hsh(x, y, n) % 5) - 2) * 0.018)
-                # glints across the upper right, strongest in their middle
-                g = 1.0 - abs(y - 5.5) / 5.0
-                if x - y in (4, 5) and y <= 9:
-                    c = tuple(int(c[i] * (1 - 0.7 * g) + bright[i] * 0.7 * g) for i in range(3))
-                elif x - y == 3 and y <= 8:
-                    c = tuple(int(c[i] * (1 - 0.35 * g) + bright[i] * 0.35 * g) for i in range(3))
-                elif x - y == 7 and y <= 5:
-                    c = tuple(int(c[i] * 0.55 + bright[i] * 0.45) for i in range(3))
+                # plate: upper half lighter, lower half darker, a soft seam between
+                c = P1 if y <= 8 else P2 if y >= 10 else mixp(P1, P2, 0.5)
+                if y == 2 and x >= 5:
+                    c = H2
+                c = shade(c, 1.0 + ((hsh(x, y, n) % 3) - 1) * 0.015)
             px[y][x] = c + (255,)
-    # rivets in the frame corners and small bright inlays in the middle of each side
-    for (x, y) in ((1, 1), (14, 1), (1, 14), (14, 14)):
-        px[y][x] = tuple(int(v * 0.55 + 255 * 0.45) for v in bright) + (255,)
-    for (x, y) in ((2, 2), (13, 2), (2, 13)):
-        px[y][x] = shade(edge, 0.7) + (255,)
-    for (x, y) in ((7, 2), (8, 2), (2, 7), (2, 8)):
-        px[y][x] = bright + (255,)
-    for (x, y) in ((7, 13), (8, 13), (13, 7), (13, 8)):
-        px[y][x] = shade(edge, 0.7) + (255,)
-    # fine scratches across the plate
-    for k in range(3):
-        sx, sy = 4 + hsh(k, n, 17) % 7, 5 + hsh(n, k, 19) % 6
-        for j in range(2):
-            x, y = sx + j, sy - j
-            if 3 <= x <= 12 and 3 <= y <= 12:
-                px[y][x] = shade(px[y][x], 1.08 if k % 2 else 0.93)
-    # white shine dots
-    for (x, y) in ((3, 3), (4, 3), (3, 4), (4, 4), (11, 11), (12, 11), (11, 12), (12, 12)):
-        px[y][x] = (255, 255, 250, 255)
-    px[4][4] = tuple(int(v * 0.5 + 255 * 0.5) for v in bright) + (255,)
-    px[12][12] = tuple(int(v * 0.5 + 255 * 0.5) for v in bright) + (255,)
-    # the symbol, engraved: dark lines with a bright lip below-right
-    pts = {(2 + c, 2 + r) for r, row in enumerate(rows) for c, ch in enumerate(row) if ch == "#"}
-    # only the outline of a solid shape is cut in (thin lines like the reference); its inside stays
-    # plate, just a shade deeper
-    edge_pts = {(x, y) for (x, y) in pts
-                if name == "looting" or any((x + dx, y + dy) not in pts for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)))}
-    for (x, y) in edge_pts:
-        q = (x + 1, y + 1)
-        if q not in edge_pts and q not in pts and 3 <= q[0] <= 12 and 3 <= q[1] <= 12:
-            px[q[1]][q[0]] = tuple(int(px[q[1]][q[0]][i] * 0.4 + bright[i] * 0.6) for i in range(3)) + (255,)
-    for (x, y) in pts - edge_pts:
-        base = shade(px[y][x][:3], 0.84)
-        if (x - 1, y) in edge_pts and (x, y - 1) in edge_pts:
-            base = tuple(int(base[i] * 0.7 + bright[i] * 0.3) for i in range(3))
-        px[y][x] = base + (255,)
-    for (x, y) in edge_pts:
-        k = (x + y - 6) / 18.0
-        px[y][x] = shade(ink, 1.35 - 0.5 * k) + (255,)
-    # a tiny sparkle beside the top-left shine
-    for (x, y) in ((5, 3), (3, 5)):
-        if (x, y) not in pts:
-            px[y][x] = tuple(int(px[y][x][i] * 0.5 + 255 * 0.5) for i in range(3)) + (255,)
+    # white shine squares with a pale halo
+    for (x, y, k) in ((2, 2, 0.6), (3, 2, 0.85), (4, 2, 0.85), (2, 3, 0.7), (2, 4, 0.7),
+                      (5, 2, 0.5), (5, 3, 0.55), (5, 4, 0.55), (2, 5, 0.3), (3, 5, 0.3), (4, 5, 0.3)):
+        px[y][x] = mixp(px[y][x][:3], (255, 255, 255), k) + (255,)
+    for (x, y) in ((3, 3), (4, 3), (3, 4), (4, 4)):
+        px[y][x] = (255, 255, 255, 255)
+    for (x, y, k) in ((11, 11, 0.3), (12, 11, 0.6), (13, 11, 0.5), (11, 12, 0.5), (13, 12, 0.8),
+                      (11, 13, 0.35), (12, 13, 0.7), (13, 13, 0.6)):
+        px[y][x] = mixp(px[y][x][:3], (255, 255, 255), k) + (255,)
+    px[12][12] = (255, 255, 255, 255)
+    # the neon symbol, with a faint glow of its main colour on the plate round it
+    Wc, Hc, Mc, Lc, Dc = SYM_PAL[name]
+    ox, oy = SYM_AT[name]
+    cols = {"W": Wc, "H": Hc, "M": Mc, "L": Lc}
+    rows = SYM[name]
+    pts = {(ox + c, oy + r) for r, row in enumerate(rows) for c, ch in enumerate(row) if ch in cols}
+    for (x, y) in pts:
+        for (dx, dy) in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            q = (x + dx, y + dy)
+            if q not in pts and 2 <= q[0] <= 14 and 2 <= q[1] <= 13:
+                px[q[1]][q[0]] = mixp(px[q[1]][q[0]][:3], Mc, 0.25) + (255,)
+    for r, row in enumerate(rows):
+        for c, ch in enumerate(row):
+            x, y = ox + c, oy + r
+            if not (1 <= x <= 14 and 1 <= y <= 14):
+                continue
+            if ch in cols:
+                px[y][x] = cols[ch] + (255,)
+            elif ch == "D":
+                px[y][x] = mixp(px[y][x][:3], Dc, 0.7) + (255,)
     png(f"{ROOT}/textures/item/{name}_upgrade.png", px)
     json.dump({"parent": "minecraft:item/generated", "textures": {"layer0": f"chaosspawner:item/{name}_upgrade"}},
               open(f"{ROOT}/models/item/{name}_upgrade.json", "w"), indent=2)
