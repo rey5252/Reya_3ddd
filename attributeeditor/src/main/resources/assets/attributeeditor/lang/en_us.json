@@ -14,6 +14,10 @@
   "container.attributeeditor.attribute_table": "Attribute Table",
   "gui.attributeeditor.cost": "Costs %s level",
   "gui.attributeeditor.reset": "Reset",
-  "gui.attributeeditor.unbreakable": "Unbreak.",
-  "gui.attributeeditor.unbreakable.tooltip": "Toggle unbreakable (%s level)"
+  "gui.attributeeditor.unbreakable": "Unbreakable",
+  "gui.attributeeditor.unbreakable.tooltip": "Toggle unbreakable (%s level)",
+  "gui.attributeeditor.levels": "Your levels:",
+  "gui.attributeeditor.cost_label": "Cost:",
+  "gui.attributeeditor.place_item": "Put an item in the slot",
+  "gui.attributeeditor.is_unbreakable": "Unbreakable"
 }

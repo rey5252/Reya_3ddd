@@ -14,6 +14,10 @@
   "container.attributeeditor.attribute_table": "Стол атрибутов",
   "gui.attributeeditor.cost": "Стоит %s ур. опыта",
   "gui.attributeeditor.reset": "Сброс",
-  "gui.attributeeditor.unbreakable": "Нерушим.",
-  "gui.attributeeditor.unbreakable.tooltip": "Вкл./выкл. неразрушимость (%s ур.)"
+  "gui.attributeeditor.unbreakable": "Неразрушимость",
+  "gui.attributeeditor.unbreakable.tooltip": "Вкл./выкл. неразрушимость (%s ур.)",
+  "gui.attributeeditor.levels": "Твои уровни:",
+  "gui.attributeeditor.cost_label": "Цена:",
+  "gui.attributeeditor.place_item": "Положи предмет в слот",
+  "gui.attributeeditor.is_unbreakable": "Неразрушимый"
 }

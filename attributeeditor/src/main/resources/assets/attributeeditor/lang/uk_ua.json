@@ -14,6 +14,10 @@
   "container.attributeeditor.attribute_table": "Стіл атрибутів",
   "gui.attributeeditor.cost": "Коштує %s рів. досвіду",
   "gui.attributeeditor.reset": "Скинути",
-  "gui.attributeeditor.unbreakable": "Незлам.",
-  "gui.attributeeditor.unbreakable.tooltip": "Увімк./вимк. незламність (%s рів.)"
+  "gui.attributeeditor.unbreakable": "Незламність",
+  "gui.attributeeditor.unbreakable.tooltip": "Увімк./вимк. незламність (%s рів.)",
+  "gui.attributeeditor.levels": "Твої рівні:",
+  "gui.attributeeditor.cost_label": "Ціна:",
+  "gui.attributeeditor.place_item": "Поклади предмет у слот",
+  "gui.attributeeditor.is_unbreakable": "Незламний"
 }

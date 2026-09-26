@@ -26,9 +26,10 @@ public class AttributeTableMenu extends AbstractContainerMenu {
     /** Experience levels each "+" click costs in survival. */
     public static final int LEVEL_COST = 1;
 
-    public static final int SLOT_X = 17;
-    public static final int SLOT_Y = 26;
-    public static final int INVENTORY_Y = 153;
+    public static final int SLOT_X = 47;
+    public static final int SLOT_Y = 27;
+    public static final int INVENTORY_LEFT = 69;
+    public static final int INVENTORY_Y = 164;
 
     private final Container input = new SimpleContainer(1) {
         @Override
@@ -54,7 +55,7 @@ public class AttributeTableMenu extends AbstractContainerMenu {
             }
         });
 
-        int left = 27;
+        int left = INVENTORY_LEFT;
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 9; col++) {
                 addSlot(new Slot(inventory, col + row * 9 + 9, left + col * 18, INVENTORY_Y + row * 18));
