@@ -344,7 +344,7 @@ public class AttributeTableScreen extends AbstractContainerScreen<AttributeTable
         g.drawString(font, Component.translatable("gui.attributeeditor.levels"), x + 5, y + 5, TEXT, false);
         g.drawString(font, freeEdits() ? "∞" : String.valueOf(playerLevels()), x + 5, y + 16, GREEN, false);
 
-        int cost = pendingCost();
+        long cost = pendingCost();
         Component costLabel = Component.translatable("gui.attributeeditor.cost_label");
         g.drawString(font, costLabel, x + 5, y + 31, TEXT, false);
         boolean tooExpensive = !freeEdits() && cost > playerLevels();
