@@ -105,39 +105,54 @@ def corner_cap(cv, cx, cy, pal=None):
     cv.rect(cx - 1, cy + 2, cx + 3, cy + 3, ORANGE_LO)
 
 
-KEY = ["111111111",
-       "100000001",
-       "101111101",
-       "101000101",
-       "101011101",
-       "101010001",
-       "101011111",
-       "101000000",
-       "101111111"]
+KEY = ["#######",
+       "......#",
+       ".####.#",
+       ".#..#.#",
+       ".#.##.#",
+       ".#....#",
+       ".######"]
 
 
-def key_spiral(cv, x, y, pal, flip_x=False, flip_y=False):
-    """Gold square spiral on a dark tile with a black outline (11x11 incl. outline)."""
-    tr, trl, trd = pal[3], pal[4], pal[5]
+def key_spiral(cv, x, y, pal, flip_x=False, flip_y=False, handle_to=None):
+    """Gold square spiral like the reference: black outline, grey metal ring, dark inside, a spiral
+    shaded bright yellow at the top to orange at the bottom (11x11 incl. outline). The spiral's first
+    row runs out of the tile as a handle to x = handle_to, ending in a bright dot."""
+    tr, trl = pal[3], pal[4]
+    shades = [mix(trl, (255, 255, 230), 0.45), mix(trl, (255, 255, 230), 0.2), trl, trl,
+              tr, mix(tr, ORANGE, 0.45), mix(tr, ORANGE, 0.6)]
     cv.rect(x - 1, y - 1, x + 10, y + 10, BLACK)
-    cv.rect(x, y, x + 9, y + 9, BAND_LO)
-    for r in range(9):
-        for c in range(9):
-            if KEY[r][c] == "1":
-                xx = x + (8 - c if flip_x else c)
-                yy = y + (8 - r if flip_y else r)
-                edge_top = r == 0 or KEY[r - 1][c] != "1"
-                cv.set(xx, yy, trl if edge_top else tr)
+    cv.rect(x, y, x + 9, y + 9, GREY_LO)
+    cv.rect(x, y, x + 9, y + 1, GREY_HI)
+    cv.rect(x, y, x + 1, y + 9, GREY_HI)
+    cv.rect(x + 1, y + 1, x + 8, y + 8, (42, 30, 16))
+    fx = (lambda c: x + 7 - c) if flip_x else (lambda c: x + 1 + c)
+    fy = (lambda r: y + 7 - r) if flip_y else (lambda r: y + 1 + r)
+    for r in range(7):
+        for c in range(7):
+            if KEY[r][c] == "#":
+                cv.set(fx(c), fy(r), shades[6 - r if flip_y else r])
+    if handle_to is not None:
+        row = fy(0)
+        start = fx(0)
+        step = 1 if handle_to > start else -1
+        for xx in range(start, handle_to + step, step):
+            cv.set(xx, row - 1, BLACK)
+            cv.set(xx, row + 1, BLACK)
+            cv.set(xx, row, shades[0 if not flip_y else 2])
+        cv.set(handle_to, row, (255, 250, 220))
+        cv.set(handle_to + step, row, BLACK)
 
 
-def clip(cv, x, y, vertical=True):
-    """Grey metal clip: three stacked plates on the outside of the frame."""
-    cv.rect(x - 1, y - 1, x + 4, y + 11, BLACK)
+def clip(cv, x, y):
+    """Grey metal clip: three stacked plates (light over dark) held on the outside of the frame."""
+    cv.rect(x - 1, y - 1, x + 4, y + 9, BLACK)
     for k in range(3):
-        yy = y + k * 4
-        cv.rect(x, yy, x + 3, yy + 3, CLIP)
+        yy = y + k * 3
         cv.rect(x, yy, x + 3, yy + 1, CLIP_HI)
-        cv.rect(x, yy + 2, x + 3, yy + 3, CLIP_LO)
+        cv.rect(x, yy + 1, x + 3, yy + 2, CLIP)
+        if k < 2:
+            cv.rect(x, yy + 2, x + 3, yy + 3, CLIP_LO)
 
 
 def vanilla_slot(cv, x, y):
@@ -364,6 +379,23 @@ def build(pal, warm=True):
     pipe([(bx1 + 1, 23), (-1, 23), (-1, 77), (bx1 + 1, 77)])
     for (x, y), c in list(grey.items()):
         grey[(mx(x), y)] = c
+    # lighter on the outside of the line, darker next to the panel
+    near_in = lambda q: any((q[0] + dx, q[1] + dy) in inside for dx in (-1, 0, 1) for dy in (-1, 0, 1))
+    shade = {}
+    for (x, y) in grey:
+        outer = inner = False
+        for (dx, dy) in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            q = (x + dx, y + dy)
+            if q not in grey:
+                if near_in(q):
+                    inner = True
+                else:
+                    outer = True
+        if outer != inner:
+            shade[(x, y)] = GREY_HI if outer else GREY_LO
+        else:
+            shade[(x, y)] = GREY_HI if ((x - 1, y) not in grey or (x, y - 1) not in grey) else GREY_LO
+    grey = shade
     for (x, y) in grey:
         for dx in (-1, 0, 1):
             for dy in (-1, 0, 1):
@@ -431,14 +463,10 @@ def build(pal, warm=True):
         f = (lambda x: mx(x)) if side else (lambda x: x)
         corner_cap(cv, f(bx1), 0)
         clip(cv, f(bx1 - 3) - (2 if side else 0), 5)
-        clip(cv, f(bx1 - 3) - (2 if side else 0), top_h - 13)
+        clip(cv, f(bx1 - 3) - (2 if side else 0), top_h - 12)
         for (y, fy) in ((8, False), (top_h - 17, True)):
-            key_spiral(cv, f(bx1 + 4) - (8 if side else 0), y, pal, flip_x=side, flip_y=fy)
-            row = y + (8 if fy else 0)
-            for x in range(bx1 + 1, bx1 + 4):
-                cv.set(f(x), row - 1, BLACK)
-                cv.set(f(x), row, trl)
-                cv.set(f(x), row + 1, BLACK)
+            key_spiral(cv, f(bx1 + 4) - (8 if side else 0), y, pal, flip_x=side, flip_y=fy,
+                       handle_to=f(bx1 + 1))
         cap_notch(cv, f(ix1 - 11), iy1 + 5, side)
 
     # --- player inventory
