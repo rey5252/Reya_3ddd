@@ -112,23 +112,10 @@ public class MobFarmScreen extends AbstractContainerScreen<MobFarmMenu> {
         int y2 = y + imageHeight;
         drawOrnateBox(g, x, y, x2, y2, p);
 
-        // Title banner that fades out softly at both ends
+        // Title on a plaque hanging over the top edge; the freed space holds gold filigree.
         int mid = x + MobFarmMenu.BODY_W / 2;
-        int tw = font.width(title) / 2 + 6;
-        g.fill(mid - tw, y + 4, mid + tw, y + 16, p.bgDark);
-        g.fill(mid - tw, y + 16, mid + tw, y + 17, p.trimDark);
-        int fade = 14;
-        for (int i = 0; i < fade; i++) {
-            float a = 1.0F - (i + 1) / (float) (fade + 1);
-            int bg = withAlpha(p.bgDark, a);
-            int line = withAlpha(p.trimDark, a);
-            g.fill(mid - tw - 1 - i, y + 4, mid - tw - i, y + 16, bg);
-            g.fill(mid + tw + i, y + 4, mid + tw + i + 1, y + 16, bg);
-            g.fill(mid - tw - 1 - i, y + 16, mid - tw - i, y + 17, line);
-            g.fill(mid + tw + i, y + 16, mid + tw + i + 1, y + 17, line);
-        }
-        drawDiamond(g, mid - tw - fade - 3, y + 10, p);
-        drawDiamond(g, mid + tw + fade + 2, y + 10, p);
+        drawTitlePlaque(g, mid, y - 9, p);
+        drawFiligree(g, mid, y, p);
 
         // Lasso socket, loot box and the mob window, mirrored around the middle
         drawSocketBox(g, leftPos + LEFT_PANEL_X, y + PANEL_Y, PANEL_W, PANEL_H, p);
@@ -282,14 +269,74 @@ public class MobFarmScreen extends AbstractContainerScreen<MobFarmMenu> {
         px(g, x + 2 * d, y + 3, p.trimLight);
     }
 
+    /** Recessed box with gold corner brackets and a gem stud in the middle of each side. */
     private static void drawSocketBox(GuiGraphics g, int x, int y, int w, int h, Palette p) {
         g.fill(x - 1, y - 1, x + w + 1, y + h + 1, p.trimDark);
         g.fill(x, y, x + w, y + h, p.bgDark);
         g.fill(x, y, x + w, y + 1, (p.trim & 0xFFFFFF) | 0x90000000);
-        px(g, x, y, p.trim);
-        px(g, x + w - 1, y, p.trim);
-        px(g, x, y + h - 1, p.trim);
-        px(g, x + w - 1, y + h - 1, p.trim);
+        int x2 = x + w - 1;
+        int y2 = y + h - 1;
+        for (int i = 0; i < 5; i++) {
+            px(g, x - 1 + i, y - 1, p.trim);
+            px(g, x - 1, y - 1 + i, p.trim);
+            px(g, x2 + 1 - i, y - 1, p.trim);
+            px(g, x2 + 1, y - 1 + i, p.trim);
+            px(g, x - 1 + i, y2 + 1, p.trim);
+            px(g, x - 1, y2 + 1 - i, p.trim);
+            px(g, x2 + 1 - i, y2 + 1, p.trim);
+            px(g, x2 + 1, y2 + 1 - i, p.trim);
+        }
+        px(g, x - 1, y - 1, p.trimLight);
+        px(g, x2 + 1, y - 1, p.trimLight);
+        px(g, x - 1, y2 + 1, p.trimLight);
+        px(g, x2 + 1, y2 + 1, p.trimLight);
+        drawDiamond(g, x + w / 2, y - 1, p);
+        drawDiamond(g, x + w / 2, y2 + 1, p);
+    }
+
+    /** Title plaque: framed dark plate with rivets, hanging from two short chains. */
+    private void drawTitlePlaque(GuiGraphics g, int mid, int y, Palette p) {
+        int tw = font.width(title) / 2 + 8;
+        int x1 = mid - tw;
+        int x2 = mid + tw;
+        g.fill(x1 - 1, y - 1, x2 + 1, y + 15, 0xFF000000);
+        g.fill(x1, y, x2, y + 14, p.trimDark);
+        g.fill(x1 + 1, y + 1, x2 - 1, y + 13, p.trim);
+        g.fill(x1 + 1, y + 1, x2 - 1, y + 2, p.trimLight);
+        g.fill(x1 + 2, y + 2, x2 - 2, y + 12, p.bgDark);
+        px(g, x1 + 3, y + 7, p.trimLight);
+        px(g, x2 - 4, y + 7, p.trimLight);
+        // pointed ends
+        for (int i = 0; i < 5; i++) {
+            g.fill(x1 - 1 - i, y + 2 + i, x1, y + 12 - i, p.trim);
+            g.fill(x2, y + 2 + i, x2 + 1 + i, y + 12 - i, p.trim);
+        }
+        px(g, x1 - 5, y + 7, p.trimLight);
+        px(g, x2 + 4, y + 7, p.trimLight);
+    }
+
+    /**
+     * Mirrored gold filigree between the plaque and the mob window: a centre gem with scrolls
+     * running out to both sides and curling up at the ends.
+     */
+    private static void drawFiligree(GuiGraphics g, int mid, int top, Palette p) {
+        // centre gem
+        g.fill(mid - 2, top + 8, mid + 3, top + 13, p.trimDark);
+        g.fill(mid - 1, top + 9, mid + 2, top + 12, p.trim);
+        px(g, mid, top + 10, p.trimLight);
+        int[][] half = {
+                {3, 10}, {4, 9}, {5, 9}, {6, 8}, {7, 8}, {8, 8}, {9, 9}, {10, 10}, {10, 11}, {9, 12}, {8, 12}, {8, 11},
+                {11, 9}, {12, 8}, {13, 8}, {14, 8}, {15, 9}, {16, 10}, {17, 11}, {18, 11}, {19, 11}, {20, 10},
+                {21, 9}, {22, 9}, {23, 10}, {24, 11}, {25, 12}, {26, 12}, {27, 11}, {28, 10}, {28, 9}, {27, 8}, {26, 9}};
+        for (int[] pt : half) {
+            px(g, mid + pt[0], top + pt[1], p.trim);
+            px(g, mid - pt[0], top + pt[1], p.trim);
+        }
+        int[][] shine = {{6, 8}, {13, 8}, {22, 9}};
+        for (int[] pt : shine) {
+            px(g, mid + pt[0], top + pt[1], p.trimLight);
+            px(g, mid - pt[0], top + pt[1], p.trimLight);
+        }
     }
 
     /** Machine slot: light carved-stone face in a gold frame (a thicker frame for the lasso). */
@@ -373,10 +420,36 @@ public class MobFarmScreen extends AbstractContainerScreen<MobFarmMenu> {
         g.enableScissor(x, y, x2, y2);
         renderSpinning(g, cx, y2 - 10, scale, spin, entity);
         g.disableScissor();
+        drawSecondsBar(g, x + 4, y2 - 5, WINDOW_W - 8, p);
 
         Component name = type.getDescription();
         String text = font.plainSubstrByWidth(name.getString(), WINDOW_W - 4);
         g.drawString(font, text, cx - font.width(text) / 2, y + 3, TEXT, true);
+    }
+
+    /**
+     * Small segmented bar, one segment per second of the cycle (at most 20), showing how many
+     * seconds are left until the next loot. Segments go out one by one from the right.
+     */
+    private void drawSecondsBar(GuiGraphics g, int x, int y, int w, Palette p) {
+        int max = menu.maxProgress();
+        int segments = Mth.clamp((max + 19) / 20, 1, 20);
+        float left = 1.0F - shownProgress;
+        float litSegments = left * segments;
+        int gap = 1;
+        int segW = Math.max(1, (w - gap * (segments - 1)) / segments);
+        int total = segW * segments + gap * (segments - 1);
+        int sx = x + (w - total) / 2;
+        for (int i = 0; i < segments; i++) {
+            int x1 = sx + i * (segW + gap);
+            g.fill(x1, y, x1 + segW, y + 3, (p.bgDark & 0xFFFFFF) | 0xE0000000);
+            float fill = Mth.clamp(litSegments - i, 0.0F, 1.0F);
+            if (fill > 0.0F) {
+                int fw = Math.max(1, Math.round(segW * fill));
+                g.fill(x1, y, x1 + fw, y + 3, p.trimLight);
+                g.fill(x1, y + 2, x1 + fw, y + 3, p.trim);
+            }
+        }
     }
 
     private static void renderSpinning(GuiGraphics g, int x, int y, int scale, float angle, LivingEntity entity) {
@@ -446,7 +519,7 @@ public class MobFarmScreen extends AbstractContainerScreen<MobFarmMenu> {
     @Override
     protected void renderLabels(GuiGraphics g, int mouseX, int mouseY) {
         Palette p = palette(menu.tier());
-        g.drawString(font, title, (imageWidth - font.width(title)) / 2, 7, p.trimLight, true);
+        g.drawString(font, title, (imageWidth - font.width(title)) / 2, -6, p.trimLight, true);
 
         // Left socket: caption above the lasso, cycle time below it
         int leftCenter = LEFT_PANEL_X + PANEL_W / 2;
