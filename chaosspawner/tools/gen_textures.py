@@ -313,7 +313,7 @@ METALS = {
     "experience": ((26, 58, 20), (40, 84, 30), (62, 138, 34), (150, 222, 76), (232, 255, 172), (26, 62, 18)),
 }
 for n, (name, (bg, rim, sym, glow, rows)) in enumerate(CARDS.items()):
-    fdark, frame, edge, mid, bright, ink = METALS["looting"]   # all gold, like the reference
+    fdark, frame, edge, mid, bright, ink = METALS[name]
     px = grid()
     for y in range(16):
         for x in range(16):
