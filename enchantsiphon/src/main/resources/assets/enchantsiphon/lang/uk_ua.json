@@ -1,0 +1,18 @@
+{
+  "block.enchantsiphon.enchant_siphon": "Вилучувач чарів",
+  "itemGroup.enchantsiphon": "EnchantSiphon",
+  "container.enchantsiphon.siphon": "Вилучувач чарів",
+  "gui.enchantsiphon.take": "Взяти",
+  "gui.enchantsiphon.take_all": "Забрати все",
+  "gui.enchantsiphon.item": "Предмет",
+  "gui.enchantsiphon.book": "Книга",
+  "gui.enchantsiphon.insert": "Поклади зачарований предмет у верхній слот, а книгу в нижній",
+  "gui.enchantsiphon.cost": "Ціна: %s рівн.",
+  "gui.enchantsiphon.free": "Безкоштовно",
+  "gui.enchantsiphon.levels": "Рівні: %s",
+  "gui.enchantsiphon.creative": "Творчий режим",
+  "gui.enchantsiphon.reason.no_book": "Поклади книгу в слот для книги",
+  "gui.enchantsiphon.reason.no_xp": "Не вистачає рівнів досвіду",
+  "gui.enchantsiphon.reason.incompat": "Несумісний із чарами, які вже є в книзі",
+  "gui.enchantsiphon.reason.curse": "Прокляття вимкнені в конфігу"
+}

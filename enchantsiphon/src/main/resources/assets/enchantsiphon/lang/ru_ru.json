@@ -1,0 +1,18 @@
+{
+  "block.enchantsiphon.enchant_siphon": "Извлекатель чар",
+  "itemGroup.enchantsiphon": "EnchantSiphon",
+  "container.enchantsiphon.siphon": "Извлекатель чар",
+  "gui.enchantsiphon.take": "Взять",
+  "gui.enchantsiphon.take_all": "Забрать всё",
+  "gui.enchantsiphon.item": "Предмет",
+  "gui.enchantsiphon.book": "Книга",
+  "gui.enchantsiphon.insert": "Положи зачарованный предмет в верхний слот, а книгу в нижний",
+  "gui.enchantsiphon.cost": "Цена: %s ур.",
+  "gui.enchantsiphon.free": "Бесплатно",
+  "gui.enchantsiphon.levels": "Уровни: %s",
+  "gui.enchantsiphon.creative": "Творческий режим",
+  "gui.enchantsiphon.reason.no_book": "Положи книгу в слот для книги",
+  "gui.enchantsiphon.reason.no_xp": "Не хватает уровней опыта",
+  "gui.enchantsiphon.reason.incompat": "Несовместим с чарами, которые уже есть в книге",
+  "gui.enchantsiphon.reason.curse": "Проклятия отключены в конфиге"
+}

@@ -1,0 +1,19 @@
+{
+  "block.enchantsiphon.enchant_siphon": "Enchant Siphon",
+  "itemGroup.enchantsiphon": "EnchantSiphon",
+  "container.enchantsiphon.siphon": "Enchant Siphon",
+  "gui.enchantsiphon.take": "Take",
+  "gui.enchantsiphon.take_all": "Take all",
+  "gui.enchantsiphon.item": "Item",
+  "gui.enchantsiphon.book": "Book",
+  "gui.enchantsiphon.insert": "Put an enchanted item into the top slot and a book into the bottom one",
+  "gui.enchantsiphon.cost": "Cost: %s lvl",
+  "gui.enchantsiphon.free": "Free",
+  "gui.enchantsiphon.levels": "Levels: %s",
+  "gui.enchantsiphon.creative": "Creative",
+  "gui.enchantsiphon.reason.no_book": "Put a book into the book slot",
+  "gui.enchantsiphon.reason.no_xp": "Not enough experience levels",
+  "gui.enchantsiphon.reason.incompatible": "Not compatible with the enchantments already in the book",
+  "gui.enchantsiphon.reason.incompat": "Not compatible with the enchantments already in the book",
+  "gui.enchantsiphon.reason.curse": "Curses are disabled in the config"
+}

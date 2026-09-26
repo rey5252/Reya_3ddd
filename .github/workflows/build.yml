@@ -24,6 +24,8 @@ jobs:
             dir: mobfarm
           - mod: overenchant
             dir: overenchant
+          - mod: enchantsiphon
+            dir: enchantsiphon
     defaults:
       run:
         working-directory: ${{ matrix.dir }}
