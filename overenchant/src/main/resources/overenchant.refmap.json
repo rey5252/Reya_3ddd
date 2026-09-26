@@ -1,0 +1,20 @@
+{
+  "mappings": {
+    "com/overenchant/mixin/EnchantmentHelperMixin": {
+      "getEnchantmentLevel(Lnet/minecraft/nbt/CompoundTag;)I": "Lnet/minecraft/world/item/enchantment/EnchantmentHelper;m_182438_(Lnet/minecraft/nbt/CompoundTag;)I"
+    },
+    "com/overenchant/mixin/EnchantmentMixin": {
+      "getFullname": "Lnet/minecraft/world/item/enchantment/Enchantment;m_44700_(I)Lnet/minecraft/network/chat/Component;"
+    }
+  },
+  "data": {
+    "searge": {
+      "com/overenchant/mixin/EnchantmentHelperMixin": {
+        "getEnchantmentLevel(Lnet/minecraft/nbt/CompoundTag;)I": "Lnet/minecraft/world/item/enchantment/EnchantmentHelper;m_182438_(Lnet/minecraft/nbt/CompoundTag;)I"
+      },
+      "com/overenchant/mixin/EnchantmentMixin": {
+        "getFullname": "Lnet/minecraft/world/item/enchantment/Enchantment;m_44700_(I)Lnet/minecraft/network/chat/Component;"
+      }
+    }
+  }
+}

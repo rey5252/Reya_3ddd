@@ -1,0 +1,13 @@
+{
+  "block.overenchant.enchantment_upgrader": "Покращувач чарів",
+  "itemGroup.overenchant": "OverEnchant",
+  "container.overenchant.upgrader": "Покращувач чарів",
+  "gui.overenchant.apply": "Застосувати",
+  "gui.overenchant.reset": "Скинути",
+  "gui.overenchant.insert": "Поклади зачарований предмет у слот",
+  "gui.overenchant.none": "На цьому предметі немає чарів",
+  "gui.overenchant.levels": "Рівні:",
+  "gui.overenchant.cost": "Ціна:",
+  "gui.overenchant.plus_tip": "+1  (Shift: +10, Ctrl: +100)",
+  "gui.overenchant.minus_tip": "-1  (Shift: -10, Ctrl: -100)"
+}

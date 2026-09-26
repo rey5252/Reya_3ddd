@@ -1,0 +1,13 @@
+{
+  "block.overenchant.enchantment_upgrader": "Улучшитель чар",
+  "itemGroup.overenchant": "OverEnchant",
+  "container.overenchant.upgrader": "Улучшитель чар",
+  "gui.overenchant.apply": "Применить",
+  "gui.overenchant.reset": "Сбросить",
+  "gui.overenchant.insert": "Положи зачарованный предмет в слот",
+  "gui.overenchant.none": "На этом предмете нет чар",
+  "gui.overenchant.levels": "Уровни:",
+  "gui.overenchant.cost": "Цена:",
+  "gui.overenchant.plus_tip": "+1  (Shift: +10, Ctrl: +100)",
+  "gui.overenchant.minus_tip": "-1  (Shift: -10, Ctrl: -100)"
+}

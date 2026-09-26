@@ -22,6 +22,8 @@ jobs:
             dir: bossdamage
           - mod: mobfarm
             dir: mobfarm
+          - mod: overenchant
+            dir: overenchant
     defaults:
       run:
         working-directory: ${{ matrix.dir }}

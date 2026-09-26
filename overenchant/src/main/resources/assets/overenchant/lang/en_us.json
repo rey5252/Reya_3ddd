@@ -1,0 +1,13 @@
+{
+  "block.overenchant.enchantment_upgrader": "Enchantment Upgrader",
+  "itemGroup.overenchant": "OverEnchant",
+  "container.overenchant.upgrader": "Enchantment Upgrader",
+  "gui.overenchant.apply": "Apply",
+  "gui.overenchant.reset": "Reset",
+  "gui.overenchant.insert": "Put an enchanted item in the slot",
+  "gui.overenchant.none": "This item has no enchantments",
+  "gui.overenchant.levels": "Levels:",
+  "gui.overenchant.cost": "Cost:",
+  "gui.overenchant.plus_tip": "+1  (Shift: +10, Ctrl: +100)",
+  "gui.overenchant.minus_tip": "-1  (Shift: -10, Ctrl: -100)"
+}
