@@ -172,16 +172,17 @@ public final class BossPanelOverlay {
         // Text with an alpha below 4 is drawn fully opaque by the font renderer, so skip the last frames.
         if (alpha < 0.05F) return height;
 
-        g.fillGradient(x + 1, y + 1, x2 - 1, y2 - 1, fade(st.bgTop, alpha), fade(st.bgBottom, alpha));
-        drawScenery(g, st, x, y, x2, y2, boss.entityId(), alpha, now);
-        drawParticles(g, st, x, y, x2, y2, boss.entityId(), alpha, now);
-        drawFrame(g, st, x, y, x2, y2, alpha);
+        drawBox(g, st, x, y, x2, y2, boss.entityId(), alpha, now);
 
         // Portrait
         int px = x + 5;
         int py = y + 5;
-        g.fill(px - 1, py - 1, px + 23, py + 23, fade(st.portraitEdge, alpha));
-        g.fill(px, py, px + 22, py + 22, fade(st.portraitBg, alpha));
+        int edge = fade(st.portraitEdge, alpha);
+        g.fill(px, py, px + 22, py + 22, fade(st.portraitBg, alpha * 0.5F));
+        g.fill(px - 1, py - 1, px + 23, py, edge);
+        g.fill(px - 1, py + 22, px + 23, py + 23, edge);
+        g.fill(px - 1, py, px, py + 22, edge);
+        g.fill(px + 22, py, px + 23, py + 22, edge);
         if (alpha > 0.6F) drawPortrait(g, mc, boss, px, py, px + 22, py + 22);
 
         // Name and health numbers
@@ -216,6 +217,39 @@ public final class BossPanelOverlay {
             g.drawString(font, percent, x2 - 8 - font.width(percent), ry, color, st.textShadow);
         }
         return height;
+    }
+
+    /** Background, scenery, particles and frame of a style; also used by the style menu. */
+    public static void drawBox(GuiGraphics g, PanelStyle st, int x, int y, int x2, int y2, int seed, float alpha, long now) {
+        g.fillGradient(x + 1, y + 1, x2 - 1, y2 - 1, fade(st.bgTop, alpha), fade(st.bgBottom, alpha));
+        drawScenery(g, st, x, y, x2, y2, seed, alpha, now);
+        drawParticles(g, st, x, y, x2, y2, seed, alpha, now);
+        drawFrame(g, st, x, y, x2, y2, alpha);
+    }
+
+    private static final Anim PREVIEW = new Anim(new BossInfoPacket(0, new ResourceLocation("minecraft", "player"),
+            Component.empty(), 20.0F, 20.0F, List.of()), 0L);
+    private static long lastPreviewFrame;
+
+    /**
+     * A sample panel for the style menu: the player's portrait, a health bar that keeps taking hits
+     * (so the ghost and shimmer show) and a made-up damage leaderboard. Returns its height.
+     */
+    public static int drawPreview(GuiGraphics g, Minecraft mc, PanelStyle st, int x, int y, int width, long now) {
+        float max = 200.0F;
+        float health = max * (1.0F - 0.14F * ((now / 1200L) % 6L));
+        String self = mc.player != null ? mc.player.getGameProfile().getName() : "You";
+        List<BossInfoPacket.Row> rows = List.of(
+                new BossInfoPacket.Row(self, 64.21F),
+                new BossInfoPacket.Row("Steve", 21.48F),
+                new BossInfoPacket.Row("Alex", 9.74F));
+        PREVIEW.info = new BossInfoPacket(Integer.MIN_VALUE, // no real entity: portrait shows the dragon head icon
+                new ResourceLocation("minecraft", "ender_dragon"),
+                Component.translatable("entity.minecraft.ender_dragon"), health, max, rows);
+        float dt = Math.min(0.1F, (now - lastPreviewFrame) / 1000.0F);
+        lastPreviewFrame = now;
+        updateHealth(PREVIEW, dt, now);
+        return drawPanel(g, mc, st, PREVIEW, x, y, width, 1.0F, now);
     }
 
     /** Scenery along the bottom edge: city skyline, hills, flames or grass. */
@@ -584,9 +618,9 @@ public final class BossPanelOverlay {
         Entity entity = mc.level == null ? null : mc.level.getEntity(boss.entityId());
         if (entity instanceof LivingEntity living && boss.health() > 0.0F) {
             float size = Math.max(living.getBbHeight(), living.getBbWidth());
-            int scale = Math.max(1, (int) (15.0F / Math.max(0.5F, size)));
+            int scale = Math.max(1, (int) (18.0F / Math.max(0.5F, size)));
             int centerX = (x1 + x2) / 2;
-            int feetY = y2 - 2;
+            int feetY = y2 - 1 - Math.max(0, (int) ((18.0F - living.getBbHeight() * scale) / 2.0F));
             g.enableScissor(x1, y1, x2, y2);
             try {
                 InventoryScreen.renderEntityInInventoryFollowsMouse(g, centerX, feetY, scale,

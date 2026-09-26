@@ -4,7 +4,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 import com.reya.bossdamage.BossDamage;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.chat.Component;
+import net.minecraftforge.client.ConfigScreenHandler;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.event.TickEvent;
 import org.lwjgl.glfw.GLFW;
@@ -15,6 +15,7 @@ import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.client.event.RenderGuiOverlayEvent;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 
 public final class ClientEvents {
@@ -48,20 +49,13 @@ public final class ClientEvents {
             }
         }
 
-        /** K cycles through the panel styles, saves the choice and shows a preview. */
+        /** K opens the style menu. */
         @SubscribeEvent
         public static void onClientTick(TickEvent.ClientTickEvent event) {
             if (event.phase != TickEvent.Phase.END) return;
             Minecraft mc = Minecraft.getInstance();
             while (CHANGE_STYLE.consumeClick()) {
-                PanelStyle next = ClientConfig.style().next();
-                ClientConfig.STYLE.set(next);
-                ClientConfig.STYLE.save();
-                BossPanelOverlay.preview();
-                if (mc.player != null) {
-                    mc.player.displayClientMessage(Component.translatable("bossdamage.style_changed",
-                            Component.translatable(next.translationKey())), true);
-                }
+                if (mc.screen == null) mc.setScreen(new StyleScreen(null));
             }
         }
 
@@ -78,6 +72,12 @@ public final class ClientEvents {
 
         private ForgeBus() {
         }
+    }
+
+    /** "Config" button in the Mods list opens the style menu too. */
+    public static void registerConfigScreen() {
+        ModLoadingContext.get().registerExtensionPoint(ConfigScreenHandler.ConfigScreenFactory.class,
+                () -> new ConfigScreenHandler.ConfigScreenFactory((mc, parent) -> new StyleScreen(parent)));
     }
 
     private ClientEvents() {

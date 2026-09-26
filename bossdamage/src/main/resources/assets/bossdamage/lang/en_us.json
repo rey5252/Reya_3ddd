@@ -1,7 +1,7 @@
 {
   "bossdamage.damage_progress": "Damage Progress",
   "bossdamage.defeated": "%s defeated! Top damage:",
-  "key.bossdamage.change_style": "Change panel style",
+  "key.bossdamage.change_style": "Open panel style menu",
   "key.categories.bossdamage": "Boss Damage Tracker",
   "bossdamage.style_changed": "Panel style: %s",
   "bossdamage.style.night_sky": "Night Sky",
@@ -15,5 +15,9 @@
   "bossdamage.style.pirate": "Pirate Map",
   "bossdamage.style.steel": "Steel",
   "bossdamage.style.rainbow": "Rainbow Jukebox",
-  "bossdamage.style.minimal": "Minimal"
+  "bossdamage.style.minimal": "Minimal",
+  "bossdamage.menu.title": "Panel Style",
+  "bossdamage.menu.preview": "Preview",
+  "bossdamage.menu.numbers.on": "Damage numbers: ON",
+  "bossdamage.menu.numbers.off": "Damage numbers: OFF"
 }

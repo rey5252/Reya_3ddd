@@ -1,7 +1,7 @@
 {
   "bossdamage.damage_progress": "Прогресс урона",
   "bossdamage.defeated": "%s побеждён! Больше всего урона:",
-  "key.bossdamage.change_style": "Сменить стиль панели",
+  "key.bossdamage.change_style": "Меню стиля панели",
   "key.categories.bossdamage": "Boss Damage Tracker",
   "bossdamage.style_changed": "Стиль панели: %s",
   "bossdamage.style.night_sky": "Ночное небо",
@@ -15,5 +15,9 @@
   "bossdamage.style.pirate": "Пиратская карта",
   "bossdamage.style.steel": "Сталь",
   "bossdamage.style.rainbow": "Радуга",
-  "bossdamage.style.minimal": "Минимализм"
+  "bossdamage.style.minimal": "Минимализм",
+  "bossdamage.menu.title": "Стиль панели",
+  "bossdamage.menu.preview": "Предпросмотр",
+  "bossdamage.menu.numbers.on": "Цифры урона: ВКЛ.",
+  "bossdamage.menu.numbers.off": "Цифры урона: ВЫКЛ."
 }

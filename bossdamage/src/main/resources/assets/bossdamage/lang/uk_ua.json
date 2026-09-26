@@ -1,7 +1,7 @@
 {
   "bossdamage.damage_progress": "Прогрес шкоди",
   "bossdamage.defeated": "%s переможено! Найбільше шкоди:",
-  "key.bossdamage.change_style": "Змінити стиль панелі",
+  "key.bossdamage.change_style": "Меню стилю панелі",
   "key.categories.bossdamage": "Boss Damage Tracker",
   "bossdamage.style_changed": "Стиль панелі: %s",
   "bossdamage.style.night_sky": "Нічне небо",
@@ -15,5 +15,9 @@
   "bossdamage.style.pirate": "Піратська карта",
   "bossdamage.style.steel": "Сталь",
   "bossdamage.style.rainbow": "Веселка",
-  "bossdamage.style.minimal": "Мінімалізм"
+  "bossdamage.style.minimal": "Мінімалізм",
+  "bossdamage.menu.title": "Стиль панелі",
+  "bossdamage.menu.preview": "Попередній перегляд",
+  "bossdamage.menu.numbers.on": "Цифри шкоди: УВІМК.",
+  "bossdamage.menu.numbers.off": "Цифри шкоди: ВИМК."
 }
