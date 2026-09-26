@@ -1,0 +1,18 @@
+{
+  "enchantment.extraenchants.volley": "Залп",
+  "enchantment.extraenchants.volley.desc": "Лук выпускает 2 дополнительные стрелы за каждый уровень веером.",
+  "enchantment.extraenchants.ore_wisdom": "Рудная мудрость",
+  "enchantment.extraenchants.ore_wisdom.desc": "Руды дают намного больше опыта; железная, золотая и медная руды тоже дают опыт.",
+  "enchantment.extraenchants.battle_wisdom": "Боевая мудрость",
+  "enchantment.extraenchants.battle_wisdom.desc": "Убитые мобы дают +50% опыта за уровень.",
+  "enchantment.extraenchants.auto_smelt": "Автоплавка",
+  "enchantment.extraenchants.auto_smelt.desc": "Добытые блоки выпадают уже переплавленными.",
+  "enchantment.extraenchants.telekinesis": "Телекинез",
+  "enchantment.extraenchants.telekinesis.desc": "Добытое сразу попадает в инвентарь.",
+  "enchantment.extraenchants.lifesteal": "Вампиризм",
+  "enchantment.extraenchants.lifesteal.desc": "Лечит на 10% нанесённого урона за уровень.",
+  "enchantment.extraenchants.beheading": "Обезглавливание",
+  "enchantment.extraenchants.beheading.desc": "5% шанса за уровень, что моб или игрок уронит голову.",
+  "enchantment.extraenchants.frost_aspect": "Ледяное касание",
+  "enchantment.extraenchants.frost_aspect.desc": "Цель замораживается и замедляется."
+}

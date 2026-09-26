@@ -8,6 +8,17 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - mod: cursedseed
+            dir: .
+          - mod: extraenchants
+            dir: extraenchants
+    defaults:
+      run:
+        working-directory: ${{ matrix.dir }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -21,5 +32,5 @@ jobs:
           ./gradlew build --stacktrace
       - uses: actions/upload-artifact@v4
         with:
-          name: cursedseed-jar
-          path: build/libs/*.jar
+          name: ${{ matrix.mod }}-jar
+          path: ${{ matrix.dir }}/build/libs/*.jar

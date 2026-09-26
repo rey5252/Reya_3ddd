@@ -1,0 +1,18 @@
+{
+  "enchantment.extraenchants.volley": "Volley",
+  "enchantment.extraenchants.volley.desc": "Bow fires 2 extra arrows per level in a fan.",
+  "enchantment.extraenchants.ore_wisdom": "Ore Wisdom",
+  "enchantment.extraenchants.ore_wisdom.desc": "Ores give much more experience; iron, gold and copper ores give some too.",
+  "enchantment.extraenchants.battle_wisdom": "Battle Wisdom",
+  "enchantment.extraenchants.battle_wisdom.desc": "Killed mobs drop +50% experience per level.",
+  "enchantment.extraenchants.auto_smelt": "Auto Smelt",
+  "enchantment.extraenchants.auto_smelt.desc": "Mined blocks drop already smelted.",
+  "enchantment.extraenchants.telekinesis": "Telekinesis",
+  "enchantment.extraenchants.telekinesis.desc": "Mined drops go straight into your inventory.",
+  "enchantment.extraenchants.lifesteal": "Lifesteal",
+  "enchantment.extraenchants.lifesteal.desc": "Heals you for 10% of melee damage dealt per level.",
+  "enchantment.extraenchants.beheading": "Beheading",
+  "enchantment.extraenchants.beheading.desc": "5% chance per level for mobs and players to drop their head.",
+  "enchantment.extraenchants.frost_aspect": "Frost Aspect",
+  "enchantment.extraenchants.frost_aspect.desc": "Hit targets are frozen and slowed."
+}

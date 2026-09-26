@@ -1,0 +1,18 @@
+{
+  "enchantment.extraenchants.volley": "Залп",
+  "enchantment.extraenchants.volley.desc": "Лук випускає 2 додаткові стріли за кожен рівень віялом.",
+  "enchantment.extraenchants.ore_wisdom": "Рудна мудрість",
+  "enchantment.extraenchants.ore_wisdom.desc": "Руди дають набагато більше досвіду; залізна, золота та мідна руди теж дають досвід.",
+  "enchantment.extraenchants.battle_wisdom": "Бойова мудрість",
+  "enchantment.extraenchants.battle_wisdom.desc": "Убиті моби дають +50% досвіду за рівень.",
+  "enchantment.extraenchants.auto_smelt": "Автоплавка",
+  "enchantment.extraenchants.auto_smelt.desc": "Видобуті блоки випадають уже переплавленими.",
+  "enchantment.extraenchants.telekinesis": "Телекінез",
+  "enchantment.extraenchants.telekinesis.desc": "Видобуте одразу потрапляє в інвентар.",
+  "enchantment.extraenchants.lifesteal": "Вампіризм",
+  "enchantment.extraenchants.lifesteal.desc": "Лікує на 10% завданої шкоди за рівень.",
+  "enchantment.extraenchants.beheading": "Обезголовлення",
+  "enchantment.extraenchants.beheading.desc": "5% шансу за рівень, що моб чи гравець скине голову.",
+  "enchantment.extraenchants.frost_aspect": "Льодяний дотик",
+  "enchantment.extraenchants.frost_aspect.desc": "Ціль заморожується і сповільнюється."
+}

@@ -1,0 +1,13 @@
+{
+  "type": "extraenchants:auto_smelt",
+  "conditions": [
+    {
+      "condition": "minecraft:match_tool",
+      "predicate": {
+        "enchantments": [
+          { "enchantment": "extraenchants:auto_smelt", "levels": { "min": 1 } }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "type": "extraenchants:telekinesis",
+  "conditions": [
+    {
+      "condition": "minecraft:match_tool",
+      "predicate": {
+        "enchantments": [
+          { "enchantment": "extraenchants:telekinesis", "levels": { "min": 1 } }
+        ]
+      }
+    }
+  ]
+}
