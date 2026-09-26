@@ -10,3 +10,4 @@ bin/
 classes/
 logs/
 *.zip
+__pycache__/
