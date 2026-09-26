@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [ "GBG", "DLD", "GOG" ],
+  "key": {
+    "G": { "item": "minecraft:gold_ingot" },
+    "B": { "item": "minecraft:book" },
+    "D": { "item": "minecraft:diamond" },
+    "L": { "item": "minecraft:lapis_block" },
+    "O": { "item": "minecraft:obsidian" }
+  },
+  "result": { "item": "advancedenchanting:table_upgrade" }
+}

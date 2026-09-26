@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [ "GBG", "DED", "OOO" ],
+  "key": {
+    "G": { "item": "minecraft:gold_ingot" },
+    "B": { "item": "minecraft:book" },
+    "D": { "item": "minecraft:diamond" },
+    "E": { "item": "minecraft:enchanting_table" },
+    "O": { "item": "minecraft:obsidian" }
+  },
+  "result": { "item": "advancedenchanting:advanced_enchanting_table" }
+}

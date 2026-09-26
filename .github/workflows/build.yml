@@ -26,6 +26,8 @@ jobs:
             dir: overenchant
           - mod: enchantsiphon
             dir: enchantsiphon
+          - mod: advancedenchanting
+            dir: advancedenchanting
     defaults:
       run:
         working-directory: ${{ matrix.dir }}

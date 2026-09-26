@@ -1,0 +1,21 @@
+{
+  "block.advancedenchanting.advanced_enchanting_table": "Улучшенный стол зачарований",
+  "item.advancedenchanting.table_upgrade": "Улучшение стола зачарований",
+  "item.advancedenchanting.table_upgrade.tip": "ПКМ по обычному столу зачарований, чтобы сделать его улучшенным",
+  "itemGroup.advancedenchanting": "Advanced Enchanting",
+  "container.advancedenchanting.table": "Улучшенный стол зачарований",
+  "gui.advancedenchanting.enchant": "Зачаровать",
+  "gui.advancedenchanting.reset": "Сбросить",
+  "gui.advancedenchanting.xp": "Опыт:",
+  "gui.advancedenchanting.cost": "Цена:",
+  "gui.advancedenchanting.insert": "Положи предмет или книгу в слот",
+  "gui.advancedenchanting.none": "Этот предмет нельзя зачаровать",
+  "gui.advancedenchanting.tip.title": "Улучшенный стол зачарований",
+  "gui.advancedenchanting.tip.slider": "Тяни ползунок вправо — выше уровень, влево — ниже или снять чары. Цена в очках опыта.",
+  "gui.advancedenchanting.tip.colors": "Зелёную строку можно изменить, красную — нет (конфликт с выбранными чарами).",
+  "gui.advancedenchanting.tip.curses": "Проклятия — только в полночь в полнолуние.",
+  "gui.advancedenchanting.tip.curses_open": "Сейчас полночь и полнолуние — проклятия доступны!",
+  "gui.advancedenchanting.reason.conflict": "Несовместим с выбранными чарами",
+  "gui.advancedenchanting.reason.curse": "Проклятия — только в полночь в полнолуние",
+  "gui.advancedenchanting.reason.treasure": "Сокровищные чары стол не накладывает"
+}

@@ -1,0 +1,21 @@
+{
+  "block.advancedenchanting.advanced_enchanting_table": "Покращений стіл зачарувань",
+  "item.advancedenchanting.table_upgrade": "Покращення столу зачарувань",
+  "item.advancedenchanting.table_upgrade.tip": "ПКМ по звичайному столу зачарувань, щоб зробити його покращеним",
+  "itemGroup.advancedenchanting": "Advanced Enchanting",
+  "container.advancedenchanting.table": "Покращений стіл зачарувань",
+  "gui.advancedenchanting.enchant": "Зачарувати",
+  "gui.advancedenchanting.reset": "Скинути",
+  "gui.advancedenchanting.xp": "Досвід:",
+  "gui.advancedenchanting.cost": "Ціна:",
+  "gui.advancedenchanting.insert": "Поклади предмет або книгу в слот",
+  "gui.advancedenchanting.none": "Цей предмет не можна зачарувати",
+  "gui.advancedenchanting.tip.title": "Покращений стіл зачарувань",
+  "gui.advancedenchanting.tip.slider": "Тягни повзунок вправо — вищий рівень, вліво — нижчий або зняти чар. Ціна в очках досвіду.",
+  "gui.advancedenchanting.tip.colors": "Зелений рядок можна змінити, червоний — ні (конфлікт з вибраним чаром).",
+  "gui.advancedenchanting.tip.curses": "Прокляття — лише опівночі в повний місяць.",
+  "gui.advancedenchanting.tip.curses_open": "Зараз опівночі в повний місяць — прокляття доступні!",
+  "gui.advancedenchanting.reason.conflict": "Несумісний з вибраними чарами",
+  "gui.advancedenchanting.reason.curse": "Прокляття — лише опівночі в повний місяць",
+  "gui.advancedenchanting.reason.treasure": "Скарбові чари стіл не накладає"
+}

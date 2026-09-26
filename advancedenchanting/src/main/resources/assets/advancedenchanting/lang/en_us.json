@@ -1,0 +1,21 @@
+{
+  "block.advancedenchanting.advanced_enchanting_table": "Advanced Enchanting Table",
+  "item.advancedenchanting.table_upgrade": "Enchanting Table Upgrade",
+  "item.advancedenchanting.table_upgrade.tip": "Right-click a normal enchanting table to upgrade it",
+  "itemGroup.advancedenchanting": "Advanced Enchanting",
+  "container.advancedenchanting.table": "Advanced Enchanting Table",
+  "gui.advancedenchanting.enchant": "Enchant",
+  "gui.advancedenchanting.reset": "Reset",
+  "gui.advancedenchanting.xp": "EXP:",
+  "gui.advancedenchanting.cost": "Cost:",
+  "gui.advancedenchanting.insert": "Put an item or a book into the slot",
+  "gui.advancedenchanting.none": "This item can't be enchanted",
+  "gui.advancedenchanting.tip.title": "Advanced Enchanting Table",
+  "gui.advancedenchanting.tip.slider": "Slide right for a higher level, left for a lower one or to remove it. Paid in experience points.",
+  "gui.advancedenchanting.tip.colors": "Green rows can be changed, red ones can't (they clash with a chosen enchantment).",
+  "gui.advancedenchanting.tip.curses": "Curses only at midnight under a full moon.",
+  "gui.advancedenchanting.tip.curses_open": "It's midnight under a full moon - curses are available!",
+  "gui.advancedenchanting.reason.conflict": "Not compatible with the chosen enchantments",
+  "gui.advancedenchanting.reason.curse": "Curses only at midnight under a full moon",
+  "gui.advancedenchanting.reason.treasure": "The table doesn't apply treasure enchantments"
+}
