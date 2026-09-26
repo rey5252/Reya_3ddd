@@ -82,8 +82,11 @@ final class RecipePanel {
         g.fill(x + 1, y + 1, x + W - 1, y + 2, GOLD_L);
         g.fill(x + 1, y + 1, x + 2, y + H - 1, GOLD_L);
         g.fill(x + 2, y + 2, x + W - 2, y + H - 2, GOLD);
-        g.fill(x + 3, y + 3, x + W - 3, y + H - 3, BLACK);
+        g.fill(x + 3, y + 3, x + W - 3, y + H - 3, 0xFF1A0E24);
         g.fill(x + 4, y + 4, x + W - 4, y + H - 4, BG);
+        // title band and a thin gold rule under the tabs
+        g.fill(x + 4, y + 4, x + W - 4, y + 17, 0xFF3A2150);
+        g.fill(x + 8, y + LIST_Y - 3, x + W - 8, y + LIST_Y - 2, GOLD_D);
 
         Component title = Component.translatable("gui.multibrewer.recipes." + tab);
         g.drawString(font, title, x + (W - font.width(title)) / 2, y + 8, GOLD_L, true);
@@ -94,8 +97,8 @@ final class RecipePanel {
             int tx = x + 30 + i * 26;
             int ty = y + 19;
             boolean on = i == tab;
-            g.fill(tx - 2, ty - 2, tx + 18, ty + 18, on ? GOLD : BLACK);
-            g.fill(tx - 1, ty - 1, tx + 17, ty + 17, on ? 0xFF5A3478 : 0xFF221230);
+            g.fill(tx - 2, ty - 2, tx + 18, ty + 18, on ? GOLD : 0xFF1A0E24);
+            g.fill(tx - 1, ty - 1, tx + 17, ty + 17, on ? 0xFF5A3478 : 0xFF2A1638);
             g.renderItem(potion(TAB_ITEMS[i], Potions.WATER), tx, ty);
             if (in(mx, my, tx, ty)) hovered = potion(TAB_ITEMS[i], Potions.WATER);
         }
@@ -104,17 +107,17 @@ final class RecipePanel {
         int listTop = y + LIST_Y;
         int maxScroll = Math.max(0, contentHeight() - LIST_H);
         scroll = Mth.clamp(scroll, 0, maxScroll);
-        g.enableScissor(x + 4, listTop, x + W - 4, listTop + LIST_H);
+        g.enableScissor(x + 5, listTop, x + W - 9, listTop + LIST_H);
         Item type = TAB_ITEMS[tab];
         int ry = listTop - Math.round(scroll);
 
         // water + nether wart -> awkward (+ gunpowder / dragon's breath for the other tabs)
-        ItemStack hv = row(g, font, x + 6, ry, new ItemStack[]{potion(Items.POTION, Potions.WATER),
+        ItemStack hv = row(g, font, x + 9, ry, new ItemStack[]{potion(Items.POTION, Potions.WATER),
                 new ItemStack(Items.NETHER_WART), potion(Items.POTION, Potions.AWKWARD)}, mx, my, listTop);
         if (!hv.isEmpty()) hovered = hv;
         ry += ROW;
         if (tab > 0) {
-            hv = row(g, font, x + 6, ry, new ItemStack[]{potion(Items.POTION, Potions.AWKWARD),
+            hv = row(g, font, x + 9, ry, new ItemStack[]{potion(Items.POTION, Potions.AWKWARD),
                     new ItemStack(tab == 1 ? Items.GUNPOWDER : Items.DRAGON_BREATH), potion(type, Potions.AWKWARD)}, mx, my, listTop);
             if (!hv.isEmpty()) hovered = hv;
             ry += ROW;
@@ -123,7 +126,7 @@ final class RecipePanel {
         List<Branch> list = branches(type);
         int trunkTop = ry - 4;
         for (Branch b : list) {
-            int lx = x + 14;
+            int lx = x + 15;
             g.fill(lx, ry + 7, lx + 8, ry + 8, LINE);
             ItemStack[] items = b.corrupted() == null
                     ? new ItemStack[]{new ItemStack(b.ingredient()), potion(type, b.result())}
@@ -133,20 +136,21 @@ final class RecipePanel {
             if (!hv.isEmpty()) hovered = hv;
             ry += ROW;
         }
-        g.fill(x + 14, trunkTop, x + 15, ry - ROW + 8, LINE);
+        g.fill(x + 15, trunkTop, x + 16, ry - ROW + 8, LINE);
 
         // modifiers
         ry += 2;
-        g.drawString(font, Component.translatable("gui.multibrewer.recipes.modifiers"), x + 8, ry, GOLD_L, true);
+        g.drawString(font, Component.translatable("gui.multibrewer.recipes.modifiers"), x + 9, ry, GOLD_L, true);
         ry += 12;
         Item[] mods = {Items.REDSTONE, Items.GLOWSTONE_DUST, Items.GUNPOWDER, Items.DRAGON_BREATH};
         String[] keys = {"longer", "stronger", "splash", "lingering"};
         for (int i = 0; i < mods.length; i++) {
             ItemStack s = new ItemStack(mods[i]);
-            g.renderItem(s, x + 8, ry);
-            if (in(mx, my, x + 8, ry) && my >= listTop && my < listTop + LIST_H) hovered = s;
+            slot(g, x + 9, ry);
+            g.renderItem(s, x + 9, ry);
+            if (in(mx, my, x + 9, ry) && my >= listTop && my < listTop + LIST_H) hovered = s;
             g.drawString(font, Component.translatable("gui.multibrewer.recipes." + keys[i]), x + 28, ry + 4, TEXT, false);
-            ry += 17;
+            ry += 18;
         }
         g.disableScissor();
 
@@ -154,8 +158,9 @@ final class RecipePanel {
         if (maxScroll > 0) {
             int barH = Math.max(12, LIST_H * LIST_H / contentHeight());
             int barY = listTop + Math.round((LIST_H - barH) * scroll / maxScroll);
-            g.fill(x + W - 7, listTop, x + W - 5, listTop + LIST_H, 0xFF221230);
-            g.fill(x + W - 7, barY, x + W - 5, barY + barH, GOLD);
+            g.fill(x + W - 8, listTop, x + W - 5, listTop + LIST_H, 0xFF1A0E24);
+            g.fill(x + W - 7, barY, x + W - 6, barY + barH, GOLD_L);
+            g.fill(x + W - 8, barY, x + W - 7, barY + barH, GOLD);
         }
         return hovered;
     }
@@ -201,9 +206,12 @@ final class RecipePanel {
         return hovered;
     }
 
+    /** Soft sunken cell, drawn only inside the item's own 16x16 square so nothing pokes out. */
     private static void slot(GuiGraphics g, int x, int y) {
-        g.fill(x - 1, y - 1, x + 17, y + 17, BLACK);
-        g.fill(x, y, x + 16, y + 16, BG_ROW);
+        g.fill(x, y, x + 16, y + 16, 0xFF24122F);
+        g.fill(x + 1, y + 1, x + 16, y + 16, BG_ROW);
+        g.fill(x + 1, y + 15, x + 16, y + 16, 0xFF55336E);
+        g.fill(x + 15, y + 1, x + 16, y + 16, 0xFF55336E);
     }
 
     private static boolean in(int mx, int my, int x, int y) {
