@@ -38,8 +38,8 @@ public class MobFarmScreen extends AbstractContainerScreen<MobFarmMenu> {
     private static final int WINDOW_W = 72;
     private static final int WINDOW_Y = 18;
     private static final int WINDOW_H = 64;
-    private static final int BAR_X = B + 18;
-    private static final int BAR_W = 190;
+    private static final int BAR_X = B + 24;
+    private static final int BAR_W = 168;
     private static final int BAR_Y = 88;
     private static final int BAR2_Y = 99;
     private static final int BAR_H = 6;
@@ -115,7 +115,7 @@ public class MobFarmScreen extends AbstractContainerScreen<MobFarmMenu> {
             }
             if (!menu.upgrades().isEmpty()) drawTabGlow(g, t);
             if (menu.status() == MobFarmBlockEntity.STATUS_REDSTONE) {
-                drawLock(g, leftPos + B + MobFarmMenu.BODY_W - 22, topPos + 8, t);
+                drawLock(g, leftPos + B + MobFarmMenu.BODY_W - 30, topPos + 9, t);
             }
         });
     }
