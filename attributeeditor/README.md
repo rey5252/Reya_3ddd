@@ -1,0 +1,38 @@
+# Item Attribute Editor (NeoForge 1.20.1)
+
+Мод дозволяє змінювати **урон, швидкість атаки, броню, здоров'я, швидкість бігу, дальність удару** та будь-які інші атрибути предметів.
+
+## Команди (потрібні права оператора / чити)
+
+Візьми предмет в руку:
+
+| Команда | Що робить |
+|---|---|
+| `/itemattr set minecraft:generic.attack_damage 6` | Урон при атаці = 6 (як у підказці) |
+| `/itemattr set minecraft:generic.attack_speed 1.2` | Швидкість атаки = 1.2 |
+| `/itemattr set minecraft:generic.armor 8` | +8 броні (для броні — у своєму слоті автоматично) |
+| `/itemattr set minecraft:generic.max_health 10 offhand` | +10 здоров'я, коли предмет у лівій руці |
+| `/itemattr set forge:entity_reach 3` | +3 блоки дальності удару |
+| `/itemattr remove <атрибут> [слот]` | Прибрати атрибут |
+| `/itemattr list` | Показати всі атрибути предмета |
+| `/itemattr reset` | Повернути стандартні значення |
+| `/itemattr unbreakable` | Увімк./вимк. незламність |
+| `/itemattr reload` | Перечитати конфіг |
+
+Слоти: `mainhand`, `offhand`, `head`, `chest`, `legs`, `feet`. Tab підказує всі атрибути.
+
+## Конфіг для всіх предметів одного типу
+
+`config/attributeeditor.json` (створюється при першому запуску):
+
+```json
+{
+  "items": {
+    "minecraft:wooden_sword": { "attack_damage": 6, "attack_speed": 1.2 },
+    "minecraft:diamond_chestplate": { "armor": 10, "max_health": 4 },
+    "#forge:tools/axes": { "attack_speed": 1.5 }
+  }
+}
+```
+
+Можна писати короткі назви (`armor`, `max_health`, `movement_speed`, `knockback_resistance`, `luck`, `entity_reach`, `block_reach`...) або повні id. Після змін — `/itemattr reload`. На сервері поклади такий самий файл і гравцям, щоб у них правильно показувались підказки.

@@ -16,6 +16,8 @@ jobs:
             dir: .
           - mod: extraenchants
             dir: extraenchants
+          - mod: attributeeditor
+            dir: attributeeditor
     defaults:
       run:
         working-directory: ${{ matrix.dir }}

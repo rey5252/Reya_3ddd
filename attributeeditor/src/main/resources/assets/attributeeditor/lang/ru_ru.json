@@ -1,0 +1,13 @@
+{
+  "commands.attributeeditor.no_item": "Возьми предмет в основную руку",
+  "commands.attributeeditor.bad_slot": "Неизвестный слот: %s (mainhand, offhand, head, chest, legs, feet)",
+  "commands.attributeeditor.set": "%s теперь %s (слот: %s)",
+  "commands.attributeeditor.removed": "Убрано %s (%s модификаторов)",
+  "commands.attributeeditor.list": "Атрибуты %s:",
+  "commands.attributeeditor.list.empty": " (атрибутов нет)",
+  "commands.attributeeditor.reset": "Атрибуты предмета сброшены",
+  "commands.attributeeditor.unbreakable.on": "Предмет теперь неразрушимый",
+  "commands.attributeeditor.unbreakable.off": "Предмет снова ломается",
+  "commands.attributeeditor.reload": "Конфиг перезагружен: %s правил",
+  "commands.attributeeditor.reload.failed": "Не удалось прочитать config/attributeeditor.json, смотри лог"
+}

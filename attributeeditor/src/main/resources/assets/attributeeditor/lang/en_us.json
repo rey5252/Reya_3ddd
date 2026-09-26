@@ -1,0 +1,13 @@
+{
+  "commands.attributeeditor.no_item": "Hold an item in your main hand",
+  "commands.attributeeditor.bad_slot": "Unknown slot: %s (mainhand, offhand, head, chest, legs, feet)",
+  "commands.attributeeditor.set": "Set %s to %s (slot: %s)",
+  "commands.attributeeditor.removed": "Removed %s (%s modifiers)",
+  "commands.attributeeditor.list": "Attributes of %s:",
+  "commands.attributeeditor.list.empty": " (no attributes)",
+  "commands.attributeeditor.reset": "Item attributes reset to default",
+  "commands.attributeeditor.unbreakable.on": "Item is now unbreakable",
+  "commands.attributeeditor.unbreakable.off": "Item is breakable again",
+  "commands.attributeeditor.reload": "Reloaded config: %s item rules",
+  "commands.attributeeditor.reload.failed": "Could not read config/attributeeditor.json, see the log"
+}
