@@ -7,7 +7,7 @@ coordinates as the screen) and, with --preview, a 3x preview image.
 import math, struct, sys, zlib
 
 M = 4                       # margin around the screen area (caps and clips stick out)
-SW, SH = 268, 218           # screen area, same coordinates as the menu
+SW, SH = 268, 224           # screen area, same coordinates as the menu
 W, H = SW + 2 * M, SH + 2 * M
 B = 26                      # body starts after the left upgrade tab
 BODY_W = 216
@@ -153,6 +153,40 @@ def clip(cv, x, y, vertical=True):
         cv.rect(x, yy + 2, x + 3, yy + 3, CLIP_LO)
 
 
+def leg(cv, x_top, y_top, x_end, y_elbow, mirror, span):
+    """Frame leg: goes straight down from the panel, turns through a rounded elbow and runs
+    into the inventory panel. One orange cap sits on the elbow. mirror=True draws the right one."""
+    pts = []
+    def seg(a, b):
+        n = max(abs(b[0] - a[0]), abs(b[1] - a[1]), 1)
+        for k in range(n + 1):
+            pts.append((a[0] + (b[0] - a[0]) * k / n, a[1] + (b[1] - a[1]) * k / n))
+    cx = x_top + 2
+    seg((cx, y_top), (cx, y_elbow - 3))
+    seg((cx, y_elbow - 3), (cx + 3, y_elbow))
+    seg((cx + 3, y_elbow), (x_end, y_elbow))
+    mask = set()
+    for (x, y) in pts:
+        for dx in range(-2, 3):
+            for dy in range(-2, 3):
+                mask.add((int(round(x)) + dx, int(round(y)) + dy))
+    def fx(x):
+        return span - 1 - x if mirror else x
+    for (x, y) in mask:
+        for dx in (-1, 0, 1):
+            for dy in (-1, 0, 1):
+                if (x + dx, y + dy) not in mask:
+                    cv.set(fx(x + dx), y + dy, BLACK)
+    for (x, y) in mask:
+        c = BAND
+        if (x, y - 1) not in mask or (x - 1, y) not in mask:
+            c = BAND_HI
+        elif (x, y + 1) not in mask:
+            c = BAND_LO
+        cv.set(fx(x), y, c)
+    corner_cap(cv, fx(cx + 1), y_elbow - 1)
+
+
 def vanilla_slot(cv, x, y):
     cv.rect(x - 1, y - 1, x + 17, y + 17, (139, 139, 139))
     cv.rect(x - 1, y - 1, x + 17, y, (55, 55, 55))
@@ -295,24 +329,16 @@ def build(pal):
     bx1, bx2 = B, B + BODY_W
     top_h = 124                      # ornate panel height; the inventory panel hangs below
 
-    # player inventory panel below, with frame "legs" reaching down to it
-    ix1, ix2, iy1, iy2 = B + 19, B + 197, 128, SH
-    for (lx, dx) in ((bx1 + 3, 1), (bx2 - 8, -1)):
-        cv.rect(lx - 1, top_h - 4, lx + 6, 136, BLACK)
-        cv.rect(lx, top_h - 4, lx + 5, 135, BAND)
-        cv.rect(lx, top_h - 4, lx + 1, 135, BAND_HI)
-        end = ix1 + 2 if dx > 0 else ix2 - 2
-        hx1, hx2 = (lx, end) if dx > 0 else (end, lx + 5)
-        cv.rect(hx1 - 1, 130, hx2 + 1, 137, BLACK)
-        cv.rect(hx1, 131, hx2, 136, BAND)
-        cv.rect(hx1, 131, hx2, 132, BAND_HI)
-        corner_cap(cv, lx + 2, 136)
+    # player inventory panel below, joined to the ornate panel by two frame legs
+    ix1, ix2, iy1, iy2 = B + 19, B + 197, 134, SH
+    for mirror in (False, True):
+        leg(cv, bx1 + 4, top_h - 3, ix1 + 4, 144, mirror, bx1 + bx2)
     inventory_panel(cv, ix1, iy1, ix2, iy2)
     for r in range(3):
         for c in range(9):
-            vanilla_slot(cv, B + 27 + c * 18, 136 + r * 18)
+            vanilla_slot(cv, B + 27 + c * 18, 142 + r * 18)
     for c in range(9):
-        vanilla_slot(cv, B + 27 + c * 18, 194)
+        vanilla_slot(cv, B + 27 + c * 18, 200)
 
     # upgrade tabs (behind the ornate panel)
     for tx in (0, SW - B - 4):
@@ -337,10 +363,10 @@ def build(pal):
     for (y, fy) in ((10, False), (top_h - 15, True)):
         key_spiral(cv, bx1 + 1, y, pal, flip_x=False, flip_y=fy)
         key_spiral(cv, bx2 - 10, y, pal, flip_x=True, flip_y=fy)
-        cy = y - 12 if not fy else y + 11
-        clip(cv, bx1 - 3, cy + (0 if not fy else 1))
-        clip(cv, bx2, cy + (0 if not fy else 1))
-    for (cx, cy) in ((bx1 - 1, -1), (bx2, -1), (bx1 - 1, top_h), (bx2, top_h)):
+        if not fy:
+            clip(cv, bx1 - 3, y - 12)
+            clip(cv, bx2, y - 12)
+    for (cx, cy) in ((bx1 - 1, -1), (bx2, -1)):
         corner_cap(cv, cx, cy)
 
     # horns first, then the window over them
