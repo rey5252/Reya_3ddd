@@ -33,16 +33,32 @@ public class MobFarmScreen extends AbstractContainerScreen<MobFarmMenu> {
     private static final int PANEL_H = 64;
     private static final int BAR_X = B + 8;
     private static final int BAR_Y = 88;
+    private static final int BAR2_Y = 99;
     private static final int BAR_W = 200;
-    private static final int BAR_H = 8;
+    private static final int BAR_H = 6;
 
-    private static final int BG_TOP = 0xF41A1A24;
-    private static final int BG_BOTTOM = 0xF40F0F16;
-    private static final int PANEL_BG = 0x90000000;
-    private static final int SLOT = 0xFF26262F;
-    private static final int SLOT_SHADE = 0xFF15151B;
-    private static final int TEXT = 0xFFE8E8F0;
-    private static final int TEXT_DIM = 0xFF9A9AAE;
+    private static final int TEXT = 0xFFF4ECDC;
+    private static final int TEXT_DIM = 0xFFC9B9A0;
+
+    /** Ornate palette per tier: background, its shadow, trim (and its light/dark), slot face. */
+    private record Palette(int bg, int bgDark, int trim, int trimLight, int trimDark) {
+    }
+
+    private static Palette palette(FarmTier tier) {
+        return switch (tier) {
+            case WOODEN -> new Palette(0xFF6B3F1F, 0xFF4A2A12, 0xFFC9913F, 0xFFE8B96A, 0xFF7A5222);
+            case STONE -> new Palette(0xFF4E5258, 0xFF33363B, 0xFFB9BEC6, 0xFFE6E9EE, 0xFF6C7178);
+            case IRON -> new Palette(0xFF3C4A5E, 0xFF27303E, 0xFFC8D2DE, 0xFFF2F6FA, 0xFF6E7A88);
+            case GOLDEN -> new Palette(0xFF7A2020, 0xFF521414, 0xFFE3B341, 0xFFFFE08A, 0xFF8A6414);
+            case DIAMOND -> new Palette(0xFF1C5563, 0xFF123A44, 0xFFE3B341, 0xFFFFE08A, 0xFF8A6414);
+            case NETHERITE -> new Palette(0xFF3A2340, 0xFF24152A, 0xFFE0A080, 0xFFFFD0B8, 0xFF8A5A48);
+        };
+    }
+
+    // Light sage slot faces, like carved stone set into the panel
+    private static final int SLOT_FACE = 0xFF9AA69A;
+    private static final int SLOT_LIGHT = 0xFFC4CEC2;
+    private static final int SLOT_DARK = 0xFF5E685E;
 
     public MobFarmScreen(MobFarmMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
@@ -59,12 +75,13 @@ public class MobFarmScreen extends AbstractContainerScreen<MobFarmMenu> {
         renderBackground(g);
         super.render(g, mouseX, mouseY, partialTick);
         renderTooltip(g, mouseX, mouseY);
-        // Over an empty spot of a tab: explain what the books do / what's active.
         if (hoveredSlot == null || !hoveredSlot.hasItem()) {
             boolean overTab = inside(mouseX, mouseY, leftPos, topPos + TAB_Y, B, TAB_H)
                     || inside(mouseX, mouseY, leftPos + imageWidth - B, topPos + TAB_Y, B, TAB_H);
             if (overTab) {
                 g.renderComponentTooltip(font, menu.upgrades().describe(menu.tier()), mouseX, mouseY);
+            } else if (inside(mouseX, mouseY, leftPos + BAR_X, topPos + BAR_Y, BAR_W, BAR2_Y - BAR_Y + BAR_H)) {
+                g.renderTooltip(font, statusText(), mouseX, mouseY);
             }
         }
     }
@@ -76,62 +93,164 @@ public class MobFarmScreen extends AbstractContainerScreen<MobFarmMenu> {
     @Override
     protected void renderBg(GuiGraphics g, float partialTick, int mouseX, int mouseY) {
         FarmTier tier = menu.tier();
-        // Upgrade tabs first, so the body's frame overlaps their inner edge.
-        drawTab(g, leftPos, topPos + TAB_Y, tier, true);
-        drawTab(g, leftPos + imageWidth - B - 3, topPos + TAB_Y, tier, false);
+        Palette p = palette(tier);
+        drawTab(g, leftPos, topPos + TAB_Y, p, true);
+        drawTab(g, leftPos + imageWidth - B - 3, topPos + TAB_Y, p, false);
 
         int x = leftPos + B;
         int y = topPos;
         int x2 = x + MobFarmMenu.BODY_W;
         int y2 = y + imageHeight;
+        drawOrnateBox(g, x, y, x2, y2, p);
 
-        // Body with a tier-coloured frame, mirrored gems in the corners and a crest on top.
-        g.fill(x - 1, y - 1, x2 + 1, y2 + 1, 0xFF000000);
-        g.fill(x, y, x2, y2, tier.dark);
-        g.fill(x + 1, y + 1, x2 - 1, y2 - 1, tier.color);
-        g.fill(x + 1, y + 1, x2 - 1, y + 2, tier.light);
-        g.fillGradient(x + 3, y + 3, x2 - 3, y2 - 3, BG_TOP, BG_BOTTOM);
-        drawGem(g, x + 1, y + 1, tier);
-        drawGem(g, x2 - 6, y + 1, tier);
-        drawGem(g, x + 1, y2 - 6, tier);
-        drawGem(g, x2 - 6, y2 - 6, tier);
+        // Title banner
         int mid = x + MobFarmMenu.BODY_W / 2;
-        for (int i = 0; i < 4; i++) {
-            g.fill(mid - 5 + i, y - 1 - i, mid + 5 - i, y - i, i == 3 ? tier.light : tier.color);
-        }
+        int tw = font.width(title) / 2 + 10;
+        g.fill(mid - tw, y + 4, mid + tw, y + 16, p.bgDark);
+        g.fill(mid - tw, y + 16, mid + tw, y + 17, p.trimDark);
+        drawDiamond(g, mid - tw - 3, y + 10, p);
+        drawDiamond(g, mid + tw + 2, y + 10, p);
 
-        // Three panels, mirrored around the middle.
-        drawPanel(g, leftPos + LEFT_PANEL_X, y + PANEL_Y, PANEL_W, PANEL_H, tier);
-        drawPanel(g, leftPos + RIGHT_PANEL_X, y + PANEL_Y, PANEL_W, PANEL_H, tier);
+        // Lasso socket, loot box and the mob window, mirrored around the middle
+        drawSocketBox(g, leftPos + LEFT_PANEL_X, y + PANEL_Y, PANEL_W, PANEL_H, p);
+        drawSocketBox(g, leftPos + RIGHT_PANEL_X, y + PANEL_Y, PANEL_W, PANEL_H, p);
         drawWindow(g, leftPos + WINDOW_X, y + PANEL_Y, tier);
+        drawCurl(g, leftPos + WINDOW_X - 1, y + PANEL_Y + 2, p, true);
+        drawCurl(g, leftPos + WINDOW_X + WINDOW_W + 1, y + PANEL_Y + 2, p, false);
 
-        // Slots; empty upgrade slots show a faint book
         for (Slot slot : menu.slots) {
-            drawSlot(g, leftPos + slot.x, y + slot.y, slot.index == 0 ? tier : null);
-            boolean upgrade = slot.index >= MobFarmBlockEntity.UPGRADE_START
-                    && slot.index < MobFarmBlockEntity.UPGRADE_START + MobFarmBlockEntity.UPGRADE_COUNT;
+            boolean machine = slot.index < MobFarmBlockEntity.SLOT_COUNT;
+            if (machine) {
+                drawStoneSlot(g, leftPos + slot.x, y + slot.y, p, slot.index == 0);
+            } else {
+                drawInventorySlot(g, leftPos + slot.x, y + slot.y, p);
+            }
+            boolean upgrade = slot.index >= MobFarmBlockEntity.UPGRADE_START && slot.index < MobFarmBlockEntity.SLOT_COUNT;
             if (upgrade && !slot.hasItem()) drawGhostBook(g, leftPos + slot.x, y + slot.y);
         }
 
-        drawProgress(g, leftPos + BAR_X, y + BAR_Y, tier);
+        drawBars(g, leftPos + BAR_X, y, p);
 
-        // Divider above the inventory, with little diamonds at both ends
-        int dy = y + MobFarmMenu.INV_Y - 16;
-        g.fill(x + 12, dy, x2 - 12, dy + 1, tier.dark);
-        g.fill(x + 10, dy - 1, x + 12, dy + 2, tier.color);
-        g.fill(x2 - 12, dy - 1, x2 - 10, dy + 2, tier.color);
+        // Ornament line above the inventory
+        int dy = y + MobFarmMenu.INV_Y - 8;
+        g.fill(x + 16, dy, x2 - 16, dy + 1, p.trimDark);
+        drawDiamond(g, x + 13, dy, p);
+        drawDiamond(g, x2 - 14, dy, p);
+        drawDiamond(g, mid, dy, p);
+
+        // Lock in the top-right corner while redstone holds the farm
+        if (menu.status() == MobFarmBlockEntity.STATUS_REDSTONE) drawLock(g, x2 - 20, y + 5, p);
     }
 
-    /** Side tab holding two upgrade slots, with a sparkle that glows when books are in. */
-    private void drawTab(GuiGraphics g, int x, int y, FarmTier tier, boolean left) {
+    /** Double trim with filigree corners and diamonds halfway down the sides. */
+    private static void drawOrnateBox(GuiGraphics g, int x, int y, int x2, int y2, Palette p) {
+        g.fill(x - 1, y - 1, x2 + 1, y2 + 1, 0xFF000000);
+        g.fill(x, y, x2, y2, p.trimDark);
+        g.fill(x + 1, y + 1, x2 - 1, y2 - 1, p.trim);
+        g.fill(x + 1, y + 1, x2 - 1, y + 2, p.trimLight);
+        g.fill(x + 2, y + 2, x2 - 2, y2 - 2, p.bgDark);
+        g.fill(x + 3, y + 3, x2 - 3, y2 - 3, p.bg);
+        // faint woven pattern
+        for (int py = y + 6; py < y2 - 6; py += 4) {
+            for (int px = x + 6 + (py / 4 % 2) * 2; px < x2 - 6; px += 4) {
+                g.fill(px, py, px + 1, py + 1, (p.bgDark & 0xFFFFFF) | 0x60000000);
+            }
+        }
+        // inner thin trim line
+        outline(g, x + 4, y + 4, x2 - 4, y2 - 4, (p.trimDark & 0xFFFFFF) | 0xC0000000);
+        drawCorner(g, x + 2, y + 2, 1, 1, p);
+        drawCorner(g, x2 - 3, y + 2, -1, 1, p);
+        drawCorner(g, x + 2, y2 - 3, 1, -1, p);
+        drawCorner(g, x2 - 3, y2 - 3, -1, -1, p);
+        int my = (y + y2) / 2;
+        drawDiamond(g, x + 1, my, p);
+        drawDiamond(g, x2 - 2, my, p);
+    }
+
+    private static void outline(GuiGraphics g, int x, int y, int x2, int y2, int c) {
+        g.fill(x, y, x2, y + 1, c);
+        g.fill(x, y2 - 1, x2, y2, c);
+        g.fill(x, y, x + 1, y2, c);
+        g.fill(x2 - 1, y, x2, y2, c);
+    }
+
+    /** Filigree corner: an L of trim with a curl and a dot, pointing inward along (dx, dy). */
+    private static void drawCorner(GuiGraphics g, int x, int y, int dx, int dy, Palette p) {
+        for (int i = 0; i < 9; i++) {
+            px(g, x + i * dx, y, p.trim);
+            px(g, x, y + i * dy, p.trim);
+            px(g, x + i * dx, y + dy, i < 7 ? p.trimLight : p.trim);
+            px(g, x + dx, y + i * dy, i < 7 ? p.trimLight : p.trim);
+        }
+        // little square gem in the corner
+        for (int i = 2; i < 5; i++) for (int j = 2; j < 5; j++) px(g, x + i * dx, y + j * dy, p.trim);
+        px(g, x + 3 * dx, y + 3 * dy, p.trimLight);
+        // curl
+        px(g, x + 6 * dx, y + 3 * dy, p.trim);
+        px(g, x + 7 * dx, y + 4 * dy, p.trim);
+        px(g, x + 3 * dx, y + 6 * dy, p.trim);
+        px(g, x + 4 * dx, y + 7 * dy, p.trim);
+    }
+
+    private static void px(GuiGraphics g, int x, int y, int c) {
+        g.fill(x, y, x + 1, y + 1, c);
+    }
+
+    private static void drawDiamond(GuiGraphics g, int cx, int cy, Palette p) {
+        g.fill(cx, cy - 2, cx + 1, cy + 3, p.trimDark);
+        g.fill(cx - 1, cy - 1, cx + 2, cy + 2, p.trim);
+        g.fill(cx - 2, cy, cx + 3, cy + 1, p.trimDark);
+        px(g, cx, cy, p.trimLight);
+    }
+
+    /** Swirl beside the mob window; mirrored for the right side. */
+    private static void drawCurl(GuiGraphics g, int x, int y, Palette p, boolean left) {
+        int d = left ? -1 : 1;
+        int[][] shape = {{0, 0}, {1, 0}, {2, 1}, {3, 2}, {3, 3}, {2, 4}, {1, 4}, {1, 3}, {2, 2}, {0, 5}, {0, 6}, {1, 7}, {2, 8}};
+        for (int[] s : shape) px(g, x + s[0] * d, y + s[1], p.trim);
+        px(g, x + 2 * d, y + 3, p.trimLight);
+    }
+
+    private static void drawSocketBox(GuiGraphics g, int x, int y, int w, int h, Palette p) {
+        g.fill(x - 1, y - 1, x + w + 1, y + h + 1, p.trimDark);
+        g.fill(x, y, x + w, y + h, p.bgDark);
+        g.fill(x, y, x + w, y + 1, (p.trim & 0xFFFFFF) | 0x90000000);
+        px(g, x, y, p.trim);
+        px(g, x + w - 1, y, p.trim);
+        px(g, x, y + h - 1, p.trim);
+        px(g, x + w - 1, y + h - 1, p.trim);
+    }
+
+    /** Machine slot: light carved-stone face in a gold frame (a thicker frame for the lasso). */
+    private static void drawStoneSlot(GuiGraphics g, int x, int y, Palette p, boolean big) {
+        int f = big ? 3 : 2;
+        g.fill(x - f, y - f, x + 16 + f, y + 16 + f, p.trimDark);
+        g.fill(x - f + 1, y - f + 1, x + 16 + f - 1, y + 16 + f - 1, p.trim);
+        if (big) g.fill(x - 2, y - 2, x + 18, y - 1, p.trimLight);
+        g.fill(x - 1, y - 1, x + 17, y + 17, SLOT_DARK);
+        g.fill(x, y, x + 16, y + 16, SLOT_FACE);
+        g.fill(x, y + 15, x + 16, y + 16, SLOT_LIGHT);
+        g.fill(x + 15, y, x + 16, y + 16, SLOT_LIGHT);
+        g.fill(x, y, x + 16, y + 1, SLOT_DARK);
+        g.fill(x, y, x + 1, y + 16, SLOT_DARK);
+    }
+
+    private static void drawInventorySlot(GuiGraphics g, int x, int y, Palette p) {
+        g.fill(x - 1, y - 1, x + 17, y + 17, p.trimDark);
+        g.fill(x, y, x + 16, y + 16, p.bgDark);
+        g.fill(x, y + 15, x + 16, y + 16, (p.trim & 0xFFFFFF) | 0x50000000);
+    }
+
+    /** Side tab holding two upgrade slots, with sparkles that glow when books are in. */
+    private void drawTab(GuiGraphics g, int x, int y, Palette p, boolean left) {
         int w = B + 3;
         g.fill(x - 1, y - 1, x + w + 1, y + TAB_H + 1, 0xFF000000);
-        g.fill(x, y, x + w, y + TAB_H, tier.dark);
-        g.fill(x + 1, y + 1, x + w - 1, y + TAB_H - 1, tier.color);
-        g.fillGradient(x + 2, y + 2, x + w - 2, y + TAB_H - 2, BG_TOP, BG_BOTTOM);
+        g.fill(x, y, x + w, y + TAB_H, p.trimDark);
+        g.fill(x + 1, y + 1, x + w - 1, y + TAB_H - 1, p.trim);
+        g.fill(x + 2, y + 2, x + w - 2, y + TAB_H - 2, p.bg);
         boolean active = !menu.upgrades().isEmpty();
         float pulse = active ? 0.5F + 0.5F * Mth.sin(Util.getMillis() / 300.0F) : 0.0F;
-        int glow = ((int) (0x60 + 0x9F * pulse) << 24) | (tier.light & 0xFFFFFF);
+        int glow = ((int) (0x60 + 0x9F * pulse) << 24) | (p.trimLight & 0xFFFFFF);
         int cx = x + w / 2 + (left ? -1 : 1);
         g.fill(cx - 1, y + 3, cx + 2, y + 4, glow);
         g.fill(cx, y + 2, cx + 1, y + 5, glow);
@@ -140,44 +259,32 @@ public class MobFarmScreen extends AbstractContainerScreen<MobFarmMenu> {
     }
 
     private static void drawGhostBook(GuiGraphics g, int x, int y) {
-        int c = 0x40FFFFFF;
-        g.fill(x + 4, y + 3, x + 12, y + 13, c);
-        g.fill(x + 5, y + 4, x + 11, y + 12, 0x20FFFFFF);
-        g.fill(x + 7, y + 3, x + 8, y + 13, 0x30000000);
+        g.fill(x + 4, y + 3, x + 12, y + 13, 0x40000000);
+        g.fill(x + 5, y + 4, x + 11, y + 12, 0x30FFFFFF);
+        g.fill(x + 7, y + 3, x + 8, y + 13, 0x40000000);
     }
 
-    private static void drawGem(GuiGraphics g, int x, int y, FarmTier tier) {
-        g.fill(x, y, x + 5, y + 5, tier.dark);
-        g.fill(x + 1, y + 1, x + 4, y + 4, tier.light);
-        g.fill(x + 1, y + 1, x + 2, y + 2, 0xFFFFFFFF);
-    }
-
-    private static void drawPanel(GuiGraphics g, int x, int y, int w, int h, FarmTier tier) {
-        g.fill(x - 1, y - 1, x + w + 1, y + h + 1, tier.dark);
-        g.fill(x, y, x + w, y + h, PANEL_BG);
-        g.fill(x, y, x + w, y + 1, (tier.color & 0x00FFFFFF) | 0x80000000);
-    }
-
-    private static void drawSlot(GuiGraphics g, int x, int y, FarmTier highlight) {
-        if (highlight != null) {
-            g.fill(x - 3, y - 3, x + 19, y + 19, highlight.dark);
-            g.fill(x - 2, y - 2, x + 18, y + 18, highlight.color);
-        }
-        g.fill(x - 1, y - 1, x + 17, y + 17, SLOT_SHADE);
-        g.fill(x, y, x + 17, y + 17, 0xFF3A3A46);
-        g.fill(x, y, x + 16, y + 16, SLOT);
+    private static void drawLock(GuiGraphics g, int x, int y, Palette p) {
+        g.fill(x + 2, y, x + 7, y + 1, p.trimLight);
+        g.fill(x + 1, y + 1, x + 2, y + 4, p.trimLight);
+        g.fill(x + 7, y + 1, x + 8, y + 4, p.trimLight);
+        g.fill(x, y + 4, x + 9, y + 11, p.trim);
+        g.fill(x + 4, y + 6, x + 5, y + 9, p.trimDark);
     }
 
     /** Window with the caught mob turning on a little pedestal. */
     private void drawWindow(GuiGraphics g, int x, int y, FarmTier tier) {
         int x2 = x + WINDOW_W;
         int y2 = y + PANEL_H;
-        g.fill(x - 1, y - 1, x2 + 1, y2 + 1, tier.color);
-        g.fillGradient(x, y, x2, y2, 0xFF0C0C12, (tier.dark & 0x00FFFFFF) | 0xFF000000);
+        Palette p = palette(tier);
+        g.fill(x - 2, y - 2, x2 + 2, y2 + 2, p.trimDark);
+        g.fill(x - 1, y - 1, x2 + 1, y2 + 1, p.trim);
+        g.fill(x - 1, y - 1, x2 + 1, y, p.trimLight);
+        g.fillGradient(x, y, x2, y2, 0xFF0C0A10, p.bgDark);
         // pedestal
         int cx = x + WINDOW_W / 2;
-        g.fill(cx - 18, y2 - 9, cx + 18, y2 - 7, tier.dark);
-        g.fill(cx - 16, y2 - 10, cx + 16, y2 - 9, tier.color);
+        g.fill(cx - 18, y2 - 9, cx + 18, y2 - 7, p.trimDark);
+        g.fill(cx - 16, y2 - 10, cx + 16, y2 - 9, p.trim);
 
         EntityType<?> type = menu.mobType();
         LivingEntity entity = ClientEntities.get(type);
@@ -229,49 +336,64 @@ public class MobFarmScreen extends AbstractContainerScreen<MobFarmMenu> {
         }
     }
 
-    private void drawProgress(GuiGraphics g, int x, int y, FarmTier tier) {
-        g.fill(x - 1, y - 1, x + BAR_W + 1, y + BAR_H + 1, 0xFF000000);
-        g.fill(x, y, x + BAR_W, y + BAR_H, 0xFF1A1A22);
-
+    /** Two bars with orb icons: red = time to the next loot, cyan = how full the loot slots are. */
+    private void drawBars(GuiGraphics g, int x, int top, Palette p) {
         int status = menu.status();
-        float fraction = status == MobFarmBlockEntity.STATUS_NO_MOB ? 0.0F
+        float progress = status == MobFarmBlockEntity.STATUS_NO_MOB ? 0.0F
                 : Mth.clamp(menu.progress() / (float) menu.maxProgress(), 0.0F, 1.0F);
-        int filled = Math.round(BAR_W * fraction);
-        for (int px = 0; px < filled; px++) {
-            float t = (float) px / Math.max(1, BAR_W - 1);
-            g.fill(x + px, y, x + px + 1, y + BAR_H, lerp(tier.dark, tier.light, t));
+        int used = 0;
+        for (int i = MobFarmBlockEntity.OUTPUT_START; i < MobFarmBlockEntity.OUTPUT_START + MobFarmBlockEntity.OUTPUT_COUNT; i++) {
+            if (menu.slots.get(i).hasItem()) used++;
         }
-        g.fill(x, y, x + filled, y + 1, 0x60FFFFFF);
-        if (status == MobFarmBlockEntity.STATUS_RUNNING && filled > 0) {
-            int sweep = (int) ((Util.getMillis() % 1600L) / 1600.0F * (BAR_W + 20)) - 10;
+        float fullness = used / (float) MobFarmBlockEntity.OUTPUT_COUNT;
+        drawBar(g, x, top + BAR_Y, progress, 0xFFE0403A, 0xFF7A1410, p, status == MobFarmBlockEntity.STATUS_RUNNING);
+        drawBar(g, x, top + BAR2_Y, fullness, 0xFF5FE0F0, 0xFF126A7A, p, false);
+    }
+
+    private static void drawBar(GuiGraphics g, int x, int y, float fraction, int bright, int deep, Palette p, boolean shimmer) {
+        // orb icon
+        g.fill(x + 1, y - 1, x + 5, y + BAR_H + 1, p.trimDark);
+        g.fill(x, y, x + 6, y + BAR_H, p.trimDark);
+        g.fill(x + 1, y, x + 5, y + BAR_H, bright);
+        g.fill(x + 1, y + BAR_H - 2, x + 5, y + BAR_H, deep);
+        px(g, x + 2, y + 1, 0xFFFFFFFF);
+        // track
+        int bx = x + 10;
+        int bw = BAR_W - 10;
+        g.fill(bx - 1, y - 1, bx + bw + 1, y + BAR_H + 1, p.trimDark);
+        g.fill(bx, y, bx + bw, y + BAR_H, 0xFF141016);
+        int filled = Math.round(bw * fraction);
+        for (int i = 0; i < filled; i++) {
+            float t = (float) i / Math.max(1, bw - 1);
+            g.fill(bx + i, y, bx + i + 1, y + BAR_H, lerp(deep, bright, t));
+        }
+        g.fill(bx, y, bx + filled, y + 1, 0x70FFFFFF);
+        if (shimmer && filled > 0) {
+            int sweep = (int) ((Util.getMillis() % 1600L) / 1600.0F * (bw + 20)) - 10;
             for (int d = -5; d <= 5; d++) {
                 int sx = sweep + d;
                 if (sx < 0 || sx >= filled) continue;
                 int alpha = (int) (0x50 * (1.0F - Math.abs(d) / 6.0F));
-                g.fill(x + sx, y, x + sx + 1, y + BAR_H, (alpha << 24) | 0xFFFFFF);
+                g.fill(bx + sx, y, bx + sx + 1, y + BAR_H, (alpha << 24) | 0xFFFFFF);
             }
         }
     }
 
     @Override
     protected void renderLabels(GuiGraphics g, int mouseX, int mouseY) {
-        FarmTier tier = menu.tier();
-        // Title, centred
-        g.drawString(font, title, (imageWidth - font.width(title)) / 2, 7, tier.light, true);
+        Palette p = palette(menu.tier());
+        g.drawString(font, title, (imageWidth - font.width(title)) / 2, 7, p.trimLight, true);
 
-        // Left panel: caption above the lasso, speed below it; right panel is the loot grid.
+        // Left socket: caption above the lasso, cycle time below it
         int leftCenter = LEFT_PANEL_X + PANEL_W / 2;
         Component lasso = Component.translatable("gui.mobfarm.lasso");
         g.drawString(font, lasso, leftCenter - font.width(lasso) / 2, PANEL_Y + 5, TEXT_DIM, false);
-        Component speed = Component.translatable("gui.mobfarm.speed", tier.ticks / 20);
+        Component speed = Component.translatable("gui.mobfarm.speed", String.format("%.1f", menu.maxProgress() / 20.0F));
         g.drawString(font, speed, leftCenter - font.width(speed) / 2, PANEL_Y + PANEL_H - 13, TEXT, false);
 
-        // Status under the progress bar, centred
+        // Status line under the bars, centred
         Component status = statusText();
-        g.drawString(font, status, (imageWidth - font.width(status)) / 2, BAR_Y + BAR_H + 4, TEXT, false);
-
-        Component inv = playerInventoryTitle;
-        g.drawString(font, inv, (imageWidth - font.width(inv)) / 2, MobFarmMenu.INV_Y - 12, TEXT_DIM, false);
+        g.drawString(font, status, (imageWidth - font.width(status)) / 2, BAR2_Y + BAR_H + 3, TEXT, true);
     }
 
     private Component statusText() {
