@@ -21,8 +21,9 @@ import net.minecraftforge.common.ForgeSpawnEggItem;
 import net.minecraftforge.registries.ForgeRegistries;
 
 /**
- * Boss panel at the top of the screen: icon, name, "health / max" and a red bar, then
- * "Damage Progress" with each player's share of the boss's max health.
+ * Boss panels at the top of the screen: icon, name, "health / max" and a red bar, then
+ * "Damage Progress" with each player's share of the boss's max health. Below them, the same
+ * panel (without the leaderboard) for whatever mob is under the crosshair.
  */
 public final class BossPanelOverlay {
     private static final int MIN_WIDTH = 200;
@@ -60,7 +61,22 @@ public final class BossPanelOverlay {
         if (bosses.size() > MAX_PANELS) {
             String more = "+" + (bosses.size() - MAX_PANELS);
             g.drawString(mc.font, more, (screenWidth - mc.font.width(more)) / 2, y, HP_TEXT, true);
+            y += mc.font.lineHeight + GAP;
         }
+
+        // Health of the mob under the crosshair, unless it already has a boss panel above.
+        LivingEntity hovered = HoveredEntity.find(partialTick);
+        if (hovered != null && bosses.stream().noneMatch(b -> b.entityId() == hovered.getId())) {
+            BossInfoPacket info = hoverInfo(hovered);
+            int width = panelWidth(mc.font, info, screenWidth);
+            drawPanel(g, mc, info, (screenWidth - width) / 2, y + 2, width);
+        }
+    }
+
+    private static BossInfoPacket hoverInfo(LivingEntity entity) {
+        ResourceLocation type = ForgeRegistries.ENTITY_TYPES.getKey(entity.getType());
+        return new BossInfoPacket(entity.getId(), type == null ? new ResourceLocation("minecraft", "pig") : type,
+                entity.getDisplayName(), entity.getHealth(), entity.getMaxHealth(), List.of());
     }
 
     private static String hpText(BossInfoPacket boss) {
