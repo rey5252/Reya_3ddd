@@ -303,102 +303,121 @@ CARDS = {
         "............",
         "............"]),
 }
-# upgrades: built from the button tiles in tools/upgrade_tiles.png (20x20 tiles, 6 columns, two rows
-# per colour; the first column is blank). The blank tile of each colour is kept whole, a symbol is drawn
-# on it in the tiles' own style (2px dark strokes with a mid-tone shade on the right), and the result is
-# scaled up 4x to 80x80 so the pixels stay identical while the texture size still allows full mipmaps.
-from PIL import Image as _Image
-
-_TILES = _Image.open("tools/upgrade_tiles.png").convert("RGBA")
-TILE_ROW = {"speed": 2, "looting": 0, "quantity": 4, "experience": 6}
-INK = {"speed": ((11, 53, 46), (36, 156, 144)), "looting": ((62, 33, 6), (180, 112, 24)),
-       "quantity": ((28, 11, 53), (94, 36, 156)), "experience": ((25, 53, 11), (67, 156, 36))}
-GLYPHS = {
-    "speed": ["XX...XX...",
-              ".XX...XX..",
-              "..XX...XX.",
-              "...XX...XX",
-              "...XX...XX",
-              "..XX...XX.",
-              ".XX...XX..",
-              "XX...XX..."],
-    "looting": [".......XX",
-                "......XXX",
-                ".....XXX.",
-                "....XXX..",
-                ".X.XXX...",
-                "..XXX....",
-                "..XX.....",
-                ".X..X....",
-                "X........"],
-    "quantity": ["...XX...",
-                 "...XX...",
-                 "...XX...",
-                 "XXXXXXXX",
-                 "XXXXXXXX",
-                 "...XX...",
-                 "...XX...",
-                 "...XX..."],
-    "experience": ["..XXXX..",
-                   ".XX..XX.",
-                   "XX....XX",
-                   "X..XX..X",
-                   "X..XX..X",
-                   "XX....XX",
-                   ".XX..XX.",
-                   "..XXXX.."],
-}
-SCALE = 4
+# upgrades: metal tokens redrawn from the reference gold token on a 40x40 grid (almost the reference's
+# own pixel size) and doubled to 80x80 so the texture keeps full mipmaps. Frame, plate ramp, glint,
+# shine squares and an engraved symbol are drawn in gold; the other upgrades are the same token turned
+# to their own hue.
 import colorsys
-GOLD_PLATE_HUE = colorsys.rgb_to_hls(241 / 255.0, 201 / 255.0, 84 / 255.0)[0]
-GOLD_LIT = [(132, 91, 65), (93, 52, 28), (111, 69, 33), (135, 84, 36), (174, 113, 45), (217, 153, 61)]
-GOLD_UNLIT = [(182, 141, 86), (240, 194, 133), (152, 102, 38), (142, 89, 18), (173, 121, 39), (209, 164, 69)]
+
+G = 40
+LIT = [(116, 76, 48), (86, 47, 18), (99, 58, 28), (117, 74, 35), (140, 86, 34), (172, 110, 32), (205, 145, 52)]
+UNLIT = [(182, 141, 86), (242, 200, 140), (226, 182, 122), (150, 100, 36), (138, 84, 18), (165, 105, 28), (200, 140, 40)]
+PLATE_RAMP = [(7, (250, 236, 140)), (12, (248, 226, 116)), (17, (242, 206, 84)), (22, (236, 184, 58)),
+              (27, (231, 164, 42)), (32, (224, 145, 32))]
+INK_GOLD, INKSHADE_GOLD = (92, 58, 20), (190, 120, 30)
+HUES = {"speed": 185, "looting": None, "quantity": 282, "experience": 105}
 
 
-def to_hue(c, hue):
-    """Move a colour of the gold frame onto another plate hue, keeping its lightness and saturation."""
+def seg_d(x, y, ax, ay, bx, by):
+    dx, dy = bx - ax, by - ay
+    t = max(0.0, min(1.0, ((x - ax) * dx + (y - ay) * dy) / float(dx * dx + dy * dy)))
+    return math.hypot(x - (ax + t * dx), y - (ay + t * dy))
+
+
+def glyph_hit(name, x, y):
+    if name == "speed":
+        return min(seg_d(x, y, 12, 12, 19, 20), seg_d(x, y, 19, 20, 12, 28),
+                   seg_d(x, y, 20, 12, 27, 20), seg_d(x, y, 27, 20, 20, 28)) <= 1.25
+    if name == "looting":
+        blade = seg_d(x, y, 16, 24, 28, 12) <= 1.45 - max(0.0, x - 24) * 0.12
+        guard = seg_d(x, y, 12.5, 20.5, 19.5, 27.5) <= 1.15
+        grip = seg_d(x, y, 15, 25, 11.5, 28.5) <= 1.05
+        pommel = math.hypot(x - 10.5, y - 29.5) <= 1.7
+        return blade or guard or grip or pommel
+    if name == "quantity":
+        return min(seg_d(x, y, 20, 12, 20, 28), seg_d(x, y, 12, 20, 28, 20)) <= 1.5
+    r = math.hypot(x - 20, y - 20)
+    return abs(r - 7.2) <= 1.25 or r <= 2.2
+
+
+def lerp_c(a, b, t):
+    t = max(0.0, min(1.0, t))
+    return tuple(a[i] + (b[i] - a[i]) * t for i in range(3))
+
+
+def ramp_c(v):
+    for (p0, c0), (p1, c1) in zip(PLATE_RAMP, PLATE_RAMP[1:]):
+        if v <= p1:
+            return lerp_c(c0, c1, (v - p0) / float(p1 - p0))
+    return PLATE_RAMP[-1][1]
+
+
+def gold_token(name):
+    px = [[None] * G for _ in range(G)]
+    L = G - 1
+    for y in range(G):
+        for x in range(G):
+            if min(x, L - x) + min(y, L - y) < 1:
+                continue                                         # clipped corners
+            lo, hi = min(L - x, L - y), min(x, y)
+            if min(lo, hi) < 7:
+                px[y][x] = UNLIT[lo] if lo <= hi else LIT[hi]
+                continue
+            c = ramp_c(y)
+            if y < 22 and x < 18:
+                c = lerp_c(c, (255, 248, 176), (18 - x) / 18.0 * 0.3)
+            if x == 7 or y == 7:
+                c = lerp_c(c, (255, 244, 170), 0.3)
+            elif x == 32 or y == 32:
+                c = lerp_c(c, (205, 135, 34), 0.45)
+            c = tuple(v * (1.0 + ((hsh(x, y, 5) % 5) - 2) * 0.012) for v in c)
+            # glint: a band running from the top edge down to the right edge, strongest in its middle
+            k = x - y
+            if 7 <= y <= 25 and 8 <= k <= 15:
+                w = {8: 0.2, 9: 0.45, 10: 0.7, 11: 0.85, 12: 0.85, 13: 0.7, 14: 0.45, 15: 0.2}[k]
+                c = lerp_c(c, (255, 252, 158), w)
+            px[y][x] = c
+    # shine squares with a pale halo: large top left, small bottom right
+    for y in range(8, 16):
+        for x in range(8, 16):
+            px[y][x] = lerp_c(px[y][x], (252, 246, 200), 0.45)
+    for y in range(9, 14):
+        for x in range(9, 14):
+            px[y][x] = (255, 255, 238)
+    for (x, y) in ((10, 10), (11, 10), (10, 11), (11, 11)):
+        px[y][x] = (255, 255, 255)
+    for y in range(26, 32):
+        for x in range(26, 32):
+            px[y][x] = lerp_c(px[y][x], (250, 234, 176), 0.4)
+    for y in range(27, 30):
+        for x in range(27, 30):
+            px[y][x] = (253, 248, 206)
+    # the engraved symbol: dark 2px lines with a warm shade on their right and lower side
+    hit = {(x, y) for y in range(G) for x in range(G)
+           if sum(glyph_hit(name, x + ox, y + oy) for ox in (0.25, 0.75) for oy in (0.25, 0.75)) >= 2}
+    for (x, y) in hit:
+        for (dx, dy, k) in ((1, 0, 0.55), (0, 1, 0.45), (1, 1, 0.3)):
+            q = (x + dx, y + dy)
+            if q not in hit and 7 < q[0] < 32 and 7 < q[1] < 32:
+                px[q[1]][q[0]] = lerp_c(px[q[1]][q[0]], INKSHADE_GOLD, k)
+    for (x, y) in hit:
+        px[y][x] = INK_GOLD
+    return px
+
+
+def rehue_c(c, hue):
     h, l, s_ = colorsys.rgb_to_hls(*(v / 255.0 for v in c))
-    r, g, b = colorsys.hls_to_rgb((h - GOLD_PLATE_HUE + hue) % 1.0, l, s_)
-    return (int(r * 255), int(g * 255), int(b * 255))
+    base = colorsys.rgb_to_hls(241 / 255.0, 201 / 255.0, 84 / 255.0)[0]
+    r, g, b = colorsys.hls_to_rgb((h - base + hue / 360.0) % 1.0, l, s_)
+    return (r * 255, g * 255, b * 255)
 
 
 for name in CARDS:
-    ty = TILE_ROW[name] * 20
-    tile = [[_TILES.getpixel((x, ty + y)) for x in range(20)] for y in range(20)]
-    ink, shade_c = INK[name]
-    rows = GLYPHS[name]
-    w, h = len(rows[0]), len(rows)
-    gx = 3 + (14 - w) // 2
-    gy = 3 + (14 - h) // 2
-    pts = {(gx + c, gy + r) for r, row in enumerate(rows) for c, ch in enumerate(row) if ch == "X"}
-    for (x, y) in pts:
-        for dx in (1, 2):
-            q = (x + dx, y)
-            if q in pts:
-                break
-            if q[0] <= 15:
-                tile[y][q[0]] = shade_c + (255,)
-    for (x, y) in pts:
-        tile[y][x] = ink + (255,)
-    # frame: the colours of the reference gold token's frame, turned to this tile's hue. From the
-    # outside in: top/left - outline, a deep band, then brown to orange up to the plate; bottom/right -
-    # a tan edge, a pale raised lip, a dark groove and orange back up to the plate. The bottom/right
-    # lip runs the full length of its side. Drawn on a 40x40 grid (half a tile pixel).
-    H = 40
-    fine = [[tile[y // 2][x // 2] for x in range(H)] for y in range(H)]
-    plate_hue = colorsys.rgb_to_hls(*(v / 255.0 for v in tile[8][4][:3]))[0]
-    for y in range(H):
-        for x in range(H):
-            if fine[y][x][3] == 0:
-                continue
-            dl, dt, dr, db = x, y, H - 1 - x, H - 1 - y
-            lo = min(dr, db)
-            hi = min(dl, dt)
-            if min(lo, hi) >= 6:
-                continue
-            ref = GOLD_UNLIT[lo] if lo <= hi else GOLD_LIT[hi]
-            fine[y][x] = to_hue(ref, plate_hue) + (255,)
-    px = [[fine[y // 2][x // 2] for x in range(20 * SCALE)] for y in range(20 * SCALE)]
+    tok = gold_token(name)
+    if HUES[name] is not None:
+        tok = [[None if c is None else rehue_c(c, HUES[name]) for c in row] for row in tok]
+    fine = [[T if c is None else tuple(max(0, min(255, int(v))) for v in c) + (255,) for c in row] for row in tok]
+    px = [[fine[y // 2][x // 2] for x in range(G * 2)] for y in range(G * 2)]
     png(f"{ROOT}/textures/item/{name}_upgrade.png", px)
     json.dump({"parent": "minecraft:item/generated", "textures": {"layer0": f"chaosspawner:item/{name}_upgrade"}},
               open(f"{ROOT}/models/item/{name}_upgrade.json", "w"), indent=2)
