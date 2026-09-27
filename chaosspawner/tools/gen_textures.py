@@ -233,191 +233,34 @@ json.dump({"parent": "minecraft:item/generated", "textures": {"layer0": "chaossp
                                                               "layer2": "chaosspawner:item/soul_crystal_spots"}},
           open(f"{ROOT}/models/item/soul_crystal_filled.json", "w"), indent=2)
 
-# upgrades: glowing cards like the reference - a dark rounded outline, a bevelled coloured rim, a
-# speckled background brighter in the middle, and a bright symbol with a soft glow round it
-import math
-
-
-def hsh(x, y, salt):
-    h = (x * 374761393 + y * 668265263 + salt * 2147483647) & 0xFFFFFFFF
-    h = ((h ^ (h >> 13)) * 1274126177) & 0xFFFFFFFF
-    return (h ^ (h >> 16)) & 0xFF
-
-
-def shade(c, k):
-    return tuple(max(0, min(255, int(v * k))) for v in c)
-
-
-CARDS = {
-    # background, rim, symbol, glow, symbol rows (12x12, "#" symbol, "o" darker symbol edge)
-    "speed": ((18, 104, 118), (80, 220, 230), (225, 255, 255), (90, 240, 250), [
-        "............",
-        "............",
-        "..##..##....",
-        "...##..##...",
-        "....##..##..",
-        ".....##..##.",
-        ".....##..##.",
-        "....##..##..",
-        "...##..##...",
-        "..##..##....",
-        "............",
-        "............"]),
-    "looting": ((26, 44, 120), (110, 140, 250), (255, 222, 120), (255, 190, 80), [
-        "............",
-        ".........##.",
-        "........###.",
-        ".......###..",
-        "......###...",
-        ".....###....",
-        "..#.###.....",
-        "...###......",
-        "...##.......",
-        "..#..#......",
-        ".#..........",
-        "............"]),
-    "quantity": ((84, 30, 118), (210, 110, 240), (150, 255, 110), (120, 255, 90), [
-        "............",
-        "............",
-        "..#......#..",
-        ".....##.....",
-        "....#..#....",
-        "...#.##.#...",
-        "...#.##.#...",
-        "....#..#....",
-        ".....##.....",
-        "..#......#..",
-        "............",
-        "............"]),
-    "experience": ((30, 96, 34), (130, 230, 90), (240, 255, 120), (200, 255, 80), [
-        "............",
-        "............",
-        "....####....",
-        "...######...",
-        "..########..",
-        "..########..",
-        "..########..",
-        "..########..",
-        "...######...",
-        "....####....",
-        "............",
-        "............"]),
+# upgrades: a dark tile with a cyan rim and a symbol
+SYMBOLS = {
+    "speed": (["....#...#.....", "....##..##....", "....###.###...", "....####.###..", "....###.###...", "....##..##....",
+               "....#...#....."], (90, 230, 250)),
+    "looting": (["..........##..", ".........##...", "........##....", "...#...##.....", "....#.##......", ".....##.......",
+                 "....#.#.......", "...#...#......"], (240, 200, 90)),
+    "quantity": (["...##....##...", "..####..####..", "...##....##...", "..............", "...##....##...",
+                  "..####..####..", "...##....##..."], (230, 110, 230)),
+    "experience": (["......##......", ".....####.....", "....##..##....", "...##.##.##...", "....##..##....",
+                    ".....####.....", "......##......"], (130, 240, 90)),
 }
-# upgrades: metal tokens redrawn from the reference gold token on a 40x40 grid (almost the reference's
-# own pixel size) and doubled to 80x80 so the texture keeps full mipmaps. Frame, plate ramp, glint,
-# shine squares and an engraved symbol are drawn in gold; the other upgrades are the same token turned
-# to their own hue.
-import colorsys
-
-G = 40
-LIT = [(116, 76, 48), (86, 47, 18), (99, 58, 28), (117, 74, 35), (140, 86, 34), (172, 110, 32), (205, 145, 52)]
-UNLIT = [(182, 141, 86), (242, 200, 140), (226, 182, 122), (150, 100, 36), (138, 84, 18), (165, 105, 28), (200, 140, 40)]
-PLATE_RAMP = [(7, (250, 236, 140)), (12, (248, 226, 116)), (17, (242, 206, 84)), (22, (236, 184, 58)),
-              (27, (231, 164, 42)), (32, (224, 145, 32))]
-INK_GOLD, INKSHADE_GOLD = (92, 58, 20), (190, 120, 30)
-HUES = {"speed": 185, "looting": None, "quantity": 282, "experience": 105}
-
-
-def seg_d(x, y, ax, ay, bx, by):
-    dx, dy = bx - ax, by - ay
-    t = max(0.0, min(1.0, ((x - ax) * dx + (y - ay) * dy) / float(dx * dx + dy * dy)))
-    return math.hypot(x - (ax + t * dx), y - (ay + t * dy))
-
-
-def glyph_hit(name, x, y):
-    if name == "speed":
-        return min(seg_d(x, y, 12, 12, 19, 20), seg_d(x, y, 19, 20, 12, 28),
-                   seg_d(x, y, 20, 12, 27, 20), seg_d(x, y, 27, 20, 20, 28)) <= 1.25
-    if name == "looting":
-        blade = seg_d(x, y, 16, 24, 28, 12) <= 1.45 - max(0.0, x - 24) * 0.12
-        guard = seg_d(x, y, 12.5, 20.5, 19.5, 27.5) <= 1.15
-        grip = seg_d(x, y, 15, 25, 11.5, 28.5) <= 1.05
-        pommel = math.hypot(x - 10.5, y - 29.5) <= 1.7
-        return blade or guard or grip or pommel
-    if name == "quantity":
-        return min(seg_d(x, y, 20, 12, 20, 28), seg_d(x, y, 12, 20, 28, 20)) <= 1.5
-    r = math.hypot(x - 20, y - 20)
-    return abs(r - 7.2) <= 1.25 or r <= 2.2
-
-
-def lerp_c(a, b, t):
-    t = max(0.0, min(1.0, t))
-    return tuple(a[i] + (b[i] - a[i]) * t for i in range(3))
-
-
-def ramp_c(v):
-    for (p0, c0), (p1, c1) in zip(PLATE_RAMP, PLATE_RAMP[1:]):
-        if v <= p1:
-            return lerp_c(c0, c1, (v - p0) / float(p1 - p0))
-    return PLATE_RAMP[-1][1]
-
-
-def gold_token(name):
-    px = [[None] * G for _ in range(G)]
-    L = G - 1
-    for y in range(G):
-        for x in range(G):
-            if min(x, L - x) + min(y, L - y) < 1:
-                continue                                         # clipped corners
-            lo, hi = min(L - x, L - y), min(x, y)
-            if min(lo, hi) < 7:
-                px[y][x] = UNLIT[lo] if lo <= hi else LIT[hi]
-                continue
-            c = ramp_c(y)
-            if y < 22 and x < 18:
-                c = lerp_c(c, (255, 248, 176), (18 - x) / 18.0 * 0.3)
-            if x == 7 or y == 7:
-                c = lerp_c(c, (255, 244, 170), 0.3)
-            elif x == 32 or y == 32:
-                c = lerp_c(c, (205, 135, 34), 0.45)
-            c = tuple(v * (1.0 + ((hsh(x, y, 5) % 5) - 2) * 0.012) for v in c)
-            # glint: a band running from the top edge down to the right edge, strongest in its middle
-            k = x - y
-            if 7 <= y <= 25 and 8 <= k <= 15:
-                w = {8: 0.2, 9: 0.45, 10: 0.7, 11: 0.85, 12: 0.85, 13: 0.7, 14: 0.45, 15: 0.2}[k]
-                c = lerp_c(c, (255, 252, 158), w)
-            px[y][x] = c
-    # shine squares with a pale halo: large top left, small bottom right
-    for y in range(8, 16):
-        for x in range(8, 16):
-            px[y][x] = lerp_c(px[y][x], (252, 246, 200), 0.45)
-    for y in range(9, 14):
-        for x in range(9, 14):
-            px[y][x] = (255, 255, 238)
-    for (x, y) in ((10, 10), (11, 10), (10, 11), (11, 11)):
-        px[y][x] = (255, 255, 255)
-    for y in range(26, 32):
-        for x in range(26, 32):
-            px[y][x] = lerp_c(px[y][x], (250, 234, 176), 0.4)
-    for y in range(27, 30):
-        for x in range(27, 30):
-            px[y][x] = (253, 248, 206)
-    # the engraved symbol: dark 2px lines with a warm shade on their right and lower side
-    hit = {(x, y) for y in range(G) for x in range(G)
-           if sum(glyph_hit(name, x + ox, y + oy) for ox in (0.25, 0.75) for oy in (0.25, 0.75)) >= 2}
-    for (x, y) in hit:
-        for (dx, dy, k) in ((1, 0, 0.55), (0, 1, 0.45), (1, 1, 0.3)):
-            q = (x + dx, y + dy)
-            if q not in hit and 7 < q[0] < 32 and 7 < q[1] < 32:
-                px[q[1]][q[0]] = lerp_c(px[q[1]][q[0]], INKSHADE_GOLD, k)
-    for (x, y) in hit:
-        px[y][x] = INK_GOLD
-    return px
-
-
-def rehue_c(c, hue):
-    h, l, s_ = colorsys.rgb_to_hls(*(v / 255.0 for v in c))
-    base = colorsys.rgb_to_hls(241 / 255.0, 201 / 255.0, 84 / 255.0)[0]
-    r, g, b = colorsys.hls_to_rgb((h - base + hue / 360.0) % 1.0, l, s_)
-    return (r * 255, g * 255, b * 255)
-
-
-for name in CARDS:
-    tok = gold_token(name)
-    if HUES[name] is not None:
-        tok = [[None if c is None else rehue_c(c, HUES[name]) for c in row] for row in tok]
-    fine = [[T if c is None else tuple(max(0, min(255, int(v))) for v in c) + (255,) for c in row] for row in tok]
-    px = [[fine[y // 2][x // 2] for x in range(G * 2)] for y in range(G * 2)]
+for name, (shape, col) in SYMBOLS.items():
+    px = grid()
+    for y in range(1, 15):
+        for x in range(1, 15):
+            px[y][x] = DARK + (255,)
+    for i in range(1, 15):
+        px[1][i] = CYAN_L + (255,); px[i][1] = CYAN_L + (255,)
+        px[14][i] = CYAN_D + (255,); px[i][14] = CYAN_D + (255,)
+    for i in range(16):
+        for (x, y) in ((i, 0), (i, 15), (0, i), (15, i)):
+            if 0 < i < 15:
+                px[y][x] = (6, 10, 16, 255)
+    top = (16 - len(shape)) // 2
+    for y, row in enumerate(shape):
+        for x, ch in enumerate(row):
+            if ch == "#":
+                px[top + y][1 + x] = tuple(min(255, int(v * (1.15 if y < len(shape) / 2 else 0.85))) for v in col) + (255,)
     png(f"{ROOT}/textures/item/{name}_upgrade.png", px)
     json.dump({"parent": "minecraft:item/generated", "textures": {"layer0": f"chaosspawner:item/{name}_upgrade"}},
               open(f"{ROOT}/models/item/{name}_upgrade.json", "w"), indent=2)
