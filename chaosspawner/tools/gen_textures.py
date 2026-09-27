@@ -349,6 +349,19 @@ GLYPHS = {
                    "..XXXX.."],
 }
 SCALE = 4
+import colorsys
+GOLD_PLATE_HUE = colorsys.rgb_to_hls(241 / 255.0, 201 / 255.0, 84 / 255.0)[0]
+GOLD_LIT = [(132, 91, 65), (93, 52, 28), (111, 69, 33), (135, 84, 36), (174, 113, 45), (217, 153, 61)]
+GOLD_UNLIT = [(182, 141, 86), (240, 194, 133), (152, 102, 38), (142, 89, 18), (173, 121, 39), (209, 164, 69)]
+
+
+def to_hue(c, hue):
+    """Move a colour of the gold frame onto another plate hue, keeping its lightness and saturation."""
+    h, l, s_ = colorsys.rgb_to_hls(*(v / 255.0 for v in c))
+    r, g, b = colorsys.hls_to_rgb((h - GOLD_PLATE_HUE + hue) % 1.0, l, s_)
+    return (int(r * 255), int(g * 255), int(b * 255))
+
+
 for name in CARDS:
     ty = TILE_ROW[name] * 20
     tile = [[_TILES.getpixel((x, ty + y)) for x in range(20)] for y in range(20)]
@@ -367,40 +380,24 @@ for name in CARDS:
                 tile[y][q[0]] = shade_c + (255,)
     for (x, y) in pts:
         tile[y][x] = ink + (255,)
-    # frame: a smooth ramp from near-black at the outside to the plate colour on the inside, drawn on
-    # a 40x40 grid so it has six steps; lighter on the top/left, deeper on the bottom/right, and a
-    # little lighter in the middle of each side
+    # frame: the colours of the reference gold token's frame, turned to this tile's hue. From the
+    # outside in: top/left - outline, a deep band, then brown to orange up to the plate; bottom/right -
+    # a tan edge, a pale raised lip, a dark groove and orange back up to the plate. The bottom/right
+    # lip runs the full length of its side. Drawn on a 40x40 grid (half a tile pixel).
     H = 40
     fine = [[tile[y // 2][x // 2] for x in range(H)] for y in range(H)]
-    outline = tile[0][10][:3]
-    plate_lit, plate_dark = tile[4][8][:3], tile[15][10][:3]
+    plate_hue = colorsys.rgb_to_hls(*(v / 255.0 for v in tile[8][4][:3]))[0]
     for y in range(H):
         for x in range(H):
             if fine[y][x][3] == 0:
                 continue
-            d = min(x, y, H - 1 - x, H - 1 - y)
-            if d >= 6:
+            dl, dt, dr, db = x, y, H - 1 - x, H - 1 - y
+            lo = min(dr, db)
+            hi = min(dl, dt)
+            if min(lo, hi) >= 6:
                 continue
-            lit = min(x, y) <= min(H - 1 - x, H - 1 - y)
-            if lit:
-                # top/left: near-black outside rising to the plate
-                base = tuple(int(v * 0.35) for v in outline)
-                t = (d / 5.0) ** 0.8
-                c = tuple(int(base[i] + (plate_lit[i] - base[i]) * t) for i in range(3))
-            else:
-                # bottom/right, like the reference: the plate darkens into a deep groove, then a pale
-                # raised lip on the very outside
-                pale = tuple(int(v * 0.55 + 255 * 0.45) for v in plate_lit)
-                steps = {5: 0.9, 4: 0.72, 3: 0.5, 2: 0.42}
-                if d in steps:
-                    c = tuple(int(v * steps[d]) for v in plate_dark)
-                elif d == 1:
-                    c = pale
-                else:
-                    c = tuple(int(v * 0.8) for v in pale)
-            along = 1.0 - abs((x if min(y, H - 1 - y) <= min(x, H - 1 - x) else y) - 19.5) / 19.5
-            c = tuple(max(0, min(255, int(v * (0.9 + 0.16 * along)))) for v in c)
-            fine[y][x] = c + (255,)
+            ref = GOLD_UNLIT[lo] if lo <= hi else GOLD_LIT[hi]
+            fine[y][x] = to_hue(ref, plate_hue) + (255,)
     px = [[fine[y // 2][x // 2] for x in range(20 * SCALE)] for y in range(20 * SCALE)]
     png(f"{ROOT}/textures/item/{name}_upgrade.png", px)
     json.dump({"parent": "minecraft:item/generated", "textures": {"layer0": f"chaosspawner:item/{name}_upgrade"}},
