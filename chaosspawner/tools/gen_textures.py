@@ -367,7 +367,51 @@ for name in CARDS:
                 tile[y][q[0]] = shade_c + (255,)
     for (x, y) in pts:
         tile[y][x] = ink + (255,)
-    px = [[tile[y // SCALE][x // SCALE] for x in range(20 * SCALE)] for y in range(20 * SCALE)]
+    # the frame gets finer detail on a 40x40 grid (half a tile pixel): gradients along each side,
+    # a two-step bevel, rivets in the corners and small notches in the middle of each side
+    H = 40
+    fine = [[tile[y // 2][x // 2] for x in range(H)] for y in range(H)]
+
+    def sc(c, k):
+        return tuple(max(0, min(255, int(v * k))) for v in c[:3]) + (c[3],)
+
+    for y in range(H):
+        for x in range(H):
+            c = fine[y][x]
+            if c[3] == 0:
+                continue
+            d = min(x, y, H - 1 - x, H - 1 - y)
+            if d >= 6:
+                continue
+            along = 1.0 - abs((x if min(y, H - 1 - y) <= min(x, H - 1 - x) else y) - 19.5) / 19.5
+            lit = min(x, y) <= min(H - 1 - x, H - 1 - y)
+            k = 0.86 + 0.28 * along
+            if d in (2, 4):                      # outer half of each band a touch lighter: bevel
+                k *= 1.08 if lit else 1.04
+            elif d in (3, 5):
+                k *= 0.95
+            fine[y][x] = sc(c, k)
+    light = sc(tile[2][10], 1.0)
+    dark = sc(tile[18][10], 0.8)
+    for (rx, ry) in ((2, 2), (36, 2), (2, 36), (36, 36)):
+        fine[ry][rx] = sc(light, 1.1)
+        fine[ry][rx + 1] = sc(light, 0.9)
+        fine[ry + 1][rx] = sc(light, 0.9)
+        fine[ry + 1][rx + 1] = dark
+    for (nx, ny, w, h) in ((19, 2, 2, 1), (19, 37, 2, 1), (2, 19, 1, 2), (37, 19, 1, 2)):
+        for yy in range(ny, ny + h):
+            for xx in range(nx, nx + w):
+                fine[yy][xx] = dark
+        for yy in range(ny, ny + h):
+            for xx in range(nx, nx + w):
+                q = (xx + (1 if h == 2 else 0), yy + (1 if w == 2 else 0))
+                if fine[q[1]][q[0]][3]:
+                    fine[q[1]][q[0]] = sc(light, 1.05)
+    # a short glint on the top-left highlight
+    for i in range(5):
+        fine[4][6 + i * 2] = sc(fine[4][6 + i * 2], 1.12)
+        fine[6 + i * 2][4] = sc(fine[6 + i * 2][4], 1.12)
+    px = [[fine[y // 2][x // 2] for x in range(20 * SCALE)] for y in range(20 * SCALE)]
     png(f"{ROOT}/textures/item/{name}_upgrade.png", px)
     json.dump({"parent": "minecraft:item/generated", "textures": {"layer0": f"chaosspawner:item/{name}_upgrade"}},
               open(f"{ROOT}/models/item/{name}_upgrade.json", "w"), indent=2)
