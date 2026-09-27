@@ -367,17 +367,30 @@ for name in CARDS:
                 tile[y][q[0]] = shade_c + (255,)
     for (x, y) in pts:
         tile[y][x] = ink + (255,)
-    # frame: a soft gradient along every side (lighter in the middle, darker towards the corners)
-    for y in range(20):
-        for x in range(20):
-            c = tile[y][x]
-            d = min(x, y, 19 - x, 19 - y)
-            if c[3] == 0 or d > 2:
+    # frame: a smooth ramp from near-black at the outside to the plate colour on the inside, drawn on
+    # a 40x40 grid so it has six steps; lighter on the top/left, deeper on the bottom/right, and a
+    # little lighter in the middle of each side
+    H = 40
+    fine = [[tile[y // 2][x // 2] for x in range(H)] for y in range(H)]
+    outline = tile[0][10][:3]
+    plate_lit, plate_dark = tile[4][8][:3], tile[15][10][:3]
+    for y in range(H):
+        for x in range(H):
+            if fine[y][x][3] == 0:
                 continue
-            along = 1.0 - abs((x if min(y, 19 - y) <= min(x, 19 - x) else y) - 9.5) / 9.5
-            k = 0.88 + 0.2 * along
-            tile[y][x] = tuple(max(0, min(255, int(v * k))) for v in c[:3]) + (c[3],)
-    px = [[tile[y // SCALE][x // SCALE] for x in range(20 * SCALE)] for y in range(20 * SCALE)]
+            d = min(x, y, H - 1 - x, H - 1 - y)
+            if d >= 6:
+                continue
+            lit = min(x, y) <= min(H - 1 - x, H - 1 - y)
+            inner = plate_lit if lit else plate_dark
+            top = tuple(min(255, int(v * 1.12 + 18)) for v in inner) if lit else tuple(int(v * 0.72) for v in inner)
+            base = tuple(int(v * 0.35) for v in outline)
+            t = (d / 5.0) ** 0.8
+            c = tuple(int(base[i] + (top[i] - base[i]) * t) for i in range(3))
+            along = 1.0 - abs((x if min(y, H - 1 - y) <= min(x, H - 1 - x) else y) - 19.5) / 19.5
+            c = tuple(max(0, min(255, int(v * (0.9 + 0.16 * along)))) for v in c)
+            fine[y][x] = c + (255,)
+    px = [[fine[y // 2][x // 2] for x in range(20 * SCALE)] for y in range(20 * SCALE)]
     png(f"{ROOT}/textures/item/{name}_upgrade.png", px)
     json.dump({"parent": "minecraft:item/generated", "textures": {"layer0": f"chaosspawner:item/{name}_upgrade"}},
               open(f"{ROOT}/models/item/{name}_upgrade.json", "w"), indent=2)
