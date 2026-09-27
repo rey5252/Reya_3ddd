@@ -233,149 +233,153 @@ json.dump({"parent": "minecraft:item/generated", "textures": {"layer0": "chaossp
                                                               "layer2": "chaosspawner:item/soul_crystal_spots"}},
           open(f"{ROOT}/models/item/soul_crystal_filled.json", "w"), indent=2)
 
-# upgrades: the reference icon pixel for pixel - cyan corner brackets, a bevelled gold frame, a striped
-# navy panel with little light ornaments in two corners - with each upgrade's own symbol in the panel
-# the whole 16x16 template ("." = transparent); S/T are the navy panel stripes
-UP_PAL = {
-    "A": (14, 154, 229),
-    "B": (21, 196, 255),
-    "C": (90, 233, 255),
-    "D": (134, 255, 250),
-    "E": (9, 117, 199),
-    "F": (198, 131, 58),
-    "G": (177, 119, 55),
-    "H": (122, 71, 40),
-    "I": (109, 67, 39),
-    "J": (101, 64, 38),
-    "K": (77, 43, 27),
-    "L": (255, 249, 207),
-    "M": (255, 246, 188),
-    "N": (245, 201, 100),
-    "O": (243, 193, 93),
-    "P": (191, 139, 64),
-    "Q": (141, 99, 51),
-    "R": (247, 212, 110),
-    "S": (38, 46, 102),
-    "T": (31, 30, 81),
-    "U": (255, 255, 255),
-    "V": (255, 242, 158),
-    "W": (81, 44, 27),
-    "X": (199, 154, 67),
-    "Y": (155, 107, 53),
-    "Z": (85, 45, 28),
-    "a": (255, 244, 170),
-    "b": (255, 245, 182),
-    "c": (118, 69, 40),
+# upgrades: cards like the reference - a dark outline (lighter in the middle of the top edge), a pale
+# highlight along the top and left, a plate lighter in its upper half and darker below, white shine
+# squares in the top-left and bottom-right corners, and a bright neon symbol with its own shading
+CARD_PAL = {
+    # outline, highlight, band under the highlight, plate top, plate bottom
+    "speed":      ((26, 26, 35), (194, 255, 217), (85, 100, 105), (60, 65, 79), (40, 40, 55)),
+    "looting":    ((25, 38, 62), (129, 238, 255), (58, 161, 194), (41, 143, 180), (45, 82, 134)),
+    "quantity":   ((35, 25, 62), (255, 170, 249), (161, 72, 182), (139, 49, 166), (80, 41, 116)),
+    "experience": ((16, 42, 28), (170, 255, 196), (68, 172, 104), (42, 140, 84), (26, 88, 56)),
 }
-UP_ICON = [
-    "AAABBBBCCCCD....",
-    "EFFFGHIIJJJJJJK.",
-    "EFLMMNNOOPPPPQK.",
-    "EFMHIIJJJJJJOQK.",
-    ".HRISTSSTSUKOQK.",
-    ".HNISTSSTSVVOQK.",
-    ".INJSTSSTSKKJPK.",
-    ".IPJSTSSTSTSJPW.",
-    ".JPQSTSSTSTSJXW.",
-    ".JPQSTSSTSTSIXW.",
-    ".JQOVVSSTSTSIXW.",
-    ".JQOKUSSTSTSYNW.",
-    ".JQOJJJJJYYYYNZE",
-    ".JQPPPPPXNNNabcE",
-    ".KKKKKKWWWWWcccE",
-    "....DCCCCBBBBAAA",
-]
-# symbols drawn over the panel, per pixel: a shade letter from the symbol's palette
-UP_SYMBOLS = {
-    # lightning bolt with two speed streaks behind it
-    "speed": ({"a": (24, 120, 190), "b": (25, 158, 217), "c": (77, 196, 232), "d": (140, 225, 245), "w": (230, 252, 255),
-               "s": (40, 90, 150)},
-              ["....dw",
-               "...cd.",
-               "s.bcdw",
-               "...bc.",
-               "s.ab..",
-               "..a..."]),
-    # sword: steel blade with an edge, gold guard, leather grip, gold pommel
-    "looting": ({"g": (243, 193, 93), "G": (190, 130, 50), "h": (141, 99, 51), "c": (190, 214, 228), "d": (255, 255, 255),
-                 "e": (110, 140, 168)},
-                ["g.....",
-                 ".h.G..",
-                 "..g...",
-                 ".G.cd.",
-                 "...ecd",
-                 "....ec"]),
-    # a plus made of a big soul gem with small ones round it
-    "quantity": ({"a": (110, 40, 165), "b": (164, 79, 216), "c": (200, 134, 240), "d": (236, 195, 255), "w": (255, 240, 255)},
-                 ["..bb..",
-                  "..cd..",
-                  "bcwdcb",
-                  "abdcba",
-                  "..cb..",
-                  "..aa.."]),
-    # experience orb: glossy, with a highlight and a darker rim
-    "experience": ({"a": (46, 139, 31), "b": (79, 191, 42), "c": (143, 224, 74), "d": (223, 245, 138), "w": (255, 255, 230),
-                    "y": (240, 250, 120)},
-                   [".bccb.",
-                    "bwdcyb",
-                    "cddccb",
-                    "bccyba",
-                    ".abba.",
-                    "......"]),
+# symbol colours: core, bright, main, low, shadow
+SYM_PAL = {
+    "speed":      ((225, 255, 255), (78, 249, 255), (72, 182, 191), (54, 115, 127), (40, 40, 55)),
+    "looting":    ((255, 250, 214), (255, 222, 92), (232, 162, 42), (150, 92, 30), (29, 34, 52)),
+    "quantity":   ((254, 255, 236), (244, 255, 93), (174, 225, 52), (110, 140, 60), (91, 58, 111)),
+    "experience": ((255, 250, 196), (224, 255, 110), (140, 240, 90), (70, 205, 160), (18, 50, 34)),
 }
-SYM_AT = (5, 5)
-FRAMES = 8
-BRACKET_RAMP = [(9, 117, 199), (14, 154, 229), (21, 196, 255), (90, 233, 255), (134, 255, 250), (200, 255, 255)]
-# bracket pixels in order along each bracket (top-left one then bottom-right one)
-BRACKETS = ([(0, 3), (0, 2), (0, 1)] + [(x, 0) for x in range(12)],
-            [(15, 12), (15, 13), (15, 14)] + [(x, 15) for x in range(15, 3, -1)])
+# W core, H bright, M main, L low, D shadow on the plate
+SYM = {
+    "speed": ["HM...HM..",
+              ".HM...HM.",
+              "..HM...HM",
+              "...WM...W",
+              "..ML...ML",
+              ".ML...ML.",
+              "ML...ML..",
+              "D...D...."],
+    "looting": ["......HW",
+                ".....HWM",
+                "....HWM.",
+                ".M.HWM..",
+                "..MWM...",
+                "..LMM...",
+                ".L..M...",
+                "L.......",
+                ".D......"],
+    "quantity": ["...HM...",
+                 "...WM...",
+                 "...WM...",
+                 "HHHWWHHM",
+                 "MMMWWMML",
+                 "...WL...",
+                 "...ML...",
+                 "...LL...",
+                 "....D..."],
+    "experience": [".LMML.",
+                   "LHHHML",
+                   "MHWWHM",
+                   "MHWWHM",
+                   "LMHHML",
+                   ".LMML.",
+                   "..DD..",
+                   ".DDDD."],
+}
+SYM_AT = {"speed": (4, 3), "looting": (5, 3), "quantity": (5, 3), "experience": (6, 3)}
 
 
-def mixu(a, b, t):
+CARDS = ["speed", "looting", "quantity", "experience"]
+CARD_FRAMES = 8
+
+
+def hsh(x, y, salt):
+    h = (x * 374761393 + y * 668265263 + salt * 2147483647) & 0xFFFFFFFF
+    h = ((h ^ (h >> 13)) * 1274126177) & 0xFFFFFFFF
+    return (h ^ (h >> 16)) & 0xFF
+
+
+def shade(c, k):
+    return tuple(max(0, min(255, int(v * k))) for v in c)
+
+
+def mixp(a, b, t):
     t = max(0.0, min(1.0, t))
     return tuple(int(a[i] + (b[i] - a[i]) * t) for i in range(3))
 
 
-for name, (cols, rows) in UP_SYMBOLS.items():
-    frames = []
-    for f in range(FRAMES):
-        px = [[(UP_PAL[ch] + (255,)) if ch in UP_PAL else T for ch in row] for row in UP_ICON]
-        # a bright pulse running along both brackets
-        for chain in BRACKETS:
-            n = len(chain)
-            for i, (x, y) in enumerate(chain):
-                base = i / (n - 1)
-                head = (f / FRAMES) * 1.4 - 0.2
-                glow = max(0.0, 1.0 - abs(base - head) * 5)
-                c = BRACKET_RAMP[min(len(BRACKET_RAMP) - 2, int(base * (len(BRACKET_RAMP) - 2)))]
-                px[y][x] = mixu(c, BRACKET_RAMP[-1], glow * 0.8) + (255,)
-        # symbol with a breathing glow and a glint sweeping across it
-        pulse = 0.5 + 0.5 * math.sin(f / FRAMES * 2 * math.pi)
-        glint = f * 12 // FRAMES - 3                      # diagonal x + y offset of the glint
-        pts = []
-        for r, row in enumerate(rows):
-            for c_, ch in enumerate(row):
-                if ch in cols:
-                    pts.append((SYM_AT[0] + c_, SYM_AT[1] + r, cols[ch], c_ + r))
-        for (x, y, col, dg) in pts:
-            # soft halo on the navy panel round the symbol
+for n, name in enumerate(CARDS):
+    O, H, H2, P1, P2 = CARD_PAL[name]
+    px = grid()
+    for y in range(16):
+        for x in range(16):
+            mid = 1.0 - abs(x - 7.5) / 7.5
+            if y == 0:
+                c = mixp(O, P1, 0.15 + 0.55 * mid) if 0 < x < 15 else O
+            elif y == 15 or x == 0:
+                c = O
+            elif x == 15:
+                c = mixp(O, P2, 0.35 + 0.25 * (y / 15.0))
+            elif y == 1:
+                c = mixp(H, P1, 0.12) if x == 1 else H
+            elif x == 1:
+                c = mixp(H, P1, 0.12) if y <= 8 else mixp(H, P2, min(1.0, (y - 8) / 4.0))
+            elif y == 14:
+                c = mixp(P2, O, 0.12)
+            else:
+                # plate: upper half lighter, lower half darker, a soft seam between
+                c = P1 if y <= 8 else P2 if y >= 10 else mixp(P1, P2, 0.5)
+                if y == 2 and x >= 5:
+                    c = H2
+                c = shade(c, 1.0 + ((hsh(x, y, n) % 3) - 1) * 0.015)
+            px[y][x] = c + (255,)
+    # white shine squares with a pale halo
+    for (x, y, k) in ((2, 2, 0.6), (3, 2, 0.85), (4, 2, 0.85), (2, 3, 0.7), (2, 4, 0.7),
+                      (5, 2, 0.5), (5, 3, 0.55), (5, 4, 0.55), (2, 5, 0.3), (3, 5, 0.3), (4, 5, 0.3)):
+        px[y][x] = mixp(px[y][x][:3], (255, 255, 255), k) + (255,)
+    for (x, y) in ((3, 3), (4, 3), (3, 4), (4, 4)):
+        px[y][x] = (255, 255, 255, 255)
+    for (x, y, k) in ((11, 11, 0.3), (12, 11, 0.6), (13, 11, 0.5), (11, 12, 0.5), (13, 12, 0.8),
+                      (11, 13, 0.35), (12, 13, 0.7), (13, 13, 0.6)):
+        px[y][x] = mixp(px[y][x][:3], (255, 255, 255), k) + (255,)
+    px[12][12] = (255, 255, 255, 255)
+    # the neon symbol, with a faint glow of its main colour on the plate round it
+    Wc, Hc, Mc, Lc, Dc = SYM_PAL[name]
+    ox, oy = SYM_AT[name]
+    cols = {"W": Wc, "H": Hc, "M": Mc, "L": Lc}
+    rows = SYM[name]
+    pts = {(ox + c, oy + r) for r, row in enumerate(rows) for c, ch in enumerate(row) if ch in cols}
+    for (x, y) in pts:
+        for (dx, dy) in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            q = (x + dx, y + dy)
+            if q not in pts and 2 <= q[0] <= 14 and 2 <= q[1] <= 13:
+                px[q[1]][q[0]] = mixp(px[q[1]][q[0]][:3], Mc, 0.25) + (255,)
+    for r, row in enumerate(rows):
+        for c, ch in enumerate(row):
+            x, y = ox + c, oy + r
+            if not (1 <= x <= 14 and 1 <= y <= 14):
+                continue
+            if ch in cols:
+                px[y][x] = cols[ch] + (255,)
+            elif ch == "D":
+                px[y][x] = mixp(px[y][x][:3], Dc, 0.7) + (255,)
+    # animation: the symbol and its halo breathe, the shine squares twinkle in turn
+    strip = []
+    for f in range(CARD_FRAMES):
+        pulse = 0.5 + 0.5 * math.sin(f / CARD_FRAMES * 2 * math.pi)
+        fr = [row[:] for row in px]
+        for (x, y) in pts:
+            fr[y][x] = mixp(fr[y][x][:3], (255, 255, 255), 0.22 * pulse) + (255,)
             for (dx, dy) in ((1, 0), (-1, 0), (0, 1), (0, -1)):
                 q = (x + dx, y + dy)
-                if 4 <= q[0] <= 11 and 4 <= q[1] <= 11 and not any(q == (p[0], p[1]) for p in pts):
-                    o = px[q[1]][q[0]]
-                    if o[:3] in ((38, 46, 102), (31, 30, 81)):
-                        px[q[1]][q[0]] = mixu(o[:3], col, 0.12 + 0.1 * pulse) + (255,)
-        for (x, y, col, dg) in pts:
-            c = mixu(col, (255, 255, 255), 0.12 * pulse)
-            if dg == glint or dg == glint + 1:
-                c = mixu(c, (255, 255, 255), 0.55 if dg == glint else 0.3)
-            px[y][x] = c + (255,)
-        # the white sparkles in the panel corners twinkle in turn
-        for (x, y, ph) in ((10, 4, 0), (5, 11, FRAMES // 2)):
-            k = 0.5 + 0.5 * math.cos((f - ph) / FRAMES * 2 * math.pi)
-            px[y][x] = mixu((255, 242, 158), (255, 255, 255), k) + (255,)
-        frames.append(px)
-    strip = [row for fr in frames for row in fr]
+                if q not in pts and 2 <= q[0] <= 14 and 2 <= q[1] <= 13:
+                    fr[q[1]][q[0]] = mixp(fr[q[1]][q[0]][:3], Mc, 0.18 * pulse) + (255,)
+        tw = 0.5 + 0.5 * math.cos(f / CARD_FRAMES * 2 * math.pi)
+        for (x, y) in ((3, 3), (4, 3), (3, 4), (4, 4)):
+            fr[y][x] = mixp(H, (255, 255, 255), 0.55 + 0.45 * tw) + (255,)
+        fr[12][12] = mixp(H, (255, 255, 255), 1.0 - 0.45 * tw) + (255,)
+        strip += fr
     png(f"{ROOT}/textures/item/{name}_upgrade.png", strip)
     json.dump({"animation": {"frametime": 3}}, open(f"{ROOT}/textures/item/{name}_upgrade.png.mcmeta", "w"), indent=2)
     json.dump({"parent": "minecraft:item/generated", "textures": {"layer0": f"chaosspawner:item/{name}_upgrade"}},
