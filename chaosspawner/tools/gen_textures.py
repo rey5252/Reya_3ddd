@@ -233,34 +233,82 @@ json.dump({"parent": "minecraft:item/generated", "textures": {"layer0": "chaossp
                                                               "layer2": "chaosspawner:item/soul_crystal_spots"}},
           open(f"{ROOT}/models/item/soul_crystal_filled.json", "w"), indent=2)
 
-# upgrades: a dark tile with a cyan rim and a symbol
-SYMBOLS = {
-    "speed": (["....#...#.....", "....##..##....", "....###.###...", "....####.###..", "....###.###...", "....##..##....",
-               "....#...#....."], (90, 230, 250)),
-    "looting": (["..........##..", ".........##...", "........##....", "...#...##.....", "....#.##......", ".....##.......",
-                 "....#.#.......", "...#...#......"], (240, 200, 90)),
-    "quantity": (["...##....##...", "..####..####..", "...##....##...", "..............", "...##....##...",
-                  "..####..####..", "...##....##..."], (230, 110, 230)),
-    "experience": (["......##......", ".....####.....", "....##..##....", "...##.##.##...", "....##..##....",
-                    ".....####.....", "......##......"], (130, 240, 90)),
+# upgrades: the reference icon pixel for pixel - cyan corner brackets, a bevelled gold frame, a striped
+# navy panel with little light ornaments in two corners - with each upgrade's own symbol in the panel
+# the whole 16x16 template ("." = transparent); S/T are the navy panel stripes
+UP_PAL = {
+    "A": (14, 154, 229),
+    "B": (21, 196, 255),
+    "C": (90, 233, 255),
+    "D": (134, 255, 250),
+    "E": (9, 117, 199),
+    "F": (198, 131, 58),
+    "G": (177, 119, 55),
+    "H": (122, 71, 40),
+    "I": (109, 67, 39),
+    "J": (101, 64, 38),
+    "K": (77, 43, 27),
+    "L": (255, 249, 207),
+    "M": (255, 246, 188),
+    "N": (245, 201, 100),
+    "O": (243, 193, 93),
+    "P": (191, 139, 64),
+    "Q": (141, 99, 51),
+    "R": (247, 212, 110),
+    "S": (38, 46, 102),
+    "T": (31, 30, 81),
+    "U": (255, 255, 255),
+    "V": (255, 242, 158),
+    "W": (81, 44, 27),
+    "X": (199, 154, 67),
+    "Y": (155, 107, 53),
+    "Z": (85, 45, 28),
+    "a": (255, 244, 170),
+    "b": (255, 245, 182),
+    "c": (118, 69, 40),
 }
-for name, (shape, col) in SYMBOLS.items():
-    px = grid()
-    for y in range(1, 15):
-        for x in range(1, 15):
-            px[y][x] = DARK + (255,)
-    for i in range(1, 15):
-        px[1][i] = CYAN_L + (255,); px[i][1] = CYAN_L + (255,)
-        px[14][i] = CYAN_D + (255,); px[i][14] = CYAN_D + (255,)
-    for i in range(16):
-        for (x, y) in ((i, 0), (i, 15), (0, i), (15, i)):
-            if 0 < i < 15:
-                px[y][x] = (6, 10, 16, 255)
-    top = (16 - len(shape)) // 2
-    for y, row in enumerate(shape):
-        for x, ch in enumerate(row):
-            if ch == "#":
-                px[top + y][1 + x] = tuple(min(255, int(v * (1.15 if y < len(shape) / 2 else 0.85))) for v in col) + (255,)
+UP_ICON = [
+    "AAABBBBCCCCD....",
+    "EFFFGHIIJJJJJJK.",
+    "EFLMMNNOOPPPPQK.",
+    "EFMHIIJJJJJJOQK.",
+    ".HRISTSSTSUKOQK.",
+    ".HNISTSSTSVVOQK.",
+    ".INJSTSSTSKKJPK.",
+    ".IPJSTSSTSTSJPW.",
+    ".JPQSTSSTSTSJXW.",
+    ".JPQSTSSTSTSIXW.",
+    ".JQOVVSSTSTSIXW.",
+    ".JQOKUSSTSTSYNW.",
+    ".JQOJJJJJYYYYNZE",
+    ".JQPPPPPXNNNabcE",
+    ".KKKKKKWWWWWcccE",
+    "....DCCCCBBBBAAA",
+]
+# symbols drawn over the panel (x, y from the icon's top-left): a shade to d highlight
+UP_SYMBOLS = {
+    "speed": ({"a": (24, 154, 211), "b": (25, 158, 217), "c": (77, 186, 217), "d": (110, 203, 213), "w": (190, 240, 245)},
+              {(8, 5): "d", (9, 5): "w", (7, 6): "c", (8, 6): "d", (6, 7): "b", (7, 7): "c", (8, 7): "d", (9, 7): "w",
+               (7, 8): "b", (8, 8): "c", (6, 9): "a", (7, 9): "b", (6, 10): "a"}),
+    "looting": ({"g": (243, 193, 93), "h": (141, 99, 51), "c": (190, 214, 228), "d": (255, 255, 255), "e": (120, 150, 175)},
+                {(5, 5): "g", (6, 6): "h", (7, 7): "g", (6, 8): "g", (8, 6): "g",
+                 (8, 8): "c", (9, 9): "c", (10, 10): "d", (9, 8): "e", (10, 9): "e"}),
+    "quantity": ({"a": (122, 47, 176), "b": (164, 79, 216), "c": (200, 134, 240), "d": (236, 195, 255)},
+                 {(7, 5): "b", (8, 5): "b", (7, 6): "c", (8, 6): "c",
+                  (5, 7): "b", (6, 7): "c", (7, 7): "d", (8, 7): "d", (9, 7): "c", (10, 7): "b",
+                  (5, 8): "a", (6, 8): "b", (7, 8): "c", (8, 8): "c", (9, 8): "b", (10, 8): "a",
+                  (7, 9): "b", (8, 9): "b", (7, 10): "a", (8, 10): "a"}),
+    "experience": ({"a": (46, 139, 31), "b": (79, 191, 42), "c": (143, 224, 74), "d": (223, 245, 138), "w": (255, 255, 230)},
+                   {(6, 6): "b", (7, 6): "c", (8, 6): "b",
+                    (5, 7): "b", (6, 7): "w", (7, 7): "d", (8, 7): "c", (9, 7): "b",
+                    (5, 8): "b", (6, 8): "d", (7, 8): "c", (8, 8): "c", (9, 8): "b",
+                    (5, 9): "a", (6, 9): "b", (7, 9): "c", (8, 9): "b", (9, 9): "a",
+                    (6, 10): "a", (7, 10): "b", (8, 10): "a"}),
+}
+for name, (cols, pts) in UP_SYMBOLS.items():
+    px = [[(UP_PAL[ch] + (255,)) if ch in UP_PAL else T for ch in row] for row in UP_ICON]
+    for (x, y), k in pts.items():
+        px[y][x] = cols[k] + (255,)
     png(f"{ROOT}/textures/item/{name}_upgrade.png", px)
     json.dump({"parent": "minecraft:item/generated", "textures": {"layer0": f"chaosspawner:item/{name}_upgrade"}},
               open(f"{ROOT}/models/item/{name}_upgrade.json", "w"), indent=2)
