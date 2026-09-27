@@ -32,6 +32,8 @@ jobs:
             dir: multibrewer
           - mod: chaosspawner
             dir: chaosspawner
+          - mod: goldenquarry
+            dir: goldenquarry
     defaults:
       run:
         working-directory: ${{ matrix.dir }}

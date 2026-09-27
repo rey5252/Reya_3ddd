@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "goldenquarry:block/golden_quarry"
+    },
+    "facing=east": {
+      "model": "goldenquarry:block/golden_quarry",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "goldenquarry:block/golden_quarry",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "goldenquarry:block/golden_quarry",
+      "y": 270
+    }
+  }
+}
