@@ -382,11 +382,22 @@ for name in CARDS:
             if d >= 6:
                 continue
             lit = min(x, y) <= min(H - 1 - x, H - 1 - y)
-            inner = plate_lit if lit else plate_dark
-            top = tuple(min(255, int(v * 1.12 + 18)) for v in inner) if lit else tuple(int(v * 0.72) for v in inner)
-            base = tuple(int(v * 0.35) for v in outline)
-            t = (d / 5.0) ** 0.8
-            c = tuple(int(base[i] + (top[i] - base[i]) * t) for i in range(3))
+            if lit:
+                # top/left: near-black outside rising to the plate
+                base = tuple(int(v * 0.35) for v in outline)
+                t = (d / 5.0) ** 0.8
+                c = tuple(int(base[i] + (plate_lit[i] - base[i]) * t) for i in range(3))
+            else:
+                # bottom/right, like the reference: the plate darkens into a deep groove, then a pale
+                # raised lip on the very outside
+                pale = tuple(int(v * 0.55 + 255 * 0.45) for v in plate_lit)
+                steps = {5: 0.9, 4: 0.72, 3: 0.5, 2: 0.42}
+                if d in steps:
+                    c = tuple(int(v * steps[d]) for v in plate_dark)
+                elif d == 1:
+                    c = pale
+                else:
+                    c = tuple(int(v * 0.8) for v in pale)
             along = 1.0 - abs((x if min(y, H - 1 - y) <= min(x, H - 1 - x) else y) - 19.5) / 19.5
             c = tuple(max(0, min(255, int(v * (0.9 + 0.16 * along)))) for v in c)
             fine[y][x] = c + (255,)
