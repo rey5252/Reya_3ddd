@@ -1,5 +1,5 @@
 """Block, item and model files for the Chaos Spawner (run from the mod folder)."""
-import json, struct, zlib
+import json, math, struct, zlib
 
 ROOT = "src/main/resources/assets/chaosspawner"
 T = (0, 0, 0, 0)
@@ -285,30 +285,98 @@ UP_ICON = [
     ".KKKKKKWWWWWcccE",
     "....DCCCCBBBBAAA",
 ]
-# symbols drawn over the panel (x, y from the icon's top-left): a shade to d highlight
+# symbols drawn over the panel, per pixel: a shade letter from the symbol's palette
 UP_SYMBOLS = {
-    "speed": ({"a": (24, 154, 211), "b": (25, 158, 217), "c": (77, 186, 217), "d": (110, 203, 213), "w": (190, 240, 245)},
-              {(8, 5): "d", (9, 5): "w", (7, 6): "c", (8, 6): "d", (6, 7): "b", (7, 7): "c", (8, 7): "d", (9, 7): "w",
-               (7, 8): "b", (8, 8): "c", (6, 9): "a", (7, 9): "b", (6, 10): "a"}),
-    "looting": ({"g": (243, 193, 93), "h": (141, 99, 51), "c": (190, 214, 228), "d": (255, 255, 255), "e": (120, 150, 175)},
-                {(5, 5): "g", (6, 6): "h", (7, 7): "g", (6, 8): "g", (8, 6): "g",
-                 (8, 8): "c", (9, 9): "c", (10, 10): "d", (9, 8): "e", (10, 9): "e"}),
-    "quantity": ({"a": (122, 47, 176), "b": (164, 79, 216), "c": (200, 134, 240), "d": (236, 195, 255)},
-                 {(7, 5): "b", (8, 5): "b", (7, 6): "c", (8, 6): "c",
-                  (5, 7): "b", (6, 7): "c", (7, 7): "d", (8, 7): "d", (9, 7): "c", (10, 7): "b",
-                  (5, 8): "a", (6, 8): "b", (7, 8): "c", (8, 8): "c", (9, 8): "b", (10, 8): "a",
-                  (7, 9): "b", (8, 9): "b", (7, 10): "a", (8, 10): "a"}),
-    "experience": ({"a": (46, 139, 31), "b": (79, 191, 42), "c": (143, 224, 74), "d": (223, 245, 138), "w": (255, 255, 230)},
-                   {(6, 6): "b", (7, 6): "c", (8, 6): "b",
-                    (5, 7): "b", (6, 7): "w", (7, 7): "d", (8, 7): "c", (9, 7): "b",
-                    (5, 8): "b", (6, 8): "d", (7, 8): "c", (8, 8): "c", (9, 8): "b",
-                    (5, 9): "a", (6, 9): "b", (7, 9): "c", (8, 9): "b", (9, 9): "a",
-                    (6, 10): "a", (7, 10): "b", (8, 10): "a"}),
+    # lightning bolt with two speed streaks behind it
+    "speed": ({"a": (24, 120, 190), "b": (25, 158, 217), "c": (77, 196, 232), "d": (140, 225, 245), "w": (230, 252, 255),
+               "s": (40, 90, 150)},
+              ["....dw",
+               "...cd.",
+               "s.bcdw",
+               "...bc.",
+               "s.ab..",
+               "..a..."]),
+    # sword: steel blade with an edge, gold guard, leather grip, gold pommel
+    "looting": ({"g": (243, 193, 93), "G": (190, 130, 50), "h": (141, 99, 51), "c": (190, 214, 228), "d": (255, 255, 255),
+                 "e": (110, 140, 168)},
+                ["g.....",
+                 ".h.G..",
+                 "..g...",
+                 ".G.cd.",
+                 "...ecd",
+                 "....ec"]),
+    # a plus made of a big soul gem with small ones round it
+    "quantity": ({"a": (110, 40, 165), "b": (164, 79, 216), "c": (200, 134, 240), "d": (236, 195, 255), "w": (255, 240, 255)},
+                 ["..bb..",
+                  "..cd..",
+                  "bcwdcb",
+                  "abdcba",
+                  "..cb..",
+                  "..aa.."]),
+    # experience orb: glossy, with a highlight and a darker rim
+    "experience": ({"a": (46, 139, 31), "b": (79, 191, 42), "c": (143, 224, 74), "d": (223, 245, 138), "w": (255, 255, 230),
+                    "y": (240, 250, 120)},
+                   [".bccb.",
+                    "bwdcyb",
+                    "cddccb",
+                    "bccyba",
+                    ".abba.",
+                    "......"]),
 }
-for name, (cols, pts) in UP_SYMBOLS.items():
-    px = [[(UP_PAL[ch] + (255,)) if ch in UP_PAL else T for ch in row] for row in UP_ICON]
-    for (x, y), k in pts.items():
-        px[y][x] = cols[k] + (255,)
-    png(f"{ROOT}/textures/item/{name}_upgrade.png", px)
+SYM_AT = (5, 5)
+FRAMES = 8
+BRACKET_RAMP = [(9, 117, 199), (14, 154, 229), (21, 196, 255), (90, 233, 255), (134, 255, 250), (200, 255, 255)]
+# bracket pixels in order along each bracket (top-left one then bottom-right one)
+BRACKETS = ([(0, 3), (0, 2), (0, 1)] + [(x, 0) for x in range(12)],
+            [(15, 12), (15, 13), (15, 14)] + [(x, 15) for x in range(15, 3, -1)])
+
+
+def mixu(a, b, t):
+    t = max(0.0, min(1.0, t))
+    return tuple(int(a[i] + (b[i] - a[i]) * t) for i in range(3))
+
+
+for name, (cols, rows) in UP_SYMBOLS.items():
+    frames = []
+    for f in range(FRAMES):
+        px = [[(UP_PAL[ch] + (255,)) if ch in UP_PAL else T for ch in row] for row in UP_ICON]
+        # a bright pulse running along both brackets
+        for chain in BRACKETS:
+            n = len(chain)
+            for i, (x, y) in enumerate(chain):
+                base = i / (n - 1)
+                head = (f / FRAMES) * 1.4 - 0.2
+                glow = max(0.0, 1.0 - abs(base - head) * 5)
+                c = BRACKET_RAMP[min(len(BRACKET_RAMP) - 2, int(base * (len(BRACKET_RAMP) - 2)))]
+                px[y][x] = mixu(c, BRACKET_RAMP[-1], glow * 0.8) + (255,)
+        # symbol with a breathing glow and a glint sweeping across it
+        pulse = 0.5 + 0.5 * math.sin(f / FRAMES * 2 * math.pi)
+        glint = f * 12 // FRAMES - 3                      # diagonal x + y offset of the glint
+        pts = []
+        for r, row in enumerate(rows):
+            for c_, ch in enumerate(row):
+                if ch in cols:
+                    pts.append((SYM_AT[0] + c_, SYM_AT[1] + r, cols[ch], c_ + r))
+        for (x, y, col, dg) in pts:
+            # soft halo on the navy panel round the symbol
+            for (dx, dy) in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                q = (x + dx, y + dy)
+                if 4 <= q[0] <= 11 and 4 <= q[1] <= 11 and not any(q == (p[0], p[1]) for p in pts):
+                    o = px[q[1]][q[0]]
+                    if o[:3] in ((38, 46, 102), (31, 30, 81)):
+                        px[q[1]][q[0]] = mixu(o[:3], col, 0.12 + 0.1 * pulse) + (255,)
+        for (x, y, col, dg) in pts:
+            c = mixu(col, (255, 255, 255), 0.12 * pulse)
+            if dg == glint or dg == glint + 1:
+                c = mixu(c, (255, 255, 255), 0.55 if dg == glint else 0.3)
+            px[y][x] = c + (255,)
+        # the white sparkles in the panel corners twinkle in turn
+        for (x, y, ph) in ((10, 4, 0), (5, 11, FRAMES // 2)):
+            k = 0.5 + 0.5 * math.cos((f - ph) / FRAMES * 2 * math.pi)
+            px[y][x] = mixu((255, 242, 158), (255, 255, 255), k) + (255,)
+        frames.append(px)
+    strip = [row for fr in frames for row in fr]
+    png(f"{ROOT}/textures/item/{name}_upgrade.png", strip)
+    json.dump({"animation": {"frametime": 3}}, open(f"{ROOT}/textures/item/{name}_upgrade.png.mcmeta", "w"), indent=2)
     json.dump({"parent": "minecraft:item/generated", "textures": {"layer0": f"chaosspawner:item/{name}_upgrade"}},
               open(f"{ROOT}/models/item/{name}_upgrade.json", "w"), indent=2)
