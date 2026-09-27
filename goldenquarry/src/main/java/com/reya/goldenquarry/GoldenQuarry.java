@@ -13,6 +13,7 @@ import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
+import net.minecraft.world.level.material.PushReaction;
 import net.minecraftforge.common.extensions.IForgeMenuType;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.ModLoadingContext;
@@ -39,8 +40,8 @@ public class GoldenQuarry {
                     .strength(4.0F, 1200.0F)
                     .sound(SoundType.METAL)
                     .requiresCorrectToolForDrops()
-                    .noOcclusion()
-                    .lightLevel(state -> 10)));
+                    .pushReaction(PushReaction.BLOCK)
+                    .lightLevel(state -> QuarryBlock.isLower(state) ? 0 : 10)));
     public static final RegistryObject<Item> QUARRY_ITEM = ITEMS.register("golden_quarry",
             () -> new BlockItem(QUARRY.get(), new Item.Properties().rarity(Rarity.EPIC)));
     public static final RegistryObject<Item> SPEED_UPGRADE = upgrade("speed_upgrade", QuarryUpgradeItem.Kind.SPEED);

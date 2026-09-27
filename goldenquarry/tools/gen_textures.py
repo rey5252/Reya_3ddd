@@ -293,98 +293,162 @@ def build_gui():
     return cv
 
 
-# ------------------------------------------------------------------ block
+# ------------------------------------------------------------------ block (after reference photo 1)
+#
+# The quarry is two blocks tall: a plain dark base and on top of it a golden chest with dark
+# scroll ornaments, carrying an open cage (rust posts, dark top ring, glass glints) with the
+# drill hanging inside. Model elements: tools/gen_model.py.
 
-def noisy(cv, base, salt, amount=0.06):
-    for y in range(16):
-        for x in range(16):
+BASE = (57, 31, 20)
+DARK = (60, 31, 15)
+RUST, RUST_HI, RUST_LO = (178, 76, 40), (218, 118, 58), (128, 50, 24)
+ORANGE_B, ORANGE_D = (232, 156, 46), (206, 122, 30)
+G_BRIGHT, G_MID, G_LIGHT, G_PALE = (246, 214, 62), (238, 190, 50), (255, 236, 120), (255, 248, 186)
+IRON_D, IRON, IRON_HI, IRON_W = (56, 44, 42), (122, 110, 108), (170, 160, 156), (240, 232, 222)
+
+
+def noisy(cv, base, salt, amount=0.06, x1=0, y1=0, x2=16, y2=16):
+    for y in range(y1, y2):
+        for x in range(x1, x2):
             r = rnd(x + y * 16, salt) % 100
             k = 1.0 + ((r / 100.0) - 0.5) * 2 * amount
             cv.set(x, y, shade(base, k))
 
 
-def gold_texture():
+def base_texture():
+    """Smooth dark brown, a touch lighter at the top, like the stand in the reference."""
     cv = Canvas(16, 16)
-    noisy(cv, GOLD, 11, 0.05)
-    cv.bevel(0, 0, 16, 16, GOLD_HI, GOLD_LO)
-    for i in range(2, 6):
-        cv.set(i, 7 - i, GOLD_W)
-    return cv
-
-
-MEANDER = ["##########",
-           "#........#",
-           "#.######.#",
-           "#.#....#.#",
-           "#.#.##.#.#",
-           "#.#..#.#.#",
-           "#.####.#.#"]
-
-
-def body_texture(front):
-    """Side of the chest: gold ornament band on top, dark wood below, gold corners."""
-    cv = Canvas(16, 16)
-    noisy(cv, (70, 40, 22), 21, 0.08)
-    # dark planks
-    for y in (9, 12):
-        cv.rect(1, y, 15, y + 1, (48, 27, 15))
-    # golden band with the brown meander (rows 5..9 are the visible top of the 11-high body)
-    cv.rect(0, 5, 16, 10, GOLD)
-    cv.rect(0, 5, 16, 6, GOLD_HI)
-    cv.rect(0, 9, 16, 10, GOLD_LO)
-    for x in range(1, 15, 3):
-        cv.set(x, 7, BROWN)
-        cv.set(x + 1, 7, BROWN)
-        cv.set(x + 1, 6, BROWN)
-        cv.set(x, 8, BROWN_D)
-    # gold corner posts and foot
-    cv.rect(0, 0, 2, 16, GOLD)
-    cv.rect(14, 0, 16, 16, GOLD_LO)
-    cv.rect(14, 0, 15, 16, GOLD)
-    cv.rect(0, 0, 1, 16, GOLD_HI)
-    cv.rect(0, 15, 16, 16, GOLD_LO)
-    cv.rect(0, 14, 16, 15, GOLD)
-    if front:
-        # lock plate with a glowing amber gem
-        cv.rect(6, 7, 10, 13, OUT)
-        cv.rect(7, 8, 9, 12, GOLD)
-        cv.rect(7, 9, 9, 11, (255, 140, 40))
-        cv.set(7, 9, (255, 230, 150))
-    return cv
-
-
-def inner_texture():
-    cv = Canvas(16, 16)
-    noisy(cv, (40, 22, 13), 31, 0.1)
-    # glowing ore bits in the hopper-like opening
-    for (x, y, c) in [(4, 5, (255, 200, 80)), (10, 9, (120, 230, 255)), (6, 11, (230, 230, 230)), (11, 4, (255, 140, 40))]:
-        cv.set(x, y, c)
-    cv.outline(0, 0, 16, 16, BROWN_D)
-    return cv
-
-
-def bottom_texture():
-    cv = Canvas(16, 16)
-    noisy(cv, (58, 33, 18), 41, 0.08)
-    cv.outline(0, 0, 16, 16, GOLD_LO)
-    return cv
-
-
-def drill_texture():
-    cv = Canvas(16, 16)
+    noisy(cv, BASE, 7, 0.07)
+    for x in range(16):
+        cv.set(x, 0, shade(BASE, 1.18))
+        cv.set(x, 15, shade(BASE, 0.82))
     for y in range(16):
+        cv.set(0, y, shade(cv.get(0, y), 1.08))
+        cv.set(15, y, shade(cv.get(15, y), 0.88))
+    return cv
+
+
+# 16x10 face of the golden chest: dark scroll strokes on bright gold, orange foot.
+#   D dark  G gold  H light edge  L pale speck  O orange  E deep orange  R rust
+GOLD_FACE = [
+    "DHGGGDGGGGDGGGOD",
+    "DHGGGDGGGGDGGGOD",
+    "DDDDDDDDDDDDDDDD",
+    "DDDDDDDDDDDDDDDD",
+    "DHGDGGGDDGGGDGOD",
+    "DHGDGGGDDGGGDGOD",
+    "DHGDDGDDDDGDDGOD",
+    "DHGGGGGLGGGGGGOD",
+    "DHLGGGGGGGGLGGOD",
+    "DOOOOOOOOOOOOOED",
+]
+FACE_PAL = {"D": DARK, "G": G_BRIGHT, "H": G_LIGHT, "L": G_PALE, "O": ORANGE_B, "E": ORANGE_D, "R": RUST}
+
+
+def gold_side_texture():
+    """Rows 6..15 are the chest's side (the body is 10 pixels high); the rows above repeat plain gold."""
+    cv = Canvas(16, 16)
+    noisy(cv, G_BRIGHT, 13, 0.04, 0, 0, 16, 6)
+    for j, row in enumerate(GOLD_FACE):
+        for i, ch in enumerate(row):
+            c = FACE_PAL[ch]
+            if ch == "G":
+                # gold gets lighter towards the bottom, with a little grain
+                k = 0.97 + 0.05 * (j / 9.0) + ((rnd(i + j * 16, 17) % 7) - 3) * 0.012
+                c = shade(G_MID if j < 2 else G_BRIGHT, k)
+            cv.set(i, 6 + j, c)
+    return cv
+
+
+def gold_top_texture():
+    """Top of the chest: dark outline, golden rim, dark opening the drill goes into."""
+    cv = Canvas(16, 16)
+    cv.rect(0, 0, 16, 16, DARK)
+    cv.rect(1, 1, 15, 15, G_BRIGHT)
+    cv.bevel(1, 1, 15, 15, G_LIGHT, ORANGE_B)
+    cv.rect(3, 3, 13, 13, DARK)
+    noisy(cv, (40, 21, 11), 29, 0.12, 4, 4, 12, 12)
+    # glints of what it digs up, and the warm glow of the drill in the middle
+    for (x, y, c) in [(5, 6, (255, 200, 80)), (10, 5, (120, 230, 255)), (6, 10, (230, 230, 230)), (10, 10, (255, 140, 40))]:
+        cv.set(x, y, c)
+    cv.rect(7, 7, 9, 9, (150, 70, 26))
+    return cv
+
+
+def frame_texture():
+    """Top ring of the cage. Rows 0-1: its sides (dark band studded with gold and orange over a
+    rust edge); rows 2-15: its top, dark with a grid of gold studs."""
+    cv = Canvas(16, 16)
+    for x in range(16):
+        cv.set(x, 0, G_LIGHT if x % 3 == 1 else (ORANGE_B if x % 6 == 4 else DARK))
+        cv.set(x, 1, RUST if x % 5 else RUST_HI)
+    for y in range(2, 16):
         for x in range(16):
-            band = (x + y) % 6
-            c = (206, 210, 218) if band < 2 else (150, 154, 162) if band < 4 else (104, 108, 116)
+            stud = x % 3 == 1 and y % 3 == 1
+            c = G_LIGHT if stud else ((88, 46, 20) if (x + y) % 4 == 0 else DARK)
             cv.set(x, y, c)
     return cv
 
 
-def gem_texture():
+def post_texture():
+    """Rust post: two pixels wide, lit on the left, shadowed on the right; also the corner fillers."""
     cv = Canvas(16, 16)
-    noisy(cv, (255, 120, 30), 51, 0.1)
-    cv.rect(0, 0, 16, 5, (255, 190, 90))
-    cv.rect(0, 0, 5, 5, (255, 240, 190))
+    for y in range(16):
+        cv.set(0, y, RUST_HI if y % 5 else RUST)
+        cv.set(1, y, RUST_LO if y % 5 else RUST)
+        for x in range(2, 16):
+            cv.set(x, y, RUST)
+    cv.rect(0, 0, 2, 1, (240, 150, 80))
+    return cv
+
+
+def bulb_texture():
+    """Orange-gold knob at the foot of every post (the orange ornament of the reference)."""
+    cv = Canvas(16, 16)
+    cv.rect(0, 0, 16, 16, ORANGE_B)
+    for x in range(16):
+        cv.set(x, 0, G_LIGHT)
+        cv.set(x, 1, (240, 172, 56) if x % 3 else G_LIGHT)
+    cv.set(0, 0, DARK)
+    cv.set(2, 0, DARK)
+    for y in range(2, 16):
+        cv.set(0, y, (214, 110, 38))
+        cv.set(2, y, (198, 96, 30))
+    cv.rect(1, 3, 2, 4, (255, 244, 200))
+    return cv
+
+
+def glass_texture():
+    """Clear glass (transparent) with a pale glare arc near its upper corners, as in the reference."""
+    cv = Canvas(16, 16)
+    glint = (250, 248, 238)
+    for (x, y) in [(1, 3), (1, 2), (2, 1), (3, 1), (10, 1), (11, 2)]:
+        cv.set(x, y, glint)
+    return cv
+
+
+def housing_texture():
+    """Dark iron motor box of the drill with grey and white rivets, like the reference's."""
+    cv = Canvas(16, 16)
+    noisy(cv, IRON_D, 37, 0.1)
+    for x in range(16):
+        if x % 3 == 1:
+            cv.set(x, 0, IRON_HI)
+    for x in (2, 6, 11):
+        cv.set(x, 1, IRON_W)
+        cv.set(x + 1, 1, IRON)
+    return cv
+
+
+def drill_texture():
+    """Grey drill: diagonal spiral stripes; the pale bottom rows are the tip."""
+    cv = Canvas(16, 16)
+    for y in range(16):
+        for x in range(16):
+            band = (x + y) % 4
+            c = (214, 208, 204) if band == 0 else (164, 156, 152) if band < 3 else (110, 102, 100)
+            cv.set(x, y, c)
+    cv.rect(0, 14, 16, 16, IRON_W)
     return cv
 
 
@@ -457,13 +521,15 @@ if __name__ == "__main__":
     gui = build_gui()
     gui.save(f"{ASSETS}/gui/quarry.png")
     blocks = {
-        "quarry_gold": gold_texture(),
-        "quarry_side": body_texture(False),
-        "quarry_front": body_texture(True),
-        "quarry_inner": inner_texture(),
-        "quarry_bottom": bottom_texture(),
+        "quarry_base": base_texture(),
+        "quarry_gold_side": gold_side_texture(),
+        "quarry_gold_top": gold_top_texture(),
+        "quarry_frame": frame_texture(),
+        "quarry_post": post_texture(),
+        "quarry_bulb": bulb_texture(),
+        "quarry_glass": glass_texture(),
+        "quarry_housing": housing_texture(),
         "quarry_drill": drill_texture(),
-        "quarry_gem": gem_texture(),
     }
     for name, cv in blocks.items():
         cv.save(f"{ASSETS}/block/{name}.png")

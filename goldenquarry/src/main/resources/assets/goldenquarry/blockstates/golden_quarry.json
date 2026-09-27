@@ -1,18 +1,30 @@
 {
   "variants": {
-    "facing=north": {
-      "model": "goldenquarry:block/golden_quarry"
+    "facing=north,half=lower": {
+      "model": "goldenquarry:block/golden_quarry_base"
     },
-    "facing=east": {
-      "model": "goldenquarry:block/golden_quarry",
+    "facing=north,half=upper": {
+      "model": "goldenquarry:block/golden_quarry_top"
+    },
+    "facing=east,half=lower": {
+      "model": "goldenquarry:block/golden_quarry_base"
+    },
+    "facing=east,half=upper": {
+      "model": "goldenquarry:block/golden_quarry_top",
       "y": 90
     },
-    "facing=south": {
-      "model": "goldenquarry:block/golden_quarry",
+    "facing=south,half=lower": {
+      "model": "goldenquarry:block/golden_quarry_base"
+    },
+    "facing=south,half=upper": {
+      "model": "goldenquarry:block/golden_quarry_top",
       "y": 180
     },
-    "facing=west": {
-      "model": "goldenquarry:block/golden_quarry",
+    "facing=west,half=lower": {
+      "model": "goldenquarry:block/golden_quarry_base"
+    },
+    "facing=west,half=upper": {
+      "model": "goldenquarry:block/golden_quarry_top",
       "y": 270
     }
   }
