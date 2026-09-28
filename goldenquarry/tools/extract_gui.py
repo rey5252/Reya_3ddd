@@ -185,12 +185,15 @@ def main():
         for j in range(14):
             for i in range(14):
                 tex.set(182 + i, 17 + 18 * n + j, hole)
-    # the quarry icon left of the bars is the fortune charm's slot: frame kept, inside dark like the
-    # charms' own background in reference/fortune.jpg (on the gold they looked washed out)
-    hole = (24, 18, 16)
-    for j in range(16):
-        for i in range(16):
-            tex.set(15 + i, 70 + j, hole)
+    # the quarry icon left of the bars becomes the fortune charm's slot, redrawn straight and
+    # symmetric: a dark 18x18 inside (like the charms' background in reference/fortune.jpg), a
+    # one-pixel gold ring and a dark outline, on the plain panel brown
+    panel = (146, 107, 68)
+    for y in range(68, 94):                       # texture pixels; the slot's inside is 16..31 x 73..88
+        for x in range(11, 36):
+            ring = max(abs(2 * x - 47), abs(2 * y - 161)) // 2   # 8 = inside edge, 9 = gold, 10 = outline
+            c = panel if ring > 10 else (74, 38, 12) if ring == 10 else (232, 184, 96) if ring == 9 else (24, 18, 16)
+            tex.set(x - DX, y - DY, c)
     for name, card in zip(("range_upgrade", "speed_upgrade", "smelting_upgrade"), cards):
         save_item(name, card)
 
