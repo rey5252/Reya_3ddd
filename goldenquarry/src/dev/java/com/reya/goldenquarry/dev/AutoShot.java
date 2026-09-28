@@ -95,6 +95,11 @@ public final class AutoShot {
         STEPS.add(new Step(20, AutoShot::openVacuumGui));
         STEPS.add(new Step(40, AutoShot::mouseAway));
         STEPS.add(new Step(20, () -> shot("vacuum_gui.png")));
+        // the catchers' act goes on: a few more moments of it
+        for (int k = 1; k <= 3; k++) {
+            int n = k;
+            STEPS.add(new Step(26, () -> shot("vacuum_gui_" + n + ".png")));
+        }
         STEPS.add(new Step(10, () -> Minecraft.getInstance().setScreen(null)));
         STEPS.add(new Step(10, () -> guiScale(0)));
         STEPS.add(new Step(10, AutoShot::vacuumArea));

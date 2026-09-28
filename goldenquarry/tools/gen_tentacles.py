@@ -59,11 +59,23 @@ PALETTES = [
 
 
 def frame(root, direction, length, phase, curl, pal, thick, sucker, sway, t):
-    """One frame (t from 0 to 1) of one tentacle: an RGBA array SIZE x SIZE, and the grip point
-    (where a caught star sits in the curl of its tip)."""
+    """One frame (t from 0 to 1) of a tentacle's loop: it sways (the waves run in), is drawn in and
+    reaches out again, and once a loop snaps at the air as if grabbing at something."""
+    snap = math.exp(-((((t - 0.62 + phase / 17.0) % 1.0) - 0.5) / 0.035) ** 2)
+    reach = length * (0.7 + 0.3 * (0.5 + 0.5 * math.sin(2 * math.pi * t + phase)) + 0.1 * snap)
+    return draw(root, direction, length, reach, curl, pal, thick, sucker,
+                lambda f: sway * math.sin(2 * math.pi * (0.8 * f) + 2 * math.pi * 2 * t + phase) * (0.2 + 0.8 * f),
+                2.1 + 0.35 * math.sin(2 * math.pi * t + phase) + 0.9 * snap, phase)
+
+
+def draw(root, direction, length, reach, curl, pal, thick, sucker, bend, hook_amount, seed=0.0):
+    """A tentacle reaching `reach` out of its root, swayed by bend(f) along it (f 0 at the root, 1 at
+    the tip) and its tip curled hook_amount (radians, towards the underside): an RGBA array
+    SIZE x SIZE, and the grip point (where a caught star sits in the curl of its tip)."""
+    if reach < 1.0:
+        return np.zeros((SIZE, SIZE, 4), np.uint8), (int(root[0]), int(root[1]))
     rx, ry = root
     th0 = math.atan2(direction[1], direction[0])
-    reach = length * (0.7 + 0.3 * (0.5 + 0.5 * math.sin(2 * math.pi * t + phase)))
     pulled = length - reach                         # how far its skin has gone in
     ds = 0.25
     s_values = np.arange(-6.0, reach + ds, ds)
@@ -71,10 +83,7 @@ def frame(root, direction, length, phase, curl, pal, thick, sucker, sway, t):
     x, y = rx - 6.0 * math.cos(th0), ry - 6.0 * math.sin(th0)
     for s in s_values:
         f = min(1.0, max(0.0, s) / reach)
-        # a gentle S along it (its waves run in), and the tip curled round towards the underside
-        bend = sway * math.sin(2 * math.pi * (0.8 * f) + 2 * math.pi * 2 * t + phase) * (0.2 + 0.8 * f)
-        hook = curl * (2.1 + 0.35 * math.sin(2 * math.pi * t + phase)) * f ** 3
-        th = th0 + bend + hook
+        th = th0 + bend(f) + curl * hook_amount * f ** 3
         pts.append((x, y))
         normals.append((-math.sin(th), math.cos(th)))
         widths.append((2.2 + 10.5 * (1.0 - f) ** 0.75) * thick)
@@ -140,7 +149,7 @@ def frame(root, direction, length, phase, curl, pal, thick, sucker, sway, t):
             # dark spots on the back, fixed on its skin
             n = round((sg[k] - 2.0) / 5.5)
             s_c = n * 5.5 + 2.0
-            if (n * 7 + int(phase * 10)) % 3 != 0 and s_c > 0:
+            if (n * 7 + int(seed * 10)) % 3 != 0 and s_c > 0:
                 jc = int(np.clip(np.searchsorted(sig, s_c), 0, len(pts) - 1))
                 wc = widths[jc]
                 centre = pts[jc] - normals[jc] * curl * (wc * 0.33)
@@ -161,6 +170,93 @@ def frame(root, direction, length, phase, curl, pal, thick, sucker, sway, t):
     jg = int(np.clip(np.searchsorted(s_values, reach * 0.86), 0, len(pts) - 1))
     grip = pts[jg] + normals[jg] * curl * (widths[jg] / 2.0 + 3.5)
     return img, (int(round(grip[0])), int(round(grip[1])))
+
+
+# The catchers' act, in parts: (part, frames, ms each). A star drifts in to the tentacle's tip
+# ("wait"), it lunges and curls round it ("lunge"), drags it into the chest ("drag"), stays in
+# there ("hidden"), comes out again holding it ("emerge"), the star struggles and the tentacle
+# thrashes ("struggle"), the star breaks free as the tip whips open ("escape"), and the tentacle
+# snatches after it and misses ("search").
+ACT = [("wait", 12, 200), ("lunge", 6, 55), ("drag", 8, 110), ("hidden", 1, 1400), ("emerge", 6, 110),
+       ("struggle", 8, 90), ("escape", 3, 60), ("search", 4, 160)]
+# what the star is doing, for the screen: 0 none, 1 free, 2 held, 3 struggling, 4 breaking free, 5 fleeing
+STAR_STATE = {"wait": 1, "lunge": 1, "drag": 2, "hidden": 0, "emerge": 3, "struggle": 3, "escape": 4, "search": 5}
+
+
+def ease_in(x):
+    return x * x
+
+
+def ease_out(x):
+    return 1 - (1 - x) * (1 - x)
+
+
+def act(root, direction, length, phase, curl, pal, thick, sucker, sway):
+    def draw_(*args):
+        return draw(*args, seed=phase)
+
+    """The catcher's frames, and where its star is in each (sprite pixels) and what it is doing."""
+    def swaying(u):
+        return lambda f: sway * math.sin(2 * math.pi * (0.8 * f) + 2 * math.pi * u + phase) * (0.2 + 0.8 * f)
+
+    frames = []                                    # (image, grip, part, index in part, frames in part)
+    for part, n, _ in ACT:
+        for i in range(n):
+            if part == "wait":
+                u = i / n
+                img, grip = draw_(root, direction, length, length * (0.84 + 0.04 * math.sin(2 * math.pi * u + phase)),
+                                 curl, pal, thick, sucker, swaying(u), 2.0 + 0.2 * math.sin(2 * math.pi * u))
+            elif part == "lunge":
+                v = (i + 1) / n
+                base = swaying(1.0)
+                img, grip = draw_(root, direction, length, length * (0.84 + 0.26 * ease_out(v)), curl, pal, thick, sucker,
+                                 lambda f, v=v, base=base: base(f) + 0.14 * curl * v * f, 2.0 + 1.0 * v)
+            elif part == "drag":
+                w = (i + 1) / n
+                base = swaying(1.0)
+                img, grip = draw_(root, direction, length, length * 1.1 * (1 - ease_in(w)), curl, pal, thick, sucker,
+                                 lambda f, w=w, base=base: (base(f) + 0.14 * curl * f) * (1 - w), 3.0)
+            elif part == "hidden":
+                img, grip = draw_(root, direction, length, 0.0, curl, pal, thick, sucker, lambda f: 0.0, 3.0)
+            elif part == "emerge":
+                e = (i + 1) / n
+                img, grip = draw_(root, direction, length, length * 0.8 * ease_out(e), curl, pal, thick, sucker,
+                                 lambda f, e=e: 0.12 * math.sin(6 * f + e * 5) * f, 3.0)
+            elif part == "struggle":
+                img, grip = draw_(root, direction, length, length * (0.8 + 0.05 * math.sin(i * 2.3)), curl, pal, thick, sucker,
+                                 lambda f, i=i: 0.28 * math.sin(i * 1.7 + f * 6.0) * f, 3.0 + 0.35 * math.sin(i * 2.9))
+            elif part == "escape":
+                x = (i + 1) / n
+                img, grip = draw_(root, direction, length, length * (0.8 + 0.12 * x), curl, pal, thick, sucker,
+                                 lambda f, x=x: -0.3 * curl * x * f, 3.0 - 2.4 * x)
+            else:                                   # search
+                y = (i + 1) / n
+                img, grip = draw_(root, direction, length, length * (0.92 + 0.12 * math.sin(math.pi * y)), curl, pal, thick,
+                                 sucker, lambda f, y=y: 0.25 * curl * math.sin(math.pi * y) * f, 0.6 + 1.4 * y)
+            frames.append((img, grip, part, i, n))
+    # the star: it drifts in to where the lunge's curl closes, is held in the curl, and breaks
+    # free outwards
+    catch = next(g for img, g, part, i, n in frames if part == "lunge" and i == n - 1)
+    out = np.array(direction) + 0.35 * curl * np.array((-direction[1], direction[0]))
+    out /= np.linalg.norm(out)
+    far = np.array(catch) + np.array(direction) * 22 + np.array((-direction[1], direction[0])) * 7 * curl
+    free_from = next(g for img, g, part, i, n in frames if part == "escape" and i == 0)
+    stars = []
+    for img, grip, part, i, n in frames:
+        if part == "wait":
+            p = far + (np.array(catch) - far) * ((i + 1) / n) ** 1.4
+        elif part == "lunge":
+            p = np.array(catch, float)
+        elif part in ("drag", "emerge", "struggle"):
+            p = np.array(grip, float)
+        elif part == "escape":
+            p = np.array(free_from, float) + out * 10 * ((i + 1) / n)
+        elif part == "search":
+            p = np.array(free_from, float) + out * (10 + 20 * ((i + 1) / n))
+        else:
+            p = np.array(grip, float)
+        stars.append((int(round(p[0])), int(round(p[1])), STAR_STATE[part]))
+    return [f[0] for f in frames], stars
 
 
 STAR_COLOURS = [((255, 255, 255), (255, 205, 240), (214, 120, 220)),     # pink
@@ -195,26 +291,69 @@ def stars():
     sheet.save(f"{OUT}/vacuum_chest_stars.png")
 
 
+def block_texture():
+    """The tentacles on the block itself (drawn in 3D by client/VacuumChestRenderer): 4x4 tiles of
+    their skin: the underside with a sucker, the back with its gloss, the side, the plain
+    underside, the back with a dark spot."""
+    pal = PALETTES[0]
+    tex = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    tiles = {
+        (0, 0): ["eppe", "prrp", "rhdr", "prrp"],
+        (4, 0): ["BBBB", "gggg", "BsBB", "bbbb"],
+        (8, 0): ["bbbb", "BBBB", "BBBB", "kkkk"],
+        (12, 0): ["eppe", "pppp", "pppp", "eppe"],
+        (0, 4): ["BBBB", "gSSg", "BSSB", "bbbb"],
+    }
+    colours = {"p": pal["pink"], "e": pal["edge"], "r": pal["rim"], "h": pal["hole"], "d": pal["deep"],
+               "B": pal["back"][2], "b": pal["back"][1], "k": pal["back"][0], "g": pal["gloss"], "s": pal["shine"],
+               "S": pal["spot"]}
+    for (x0, y0), rows in tiles.items():
+        for j, row in enumerate(rows):
+            for i, ch in enumerate(row):
+                tex.putpixel((x0 + i, y0 + j), colours[ch] + (255,))
+    import os
+    os.makedirs("src/main/resources/assets/goldenquarry/textures/entity", exist_ok=True)
+    tex.save("src/main/resources/assets/goldenquarry/textures/entity/vacuum_tentacle.png")
+
+
 def main():
-    sheet = Image.new("RGBA", (SIZE * FRAMES, SIZE * len(TENTACLES)))
-    grips = []
-    for i, (x, y, dx, dy, length, phase, curl, pal, thick, sucker, sway, catches) in enumerate(TENTACLES):
+    block_texture()
+    catchers = [i for i, t in enumerate(TENTACLES) if t[11]]
+    others = [i for i, t in enumerate(TENTACLES) if not t[11]]
+    sheet = Image.new("RGBA", (SIZE * FRAMES, SIZE * len(others)))
+    for row, i in enumerate(others):
+        x, y, dx, dy, length, phase, curl, pal, thick, sucker, sway, _ = TENTACLES[i]
         root = (SIZE / 2 - REACH * dx, SIZE / 2 - REACH * dy)
-        row = []
         for f in range(FRAMES):
-            img, grip = frame(root, (dx, dy), length, phase, curl, PALETTES[pal], thick, sucker, sway, f / FRAMES)
-            sheet.paste(Image.fromarray(img, "RGBA"), (f * SIZE, i * SIZE))
-            row.append(grip)
-        grips.append(row if catches else None)
+            img, _ = frame(root, (dx, dy), length, phase, curl, PALETTES[pal], thick, sucker, sway, f / FRAMES)
+            sheet.paste(Image.fromarray(img, "RGBA"), (f * SIZE, row * SIZE))
     sheet.save(f"{OUT}/vacuum_chest_tentacles.png", optimize=True)
+    act_frames = sum(n for _, n, _ in ACT)
+    acts = Image.new("RGBA", (SIZE * act_frames, SIZE * len(catchers)))
+    star_rows = []
+    for row, i in enumerate(catchers):
+        x, y, dx, dy, length, phase, curl, pal, thick, sucker, sway, _ = TENTACLES[i]
+        root = (SIZE / 2 - REACH * dx, SIZE / 2 - REACH * dy)
+        imgs, stars_ = act(root, (dx, dy), length, phase, curl, PALETTES[pal], thick, sucker, sway)
+        for f, img in enumerate(imgs):
+            acts.paste(Image.fromarray(img, "RGBA"), (f * SIZE, row * SIZE))
+        star_rows.append(stars_)
+    acts.save(f"{OUT}/vacuum_chest_catchers.png", optimize=True)
     stars()
-    # the phases and grip points into Tentacles.java
+    # which sheet and row each tentacle is in, the act's timing, and the stars, into Tentacles.java
+    rows = [catchers.index(i) if i in catchers else others.index(i) for i in range(len(TENTACLES))]
     lines = ["    // <generated by tools/gen_tentacles.py>",
-             "    private static final float[] PHASES = {" + ", ".join(f"{t[5]}F" for t in TENTACLES) + "};",
-             "    /** For the tentacles that catch stars: where the star sits, in each frame (sprite pixels). */",
-             "    private static final int[][][] GRIPS = {"]
-    for g in grips:
-        lines.append("            " + ("null," if g is None else "{" + ", ".join(f"{{{a}, {b}}}" for a, b in g) + "},"))
+             "    /** Whether each tentacle catches stars (it is in the catchers' sheet then), and its row in its sheet. */",
+             "    private static final boolean[] CATCHER = {" + ", ".join("true" if t[11] else "false" for t in TENTACLES) + "};",
+             "    private static final int[] ROW = {" + ", ".join(map(str, rows)) + "};",
+             "    private static final int OTHERS = " + str(len(others)) + ", CATCHERS = " + str(len(catchers)) + ";",
+             "    /** The catchers' act: how long each frame lasts, and what the star is doing in it. */",
+             "    private static final int[] ACT_MS = {" + ", ".join(str(ms) for _, n, ms in ACT for _ in range(n)) + "};",
+             "    private static final int[] ACT_STATE = {" + ", ".join(str(st) for _, _, st in star_rows[0]) + "};",
+             "    /** Where each catcher's star is in each frame (sprite pixels). */",
+             "    private static final int[][][] ACT_STAR = {"]
+    for row in star_rows:
+        lines.append("            {" + ", ".join(f"{{{a}, {b}}}" for a, b, _ in row) + "},")
     lines += ["    };", "    // </generated>"]
     src = open(JAVA, encoding="utf-8").read()
     src = re.sub(r"    // <generated by tools/gen_tentacles.py>.*?    // </generated>", "\n".join(lines), src, flags=re.S)
