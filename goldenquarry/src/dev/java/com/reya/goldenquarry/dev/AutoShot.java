@@ -46,7 +46,7 @@ public final class AutoShot {
     private static int ticks, step, since;
     private static boolean worldAsked;
 
-    private record Step(int wait, Runnable action) {
+    private record Step(int delay, Runnable action) {
     }
 
     static {
@@ -80,7 +80,7 @@ public final class AutoShot {
             since = ticks;
             return;
         }
-        if (step < STEPS.size() && ticks - since >= STEPS.get(step).wait()) {
+        if (step < STEPS.size() && ticks - since >= STEPS.get(step).delay()) {
             STEPS.get(step).action().run();
             step++;
             since = ticks;
