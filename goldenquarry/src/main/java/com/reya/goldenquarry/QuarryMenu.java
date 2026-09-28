@@ -26,8 +26,8 @@ public class QuarryMenu extends AbstractContainerMenu {
     public static final int HEIGHT = 247;
     public static final int COMMON_X = 15, COMMON_Y = 15;
     public static final int VALUABLE_X = 15, VALUABLE_Y = 95;
-    /** Upgrade slots: the three golden frames on the right. */
-    public static final int UP_X = 182, UP_Y = 19, UP_STEP = 18;
+    /** Upgrade slots: the three golden frames on the right and the frame left of the bars. */
+    public static final int[][] UPGRADE_POS = {{182, 19}, {182, 37}, {182, 55}, {16, 73}};
     public static final int INV_X = 26, INV_Y = 165, HOTBAR_Y = 223;
 
     public static final int COMMON_START = 0;
@@ -56,7 +56,7 @@ public class QuarryMenu extends AbstractContainerMenu {
         addGrid(common, COMMON_X, COMMON_Y);
         addGrid(valuables, VALUABLE_X, VALUABLE_Y);
         for (int i = 0; i < QuarryBlockEntity.UPGRADES; i++) {
-            addSlot(new SlotItemHandler(upgrades, i, UP_X, UP_Y + i * UP_STEP) {
+            addSlot(new SlotItemHandler(upgrades, i, UPGRADE_POS[i][0], UPGRADE_POS[i][1]) {
                 @Override
                 public boolean mayPlace(ItemStack stack) {
                     return stack.getItem() instanceof QuarryUpgradeItem;

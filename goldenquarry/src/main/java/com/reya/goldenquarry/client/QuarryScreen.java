@@ -29,7 +29,6 @@ public class QuarryScreen extends AbstractContainerScreen<QuarryMenu> {
     private static final int ENERGY_Y = 72, PROGRESS_Y = 83;
     /** Where the energy and progress tooltips answer (bars with their icons in front). */
     private static final int TIP_X1 = 36, TIP_X2 = 175;
-    private static final int ICON_X1 = 14, ICON_Y1 = 71, ICON_X2 = 33, ICON_Y2 = 91;
 
     private float shownProgress;
     private float shownEnergy;
@@ -74,7 +73,7 @@ public class QuarryScreen extends AbstractContainerScreen<QuarryMenu> {
             QuarryBlockEntity be = menu.quarry();
             if (be != null) tip.add(Component.translatable("gui.goldenquarry.energy_per_block", be.energyPerBlock()).withStyle(ChatFormatting.GRAY));
         } else if (lx >= TIP_X1 && lx < TIP_X2 && ly >= PROGRESS_Y - 1 && ly < PROGRESS_Y + BAR_H
-                || lx >= ICON_X1 && lx < ICON_X2 && ly >= ICON_Y1 && ly < ICON_Y2) {
+) {
             tip.add(Component.translatable("gui.goldenquarry.status." + menu.status()).withStyle(statusColor(menu.status())));
             int side = menu.radius() * 2 + 1;
             tip.add(Component.translatable("gui.goldenquarry.area", side, side).withStyle(ChatFormatting.GRAY));

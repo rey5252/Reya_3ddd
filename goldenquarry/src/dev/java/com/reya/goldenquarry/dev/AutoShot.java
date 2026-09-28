@@ -122,6 +122,7 @@ public final class AutoShot {
                 be.upgrades().setStackInSlot(0, new ItemStack(GoldenQuarry.RANGE_UPGRADE.get()));
                 be.upgrades().setStackInSlot(1, new ItemStack(GoldenQuarry.SPEED_UPGRADE.get()));
                 be.upgrades().setStackInSlot(2, new ItemStack(GoldenQuarry.SMELTING_UPGRADE.get()));
+                be.upgrades().setStackInSlot(3, new ItemStack(GoldenQuarry.SILK_TOUCH_UPGRADE.get()));
                 be.getCapability(ForgeCapabilities.ENERGY).ifPresent(e -> {
                     for (int i = 0; i < 20; i++) e.receiveEnergy(100_000, false);
                 });
@@ -130,8 +131,7 @@ public final class AutoShot {
             p.getInventory().setItem(0, new ItemStack(GoldenQuarry.FORTUNE_UPGRADE_2.get()));
             p.getInventory().setItem(1, new ItemStack(GoldenQuarry.FORTUNE_UPGRADE_5.get()));
             p.getInventory().setItem(2, new ItemStack(GoldenQuarry.FORTUNE_UPGRADE_10.get()));
-            p.getInventory().setItem(3, new ItemStack(GoldenQuarry.SILK_TOUCH_UPGRADE.get()));
-            p.getInventory().setItem(4, new ItemStack(GoldenQuarry.QUARRY_ITEM.get()));
+            p.getInventory().setItem(3, new ItemStack(GoldenQuarry.QUARRY_ITEM.get()));
             p.getAbilities().flying = true;
             p.onUpdateAbilities();
         });

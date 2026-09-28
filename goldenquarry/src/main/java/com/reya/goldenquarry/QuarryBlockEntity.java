@@ -52,7 +52,7 @@ import net.minecraftforge.items.ItemStackHandler;
  * its own, takes more from any Forge Energy cable); stops while a redstone signal reaches it.
  */
 public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
-    public static final int STORAGE = 27, UPGRADES = 3;
+    public static final int STORAGE = 27, UPGRADES = 4;
 
     public static final int STATUS_WORKING = 0, STATUS_STOPPED = 1, STATUS_NO_ENERGY = 2, STATUS_FULL = 3,
             STATUS_FINISHED = 4, STATUS_REDSTONE = 5, STATUS_WAITING = 6;
