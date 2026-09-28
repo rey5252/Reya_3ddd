@@ -291,33 +291,7 @@ def stars():
     sheet.save(f"{OUT}/vacuum_chest_stars.png")
 
 
-def block_texture():
-    """The tentacles on the block itself (drawn in 3D by client/VacuumChestRenderer): 4x4 tiles of
-    their skin: the underside with a sucker, the back with its gloss, the side, the plain
-    underside, the back with a dark spot."""
-    pal = PALETTES[0]
-    tex = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
-    tiles = {
-        (0, 0): ["eppe", "prrp", "rhdr", "prrp"],
-        (4, 0): ["BBBB", "gggg", "BsBB", "bbbb"],
-        (8, 0): ["bbbb", "BBBB", "BBBB", "kkkk"],
-        (12, 0): ["eppe", "pppp", "pppp", "eppe"],
-        (0, 4): ["BBBB", "gSSg", "BSSB", "bbbb"],
-    }
-    colours = {"p": pal["pink"], "e": pal["edge"], "r": pal["rim"], "h": pal["hole"], "d": pal["deep"],
-               "B": pal["back"][2], "b": pal["back"][1], "k": pal["back"][0], "g": pal["gloss"], "s": pal["shine"],
-               "S": pal["spot"]}
-    for (x0, y0), rows in tiles.items():
-        for j, row in enumerate(rows):
-            for i, ch in enumerate(row):
-                tex.putpixel((x0 + i, y0 + j), colours[ch] + (255,))
-    import os
-    os.makedirs("src/main/resources/assets/goldenquarry/textures/entity", exist_ok=True)
-    tex.save("src/main/resources/assets/goldenquarry/textures/entity/vacuum_tentacle.png")
-
-
 def main():
-    block_texture()
     catchers = [i for i, t in enumerate(TENTACLES) if t[11]]
     others = [i for i, t in enumerate(TENTACLES) if not t[11]]
     sheet = Image.new("RGBA", (SIZE * FRAMES, SIZE * len(others)))
