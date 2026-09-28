@@ -13,27 +13,36 @@ import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
 /**
- * Vacuum chest GUI, pixel for pixel the reference (textures/gui/vacuum_chest.png, built by
- * tools/extract_vacuum.py). This writes on it what the reference shows in text, in the player's
- * language: the title on the grey plate, "Item filter", "Range" and the range; draws the name plate
- * over it, the white/black list switch in the brown slot, and answers the buttons.
+ * Vacuum chest GUI: the reference's layout in the chest's own colours, framed like LoliUtility's
+ * machines (textures/gui/vacuum_chest.png, built by tools/extract_vacuum.py). Under it turns the
+ * vortex (vacuum_chest_vortex.png, twelve frames), ender sparks spiral into its middle, and round
+ * it tentacles are drawn into the chest. This writes on it what the reference shows in text, in the
+ * player's language: the title on the grey plate, "Item filter", "Range" and the range; draws the
+ * name plate over it and the white/black list switch in the brown slot, and answers the buttons.
  */
 public class VacuumChestScreen extends AbstractContainerScreen<VacuumChestMenu> {
     private static final ResourceLocation TEXTURE = new ResourceLocation(GoldenQuarry.MODID, "textures/gui/vacuum_chest.png");
+    private static final ResourceLocation VORTEX = new ResourceLocation(GoldenQuarry.MODID, "textures/gui/vacuum_chest_vortex.png");
+    private static final int VORTEX_X = 12, VORTEX_Y = 20, VORTEX_W = 192, VORTEX_H = 121, VORTEX_FRAMES = 12;
     /** Buttons: x, y, width, height (texture pixels) and the menu button id. */
     private static final int[][] BUTTONS = {
-            {178, 95, 8, 8, VacuumChestMenu.BUTTON_PLUS},
-            {178, 104, 8, 8, VacuumChestMenu.BUTTON_MINUS},
-            {169, 117, 16, 16, VacuumChestMenu.BUTTON_AREA},
+            {182, 95, 8, 8, VacuumChestMenu.BUTTON_PLUS},
+            {182, 104, 8, 8, VacuumChestMenu.BUTTON_MINUS},
+            {173, 117, 16, 16, VacuumChestMenu.BUTTON_AREA},
             {VacuumChestMenu.MODE_X - 1, VacuumChestMenu.FILTER_Y - 1, 18, 18, VacuumChestMenu.BUTTON_MODE}};
-    private static final int TITLE_X1 = 57, TITLE_X2 = 149, TITLE_Y = 3;
-    private static final int LABEL_Y = 84, FILTER_LABEL_X = 23, RANGE_LABEL_END = 197;
-    private static final int RANGE_END = 174, RANGE_Y = 99;
+    private static final int TITLE_X1 = 61, TITLE_X2 = 153, TITLE_Y = 3;
+    private static final int LABEL_Y = 84, FILTER_LABEL_X = 27, RANGE_LABEL_END = 201;
+    private static final int RANGE_END = 178, RANGE_Y = 99;
+    private static final int FRAME_BOTTOM = 148;
+    private static final int[] PARTICLE_COLOURS = {0xB24BF3, 0xD472FF, 0x8A2BE2, 0xE58CFF, 0xF0C8FF};
+
+    private final Tentacles tentacles = new Tentacles(VacuumChestMenu.WIDTH, FRAME_BOTTOM);
 
     public VacuumChestScreen(VacuumChestMenu menu, Inventory inv, Component title) {
         super(menu, inv, title);
@@ -51,9 +60,12 @@ public class VacuumChestScreen extends AbstractContainerScreen<VacuumChestMenu> 
 
     @Override
     protected void renderBg(GuiGraphics g, float partialTick, int mouseX, int mouseY) {
+        tentacles.draw(g, leftPos, topPos);
+        int frame = (int) (Util.getMillis() / 110L % VORTEX_FRAMES);
+        g.blit(VORTEX, leftPos + VORTEX_X, topPos + VORTEX_Y, 0, frame * VORTEX_H, VORTEX_W, VORTEX_H, VORTEX_W, VORTEX_H * VORTEX_FRAMES);
+        enderParticles(g);
         g.blit(TEXTURE, leftPos, topPos, 0, 0, imageWidth, imageHeight, 256, 256);
         Banner.draw(g, leftPos + imageWidth / 2, topPos - Banner.HEIGHT);
-        enderParticles(g);
         // the title on the grey plate, in the plate's own little letters
         String title = getTitle().getString();
         PlateFont.draw(g, title, leftPos + (TITLE_X1 + TITLE_X2 + 1) / 2 - PlateFont.width(title) / 2, topPos + TITLE_Y, 0xFF696969);
@@ -73,35 +85,29 @@ public class VacuumChestScreen extends AbstractContainerScreen<VacuumChestMenu> 
         }
     }
 
-    /** Where the ender particles may drift: the purple panel, off the slots and buttons. */
-    private static final int[] PANEL = {9, 21, 199, 140};
-    private static final int[][] NOT_THERE = {{22, 26, 186, 82}, {22, 94, 136, 114}, {167, 93, 187, 137}};
-    private static final int[] PARTICLE_COLOURS = {0xB24BF3, 0xD472FF, 0x8A2BE2, 0xE58CFF, 0x6A1FB0};
-
-    /** Purple sparks rising and fading over the panel, like the ender particles round the chest. */
+    /** Ender sparks spiralling in to the vortex's middle and going out there (drawn under the slots). */
     private void enderParticles(GuiGraphics g) {
         double t = Util.getMillis() / 50.0D;
-        for (int i = 0; i < 40; i++) {
+        double cx = VORTEX_X + VORTEX_W / 2.0D, cy = 80.0D;
+        for (int i = 0; i < 46; i++) {
             long h = i * 0x9E3779B97F4A7C15L + 0x632BE59BD9B4E019L;
             h ^= h >>> 29;
             h *= 0xBF58476D1CE4E5B9L;
             h ^= h >>> 32;
-            int period = 50 + (int) ((h >>> 8) % 40);
-            double phase = ((t + (h >>> 16) % 1000) % period) / period;
-            double x0 = PANEL[0] + (h >>> 24) % (PANEL[2] - PANEL[0]);
-            double y0 = PANEL[1] + 10 + (h >>> 40) % (PANEL[3] - PANEL[1] - 10);
-            int x = (int) Math.round(x0 + Math.sin(phase * Math.PI * 2 + i) * 2.5D);
-            int y = (int) Math.round(y0 - phase * 12.0D);
-            if (x < PANEL[0] || x > PANEL[2] || y < PANEL[1] || y > PANEL[3]) continue;
-            boolean blocked = false;
-            for (int[] r : NOT_THERE) blocked |= x >= r[0] && x <= r[2] && y >= r[1] && y <= r[3];
-            if (blocked) continue;
-            int alpha = (int) (Math.sin(phase * Math.PI) * 230.0D);
+            int period = 60 + (int) ((h >>> 8) % 50);
+            double p = ((t + (h >>> 16) % 1000) % period) / period;          // 0 far out .. 1 in the middle
+            double a0 = ((h >>> 24) % 6283) / 1000.0D;
+            double r = 1.0D - p;
+            double a = a0 + p * 2.4D;
+            int x = (int) Math.round(cx + Math.cos(a) * r * 94.0D);
+            int y = (int) Math.round(cy + Math.sin(a) * r * 58.0D);
+            if (x < VORTEX_X || x >= VORTEX_X + VORTEX_W || y < VORTEX_Y || y >= VORTEX_Y + VORTEX_H) continue;
+            int alpha = (int) (Mth.sin((float) (p * Math.PI)) * 235.0F);
             if (alpha < 12) continue;
             int colour = alpha << 24 | PARTICLE_COLOURS[(int) ((h >>> 4) % PARTICLE_COLOURS.length)];
             int ax = leftPos + x, ay = topPos + y;
             g.fill(ax, ay, ax + 1, ay + 1, colour);
-            if ((h & 3) == 0 && phase > 0.25D && phase < 0.75D) {      // some are little crosses
+            if ((h & 3) == 0 && p > 0.2D && p < 0.7D) {      // some are little crosses
                 int dim = (alpha / 2) << 24 | (colour & 0xFFFFFF);
                 g.fill(ax - 1, ay, ax, ay + 1, dim);
                 g.fill(ax + 1, ay, ax + 2, ay + 1, dim);
