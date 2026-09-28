@@ -117,48 +117,51 @@ def main():
     for cx, cy in ((1, 1), (13, 1), (1, 13), (13, 13)):
         ring[cy][cx], ring[cy][cx + 1], ring[cy + 1][cx], ring[cy + 1][cx + 1] = T, Bn, Bn, T
     save("qi_ring", ring)
-    # the drill (shots 4 and 8): black head with a grey band and a tan ring on top, dark grey
-    # blocks on its sides, grey legs round a black shaft, a grey tooth at the foot
-    K, G = (0, 0, 0, 255), (37, 38, 39, 255)
-    g1, g2, g3, g4 = (60, 59, 68, 255), (68, 68, 74, 255), (90, 101, 105, 255), (99, 108, 111, 255)
-    d1, d2, grey = (28, 34, 35, 255), (45, 54, 57, 255), (125, 125, 125, 255)
-    Tl, Td = (252, 199, 106, 255), (130, 76, 50, 255)
+    # the drill, measured on shots 1, 3 (both sides, cameras fitted to the block's corners) and 4 (top):
+    # its head's texture is 10 pixels across. Top (10x10): black edge, dark grey band, black, the tan
+    # ring round a black hole. Sides (10x3): black top row, then grey blocks in 3 / 2 / 3 with black
+    # gaps (shot 1's face for north and south, shot 3's for east and west). Colours as the shots show
+    # them in daylight (the drill is drawn unshaded).
+    K0, K1, G0 = (4, 4, 4, 255), (22, 22, 22, 255), (37, 38, 39, 255)
+    L, P, Q, M, m, D = ((124, 134, 138, 255), (104, 104, 114, 255), (93, 91, 104, 255), (84, 84, 93, 255),
+                        (75, 74, 84, 255), (40, 48, 50, 255))
+    F = (125, 125, 125, 255)
+    Tl, Tb, Td = (252, 199, 106, 255), (184, 125, 72, 255), (130, 76, 50, 255)
     drill = blank()
-    top = ["KKKKKKKK",
-           "KGGGGGGK",
-           "KGbbbdGK",
-           "KGt..dGK",
-           "KGt..dGK",
-           "KGtttbGK",
-           "KGGGGGGK",
-           "KKKKKKKK"]
-    pal = {"K": (22, 22, 22, 255), "G": G, "t": Tl, "b": Bn, "d": Td, ".": (10, 10, 10, 255)}
+    top = ["KKKKKKKKKK",
+           "KGGGGGGGGK",
+           "KGKKKKKKGK",
+           "KGKbbddKGK",
+           "KGKb..dKGK",
+           "KGKt..bKGK",
+           "KGKtttbKGK",
+           "KGKKKKKKGK",
+           "KGGGGGGGGK",
+           "KKKKKKKKKK"]
+    pal = {"K": K1, "G": G0, "t": Tl, "b": Tb, "d": Td, ".": (8, 8, 8, 255)}
     for j, row in enumerate(top):
         for i, ch in enumerate(row):
             drill[j][i] = pal[ch]
-    sides = ["KKKKKKKK",           # shot 8: the head's side, black top, two rows of grey blocks
-             "K12K21d2",
-             "K13K1d13"]
-    pal = {"K": K, "1": g1, "2": g2, "3": g3, "d": d1}
-    for j, row in enumerate(sides):
-        for i, ch in enumerate(row):
-            drill[8 + j][i] = pal[ch]
-    legs = ["22", "14", "23", "1e", "d2"]          # shot 8: a leg, 2 wide, top to bottom
-    pal = {"1": g1, "2": g2, "3": g3, "4": g4, "d": d1, "e": d2}
-    for j, row in enumerate(legs):
-        for i, ch in enumerate(row):
-            drill[j][8 + i] = pal[ch]
-    for j in range(8):                                # shaft and the head's underside: black
-        drill[j][10], drill[j][11] = K, (8, 8, 8, 255)
-    blocks = ["2e31",                                 # shot 11: the grey blocks, 2x2 shades
-              "e123",
-              "31e4",
-              "1d32"]
-    pal = {"1": g1, "2": g2, "3": g3, "4": g4, "d": d1, "e": d2}
-    for j, row in enumerate(blocks):
-        for i, ch in enumerate(row):
-            drill[j][12 + i] = pal[ch]
-    drill[4][12] = grey                               # the tooth and the brackets in the cage
+    sides = {10: ["KKKKKKKKKK",      # shot 1
+                  "LMmKmMKMmM",
+                  "MMDKmMKMmm"],
+             13: ["KKKKKKKKKK",      # shot 3
+                  "PDmKLMKDmM",
+                  "DmMKMMKmmL"]}
+    pal = {"K": K0, "L": L, "P": P, "M": M, "m": m, "D": D}
+    for y0, rows in sides.items():
+        for j, row in enumerate(rows):
+            for i, ch in enumerate(row):
+                drill[y0 + j][i] = pal[ch]
+    for j in range(6):                                 # the shaft and the head's underside: black
+        drill[j][10] = K0
+    for j, c in enumerate((Q, P)):                     # legs: upper part (2 high), lower part (4 high)
+        drill[j][11] = c
+    for j, c in enumerate((L, M, D, Q)):
+        drill[j][12] = c
+    for j, c in enumerate((m, m, m, M)):
+        drill[j][13] = c
+    drill[0][15] = F                                   # the plain grey block at the foot, the brackets
     save("qi_drill", drill)
     # glass: faintly blue, with a few white streaks; only where the cage and the side openings
     # are open (the frame's own pixels stay clear, so nothing lies on top of them)

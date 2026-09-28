@@ -4,8 +4,9 @@ Run from the goldenquarry folder:  python3 tools/gen_model.py
 One block. The chest is 10 high: a solid bottom 6 high, and on it the ornate front and back walls
 (3 deep) with the sides open between them, so the drill inside shows; brown pillars stand at the
 openings' edges. On the chest sits the open cage (sheets one pixel in from the edges, 6 high, a
-ring on top). golden_quarry_drill is the drill standing in the hollow, which the block entity renderer turns
-slowly; golden_quarry_glass is the glass over the cage and the side openings, drawn translucent. The textures come from tools/extract_ingame.py and use the default UVs: every
+ring on top). golden_quarry_drill is the drill standing in the hollow, which the block entity
+renderer turns slowly; golden_quarry_glass is the glass over the cage and the side openings,
+drawn translucent. The textures come from tools/extract_ingame.py and use the default UVs: every
 face texture is laid out in block space.
 """
 import json
@@ -16,7 +17,10 @@ SIDES = ["north", "south", "west", "east"]
 
 
 def box(frm, to, faces):
-    return {"from": frm, "to": to, "faces": faces}
+    def tidy(v):
+        v = round(v, 4)
+        return int(v) if v == int(v) else v
+    return {"from": [tidy(v) for v in frm], "to": [tidy(v) for v in to], "faces": faces}
 
 
 def faces(tex, only=None, **over):
@@ -57,7 +61,7 @@ def top_elements():
     els.append(box([1, 16, 1], [15, 16, 15], {"up": {"texture": "#ring"}, "down": {"texture": "#ring"}}))
     # little grey brackets stepping in from the cage's corners, kept a hair off the cage sheets
     # (faces in the same plane as a sheet flicker)
-    grey = {"texture": "#bracket", "uv": [12, 4, 13, 5]}
+    grey = {"texture": "#bracket", "uv": [15, 0, 16, 1]}
     for cx, cz, dx, dz in ((1, 1, 1, 1), (14, 1, -1, 1), (1, 14, 1, -1), (14, 14, -1, -1)):
         for step, y in ((0, 13), (1, 12)):
             x, z = cx + dx * step, cz + dz * step
@@ -68,31 +72,28 @@ def top_elements():
 
 
 def drill_elements():
-    """After shot 11: a square black plate with a grey band (8 wide), a grey cap in the middle with
-    the tan ring on top, a grey block on the middle of each side of the plate with a leg hanging
-    from it and stepping in to the floor, a grey column under the middle, a grey tooth at the foot."""
+    """The drill as measured on the reference shots (cameras fitted to the block's corners on shots
+    1 and 3, see tools/extract_ingame.py): a black head 8.75 wide and 2.625 high whose texture is
+    10 pixels across (0.875 each), a black shaft down to the floor, four grey blades on the
+    diagonals (a thin upper part out under the head, a lower part in at the shaft, so they close in
+    towards the tip) and a plain grey block at the foot."""
     els = []
-    blocks = {"texture": "#drill", "uv": [12, 0, 16, 4]}
-    small = {"texture": "#drill", "uv": [12, 0, 14, 2]}
-    black = {"texture": "#drill", "uv": [10, 0, 12, 8]}
-    plate_side = {"texture": "#drill", "uv": [0, 8, 8, 9]}
-    els.append(box([4, 11, 4], [12, 12, 12], {"north": plate_side, "south": plate_side, "west": plate_side,
-                                             "east": plate_side, "up": {"texture": "#drill", "uv": [0, 0, 8, 8]},
-                                             "down": black}))
-    els.append(box([6, 12, 6], [10, 15, 10], {"north": blocks, "south": blocks, "west": blocks, "east": blocks,
-                                             "up": {"texture": "#drill", "uv": [2, 2, 6, 6]}}))
-    for frm, to in (([4, 12, 7], [6, 14, 9]), ([10, 12, 7], [12, 14, 9]), ([7, 12, 4], [9, 14, 6]), ([7, 12, 10], [9, 14, 12])):
-        els.append(box(frm, to, {n: small for n in SIDES + ["up"]}))
-    leg = {"texture": "#drill", "uv": [8, 0, 9, 3]}
-    for sx, sz in ((-1, 0), (1, 0), (0, -1), (0, 1)):
-        for r, y0, y1 in ((3.5, 8.5, 11), (2.5, 6, 8.5)):
-            cx, cz = 8 + sx * (r + 0.5), 8 + sz * (r + 0.5)
-            els.append(box([cx - 0.5, y0, cz - 0.5], [cx + 0.5, y1, cz + 0.5], {n: leg for n in SIDES}))
-    els.append(box([6.75, 8.5, 6.75], [9.25, 11, 9.25], {n: blocks for n in SIDES + ["down"]}))
-    column = {"texture": "#drill", "uv": [8, 0, 10, 5]}
-    els.append(box([7, 6, 7], [9, 8.5, 9], {n: column for n in SIDES}))
-    tooth = {"texture": "#drill", "uv": [12, 4, 13, 5]}
-    els.append(box([9, 6, 4.5], [11, 7.5, 6.5], {n: tooth for n in SIDES + ["up"]}))
+    black = {"texture": "#drill", "uv": [10, 0, 11, 1]}
+    side_a = {"texture": "#drill", "uv": [0, 10, 10, 13]}
+    side_b = {"texture": "#drill", "uv": [0, 13, 10, 16]}
+    els.append(box([3.625, 11.8, 3.625], [12.375, 14.425, 12.375], {"north": side_a, "south": side_a, "west": side_b, "east": side_b,
+                                                                   "up": {"texture": "#drill", "uv": [0, 0, 10, 10]}, "down": black}))
+    els.append(box([7, 6, 7], [9, 11.8, 9], {n: {"texture": "#drill", "uv": [10, 0, 11, 5]} for n in SIDES}))
+    upper = {"texture": "#drill", "uv": [11, 0, 12, 2]}
+    lower = [{"texture": "#drill", "uv": [12, 0, 13, 4]}, {"texture": "#drill", "uv": [13, 0, 14, 4]}]
+    for i, (sx, sz) in enumerate(((-1, -1), (1, -1), (1, 1), (-1, 1))):
+        cx, cz = 8 + sx * 2.3, 8 + sz * 2.3
+        els.append(box([cx - 0.35, 9.9, cz - 0.35], [cx + 0.35, 11.8, cz + 0.35], {n: upper for n in SIDES + ["down"]}))
+        cx, cz = 8 + sx * 1.4, 8 + sz * 1.4
+        low = lower[i % 2]
+        els.append(box([cx - 0.45, 6.6, cz - 0.45], [cx + 0.45, 10.4, cz + 0.45], {n: low for n in SIDES + ["down"]}))
+    flat = {"texture": "#drill", "uv": [15, 0, 16, 1]}
+    els.append(box([5, 6, 9.75], [7, 7.25, 11.75], {n: flat for n in SIDES + ["up"]}))
     return els
 
 
