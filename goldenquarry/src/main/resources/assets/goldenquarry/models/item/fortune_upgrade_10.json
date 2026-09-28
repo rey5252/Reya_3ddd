@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "goldenquarry:item/fortune_upgrade_10"
+  }
+}

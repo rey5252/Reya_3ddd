@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "DLD",
+    "LXL",
+    "DLD"
+  ],
+  "key": {
+    "D": {
+      "item": "minecraft:diamond"
+    },
+    "L": {
+      "item": "minecraft:lapis_block"
+    },
+    "X": {
+      "item": "goldenquarry:fortune_upgrade_2"
+    }
+  },
+  "result": {
+    "item": "goldenquarry:fortune_upgrade_5"
+  }
+}

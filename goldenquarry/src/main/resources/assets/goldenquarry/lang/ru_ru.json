@@ -6,8 +6,7 @@
   "item.goldenquarry.speed_upgrade.tip": "Каждое ускоряет копание примерно на 35%",
   "item.goldenquarry.range_upgrade": "Улучшение радиуса карьера",
   "item.goldenquarry.range_upgrade.tip": "Каждое расширяет зону на 2 блока с каждой стороны",
-  "item.goldenquarry.fortune_upgrade": "Улучшение удачи карьера",
-  "item.goldenquarry.fortune_upgrade.tip": "Каждое — уровень Удачи (до III)",
+  "item.goldenquarry.fortune_upgrade.tip": "Удача %s для всего, что копает карьер (действует наибольшая)",
   "item.goldenquarry.silk_touch_upgrade": "Улучшение шёлкового касания",
   "item.goldenquarry.silk_touch_upgrade.tip": "Добывает блоки как есть (вместо Удачи)",
   "item.goldenquarry.smelting_upgrade": "Улучшение переплавки",
@@ -38,5 +37,12 @@
   "gui.goldenquarry.button.area": "Показать зону",
   "gui.goldenquarry.button.area.tip": "Светящаяся рамка вокруг зоны копания",
   "gui.goldenquarry.button.void": "Уничтожать мусор",
-  "gui.goldenquarry.button.void.tip": "Уничтожать камень, землю и другие простые блоки вместо хранения"
+  "gui.goldenquarry.button.void.tip": "Уничтожать камень, землю и другие простые блоки вместо хранения",
+  "item.goldenquarry.fortune_upgrade_2": "Улучшение удачи карьера II",
+  "item.goldenquarry.fortune_upgrade_5": "Улучшение удачи карьера V",
+  "item.goldenquarry.fortune_upgrade_10": "Улучшение удачи карьера X",
+  "block.goldenquarry.fortune_block_2": "Блок удачи II",
+  "block.goldenquarry.fortune_block_5": "Блок удачи V",
+  "block.goldenquarry.fortune_block_10": "Блок удачи X",
+  "block.goldenquarry.fortune_block.tip": "Поставь рядом с карьером: он будет копать с удачей %s"
 }

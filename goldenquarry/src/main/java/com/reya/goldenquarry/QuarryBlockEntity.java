@@ -207,6 +207,24 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
         return Math.min(kind.max, n);
     }
 
+    /** Highest fortune among the fortune upgrades in the slots and the fortune blocks beside either half. */
+    public int fortuneLevel() {
+        int best = 0;
+        for (int i = 0; i < UPGRADES; i++) {
+            if (upgrades.getStackInSlot(i).getItem() instanceof QuarryUpgradeItem u && u.kind == QuarryUpgradeItem.Kind.FORTUNE) {
+                best = Math.max(best, u.level);
+            }
+        }
+        if (level != null) {
+            for (BlockPos half : new BlockPos[]{worldPosition, worldPosition.above()}) {
+                for (Direction dir : Direction.Plane.HORIZONTAL) {
+                    if (level.getBlockState(half.relative(dir)).getBlock() instanceof FortuneBoosterBlock b) best = Math.max(best, b.level);
+                }
+            }
+        }
+        return best;
+    }
+
     /** Blocks the dig area reaches out on each side. */
     public int radius() {
         if (level != null && level.isClientSide && radius >= 0) return radius;
@@ -219,7 +237,7 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
 
     /** Fortune, silk touch and smelting each make a block dearer. */
     public int energyPerBlock() {
-        double k = 1.0D + 0.5D * upgrades(QuarryUpgradeItem.Kind.FORTUNE) + 0.2D * upgrades(QuarryUpgradeItem.Kind.SPEED);
+        double k = 1.0D + 0.25D * fortuneLevel() + 0.2D * upgrades(QuarryUpgradeItem.Kind.SPEED);
         if (upgrades(QuarryUpgradeItem.Kind.SILK_TOUCH) > 0) k += 1.0D;
         if (upgrades(QuarryUpgradeItem.Kind.SMELTING) > 0) k += 0.5D;
         return (int) Math.round(Config.ENERGY_PER_BLOCK.get() * k);
@@ -374,7 +392,7 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
         if (upgrades(QuarryUpgradeItem.Kind.SILK_TOUCH) > 0) {
             pick.enchant(Enchantments.SILK_TOUCH, 1);
         } else {
-            int fortune = upgrades(QuarryUpgradeItem.Kind.FORTUNE);
+            int fortune = fortuneLevel();
             if (fortune > 0) pick.enchant(Enchantments.BLOCK_FORTUNE, fortune);
         }
         return pick;

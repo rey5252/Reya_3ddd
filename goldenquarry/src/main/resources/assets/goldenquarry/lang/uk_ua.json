@@ -6,8 +6,7 @@
   "item.goldenquarry.speed_upgrade.tip": "Кожне прискорює копання приблизно на 35%",
   "item.goldenquarry.range_upgrade": "Покращення радіусу кар'єру",
   "item.goldenquarry.range_upgrade.tip": "Кожне розширює зону на 2 блоки з кожного боку",
-  "item.goldenquarry.fortune_upgrade": "Покращення удачі кар'єру",
-  "item.goldenquarry.fortune_upgrade.tip": "Кожне — рівень Удачі (до III)",
+  "item.goldenquarry.fortune_upgrade.tip": "Удача %s для всього, що копає кар'єр (діє найвища)",
   "item.goldenquarry.silk_touch_upgrade": "Покращення шовкового дотику",
   "item.goldenquarry.silk_touch_upgrade.tip": "Добуває блоки як є (замість Удачі)",
   "item.goldenquarry.smelting_upgrade": "Покращення переплавки",
@@ -38,5 +37,12 @@
   "gui.goldenquarry.button.area": "Показати зону",
   "gui.goldenquarry.button.area.tip": "Світна рамка навколо зони копання",
   "gui.goldenquarry.button.void": "Знищувати мотлох",
-  "gui.goldenquarry.button.void.tip": "Знищувати камінь, землю та інші прості блоки замість зберігання"
+  "gui.goldenquarry.button.void.tip": "Знищувати камінь, землю та інші прості блоки замість зберігання",
+  "item.goldenquarry.fortune_upgrade_2": "Покращення удачі кар'єру II",
+  "item.goldenquarry.fortune_upgrade_5": "Покращення удачі кар'єру V",
+  "item.goldenquarry.fortune_upgrade_10": "Покращення удачі кар'єру X",
+  "block.goldenquarry.fortune_block_2": "Блок удачі II",
+  "block.goldenquarry.fortune_block_5": "Блок удачі V",
+  "block.goldenquarry.fortune_block_10": "Блок удачі X",
+  "block.goldenquarry.fortune_block.tip": "Постав поруч із кар'єром: він копатиме з удачею %s"
 }

@@ -6,8 +6,7 @@
   "item.goldenquarry.speed_upgrade.tip": "Each one digs about 35% faster",
   "item.goldenquarry.range_upgrade": "Quarry Range Upgrade",
   "item.goldenquarry.range_upgrade.tip": "Each one widens the area by 2 blocks on every side",
-  "item.goldenquarry.fortune_upgrade": "Quarry Fortune Upgrade",
-  "item.goldenquarry.fortune_upgrade.tip": "Each one is a level of Fortune (up to III)",
+  "item.goldenquarry.fortune_upgrade.tip": "Fortune %s for everything the quarry digs (the highest one counts)",
   "item.goldenquarry.silk_touch_upgrade": "Quarry Silk Touch Upgrade",
   "item.goldenquarry.silk_touch_upgrade.tip": "Digs blocks as they are (instead of Fortune)",
   "item.goldenquarry.smelting_upgrade": "Quarry Smelting Upgrade",
@@ -38,5 +37,12 @@
   "gui.goldenquarry.button.area": "Show area",
   "gui.goldenquarry.button.area.tip": "The glowing border around the dig area",
   "gui.goldenquarry.button.void": "Void junk",
-  "gui.goldenquarry.button.void.tip": "Destroy stone, dirt and other plain blocks instead of keeping them"
+  "gui.goldenquarry.button.void.tip": "Destroy stone, dirt and other plain blocks instead of keeping them",
+  "item.goldenquarry.fortune_upgrade_2": "Quarry Fortune Upgrade II",
+  "item.goldenquarry.fortune_upgrade_5": "Quarry Fortune Upgrade V",
+  "item.goldenquarry.fortune_upgrade_10": "Quarry Fortune Upgrade X",
+  "block.goldenquarry.fortune_block_2": "Fortune Block II",
+  "block.goldenquarry.fortune_block_5": "Fortune Block V",
+  "block.goldenquarry.fortune_block_10": "Fortune Block X",
+  "block.goldenquarry.fortune_block.tip": "Place beside a quarry: it digs with Fortune %s"
 }

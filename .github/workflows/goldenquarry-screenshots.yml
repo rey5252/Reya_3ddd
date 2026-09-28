@@ -36,12 +36,13 @@ jobs:
           tail -n 80 run/logs/latest.log || true
       - name: Commit screenshots
         run: |
-          mkdir -p screenshots
-          cp run/screenshots/*.png screenshots/ || exit 0
+          ls run/screenshots/*.png >/dev/null 2>&1 || exit 0
+          rm -rf screenshots && mkdir -p screenshots
+          cp run/screenshots/*.png screenshots/
           cd ..
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add goldenquarry/screenshots
+          git add -A goldenquarry/screenshots
           git diff --cached --quiet && exit 0
           git commit -m "Golden Quarry in-game screenshots [skip ci]"
           for i in 1 2 3; do git pull --rebase && git push && break; sleep 5; done

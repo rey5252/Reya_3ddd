@@ -96,7 +96,7 @@ public class QuarryScreen extends AbstractContainerScreen<QuarryMenu> {
             if (be != null) {
                 tip.add(Component.translatable("gui.goldenquarry.upgrades",
                         be.upgrades(QuarryUpgradeItem.Kind.SPEED), be.upgrades(QuarryUpgradeItem.Kind.RANGE),
-                        be.upgrades(QuarryUpgradeItem.Kind.FORTUNE),
+                        be.fortuneLevel(),
                         Component.translatable(be.upgrades(QuarryUpgradeItem.Kind.SILK_TOUCH) > 0 ? "gui.goldenquarry.yes" : "gui.goldenquarry.no"),
                         Component.translatable(be.upgrades(QuarryUpgradeItem.Kind.SMELTING) > 0 ? "gui.goldenquarry.yes" : "gui.goldenquarry.no"))
                         .withStyle(ChatFormatting.DARK_GRAY));

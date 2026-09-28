@@ -1,0 +1,7 @@
+{
+  "parent": "goldenquarry:block/fortune_block_template",
+  "textures": {
+    "top": "goldenquarry:block/fortune_top_5",
+    "ring": "goldenquarry:block/fortune_ring_5"
+  }
+}

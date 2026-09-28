@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "NEN",
+    "EXE",
+    "NEN"
+  ],
+  "key": {
+    "N": {
+      "item": "minecraft:netherite_ingot"
+    },
+    "E": {
+      "item": "minecraft:emerald_block"
+    },
+    "X": {
+      "item": "goldenquarry:fortune_upgrade_5"
+    }
+  },
+  "result": {
+    "item": "goldenquarry:fortune_upgrade_10"
+  }
+}

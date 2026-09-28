@@ -1,10 +1,14 @@
 package com.reya.goldenquarry.dev;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.reya.goldenquarry.GoldenQuarry;
 import com.reya.goldenquarry.QuarryBlock;
 import com.reya.goldenquarry.QuarryBlockEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
+import net.minecraft.client.tutorial.TutorialSteps;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
@@ -23,47 +27,70 @@ import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.levelgen.WorldOptions;
 import net.minecraft.world.level.levelgen.presets.WorldPresets;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.network.NetworkHooks;
 
 /**
- * Dev-only: with GOLDENQUARRY_AUTOSHOT=true the client makes a flat world, places the quarry at
- * sunset, takes screenshots from the reference photo's angle, close up and of the open GUI, then quits.
+ * Dev-only: with GOLDENQUARRY_AUTOSHOT=true the client makes a flat world, places the quarry (with a
+ * fortune block beside it) and the three fortune blocks, takes screenshots from all sides, from
+ * above, of the fortune blocks and of the open GUI, then quits.
  */
 @Mod.EventBusSubscriber(modid = GoldenQuarry.MODID, value = Dist.CLIENT)
 public final class AutoShot {
     private static final boolean ON = "true".equals(System.getenv("GOLDENQUARRY_AUTOSHOT"));
     private static final BlockPos POS = new BlockPos(0, -60, 0);
-    private static int ticks, phase, since;
+    private static final List<Step> STEPS = new ArrayList<>();
+    private static int ticks, step, since;
+    private static boolean worldAsked;
+
+    private record Step(int wait, Runnable action) {
+    }
+
+    static {
+        STEPS.add(new Step(80, AutoShot::setUp));
+        for (int deg = 0; deg < 360; deg += 45) {
+            int d = deg;
+            STEPS.add(new Step(40, () -> look(4.8D, d, 0.0D, 8.0F)));
+            STEPS.add(new Step(30, () -> shot("quarry_side_" + String.format("%03d", d) + ".png")));
+        }
+        STEPS.add(new Step(20, () -> look(3.2D, 30, 5.5D, 55.0F)));
+        STEPS.add(new Step(40, () -> shot("quarry_top.png")));
+        STEPS.add(new Step(20, AutoShot::lookAtFortuneBlocks));
+        STEPS.add(new Step(40, () -> shot("fortune_blocks.png")));
+        STEPS.add(new Step(20, () -> look(3.0D, 30, 0.0D, 10.0F)));
+        STEPS.add(new Step(30, AutoShot::openGui));
+        STEPS.add(new Step(60, () -> shot("quarry_gui.png")));
+        STEPS.add(new Step(60, () -> Minecraft.getInstance().stop()));
+    }
 
     @SubscribeEvent
     public static void onTick(TickEvent.ClientTickEvent event) {
         if (!ON || event.phase != TickEvent.Phase.END) return;
         Minecraft mc = Minecraft.getInstance();
         ticks++;
-        int waited = ticks - since;
-        switch (phase) {
-            case 0 -> { if (mc.level == null && mc.screen != null && ticks > 100) { createWorld(mc); next(); } }
-            case 1 -> { if (mc.player != null && mc.getSingleplayerServer() != null) next(); }
-            case 2 -> { if (waited > 60) { setUp(mc); next(); } }
-            case 3 -> { if (waited > 200) { shot(mc, "quarry_world.png"); next(); } }
-            case 4 -> { if (waited > 20) { place(mc, 3.2D, 2.0F); next(); } }
-            case 5 -> { if (waited > 60) { shot(mc, "quarry_closeup.png"); next(); } }
-            case 6 -> { if (waited > 20) { openGui(mc); next(); } }
-            case 7 -> { if (waited > 60) { shot(mc, "quarry_gui.png"); next(); } }
-            case 8 -> { if (waited > 60) mc.stop(); }
-            default -> { }
+        if (!worldAsked) {
+            if (mc.level == null && mc.screen != null && ticks > 100) {
+                createWorld(mc);
+                worldAsked = true;
+            }
+            return;
+        }
+        if (mc.player == null || mc.getSingleplayerServer() == null) {
+            since = ticks;
+            return;
+        }
+        if (step < STEPS.size() && ticks - since >= STEPS.get(step).wait()) {
+            STEPS.get(step).action().run();
+            step++;
+            since = ticks;
         }
     }
 
-    private static void next() {
-        phase++;
-        since = ticks;
-    }
-
     private static void createWorld(Minecraft mc) {
+        mc.getTutorial().setStep(TutorialSteps.NONE);
         GameRules rules = new GameRules();
         rules.getRule(GameRules.RULE_DAYLIGHT).set(false, null);
         rules.getRule(GameRules.RULE_WEATHER_CYCLE).set(false, null);
@@ -74,50 +101,78 @@ public final class AutoShot {
                 access -> access.registryOrThrow(Registries.WORLD_PRESET).getHolderOrThrow(WorldPresets.FLAT).value().createWorldDimensions());
     }
 
-    private static void setUp(Minecraft mc) {
-        MinecraftServer server = mc.getSingleplayerServer();
+    private static MinecraftServer server() {
+        return Minecraft.getInstance().getSingleplayerServer();
+    }
+
+    private static void setUp() {
+        Minecraft mc = Minecraft.getInstance();
+        MinecraftServer server = server();
         server.execute(() -> {
             ServerLevel level = server.overworld();
-            level.setDayTime(12600L);
+            level.setDayTime(6000L);
             BlockState lower = GoldenQuarry.QUARRY.get().defaultBlockState()
                     .setValue(QuarryBlock.FACING, Direction.NORTH).setValue(QuarryBlock.HALF, DoubleBlockHalf.LOWER);
             level.setBlock(POS, lower, 3);
             level.setBlock(POS.above(), lower.setValue(QuarryBlock.HALF, DoubleBlockHalf.UPPER), 3);
+            level.setBlock(POS.east(), GoldenQuarry.FORTUNE_BLOCK_10.get().defaultBlockState(), 3);
+            level.setBlock(new BlockPos(-3, -60, -7), GoldenQuarry.FORTUNE_BLOCK_2.get().defaultBlockState(), 3);
+            level.setBlock(new BlockPos(0, -60, -7), GoldenQuarry.FORTUNE_BLOCK_5.get().defaultBlockState(), 3);
+            level.setBlock(new BlockPos(3, -60, -7), GoldenQuarry.FORTUNE_BLOCK_10.get().defaultBlockState(), 3);
             if (level.getBlockEntity(POS) instanceof QuarryBlockEntity be) {
                 be.common().setStackInSlot(0, new ItemStack(Items.COBBLESTONE, 64));
                 be.common().setStackInSlot(1, new ItemStack(Items.COBBLESTONE, 64));
                 be.common().setStackInSlot(2, new ItemStack(Items.COBBLESTONE, 25));
                 for (int i = 0; i < 20; i++) be.valuables().setStackInSlot(i, new ItemStack(Items.IRON_INGOT, 64));
+                be.upgrades().setStackInSlot(0, new ItemStack(GoldenQuarry.FORTUNE_UPGRADE_10.get()));
+                be.upgrades().setStackInSlot(1, new ItemStack(GoldenQuarry.SPEED_UPGRADE.get(), 2));
+                be.upgrades().setStackInSlot(2, new ItemStack(GoldenQuarry.RANGE_UPGRADE.get()));
+                be.upgrades().setStackInSlot(3, new ItemStack(GoldenQuarry.SMELTING_UPGRADE.get()));
+                be.getCapability(ForgeCapabilities.ENERGY).ifPresent(e -> {
+                    for (int i = 0; i < 20; i++) e.receiveEnergy(100_000, false);
+                });
             }
+            ServerPlayer p = server.getPlayerList().getPlayers().get(0);
+            p.getInventory().setItem(0, new ItemStack(GoldenQuarry.FORTUNE_UPGRADE_2.get()));
+            p.getInventory().setItem(1, new ItemStack(GoldenQuarry.FORTUNE_UPGRADE_5.get()));
+            p.getInventory().setItem(2, new ItemStack(GoldenQuarry.FORTUNE_UPGRADE_10.get()));
+            p.getInventory().setItem(3, new ItemStack(GoldenQuarry.FORTUNE_BLOCK_2_ITEM.get()));
+            p.getInventory().setItem(4, new ItemStack(GoldenQuarry.FORTUNE_BLOCK_5_ITEM.get()));
+            p.getInventory().setItem(5, new ItemStack(GoldenQuarry.FORTUNE_BLOCK_10_ITEM.get()));
+            p.getInventory().setItem(6, new ItemStack(GoldenQuarry.QUARRY_ITEM.get()));
+            p.getAbilities().flying = true;
+            p.onUpdateAbilities();
         });
+        mc.getTutorial().setStep(TutorialSteps.NONE);
         mc.options.hideGui = true;
-        mc.options.fov().set(30);
         mc.options.bobView().set(false);
-        place(mc, 8.5D, 4.0F);
     }
 
-    /** Stands the player where the reference photo was taken from: 40 degrees round from the south face. */
-    private static void place(Minecraft mc, double distance, float pitch) {
-        MinecraftServer server = mc.getSingleplayerServer();
-        double a = Math.toRadians(40.0D);
+    /** Camera round the quarry: angle 0 = from the south, 90 = from the west... */
+    private static void look(double distance, int deg, double up, float pitch) {
+        double a = Math.toRadians(deg);
         double x = POS.getX() + 0.5D + distance * Math.sin(a);
         double z = POS.getZ() + 0.5D + distance * Math.cos(a);
-        server.execute(() -> {
-            ServerPlayer p = server.getPlayerList().getPlayers().get(0);
-            p.connection.teleport(x, POS.getY(), z, 140.0F, pitch);
-        });
+        MinecraftServer server = server();
+        server.execute(() -> server.getPlayerList().getPlayers().get(0).connection.teleport(x, POS.getY() + up, z, 180.0F - deg, pitch));
     }
 
-    private static void openGui(Minecraft mc) {
-        MinecraftServer server = mc.getSingleplayerServer();
+    private static void lookAtFortuneBlocks() {
+        MinecraftServer server = server();
+        server.execute(() -> server.getPlayerList().getPlayers().get(0).connection.teleport(0.5D, POS.getY() + 0.3D, -3.2D, 180.0F, 18.0F));
+    }
+
+    private static void openGui() {
+        MinecraftServer server = server();
         server.execute(() -> {
             ServerPlayer p = server.getPlayerList().getPlayers().get(0);
             if (server.overworld().getBlockEntity(POS) instanceof QuarryBlockEntity be) NetworkHooks.openScreen(p, be, POS);
         });
-        mc.options.hideGui = false;
+        Minecraft.getInstance().options.hideGui = false;
     }
 
-    private static void shot(Minecraft mc, String name) {
+    private static void shot(String name) {
+        Minecraft mc = Minecraft.getInstance();
         Screenshot.grab(mc.gameDirectory, name, mc.getMainRenderTarget(), message -> { });
     }
 
