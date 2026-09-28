@@ -199,6 +199,69 @@ def ornament(tex, x0, y0, flip_x=False, flip_y=False):
             tex.putpixel((x0 + fi, y0 + fj), c + (255,))
 
 
+# the bands' colours when lit from the top left (their top and left runs) and when in shade
+# (bottom and right), and where both meet
+BEVEL = {2: ((221, 225, 231), (161, 166, 200), (190, 194, 214)),
+         3: ((161, 166, 200), (78, 78, 112), (105, 105, 140)),
+         5: ((118, 68, 176), (70, 34, 112), (96, 52, 148)),
+         8: ((242, 214, 146), (186, 130, 68), (231, 182, 98))}
+# a crystal set in gold on the middle of the frame's top
+GEM = ["....KK....",
+       "...KGGK...",
+       "..KGppGK..",
+       ".KGpwppGK.",
+       "KGppppPPGK",
+       ".KGpPPPGK.",
+       "..KGPPGK..",
+       "...KGGK...",
+       "....KK...."]
+GEM_COLOURS = {"K": BLACK, "G": (231, 182, 98), "p": (168, 51, 255), "w": (255, 255, 255), "P": (90, 2, 228)}
+# gold corner brackets: light gold with a dark inner edge
+BRACKET = ["LLL", "LD.", "L.."]
+BRACKET_COLOURS = {"L": (242, 214, 146), "D": (34, 9, 70)}
+# little sparkles on the panel: (x, y, gold?)
+SPARKLES = [(17, 56, True), (18, 122, False), (198, 58, False), (198, 122, True), (60, 127, False),
+            (112, 133, True), (152, 121, False), (88, 118, True)]
+
+
+def bevel(d, x, y, k):
+    """A band's colour: lighter where the outside is above or left of it, darker where below or right."""
+    if k not in BEVEL:
+        return BANDS[k]
+    lit = any(d.get(n, 0) < k for n in ((x, y - 1), (x - 1, y)))
+    shade = any(d.get(n, 0) < k for n in ((x, y + 1), (x + 1, y)))
+    light, dark, both = BEVEL[k]
+    return both if lit == shade else light if lit else dark
+
+
+def rivet(tex, x, y):
+    """A round-headed steel rivet on the frame's bar (2x2, lit from the top left, a dark gap each side)."""
+    for (i, j), c in {(0, 0): (250, 250, 255), (1, 0): (205, 208, 225), (0, 1): (170, 174, 198), (1, 1): (90, 90, 122)}.items():
+        tex.putpixel((x + i, y + j), c + (255,))
+
+
+def details(tex):
+    """What makes the frame and panel richer: rivets along the bars, the crystal on the top, gold
+    brackets round the slot groups, sparkles on the panel."""
+    for x in (32, 52, 72, 92, 122, 142, 162, 182):
+        rivet(tex, x, FRAME_TOP + 1)
+    for y in (44, 64, 84, 104, 124):
+        rivet(tex, SHIFT + 1, y)
+        rivet(tex, WIDTH - SHIFT - 3, y)
+    put_pattern(tex, GEM, GEM_COLOURS, WIDTH // 2 - 5, FRAME_TOP - 1)
+    # brackets round the storage (boxes x 27..188, y 27..80) and the filter row (x 27..138, y 95..112)
+    for x0, y0, x1, y1 in ((27, 27, 188, 80), (27, 95, 138, 112)):
+        put_pattern(tex, BRACKET, BRACKET_COLOURS, x0 - 3, y0 - 3)
+        put_pattern(tex, BRACKET, BRACKET_COLOURS, x1 + 1, y0 - 3, flip_x=True)
+        put_pattern(tex, BRACKET, BRACKET_COLOURS, x0 - 3, y1 + 1, flip_y=True)
+        put_pattern(tex, BRACKET, BRACKET_COLOURS, x1 + 1, y1 + 1, flip_x=True, flip_y=True)
+    for x, y, gold in SPARKLES:
+        core, arm = ((255, 240, 200), (231, 182, 98)) if gold else ((240, 222, 255), (178, 121, 212))
+        tex.putpixel((x, y), core + (255,))
+        for i, j in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            tex.putpixel((x + i, y + j), arm + (255,))
+
+
 def gui():
     ref = reference_gui()
     tex = Image.new("RGBA", (256, 256), (0, 0, 0, 0))
@@ -211,7 +274,7 @@ def gui():
     d = distances()
     for (x, y), k in d.items():
         if k in BANDS:
-            c = BANDS[k]
+            c = bevel(d, x, y, k)
         else:
             c = ref.get((x - SHIFT, y))
             if c is None or c == VACUUM_COLOURS[BG] or not (8 <= x - SHIFT <= 199 and 21 <= y <= 140):
@@ -234,14 +297,15 @@ def gui():
     for cx, cy in ((SHIFT, FRAME_TOP), (WIDTH - SHIFT - 1, FRAME_TOP),
                    (SHIFT + STEPS[-1][1], STEPS_END), (WIDTH - SHIFT - 1 - STEPS[-1][1], STEPS_END)):
         put_pattern(tex, KNOB, KNOB_COLOURS, cx - 3, cy - 3)
+    details(tex)
     inventory(tex, INV_X, INV_Y)
     tex.save(f"{ASSETS}/gui/vacuum_chest.png")
 
 
 def inventory(tex, x0, y0, w=176, h=88):
-    """The vanilla inventory panel: black rim with cut corners, white light top left, grey shade
-    bottom right, the 27 slots and the hotbar."""
-    K, W, C, S = (0, 0, 0), (255, 255, 255), (198, 198, 198), (85, 85, 85)
+    """The inventory panel, laid out the vanilla way (black rim with cut corners, light top left,
+    shade bottom right, the 27 slots and the hotbar) in the chest's steel, gold rivets in its corners."""
+    K, W, C, S = (0, 0, 0), (232, 234, 246), (178, 181, 202), (110, 112, 142)
     for y in range(h):
         for x in range(w):
             cx, cy = min(x, w - 1 - x), min(y, h - 1 - y)      # distance from the nearest corner
@@ -257,19 +321,23 @@ def inventory(tex, x0, y0, w=176, h=88):
     for r in range(4):
         for col in range(9):
             slot(tex, x0 + 7 + 18 * col, y0 + 6 + 18 * r + (4 if r == 3 else 0))
+    # gold rivets in its corners
+    for x, y in ((x0 + 3, y0 + 2), (x0 + w - 5, y0 + 2), (x0 + 3, y0 + h - 4), (x0 + w - 5, y0 + h - 4)):
+        for (i, j), c in {(0, 0): (250, 230, 170), (1, 0): (231, 182, 98), (0, 1): (231, 182, 98), (1, 1): (150, 100, 56)}.items():
+            tex.putpixel((x + i, y + j), c + (255,))
 
 
 def slot(tex, x0, y0):
     for y in range(18):
         for x in range(18):
             if (x, y) in ((17, 0), (0, 17)):
-                c = (139, 139, 139)
+                c = (132, 135, 160)
             elif x == 0 or y == 0:
-                c = (55, 55, 55)
+                c = (64, 64, 90)
             elif x == 17 or y == 17:
-                c = (255, 255, 255)
+                c = (240, 242, 250)
             else:
-                c = (139, 139, 139)
+                c = (132, 135, 160)
             tex.putpixel((x0 + x, y0 + y), c + (255,))
 
 
