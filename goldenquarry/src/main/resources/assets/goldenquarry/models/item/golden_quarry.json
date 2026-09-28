@@ -135,7 +135,8 @@
         "down": {
           "texture": "#pillar"
         }
-      }
+      },
+      "shade": false
     },
     {
       "from": [
@@ -167,7 +168,8 @@
         "down": {
           "texture": "#pillar"
         }
-      }
+      },
+      "shade": false
     },
     {
       "from": [
@@ -199,7 +201,8 @@
         "down": {
           "texture": "#pillar"
         }
-      }
+      },
+      "shade": false
     },
     {
       "from": [
@@ -231,7 +234,8 @@
         "down": {
           "texture": "#pillar"
         }
-      }
+      },
+      "shade": false
     },
     {
       "from": [

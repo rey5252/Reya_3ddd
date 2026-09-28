@@ -72,6 +72,12 @@ public final class AutoShot {
         STEPS.add(new Step(60, () -> shot("ref_diagonal.png")));
         STEPS.add(new Step(20, () -> look(0.05D, 0, 1.4D, 89.9F)));
         STEPS.add(new Step(60, () -> shot("ref_top.png")));
+        // from where reference/ingame/1.png was taken (camera fitted to the block's corners), and
+        // from just outside the side opening, low, like the close-ups of the drill
+        STEPS.add(new Step(20, () -> eye(-1.246D, 0.61D, 0.574D, -90.0F, 3.0F)));
+        STEPS.add(new Step(60, () -> shot("ref_cam1.png")));
+        STEPS.add(new Step(20, () -> eye(-0.35D, 0.45D, 0.5D, -90.0F, -15.0F)));
+        STEPS.add(new Step(60, () -> shot("ref_inside.png")));
         STEPS.add(new Step(60, () -> Minecraft.getInstance().stop()));
     }
 
@@ -161,6 +167,16 @@ public final class AutoShot {
             p.connection.teleport(x, POS.getY() + up, z, 180.0F - deg, pitch);
             p.getAbilities().flying = up > 0.5D;
             p.onUpdateAbilities();
+        });
+    }
+
+    /** Spectator camera with the eye at the given place (in blocks from the quarry's corner). */
+    private static void eye(double x, double y, double z, float yaw, float pitch) {
+        MinecraftServer server = server();
+        server.execute(() -> {
+            ServerPlayer p = server.getPlayerList().getPlayers().get(0);
+            p.setGameMode(GameType.SPECTATOR);
+            p.connection.teleport(POS.getX() + x, POS.getY() + y - 1.62D, POS.getZ() + z, yaw, pitch);
         });
     }
 

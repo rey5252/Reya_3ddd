@@ -89,9 +89,14 @@ def main():
     bottom = unwarp(5, ((15, 38), (720, 38), (42, 708), (695, 708)), 16, 16, 0.5)
     save("qi_bottom", bottom)
     # the pillars by the side openings and the tops of the walls
-    pillar = [[(135, 92, 53, 255) if (x + y) % 5 else (150, 104, 60, 255) for x in range(16)] for y in range(16)]
-    for x in range(16):
-        pillar[0][x] = (252, 199, 106, 255)
+    # pillars (shots 1 and 3, read through the fitted cameras; they are drawn unshaded there):
+    # tan at the top unit, brown for two, dark brown for the bottom two; rows are 16 - y
+    tan, brown, dark = (125, 99, 52, 255), (91, 62, 36, 255), (65, 38, 25, 255)
+    pillar = [[tan] * 16 for _ in range(16)]
+    for y in (6, 7):
+        pillar[y] = [brown] * 16
+    for y in (8, 9):
+        pillar[y] = [dark] * 16
     save("qi_pillar", pillar)
     # the tops of the front and back walls (shot 10, looking down on the front wall): gold and
     # black meander, brown and tan at the corners; row 0 is the front edge (z 0), rows 13..15 the

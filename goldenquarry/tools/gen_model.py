@@ -46,7 +46,7 @@ def top_elements():
     # brown pillars at the edges of the side openings, one pixel above the chest
     for x in (0, 15):
         for z in (3, 12):
-            els.append(box([x, 6, z], [x + 1, 11, z + 1], faces("#pillar")))
+            els.append(dict(box([x, 6, z], [x + 1, 11, z + 1], faces("#pillar")), shade=False))
     # the cage: four sheets one pixel in from the edges, drawn inside and out, and the ring on top
     def sheet(frm, to, out, inn, tex):
         f = {out: {"texture": tex}}
