@@ -54,7 +54,7 @@ public class QuarryScreen extends AbstractContainerScreen<QuarryMenu> {
         float energy = menu.energy() / (float) menu.capacity();
         shownEnergy += (energy - shownEnergy) * 0.25F;
         g.blit(TEXTURE, leftPos, topPos, 0, 0, imageWidth, imageHeight, 256, 256);
-        Banner.draw(g, font, leftPos + imageWidth / 2, topPos - 17);
+        Banner.draw(g, leftPos + imageWidth / 2, topPos - 14);
         int ew = Math.round(BAR_W * Mth.clamp(shownEnergy, 0.0F, 1.0F));
         if (ew > 0) g.blit(WIDGETS, leftPos + BAR_X, topPos + ENERGY_Y, 0, 0, ew, BAR_H, 256, 64);
         int pw = Math.round(BAR_W * Mth.clamp(shownProgress, 0.0F, 1.0F));

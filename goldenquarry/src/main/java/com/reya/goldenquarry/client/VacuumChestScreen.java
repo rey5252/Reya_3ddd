@@ -52,7 +52,7 @@ public class VacuumChestScreen extends AbstractContainerScreen<VacuumChestMenu> 
     @Override
     protected void renderBg(GuiGraphics g, float partialTick, int mouseX, int mouseY) {
         g.blit(TEXTURE, leftPos, topPos, 0, 0, imageWidth, imageHeight, 256, 256);
-        Banner.draw(g, font, leftPos + imageWidth / 2, topPos - 15);
+        Banner.draw(g, leftPos + imageWidth / 2, topPos - Banner.HEIGHT);
         // the title on the grey plate, dark grey like the reference's letters
         Component title = Component.literal(getTitle().getString().toUpperCase(Locale.ROOT));
         int tw = font.width(title);

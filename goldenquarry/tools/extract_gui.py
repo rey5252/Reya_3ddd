@@ -296,78 +296,66 @@ def crisp_card(n):
     return out
 
 
-# The name plate above the GUI (like LoliUtility's): a dark brown plate with a gold rim and rolled
-# scroll ends, a heart before the name. Three pieces in quarry_widgets.png, rows 16..31: the left
-# end with the heart (23 wide, at x 0), one middle column (x 24) the screen stretches under the
-# name, and the right end (14 wide, at x 26).
-BANNER_COLORS = {"K": (34, 17, 8), "O": (226, 146, 50), "o": (160, 92, 34), "F": (60, 33, 18),
-                 "f": (46, 25, 14), "t": (242, 204, 134), "T": (214, 158, 94), "b": (150, 94, 50),
-                 "D": (84, 46, 22), "H": (112, 52, 24), "h": (250, 224, 160), "w": (255, 246, 214)}
-SCROLL = ["........",
-          "........",
-          "........",
-          "........",
-          "..tTTb..",
-          ".tTbbTb.",
-          "tTbDDbTK",
-          "tbDtTDbK",
-          "tbDbbDbK",
-          "tTbDDbTK",
-          ".tTbbTb.",
-          "..tTTb..",
-          "........",
-          "........",
-          "........",
-          "........"]
-PLATE_EDGE = ["....",          # the plate's rounded left end, columns 0..3 (the middle column follows)
-              "..KK",
-              ".KOO",
-              "KOoo",
-              "KOFF",
-              "KOFF",
-              "KOFF",
-              "KOFF",
-              "KOFF",
-              "KOFF",
-              "KOFF",
-              "KOFF",
-              "KOff",
-              ".KOO",
-              "..KK",
-              "...."]
-HEART = [".HH.HH.",
-         "HwhHhhH",
-         "HhhhhhH",
-         ".HhhhH.",
-         "..HhH..",
-         "...H..."]
+# The name plate above the GUIs: LoliUtility's own (reference/vacuum/gui.png, on its 3:1 pixel grid,
+# GUI columns 65..142 and rows 2..13), with the mod's name in the plate's letters. Scroll end, rim
+# and the five-pixel padding with the heart are the reference's; the letters are 5 high: white top
+# row, light yellow, gold, and a brown shadow one pixel under each (darker under the bottom row).
+# L, O, U and Y are the reference's own; G, D, Q, A, R drawn the same way. 82x12 in
+# quarry_widgets.png at (0, 16).
+BANNER_NAME = "GOLDQUARRY"
+GLYPHS = {"G": ["XXXX", "X...", "X.XX", "X..X", "XXXX"],
+          "D": ["XXX.", "X..X", "X..X", "X..X", "XXX."],
+          "Q": ["XXXX", "X..X", "X..X", "X.XX", "XXXX"],
+          "A": ["XXXX", "X..X", "XXXX", "X..X", "X..X"],
+          "R": ["XXXX", "X..X", "XXXX", "X.X.", "X..X"]}
+REF_GLYPHS = {"L": (86, 88), "O": (90, 93), "U": (101, 104), "Y": (126, 129)}
 
 
 def draw_banner(widgets):
-    def put(x, y, ch):
-        if ch != ".":
-            widgets.px[16 + y][x] = BANNER_COLORS[ch] + (255,)
-    mid = ["." if j in (0, 15) else "K" if j in (1, 14) else "O" if j in (2, 13) else "o" if j == 3
-           else "f" if j == 12 else "F" for j in range(16)]
-    # left end: scroll (x 0..7), plate edge (x 8..11), plate fill with the heart (x 12..22)
-    for y in range(16):
-        for x, ch in enumerate(SCROLL[y]):
-            put(x, y, ch)
-        for x, ch in enumerate(PLATE_EDGE[y]):
-            put(8 + x, y, ch)
-        for x in range(12, 23):
-            put(x, y, mid[y])
-        put(24, y, mid[y])
-        # right end: plate fill (x 26..28), mirrored plate edge (x 29..32), mirrored scroll (x 33..40)
-        for x in range(26, 29):
-            put(x, y, mid[y])
-        for x, ch in enumerate(reversed(PLATE_EDGE[y])):
-            put(29 + x, y, ch)
-        for x, ch in enumerate(reversed(SCROLL[y])):
-            put(33 + x, y, ch)
-    for y, row in enumerate(HEART):
-        for x, ch in enumerate(row):
-            put(13 + x, 5 + y, ch)
+    w, h, px = read_png("reference/vacuum/gui.png")
+
+    def ref(gx, gy):
+        c = tuple(px[gy * 3 + 1][gx * 3 + 1][:3])
+        return None if c[0] == c[1] == c[2] and 14 <= c[0] <= 18 else c
+
+    dark, white, light, gold, shade, deep = (22, 22, 22), (255, 255, 255), (255, 239, 168), (255, 201, 107), (132, 77, 51), (96, 54, 44)
+    # the letters, each a 6-row block (5 rows and the shadow row), one blank column between
+    blocks = []
+    for ch in BANNER_NAME:
+        if ch in REF_GLYPHS:
+            x0, x1 = REF_GLYPHS[ch]
+            blocks.append([[ref(x, 5 + j) for x in range(x0, x1 + 1)] for j in range(6)])
+            continue
+        g = GLYPHS[ch]
+        cols = len(g[0])
+        block = [[dark] * cols for _ in range(6)]
+        for j in range(6):
+            for i in range(cols):
+                on = j < 5 and g[j][i] == "X"
+                above = j > 0 and g[j - 1][i] == "X"
+                if on:
+                    block[j][i] = white if j == 0 else light if j < 3 else gold
+                elif above:
+                    block[j][i] = deep if j == 5 else shade
+        blocks.append(block)
+    text = [[] for _ in range(6)]
+    for k, block in enumerate(blocks):
+        for j in range(6):
+            text[j] += ([dark] if k else []) + block[j]
+    heart = [[ref(x, 5 + j) for x in range(78, 84)] for j in range(6)]
+    middle = [[heart[j][i] for i in range(6)] + [dark, dark] + text[j] for j in range(6)]
+    left = [[ref(x, y) for x in range(65, 78)] for y in range(2, 14)]      # scroll, rim, padding
+    right = [[ref(x, y) for x in range(130, 143)] for y in range(2, 14)]
+    plain = [ref(100, y) for y in range(2, 14)]                           # a column without letters
+    width = len(middle[0])
+    for y in range(12):
+        row = list(left[y])
+        row += [middle[y - 3][i] if 3 <= y < 9 else plain[y] for i in range(width)]
+        row += right[y]
+        for x, c in enumerate(row):
+            if c is not None:
+                widgets.px[16 + y][x] = tuple(c) + (255,)
+    print("name plate", len(row), "x 12")
 
 
 def save_item(name, card):
