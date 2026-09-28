@@ -35,21 +35,22 @@ def top_elements():
 
 
 def drill_elements():
-    """Dark motor with its lid, a funnel and the spiral shaft going down into the chest."""
+    """Dark motor with its lid, a funnel and the bit standing on the chest."""
     def sides(uv_a, uv_b=None):
         return {n: {"texture": "#drill", "uv": uv_a if n in ("north", "south") else (uv_b or uv_a)} for n in SIDES}
     els = []
-    f = sides([0, 2, 9, 2.5])
+    f = sides([0, 2, 9, 3])
     f["up"] = {"texture": "#drill", "uv": [0, 6, 8, 14]}
     f["down"] = {"texture": "#drill", "uv": [0, 6, 8, 14]}
     els.append(box([3.5, 12.5, 3.5], [12.5, 13, 12.5], f))
     f = sides([0, 0, 8, 2], [8, 0, 16, 2])
     f["down"] = {"texture": "#drill", "uv": [0, 6, 8, 14]}
     els.append(box([4, 10.75, 4], [12, 12.5, 12], f))
-    f = sides([0, 3, 5, 4])
-    f["down"] = {"texture": "#drill", "uv": [0, 6, 5, 11]}
-    els.append(box([5.5, 10, 5.5], [10.5, 10.75, 10.5], f))
-    els.append(box([7, 8, 7], [9, 10, 9], sides([0, 4, 2, 6])))
+    f = sides([0, 3, 6, 4])
+    f["down"] = {"texture": "#drill", "uv": [0, 6, 6, 12]}
+    els.append(box([5, 10, 5], [11, 10.75, 11], f))
+    # the bit stands on the chest, so the drill never hangs in the air
+    els.append(box([6.5, 8, 6.5], [9.5, 10, 9.5], sides([0, 4, 3, 5])))
     return els
 
 

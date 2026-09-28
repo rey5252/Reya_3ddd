@@ -140,28 +140,27 @@ def main():
     img = canvas()
     put(img, [[tuple(int(avg[q] + (c[q] - avg[q]) * 0.6) for q in range(3)) for c in row] for row in base], 0, 0)
     imgs["quarry_base"] = img
-    # the drill: motor sides from the photo, the rest in its colours
-    drill = canvas()
-    put(drill, unwarp(HOUSING_A, 8 * R, 2 * R), 0, 0)
-    put(drill, unwarp(HOUSING_B, 8 * R, 2 * R), 32, 0)
-    dark, grey, pale, rim = (62, 32, 16), (150, 118, 108), (226, 206, 190), (88, 56, 40)
-    for y in range(8, 64):
-        for x in range(64):
-            drill[y][x] = dark + (255,)
-    for y in range(8, 10):                          # lid edge
-        for x in range(64):
-            drill[y][x] = (rim if x % 8 else grey) + (255,)
-    for y in range(12, 16):                         # funnel (5 units wide)
-        for x in range(20):
-            drill[y][x] = (pale if y == 12 else grey if (x // 2) % 3 else rim) + (255,)
-    for y in range(16, 24):                         # shaft (2 units wide), spiral stripes
+    # the drill, in big pixels like the photo's (one pixel per model unit, 16x16 texture): motor
+    # sides as the photo's two visible sides show them, lid, funnel and bit in its colours
+    pal = {"D": (60, 30, 14), "d": (91, 55, 28), "G": (149, 116, 101), "g": (200, 168, 152),
+           "W": (237, 223, 206), "T": (159, 130, 84)}
+    rows = {
+        0: "GWWgGDDDDDdGWgGd",     # motor sides A (x 0..7) and B (x 8..15): light blocks on top,
+        1: "gGGGdDDDDDdgGGGd",     # dark where the two sides meet, as in the photo
+        2: "dDDDDDDDd.......",     # lid edge
+        3: "gGGGGd..........",     # funnel
+        4: "GdgD............",     # bit
+    }
+    drill = [[(0, 0, 0, 0)] * 16 for _ in range(16)]
+    for y, row in rows.items():
+        for x, ch in enumerate(row):
+            if ch in pal:
+                drill[y][x] = pal[ch] + (255,)
+    for y in range(6, 14):                          # top and bottom of the motor: dark, grey rivets
         for x in range(8):
-            drill[y][x] = (pale if (x + y) % 4 == 0 else grey if (x + y) % 4 < 3 else rim) + (255,)
-    for y in range(24, 56):                         # top and bottom of the motor: dark with rivets
-        for x in range(32):
-            if (x % 8 == 3 and y % 8 == 3):
-                drill[y][x] = pale + (255,)
-    imgs["quarry_drill"] = drill
+            corner = x in (1, 6) and y in (7, 12)
+            drill[y][x] = (pal["G"] if corner else pal["D"] if (x + y) % 3 else pal["d"]) + (255,)
+    write_png(f"{OUT}/quarry_drill.png", 16, 16, drill)
     for name, im in imgs.items():
         save(name, im)
 

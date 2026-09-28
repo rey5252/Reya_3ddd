@@ -62,6 +62,12 @@ public final class AutoShot {
         STEPS.add(new Step(30, AutoShot::openGui));
         STEPS.add(new Step(50, AutoShot::mouseAway));
         STEPS.add(new Step(20, () -> shot("quarry_gui.png")));
+        // the reference photo's view: sunset, narrow view, drill resting (a redstone signal stops it)
+        STEPS.add(new Step(20, AutoShot::photoSetUp));
+        STEPS.add(new Step(60, () -> look(8.5D, 40, 0.0D, 4.0F)));
+        STEPS.add(new Step(60, () -> shot("photo_view.png")));
+        STEPS.add(new Step(20, () -> look(2.6D, 40, 0.1D, 2.0F)));
+        STEPS.add(new Step(60, () -> shot("photo_closeup.png")));
         STEPS.add(new Step(60, () -> Minecraft.getInstance().stop()));
     }
 
@@ -162,6 +168,19 @@ public final class AutoShot {
             if (server.overworld().getBlockEntity(POS) instanceof QuarryBlockEntity be) NetworkHooks.openScreen(p, be, POS);
         });
         Minecraft.getInstance().options.hideGui = false;
+    }
+
+    private static void photoSetUp() {
+        Minecraft mc = Minecraft.getInstance();
+        mc.setScreen(null);
+        mc.options.hideGui = true;
+        mc.options.fov().set(30);
+        MinecraftServer server = server();
+        server.execute(() -> {
+            ServerLevel level = server.overworld();
+            level.setDayTime(12600L);
+            level.setBlock(POS.below(), net.minecraft.world.level.block.Blocks.REDSTONE_BLOCK.defaultBlockState(), 3);
+        });
     }
 
     /** Mouse away from the slots, so no tooltip covers the GUI. */
