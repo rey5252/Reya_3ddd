@@ -53,10 +53,10 @@ public final class AutoShot {
         STEPS.add(new Step(80, AutoShot::setUp));
         for (int deg = 0; deg < 360; deg += 45) {
             int d = deg;
-            STEPS.add(new Step(40, () -> look(4.8D, d, 0.0D, 8.0F)));
+            STEPS.add(new Step(40, () -> look(3.2D, d, 0.4D, 16.0F)));
             STEPS.add(new Step(30, () -> shot("quarry_side_" + String.format("%03d", d) + ".png")));
         }
-        STEPS.add(new Step(20, () -> look(3.2D, 30, 5.5D, 55.0F)));
+        STEPS.add(new Step(20, () -> look(1.6D, 30, 4.0D, 66.0F)));
         STEPS.add(new Step(40, () -> shot("quarry_top.png")));
         STEPS.add(new Step(20, () -> look(3.0D, 30, 0.0D, 10.0F)));
         STEPS.add(new Step(30, AutoShot::openGui));
@@ -137,6 +137,7 @@ public final class AutoShot {
         mc.getTutorial().setStep(TutorialSteps.NONE);
         mc.options.hideGui = true;
         mc.options.bobView().set(false);
+        mc.options.fov().set(55);
     }
 
     /** Camera round the quarry: angle 0 = from the south, 90 = from the west... */
@@ -154,7 +155,10 @@ public final class AutoShot {
             ServerPlayer p = server.getPlayerList().getPlayers().get(0);
             if (server.overworld().getBlockEntity(POS) instanceof QuarryBlockEntity be) NetworkHooks.openScreen(p, be, POS);
         });
-        Minecraft.getInstance().options.hideGui = false;
+        Minecraft mc = Minecraft.getInstance();
+        mc.options.hideGui = false;
+        // mouse away from the slots, so no tooltip covers the GUI
+        org.lwjgl.glfw.GLFW.glfwSetCursorPos(mc.getWindow().getWindow(), 4.0D, 4.0D);
     }
 
     private static void shot(String name) {
