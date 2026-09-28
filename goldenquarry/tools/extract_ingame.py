@@ -167,6 +167,17 @@ def main():
     for j, c in enumerate((m, m, m, M)):
         drill[j][13] = c
     drill[0][15] = F                                   # the plain grey brackets in the cage
+    # the column under the head narrows like a drill bit: a big block on top, a middle one, a small
+    # one at the tip, each in the grey blocks of the original's column (shot 11)
+    H, Dk, S1, S2 = (104, 104, 115, 255), (34, 42, 43, 255), (112, 126, 130, 255), (153, 166, 170, 255)
+    tiers = {(10, 6): ["QDmH", "dQHm", "DmdQ"],       # big: cols 10-13, rows 6-8
+             (10, 9): ["MsS", "HMs", "SHM"],          # middle: cols 10-12, rows 9-11
+             (13, 9): ["md", "QD", "dm"]}            # small: cols 13-14, rows 9-11
+    pal = {"Q": Q, "D": Dk, "m": m, "H": H, "d": D, "M": M, "s": S1, "S": S2}
+    for (x0, y0), rows in tiers.items():
+        for j, row in enumerate(rows):
+            for i, ch in enumerate(row):
+                drill[y0 + j][x0 + i] = pal[ch]
     save("qi_drill", drill)
     # glass: very faintly blue, only where the cage and the side openings are open (the frame's own
     # pixels stay clear, so nothing lies on top of them). A few faint streaks on the cage's upper
