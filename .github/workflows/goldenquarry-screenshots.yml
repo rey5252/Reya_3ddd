@@ -1,0 +1,47 @@
+name: Golden Quarry in-game screenshots
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'goldenquarry/src/**'
+      - 'goldenquarry/build.gradle'
+      - '.github/workflows/goldenquarry-screenshots.yml'
+
+jobs:
+  screenshots:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    defaults:
+      run:
+        working-directory: goldenquarry
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Install a virtual screen and software OpenGL
+        run: sudo apt-get update && sudo apt-get install -y xvfb libgl1-mesa-dri mesa-utils
+      - name: Run the game and take screenshots
+        env:
+          GOLDENQUARRY_AUTOSHOT: 'true'
+          LIBGL_ALWAYS_SOFTWARE: '1'
+        run: |
+          chmod +x ./gradlew
+          timeout 1500 xvfb-run -a -s "-screen 0 1280x720x24" ./gradlew devClasses runClient --stacktrace || true
+          ls -la run/screenshots || true
+          tail -n 80 run/logs/latest.log || true
+      - name: Commit screenshots
+        run: |
+          mkdir -p screenshots
+          cp run/screenshots/*.png screenshots/ || exit 0
+          cd ..
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add goldenquarry/screenshots
+          git diff --cached --quiet && exit 0
+          git commit -m "Golden Quarry in-game screenshots [skip ci]"
+          for i in 1 2 3; do git pull --rebase && git push && break; sleep 5; done

@@ -13,6 +13,19 @@ base {
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
+// dev-only helper for the in-game screenshot check (.github/workflows/goldenquarry-screenshots.yml),
+// never part of the mod jar
+sourceSets {
+    dev {
+        compileClasspath += sourceSets.main.output
+        runtimeClasspath += sourceSets.main.output
+    }
+}
+configurations {
+    devImplementation.extendsFrom implementation
+    devRuntimeOnly.extendsFrom runtimeOnly
+}
+
 minecraft {
     mappings channel: mapping_channel, version: mapping_version
     copyIdeResources = true
@@ -31,6 +44,12 @@ minecraft {
 
         client {
             property 'forge.enabledGameTestNamespaces', mod_id
+            args '--width', '1280', '--height', '720'
+            mods {
+                "${mod_id}" {
+                    source sourceSets.dev
+                }
+            }
         }
 
         server {
