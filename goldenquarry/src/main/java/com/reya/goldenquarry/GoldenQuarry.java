@@ -49,7 +49,6 @@ public class GoldenQuarry {
     public static final RegistryObject<Item> FORTUNE_UPGRADE_2 = fortune(2);
     public static final RegistryObject<Item> FORTUNE_UPGRADE_5 = fortune(5);
     public static final RegistryObject<Item> FORTUNE_UPGRADE_10 = fortune(10);
-    public static final RegistryObject<Item> SILK_TOUCH_UPGRADE = upgrade("silk_touch_upgrade", QuarryUpgradeItem.Kind.SILK_TOUCH);
     public static final RegistryObject<Item> SMELTING_UPGRADE = upgrade("smelting_upgrade", QuarryUpgradeItem.Kind.SMELTING);
     public static final RegistryObject<BlockEntityType<QuarryBlockEntity>> QUARRY_BE = BLOCK_ENTITIES.register("golden_quarry",
             () -> BlockEntityType.Builder.of(QuarryBlockEntity::new, QUARRY.get()).build(null));
@@ -65,7 +64,6 @@ public class GoldenQuarry {
                 output.accept(FORTUNE_UPGRADE_2.get());
                 output.accept(FORTUNE_UPGRADE_5.get());
                 output.accept(FORTUNE_UPGRADE_10.get());
-                output.accept(SILK_TOUCH_UPGRADE.get());
                 output.accept(SMELTING_UPGRADE.get());
             })
             .build());

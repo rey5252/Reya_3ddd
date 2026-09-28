@@ -176,8 +176,7 @@ def main():
             tex.set(gx, 69 + j, samp(gx, 80 + j))
 
     # 7. the three golden frames on the right are upgrade slots: their cards become the upgrade
-    #    items (range, speed, smelting from top to bottom; silk touch is the speed card with a new
-    #    symbol), and the frames are left empty in the texture
+    #    items (range, speed, smelting from top to bottom), and the frames are left empty in the texture
     cards = []
     for n in range(3):
         card = [[samp(182 + i, 17 + 18 * n + j) for i in range(14)] for j in range(14)]
@@ -186,37 +185,13 @@ def main():
         for j in range(14):
             for i in range(14):
                 tex.set(182 + i, 17 + 18 * n + j, hole)
-    # the quarry icon left of the bars is a fourth upgrade slot: frame kept, inside emptied
+    # the quarry icon left of the bars is the fortune charm's slot: frame kept, inside emptied
     hole = samp(180, 24)
     for j in range(16):
         for i in range(16):
             tex.set(15 + i, 70 + j, hole)
     for name, card in zip(("range_upgrade", "speed_upgrade", "smelting_upgrade"), cards):
         save_item(name, card)
-    silk = [row[:] for row in cards[1]]
-    glyph = sorted({c for row in silk for c in row}, key=lambda c: sum(c))
-    dark, mid = glyph[0], glyph[len(glyph) // 6]
-    for j in range(2, 12):
-        for i in range(2, 12):
-            if sum(silk[j][i]) < 360:                       # erase the old symbol
-                silk[j][i] = silk[j][1] if sum(silk[j][1]) >= 360 else silk[1][i]
-    light = (150, 104, 48)
-    feather = ["........DDD",
-               "......DDMMD",
-               ".....DMMLMD",
-               "....DMMLMMD",
-               "...DMMLMMD.",
-               "..DMDLMMD..",
-               "..DMLMMD...",
-               "..DLMMD....",
-               ".DDDDD.....",
-               ".D.........",
-               "D.........."]
-    for j, row in enumerate(feather):
-        for i, ch in enumerate(row):
-            if ch != ".":
-                silk[2 + j][2 + i] = {"D": dark, "M": mid, "L": light}[ch]
-    save_item("silk_touch_upgrade", silk)
 
     os.makedirs(OUT, exist_ok=True)
     tex.save(f"{OUT}/quarry.png")

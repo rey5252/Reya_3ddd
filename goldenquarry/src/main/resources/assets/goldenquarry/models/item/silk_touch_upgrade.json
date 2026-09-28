@@ -1,6 +1,0 @@
-{
-  "parent": "minecraft:item/generated",
-  "textures": {
-    "layer0": "goldenquarry:item/silk_touch_upgrade"
-  }
-}

@@ -84,14 +84,14 @@ public class QuarryScreen extends AbstractContainerScreen<QuarryMenu> {
                 tip.add(Component.translatable("gui.goldenquarry.upgrades",
                         be.upgrades(QuarryUpgradeItem.Kind.SPEED), be.upgrades(QuarryUpgradeItem.Kind.RANGE),
                         be.fortuneLevel(),
-                        Component.translatable(be.upgrades(QuarryUpgradeItem.Kind.SILK_TOUCH) > 0 ? "gui.goldenquarry.yes" : "gui.goldenquarry.no"),
                         Component.translatable(be.upgrades(QuarryUpgradeItem.Kind.SMELTING) > 0 ? "gui.goldenquarry.yes" : "gui.goldenquarry.no"))
                         .withStyle(ChatFormatting.DARK_GRAY));
             }
         } else if (hoveredSlot != null && hoveredSlot.index < QuarryMenu.MACHINE_SLOTS && !hoveredSlot.hasItem()) {
             int i = hoveredSlot.index;
             tip.add(Component.translatable(i < QuarryMenu.VALUABLE_START ? "gui.goldenquarry.slot.common"
-                    : i < QuarryMenu.UPGRADE_START ? "gui.goldenquarry.slot.valuable" : "gui.goldenquarry.slot.upgrade"));
+                    : i < QuarryMenu.UPGRADE_START ? "gui.goldenquarry.slot.valuable"
+                    : i == QuarryMenu.UPGRADE_START + QuarryBlockEntity.FORTUNE_SLOT ? "gui.goldenquarry.slot.fortune" : "gui.goldenquarry.slot.upgrade"));
         }
         if (!tip.isEmpty()) g.renderComponentTooltip(font, tip, mx, my);
     }

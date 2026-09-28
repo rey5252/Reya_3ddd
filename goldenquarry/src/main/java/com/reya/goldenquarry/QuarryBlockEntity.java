@@ -53,6 +53,8 @@ import net.minecraftforge.items.ItemStackHandler;
  */
 public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
     public static final int STORAGE = 27, UPGRADES = 4;
+    /** The upgrade slot left of the bars: only the fortune charms go there, the other upgrades go right. */
+    public static final int FORTUNE_SLOT = 3;
 
     public static final int STATUS_WORKING = 0, STATUS_STOPPED = 1, STATUS_NO_ENERGY = 2, STATUS_FULL = 3,
             STATUS_FINISHED = 4, STATUS_REDSTONE = 5, STATUS_WAITING = 6;
@@ -77,7 +79,7 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
     private final ItemStackHandler upgrades = new ItemStackHandler(UPGRADES) {
         @Override
         public boolean isItemValid(int slot, @Nonnull ItemStack stack) {
-            return stack.getItem() instanceof QuarryUpgradeItem;
+            return fitsUpgradeSlot(slot, stack);
         }
 
         @Override
@@ -86,6 +88,10 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
             sync();
         }
     };
+
+    public static boolean fitsUpgradeSlot(int slot, ItemStack stack) {
+        return stack.getItem() instanceof QuarryUpgradeItem up && (up.kind == QuarryUpgradeItem.Kind.FORTUNE) == (slot == FORTUNE_SLOT);
+    }
 
     // client side: the spinning drill
     private int clientTicksPerBlock = 20;
@@ -226,10 +232,9 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
         return Math.max(1, (int) Math.round(Config.TICKS_PER_BLOCK.get() * Math.pow(0.65D, upgrades(QuarryUpgradeItem.Kind.SPEED))));
     }
 
-    /** Fortune, silk touch and smelting each make a block dearer. */
+    /** Fortune and smelting make a block dearer. */
     public int energyPerBlock() {
         double k = 1.0D + 0.25D * fortuneLevel() + 0.2D * upgrades(QuarryUpgradeItem.Kind.SPEED);
-        if (upgrades(QuarryUpgradeItem.Kind.SILK_TOUCH) > 0) k += 1.0D;
         if (upgrades(QuarryUpgradeItem.Kind.SMELTING) > 0) k += 0.5D;
         return (int) Math.round(Config.ENERGY_PER_BLOCK.get() * k);
     }
@@ -379,12 +384,8 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
 
     private ItemStack tool() {
         ItemStack pick = new ItemStack(Items.NETHERITE_PICKAXE);
-        if (upgrades(QuarryUpgradeItem.Kind.SILK_TOUCH) > 0) {
-            pick.enchant(Enchantments.SILK_TOUCH, 1);
-        } else {
-            int fortune = fortuneLevel();
-            if (fortune > 0) pick.enchant(Enchantments.BLOCK_FORTUNE, fortune);
-        }
+        int fortune = fortuneLevel();
+        if (fortune > 0) pick.enchant(Enchantments.BLOCK_FORTUNE, fortune);
         return pick;
     }
 

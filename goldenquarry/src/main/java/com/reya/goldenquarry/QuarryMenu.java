@@ -59,7 +59,7 @@ public class QuarryMenu extends AbstractContainerMenu {
             addSlot(new SlotItemHandler(upgrades, i, UPGRADE_POS[i][0], UPGRADE_POS[i][1]) {
                 @Override
                 public boolean mayPlace(ItemStack stack) {
-                    return stack.getItem() instanceof QuarryUpgradeItem;
+                    return QuarryBlockEntity.fitsUpgradeSlot(getSlotIndex(), stack);
                 }
             });
         }
