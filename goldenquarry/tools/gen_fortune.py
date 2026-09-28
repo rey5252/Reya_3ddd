@@ -125,6 +125,7 @@ def textures():
         gem = [[s[v][u] if (u, v) in GEM else None for u in range(N)] for v in range(N)]
         gem = merge_colours(gem)
         img = [[vivid(gem[v][u], 1.3, 0.97) if gem[v][u] else vivid(body[v][u]) if body[v][u] else None for u in range(N)] for v in range(N)]
+        img = img[1:] + img[:1]           # the art's top row is empty: move it up so it sits centred
         rgba = [[(c + (255,)) if c else (0, 0, 0, 0) for c in row] for row in img]
         path = f"{A}/textures/item/fortune_upgrade_{lvl}.png"
         os.makedirs(os.path.dirname(path), exist_ok=True)
