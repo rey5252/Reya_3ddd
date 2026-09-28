@@ -168,9 +168,11 @@ def main():
         drill[j][13] = c
     drill[0][15] = F                                   # the plain grey block at the foot, the brackets
     save("qi_drill", drill)
-    # glass: faintly blue, with a few white streaks; only where the cage and the side openings
-    # are open (the frame's own pixels stay clear, so nothing lies on top of them)
-    fill, streak = (214, 236, 255, 46), (255, 255, 255, 150)
+    # glass: very faintly blue, only where the cage and the side openings are open (the frame's own
+    # pixels stay clear, so nothing lies on top of them). A few faint streaks on the cage's upper
+    # corners and on the top, none in front of the drill: up close a streak is a big pale square
+    # that hides it
+    fill, streak = (214, 236, 255, 30), (255, 255, 255, 70)
     glass = blank()
     for j, row in enumerate(CAGE_ROWS):
         for i, ch in enumerate(row):
@@ -179,7 +181,7 @@ def main():
     for j in range(6, 10):
         for i in range(4, 12):
             glass[j][i] = fill
-    for x, y in ((4, 2), (5, 3), (6, 4), (9, 2), (10, 3), (6, 7), (7, 8), (9, 7)):
+    for x, y in ((3, 2), (4, 2), (12, 2)):
         glass[y][x] = streak
     save("qi_glass", glass)
     gtop = blank()
@@ -187,7 +189,7 @@ def main():
         for i in range(2, 14):
             if not (j in (2, 13) and i in (2, 13)):
                 gtop[j][i] = fill
-    for x, y in ((4, 5), (5, 4), (6, 3), (5, 6), (6, 5), (7, 4), (10, 9), (11, 8), (9, 11), (10, 10)):
+    for x, y in ((4, 3), (3, 4), (12, 11), (11, 12)):
         gtop[y][x] = streak
     save("qi_glass_top", gtop)
 
