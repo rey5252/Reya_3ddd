@@ -2,21 +2,30 @@ package com.reya.goldenquarry.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.math.Axis;
+import com.reya.goldenquarry.GoldenQuarry;
+import com.reya.goldenquarry.QuarryBlock;
 import com.reya.goldenquarry.QuarryBlockEntity;
 import net.minecraft.Util;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import org.joml.Matrix4f;
 
 /**
- * The glowing golden square around the dig area, lying on the ground the quarry stands on: a
+ * Draws what the block model can't: the drill in the cage on top, spinning while the quarry digs,
+ * and the glowing golden square around the dig area, lying on the ground the stand is on: a
  * white-hot core line, a wider orange glow around it and a soft haze rising from it, all drawn
  * additively (the lightning render type) so it shines in the dark and pulses slowly.
  */
 public class QuarryAreaRenderer implements BlockEntityRenderer<QuarryBlockEntity> {
+    public static final ResourceLocation DRILL_MODEL = new ResourceLocation(GoldenQuarry.MODID, "block/golden_quarry_drill");
     private static final float Y = 0.03F;
 
     public QuarryAreaRenderer(BlockEntityRendererProvider.Context context) {
@@ -24,6 +33,7 @@ public class QuarryAreaRenderer implements BlockEntityRenderer<QuarryBlockEntity
 
     @Override
     public void render(QuarryBlockEntity be, float partialTick, PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
+        renderDrill(be, partialTick, pose, buffers, overlay);
         if (!be.showArea()) return;
         int r = be.radius();
         float min = -r, max = r + 1;
@@ -36,6 +46,30 @@ public class QuarryAreaRenderer implements BlockEntityRenderer<QuarryBlockEntity
         frame(vc, m, min, max, 0.24F, 255, 205, 90, 0.55F * pulse);
         frame(vc, m, min, max, 0.10F, 255, 250, 210, 0.95F);
         haze(vc, m, min, max, 0.45F, 255, 180, 50, 0.28F * pulse);
+    }
+
+    /** The drill model hangs in the cage of the upper half; it turns around its middle and shakes a little while digging. */
+    private static void renderDrill(QuarryBlockEntity be, float partialTick, PoseStack pose, MultiBufferSource buffers, int overlay) {
+        if (be.getLevel() == null) return;
+        Minecraft mc = Minecraft.getInstance();
+        BakedModel model = mc.getModelManager().getModel(DRILL_MODEL);
+        int light = LevelRenderer.getLightColor(be.getLevel(), be.getBlockPos().above());
+        float angle = be.drillAngle(partialTick);
+        float shake = be.drillSpin() * 0.012F * Mth.sin(angle * 0.35F);
+        // turned with the chest like the block model (blockstate y rotation), then spinning
+        int facingRot = switch (be.getBlockState().getValue(QuarryBlock.FACING)) {
+            case EAST -> 90;
+            case SOUTH -> 180;
+            case WEST -> 270;
+            default -> 0;
+        };
+        pose.pushPose();
+        pose.translate(0.5D, 1.0D + shake, 0.5D);
+        pose.mulPose(Axis.YP.rotationDegrees(angle - facingRot));
+        pose.translate(-0.5D, 0.0D, -0.5D);
+        mc.getBlockRenderer().getModelRenderer().renderModel(pose.last(), buffers.getBuffer(RenderType.cutout()), null, model,
+                1.0F, 1.0F, 1.0F, light, overlay);
+        pose.popPose();
     }
 
     /** Four flat strips of the given width centred on the square's border. */

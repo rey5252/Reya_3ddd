@@ -16,25 +16,25 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.item.ItemStack;
 
 /**
- * Golden quarry GUI: frame, slots and bar tracks are one pixel-art texture (tools/gen_gui.py);
- * this draws the striped energy and progress fills, the three switches and the tooltips.
+ * Golden quarry GUI, pixel for pixel the reference: textures/gui/quarry.png is read off the
+ * reference screenshot (tools/extract_gui.py). This draws on it the energy and progress fills (cut
+ * from the same screenshot, in quarry_widgets.png), dims the switches that are off, and the tooltips.
  */
 public class QuarryScreen extends AbstractContainerScreen<QuarryMenu> {
     private static final ResourceLocation TEXTURE = new ResourceLocation(GoldenQuarry.MODID, "textures/gui/quarry.png");
-    private static final int TEX = 256;
-    /** Button sprites sit right of the screen area: off in the first column, on in the second. */
-    private static final int SPRITE_U = 208, SPRITE_SIZE = 18;
-    private static final int BAR_X1 = 36, BAR_X2 = 170;
-    private static final int ENERGY_Y1 = 70, ENERGY_Y2 = 78;
-    private static final int PROGRESS_Y1 = 83, PROGRESS_Y2 = 89;
-    private static final int ICON_X = 9, ICON_Y = 72;
+    private static final ResourceLocation WIDGETS = new ResourceLocation(GoldenQuarry.MODID, "textures/gui/quarry_widgets.png");
+    /** The fills: 128 pixels long, 8 high, at these places of the GUI. */
+    private static final int BAR_X = 46, BAR_W = 128, BAR_H = 8;
+    private static final int ENERGY_Y = 72, PROGRESS_Y = 83;
+    /** Where the energy and progress tooltips answer (bars with their icons in front). */
+    private static final int TIP_X1 = 36, TIP_X2 = 175;
+    private static final int ICON_X1 = 14, ICON_Y1 = 71, ICON_X2 = 33, ICON_Y2 = 91;
+    private static final String[] BUTTON_KEYS = {"area", "power", "void"};
 
     private float shownProgress;
     private float shownEnergy;
-    private final ItemStack icon = new ItemStack(GoldenQuarry.QUARRY_ITEM.get());
 
     public QuarryScreen(QuarryMenu menu, Inventory inv, Component title) {
         super(menu, inv, title);
@@ -66,47 +66,27 @@ public class QuarryScreen extends AbstractContainerScreen<QuarryMenu> {
         shownProgress = target < shownProgress ? target : shownProgress + (target - shownProgress) * 0.3F;
         float energy = menu.energy() / (float) menu.capacity();
         shownEnergy += (energy - shownEnergy) * 0.25F;
-        g.blit(TEXTURE, leftPos, topPos, 0, 0, imageWidth, imageHeight, TEX, TEX);
-        long time = Util.getMillis();
-        g.drawManaged(() -> {
-            // teal energy with moving diagonal stripes, like the reference
-            stripes(g, ENERGY_Y1, ENERGY_Y2, shownEnergy, time / 80L,
-                    new int[]{0xFF2FC4A8, 0xFF5BE6C8, 0xFF9CF7E2, 0xFF3AD4B4}, 0xFFD2FFF4, 0xFF167A6A);
+        g.blit(TEXTURE, leftPos, topPos, 0, 0, imageWidth, imageHeight, 256, 256);
+        int ew = Math.round(BAR_W * Mth.clamp(shownEnergy, 0.0F, 1.0F));
+        if (ew > 0) g.blit(WIDGETS, leftPos + BAR_X, topPos + ENERGY_Y, 0, 0, ew, BAR_H, 256, 64);
+        int pw = Math.round(BAR_W * Mth.clamp(shownProgress, 0.0F, 1.0F));
+        if (pw > 0) {
+            // the stripes move along while it digs
             boolean working = menu.status() == QuarryBlockEntity.STATUS_WORKING && menu.enabled();
-            stripes(g, PROGRESS_Y1, PROGRESS_Y2, shownProgress, working ? time / 60L : 0L,
-                    new int[]{0xFF8E949C, 0xFFB9BEC6, 0xFFDCE0E6, 0xFFA2A8B0}, 0xFFF0F2F5, 0xFF5A5F66);
-        });
-        g.renderItem(icon, leftPos + ICON_X, topPos + ICON_Y);
-    }
-
-    private void stripes(GuiGraphics g, int y1, int y2, float fill, long shift, int[] colors, int top, int bottom) {
-        int w = Math.round((BAR_X2 - BAR_X1) * Mth.clamp(fill, 0.0F, 1.0F));
-        if (w <= 0) return;
-        int x0 = leftPos + BAR_X1;
-        for (int y = y1; y < y2; y++) {
-            int row = y - y1;
-            for (int x = 0; x < w; ) {
-                int c = (int) Math.floorMod(x + row - shift, 8L) / 2;
-                int run = 1;
-                while (x + run < w && (int) Math.floorMod(x + run + row - shift, 8L) / 2 == c) run++;
-                int color = y == y1 ? top : y == y2 - 1 ? bottom : colors[c];
-                g.fill(x0 + x, topPos + y, x0 + x + run, topPos + y + 1, color);
-                x += run;
-            }
+            int shift = working ? (int) (Util.getMillis() / 90L % 6L) : 0;
+            g.blit(WIDGETS, leftPos + BAR_X, topPos + PROGRESS_Y, 6 - shift, 8, pw, BAR_H, 256, 64);
         }
-        // bright leading edge
-        g.fill(x0 + w - 1, topPos + y1, x0 + w, topPos + y2, 0xC0FFFFFF);
     }
 
     private void ownTooltips(GuiGraphics g, int mx, int my) {
         int lx = mx - leftPos, ly = my - topPos;
         List<Component> tip = new ArrayList<>();
-        if (lx >= BAR_X1 - 9 && lx < BAR_X2 && ly >= ENERGY_Y1 - 1 && ly < ENERGY_Y2 + 1) {
+        if (lx >= TIP_X1 && lx < TIP_X2 && ly >= ENERGY_Y - 1 && ly < ENERGY_Y + BAR_H) {
             tip.add(Component.translatable("gui.goldenquarry.energy", String.format("%,d", menu.energy()), String.format("%,d", menu.capacity())));
             QuarryBlockEntity be = menu.quarry();
             if (be != null) tip.add(Component.translatable("gui.goldenquarry.energy_per_block", be.energyPerBlock()).withStyle(ChatFormatting.GRAY));
-        } else if (lx >= BAR_X1 - 9 && lx < BAR_X2 && ly >= PROGRESS_Y1 - 1 && ly < PROGRESS_Y2 + 1
-                || lx >= ICON_X && lx < ICON_X + 16 && ly >= ICON_Y && ly < ICON_Y + 16) {
+        } else if (lx >= TIP_X1 && lx < TIP_X2 && ly >= PROGRESS_Y - 1 && ly < PROGRESS_Y + BAR_H
+                || lx >= ICON_X1 && lx < ICON_X2 && ly >= ICON_Y1 && ly < ICON_Y2) {
             tip.add(Component.translatable("gui.goldenquarry.status." + menu.status()).withStyle(statusColor(menu.status())));
             int side = menu.radius() * 2 + 1;
             tip.add(Component.translatable("gui.goldenquarry.area", side, side).withStyle(ChatFormatting.GRAY));
@@ -128,10 +108,11 @@ public class QuarryScreen extends AbstractContainerScreen<QuarryMenu> {
         } else {
             for (var child : children()) {
                 if (child instanceof SwitchButton b && b.isHovered()) {
-                    tip.add(Component.translatable("gui.goldenquarry.button." + b.id));
+                    String key = "gui.goldenquarry.button." + BUTTON_KEYS[b.id];
+                    tip.add(Component.translatable(key));
                     tip.add(Component.translatable(b.on() ? "gui.goldenquarry.on" : "gui.goldenquarry.off")
                             .withStyle(b.on() ? ChatFormatting.GREEN : ChatFormatting.RED));
-                    tip.add(Component.translatable("gui.goldenquarry.button." + b.id + ".tip").withStyle(ChatFormatting.GRAY));
+                    tip.add(Component.translatable(key + ".tip").withStyle(ChatFormatting.GRAY));
                 }
             }
         }
@@ -149,15 +130,18 @@ public class QuarryScreen extends AbstractContainerScreen<QuarryMenu> {
 
     @Override
     protected void renderLabels(GuiGraphics g, int mouseX, int mouseY) {
-        // the reference has no titles, the frame speaks for itself
+        // the reference has no titles
     }
 
-    /** Golden square switch with a pixel icon; lit when on. */
+    /**
+     * The golden switches are part of the background texture, lit as in the reference; a switch that
+     * is off gets its dimmed copy drawn over it.
+     */
     private class SwitchButton extends Button {
         final int id;
 
         SwitchButton(int x, int y, int id, OnPress press) {
-            super(x, y, SPRITE_SIZE, SPRITE_SIZE, Component.translatable("gui.goldenquarry.button." + id), press, DEFAULT_NARRATION);
+            super(x, y, QuarryMenu.BUTTON_SIZE, QuarryMenu.BUTTON_SIZE, Component.translatable("gui.goldenquarry.button." + BUTTON_KEYS[id]), press, DEFAULT_NARRATION);
             this.id = id;
         }
 
@@ -171,9 +155,8 @@ public class QuarryScreen extends AbstractContainerScreen<QuarryMenu> {
 
         @Override
         public void renderWidget(GuiGraphics g, int mx, int my, float pt) {
-            int u = SPRITE_U + (on() ? SPRITE_SIZE : 0);
-            g.blit(TEXTURE, getX(), getY(), u, id * SPRITE_SIZE, SPRITE_SIZE, SPRITE_SIZE, TEX, TEX);
-            if (isHoveredOrFocused()) g.fill(getX() + 1, getY() + 1, getX() + SPRITE_SIZE - 1, getY() + SPRITE_SIZE - 1, 0x40FFFFFF);
+            if (!on()) g.blit(WIDGETS, getX(), getY(), id * 18, 16, width, height, 256, 64);
+            if (isHoveredOrFocused()) g.fill(getX() + 2, getY() + 2, getX() + width - 2, getY() + height - 2, 0x30FFFFFF);
         }
     }
 }

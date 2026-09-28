@@ -157,7 +157,9 @@ public class QuarryBlock extends BaseEntityBlock {
     @Nullable
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide || !isLower(state) ? null : createTickerHelper(type, GoldenQuarry.QUARRY_BE.get(), QuarryBlockEntity::serverTick);
+        if (!isLower(state)) return null;
+        BlockEntityTicker<QuarryBlockEntity> ticker = level.isClientSide ? QuarryBlockEntity::clientTick : QuarryBlockEntity::serverTick;
+        return createTickerHelper(type, GoldenQuarry.QUARRY_BE.get(), ticker);
     }
 
     @Override

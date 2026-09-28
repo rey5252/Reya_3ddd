@@ -33,10 +33,10 @@
   "gui.goldenquarry.slot.common": "Камень, земля и другие блоки",
   "gui.goldenquarry.slot.valuable": "Руды, слитки, самоцветы и другие ценности",
   "gui.goldenquarry.slot.upgrade": "Улучшение",
-  "gui.goldenquarry.button.0": "Питание",
-  "gui.goldenquarry.button.0.tip": "Запустить или остановить копание. Если карьер закончил, включение начнёт заново сверху.",
-  "gui.goldenquarry.button.1": "Показать зону",
-  "gui.goldenquarry.button.1.tip": "Светящаяся рамка вокруг зоны копания",
-  "gui.goldenquarry.button.2": "Уничтожать мусор",
-  "gui.goldenquarry.button.2.tip": "Уничтожать камень, землю и другие простые блоки вместо хранения"
+  "gui.goldenquarry.button.power": "Питание",
+  "gui.goldenquarry.button.power.tip": "Запустить или остановить копание. Если карьер закончил, включение начнёт заново сверху.",
+  "gui.goldenquarry.button.area": "Показать зону",
+  "gui.goldenquarry.button.area.tip": "Светящаяся рамка вокруг зоны копания",
+  "gui.goldenquarry.button.void": "Уничтожать мусор",
+  "gui.goldenquarry.button.void.tip": "Уничтожать камень, землю и другие простые блоки вместо хранения"
 }

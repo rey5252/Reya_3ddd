@@ -16,19 +16,21 @@ import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.items.SlotItemHandler;
 
 /**
- * Plain blocks 9x3 on top, the energy and progress bars in the middle, valuables 9x3 below; the
- * three switches and five upgrade slots in a column on the right; player inventory in its own
- * panel underneath.
+ * Laid out exactly like the reference GUI (textures/gui/quarry.png is built from it): plain blocks
+ * 9x3 in the brown slots on top, the energy and progress bars in the middle, valuables 9x3 in the
+ * golden slots below; three switches and the grey upgrade rack on the right; the player inventory
+ * in its own panel underneath. All positions are texture pixels.
  */
 public class QuarryMenu extends AbstractContainerMenu {
-    public static final int WIDTH = 208;
-    public static final int HEIGHT = 254;
-    public static final int COMMON_X = 8, COMMON_Y = 8;
-    public static final int VALUABLE_X = 8, VALUABLE_Y = 96;
-    public static final int UP_X = 184, UP_Y = 65;
-    public static final int BUTTON_X = 183, BUTTON_Y = 4, BUTTON_STEP = 19;
-    public static final int INV_X = 23, INV_Y = 174;
-    public static final int BUTTON_POWER = 0, BUTTON_AREA = 1, BUTTON_VOID = 2;
+    public static final int WIDTH = 212;
+    public static final int HEIGHT = 247;
+    public static final int COMMON_X = 15, COMMON_Y = 15;
+    public static final int VALUABLE_X = 15, VALUABLE_Y = 95;
+    public static final int UP_X = 185, UP_Y = 84, UP_STEP = 17;
+    public static final int BUTTON_X = 181, BUTTON_Y = 18, BUTTON_STEP = 18, BUTTON_SIZE = 18;
+    public static final int INV_X = 26, INV_Y = 165, HOTBAR_Y = 223;
+    /** Buttons from top to bottom, in the order of their icons in the reference. */
+    public static final int BUTTON_AREA = 0, BUTTON_POWER = 1, BUTTON_VOID = 2;
 
     public static final int COMMON_START = 0;
     public static final int VALUABLE_START = QuarryBlockEntity.STORAGE;
@@ -56,7 +58,7 @@ public class QuarryMenu extends AbstractContainerMenu {
         addGrid(common, COMMON_X, COMMON_Y);
         addGrid(valuables, VALUABLE_X, VALUABLE_Y);
         for (int i = 0; i < QuarryBlockEntity.UPGRADES; i++) {
-            addSlot(new SlotItemHandler(upgrades, i, UP_X, UP_Y + i * 18) {
+            addSlot(new SlotItemHandler(upgrades, i, UP_X, UP_Y + i * UP_STEP) {
                 @Override
                 public boolean mayPlace(ItemStack stack) {
                     return stack.getItem() instanceof QuarryUpgradeItem;
@@ -69,7 +71,7 @@ public class QuarryMenu extends AbstractContainerMenu {
             }
         }
         for (int c = 0; c < 9; c++) {
-            addSlot(new Slot(inventory, c, INV_X + c * 18, INV_Y + 58));
+            addSlot(new Slot(inventory, c, INV_X + c * 18, HOTBAR_Y));
         }
         addDataSlots(data);
     }

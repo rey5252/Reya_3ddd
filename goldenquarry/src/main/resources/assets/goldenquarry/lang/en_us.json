@@ -33,10 +33,10 @@
   "gui.goldenquarry.slot.common": "Stone, dirt and other blocks",
   "gui.goldenquarry.slot.valuable": "Ores, ingots, gems and other valuables",
   "gui.goldenquarry.slot.upgrade": "Upgrade",
-  "gui.goldenquarry.button.0": "Power",
-  "gui.goldenquarry.button.0.tip": "Start or stop digging. Turning it on after it finished starts again from the top.",
-  "gui.goldenquarry.button.1": "Show area",
-  "gui.goldenquarry.button.1.tip": "The glowing border around the dig area",
-  "gui.goldenquarry.button.2": "Void junk",
-  "gui.goldenquarry.button.2.tip": "Destroy stone, dirt and other plain blocks instead of keeping them"
+  "gui.goldenquarry.button.power": "Power",
+  "gui.goldenquarry.button.power.tip": "Start or stop digging. Turning it on after it finished starts again from the top.",
+  "gui.goldenquarry.button.area": "Show area",
+  "gui.goldenquarry.button.area.tip": "The glowing border around the dig area",
+  "gui.goldenquarry.button.void": "Void junk",
+  "gui.goldenquarry.button.void.tip": "Destroy stone, dirt and other plain blocks instead of keeping them"
 }

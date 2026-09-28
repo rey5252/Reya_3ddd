@@ -33,10 +33,10 @@
   "gui.goldenquarry.slot.common": "Камінь, земля та інші блоки",
   "gui.goldenquarry.slot.valuable": "Руди, злитки, самоцвіти та інші цінності",
   "gui.goldenquarry.slot.upgrade": "Покращення",
-  "gui.goldenquarry.button.0": "Живлення",
-  "gui.goldenquarry.button.0.tip": "Запустити або зупинити копання. Якщо кар'єр закінчив, увімкнення почне знову згори.",
-  "gui.goldenquarry.button.1": "Показати зону",
-  "gui.goldenquarry.button.1.tip": "Світна рамка навколо зони копання",
-  "gui.goldenquarry.button.2": "Знищувати мотлох",
-  "gui.goldenquarry.button.2.tip": "Знищувати камінь, землю та інші прості блоки замість зберігання"
+  "gui.goldenquarry.button.power": "Живлення",
+  "gui.goldenquarry.button.power.tip": "Запустити або зупинити копання. Якщо кар'єр закінчив, увімкнення почне знову згори.",
+  "gui.goldenquarry.button.area": "Показати зону",
+  "gui.goldenquarry.button.area.tip": "Світна рамка навколо зони копання",
+  "gui.goldenquarry.button.void": "Знищувати мотлох",
+  "gui.goldenquarry.button.void.tip": "Знищувати камінь, землю та інші прості блоки замість зберігання"
 }

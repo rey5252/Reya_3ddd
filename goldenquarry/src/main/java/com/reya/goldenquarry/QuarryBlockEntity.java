@@ -52,7 +52,7 @@ import net.minecraftforge.items.ItemStackHandler;
  * its own, takes more from any Forge Energy cable); stops while a redstone signal reaches it.
  */
 public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
-    public static final int STORAGE = 27, UPGRADES = 5;
+    public static final int STORAGE = 27, UPGRADES = 4;
 
     public static final int STATUS_WORKING = 0, STATUS_STOPPED = 1, STATUS_NO_ENERGY = 2, STATUS_FULL = 3,
             STATUS_FINISHED = 4, STATUS_REDSTONE = 5, STATUS_WAITING = 6;
@@ -85,8 +85,15 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
         @Override
         protected void onContentsChanged(int slot) {
             setChanged();
+            sync();
         }
     };
+
+    // client side: the spinning drill
+    private int clientTicksPerBlock = 20;
+    private float drillAngle;
+    private float prevDrillAngle;
+    private float drillSpeed;
 
     private final Energy energy = new Energy();
 
@@ -223,6 +230,33 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
     public static void serverTick(Level level, BlockPos pos, BlockState state, QuarryBlockEntity be) {
         if (!(level instanceof ServerLevel server)) return;
         be.tick(server);
+    }
+
+    /** The drill speeds up while the quarry digs (faster with speed upgrades) and runs down when it stops. */
+    public static void clientTick(Level level, BlockPos pos, BlockState state, QuarryBlockEntity be) {
+        float target = be.isWorking() ? 360.0F / Math.max(4, be.clientTicksPerBlock) : 0.0F;
+        be.drillSpeed += (target - be.drillSpeed) * 0.15F;
+        if (Math.abs(be.drillSpeed) < 0.01F) be.drillSpeed = 0.0F;
+        be.prevDrillAngle = be.drillAngle;
+        be.drillAngle += be.drillSpeed;
+        if (target == 0.0F && Math.abs(be.drillSpeed) < 0.5F) {
+            // coming to rest square to the chest, the way the drill hangs when the quarry is idle
+            float rest = Math.round(be.drillAngle / 90.0F) * 90.0F;
+            be.drillAngle += (rest - be.drillAngle) * 0.2F;
+        }
+        if (be.drillAngle >= 360.0F) {
+            be.drillAngle -= 360.0F;
+            be.prevDrillAngle -= 360.0F;
+        }
+    }
+
+    public float drillAngle(float partialTick) {
+        return prevDrillAngle + (drillAngle - prevDrillAngle) * partialTick;
+    }
+
+    /** 0 when the drill stands still, 1 at full speed. */
+    public float drillSpin() {
+        return Math.min(1.0F, Math.abs(drillSpeed) / 18.0F);
     }
 
     private void tick(ServerLevel level) {
@@ -472,6 +506,7 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
             minedBlocks = tag.getLong("Mined");
         }
         if (tag.contains("Radius")) radius = tag.getInt("Radius");
+        if (tag.contains("TicksPerBlock")) clientTicksPerBlock = tag.getInt("TicksPerBlock");
         enabled = !tag.contains("Enabled") || tag.getBoolean("Enabled");
         showArea = !tag.contains("ShowArea") || tag.getBoolean("ShowArea");
         voidJunk = tag.getBoolean("VoidJunk");
@@ -484,12 +519,13 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
         return tag;
     }
 
-    /** The client only needs what the glowing border shows. */
+    /** The client only needs what the glowing border and the drill show. */
     @Override
     public CompoundTag getUpdateTag() {
         CompoundTag tag = super.getUpdateTag();
         writeState(tag);
         tag.putInt("Radius", radius());
+        tag.putInt("TicksPerBlock", ticksPerBlock());
         return tag;
     }
 
