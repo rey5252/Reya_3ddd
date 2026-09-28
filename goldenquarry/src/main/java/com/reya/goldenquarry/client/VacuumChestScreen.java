@@ -32,7 +32,7 @@ public class VacuumChestScreen extends AbstractContainerScreen<VacuumChestMenu> 
             {169, 117, 16, 16, VacuumChestMenu.BUTTON_AREA},
             {VacuumChestMenu.MODE_X - 1, VacuumChestMenu.FILTER_Y - 1, 18, 18, VacuumChestMenu.BUTTON_MODE}};
     private static final int TITLE_X1 = 57, TITLE_X2 = 149, TITLE_Y = 3;
-    private static final int LABEL_Y = 84, FILTER_LABEL_X = 23, RANGE_LABEL_END = 204;
+    private static final int LABEL_Y = 84, FILTER_LABEL_X = 23, RANGE_LABEL_END = 197;
     private static final int RANGE_END = 174, RANGE_Y = 99;
 
     public VacuumChestScreen(VacuumChestMenu menu, Inventory inv, Component title) {
