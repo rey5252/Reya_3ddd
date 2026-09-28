@@ -86,8 +86,8 @@ public class VacuumChestRenderer implements BlockEntityRenderer<VacuumChestBlock
                     + 0.12 * Math.sin(time * 2.3 + phase * 2 + s * 7.0);
             Vec3 along = across.scale(Math.cos(ang)).add(up.scale(Math.sin(ang)));
             // out of the crystal first, then drawn to the block's faces and falling under its weight
-            Vec3 want = normal.scale(i <= 2 ? 2.0 : -0.45).add(along).add(0, -0.7 * s, 0).normalize();
-            dir = dir.scale(0.55).add(want.scale(0.45)).normalize();
+            Vec3 want = normal.scale(i <= 1 ? 0.8 : -1.4).add(along).add(0, -0.8 * s, 0).normalize();
+            dir = dir.scale(0.3).add(want.scale(0.7)).normalize();
             p = keepOut(p.add(dir.scale(seg)));
             pts[i] = p;
         }
@@ -95,7 +95,7 @@ public class VacuumChestRenderer implements BlockEntityRenderer<VacuumChestBlock
         Matrix3f n = pose.last().normal();
         for (int i = 0; i < SEGMENTS; i++) {
             double s = i / (double) SEGMENTS;
-            double w = thick * 0.85 * Math.pow(1 - s, 0.7) + 0.02;
+            double w = thick * 0.6 * Math.pow(1 - s, 0.7) + 0.018;
             Vec3 a = pts[i], b = pts[i + 1];
             Vec3 tangent = b.subtract(a);
             if (tangent.lengthSqr() < 1.0E-8) continue;
