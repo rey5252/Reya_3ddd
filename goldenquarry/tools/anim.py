@@ -25,7 +25,7 @@ def frame(px, shine_pos=None, glow=0.0, gem=()):
             t = 0.0
             if shine_pos is not None:
                 d = abs(x - y - shine_pos)
-                t = 0.55 if d < 0.75 else 0.28 if d < 1.75 else 0.0
+                t = 0.7 if d < 0.75 else 0.4 if d < 1.75 else 0.0
             if (x, y) in gem:
                 t = max(t, glow)
             new.append(_lighten(c, t) if t > 0 else c)

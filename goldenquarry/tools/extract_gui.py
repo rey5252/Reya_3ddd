@@ -6,7 +6,7 @@ from its centre, so the texture is the reference pixel for pixel. What the scree
 of the background is taken off again: the items and counts in the slots (the slots are rebuilt
 from the empty ones), the filled energy and progress bars (their fills go to quarry_widgets.png and
 the screen draws them), and the golden cards in the three frames on the right, which are upgrade
-slots: the cards become the upgrade item textures. The three missing top rows of the frame are mirrored from its bottom.
+slots: the cards become the upgrade item textures (redrawn crisp in the original item's colours). The three missing top rows of the frame are mirrored from its bottom.
 
 GUI pixel (gx, gy) of the screenshot lands at texture pixel (gx + 1, gy + 3).
 """
@@ -178,10 +178,8 @@ def main():
 
     # 7. the three golden frames on the right are upgrade slots: their cards become the upgrade
     #    items (stack, infinite engine, autosmelt from top to bottom), and the frames are left empty in the texture
-    cards = []
+    cards = [crisp_card(n) for n in range(3)]
     for n in range(3):
-        card = [[samp(182 + i, 17 + 18 * n + j) for i in range(14)] for j in range(14)]
-        cards.append(card)
         hole = samp(180, 24 + 18 * n)
         for j in range(14):
             for i in range(-1, 14):                 # also the card's left edge column
@@ -237,6 +235,56 @@ def main():
                 c = tex.px[y // 3][x // 3]
                 big[y][x] = c if c[3] else ((60, 60, 70, 255) if ((x // 12) + (y // 12)) % 2 else (50, 50, 58, 255))
         write_png(f"{out}/gui_texture_preview.png", 256 * 3, 256 * 3, big)
+
+
+# The infinite engine card as the original item draws it (reference/ingame/24.png, 14x14, read
+# cell by cell), with its seven colours. The GUI screenshot shows the cards one GUI pixel further
+# left and blurred, and with the shine passing over them; its cards are read back into these colours.
+CARD_COLORS = {"A": (186, 101, 17), "B": (202, 125, 25), "C": (231, 156, 36), "D": (252, 235, 95),
+               "E": (255, 255, 255), "F": (242, 187, 57), "G": (91, 78, 60)}
+ENGINE_CARD = ["AAABBCCCCBBAAA",
+               "ADDDDDDDDDDDDA",
+               "ADEEEFFFFFFFFA",
+               "BDEEEFFFFFFFFB",
+               "BDEEEFFFGFCFFB",
+               "CDFFFCGGFFFFFC",
+               "CDFFFGGFFFCFFC",
+               "CFFFGGGGGGCFFC",
+               "CDCFCCFGGCCCFC",
+               "BFFCCCGGCCCCCB",
+               "BFCCCGCCCCEECB",
+               "ACCCCCCCCCEECA",
+               "ACCCCCCCCCCCCA",
+               "AAAABBBBBBAAAA"]
+
+
+def crisp_card(n):
+    """Card n (0 stack, 1 infinite engine, 2 autosmelt) in the original's colours: the frame, the
+    light edge and the two white glints are the original's; the icon is read off the screenshot."""
+    if n == 1:
+        return [[CARD_COLORS[k] for k in row] for row in ENGINE_CARD]
+    # the screenshot's colour for each of the original's colours, from the infinite engine card
+    seen = {}
+    for j, row in enumerate(ENGINE_CARD):
+        for i, k in enumerate(row):
+            seen.setdefault(k, []).append(samp(181 + i, 35 + j))
+    mean = {k: [sum(c[q] for c in v) / len(v) for q in range(3)] for k, v in seen.items()}
+    out = []
+    for j, row in enumerate(ENGINE_CARD):
+        line = []
+        for i, k in enumerate(row):
+            if 2 <= i <= 11 and 3 <= j <= 11 and k not in "DE":
+                c = samp(181 + i, 17 + 18 * n + j)
+                k2 = min(mean, key=lambda m: sum((c[q] - mean[m][q]) ** 2 for q in range(3)))
+                if k2 == "G":
+                    k = "G"
+                elif k2 in "FC":
+                    k = k2
+                elif k in "G":                  # the shine lies over it: the background there
+                    k = "F" if j <= 7 else "C"
+            line.append(CARD_COLORS[k])
+        out.append(line)
+    return out
 
 
 def save_item(name, card):
