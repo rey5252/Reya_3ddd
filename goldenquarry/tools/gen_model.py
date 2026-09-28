@@ -32,14 +32,15 @@ def top_elements():
     els.append(box([1, 9, 15], [15, 15, 15], {"south": {"texture": "#cage_a", "uv": outer}, "north": {"texture": "#cage_a", "uv": inner}}))
     els.append(box([1, 9, 1], [1, 15, 15], {"west": {"texture": "#cage_b", "uv": outer}, "east": {"texture": "#cage_b", "uv": inner}}))
     els.append(box([15, 9, 1], [15, 15, 15], {"east": {"texture": "#cage_b", "uv": outer}, "west": {"texture": "#cage_b", "uv": inner}}))
-    # behind the window in face A: a dark hollow (walls facing inwards) where the drill stands
-    dark = {"texture": "#inside", "uv": [1, 7, 15, 10]}
-    els.append(box([1, 6, 15], [15, 9, 15], {"north": dark}))
-    els.append(box([1, 6, 1], [15, 9, 1], {"south": dark}))
-    els.append(box([15, 6, 1], [15, 9, 15], {"west": dark}))
-    els.append(box([1, 6, 1], [1, 9, 15], {"east": dark}))
-    els.append(box([1, 6, 1], [15, 6, 15], {"up": {"texture": "#inside", "uv": [1, 1, 15, 15]}}))
-    els.append(box([1, 9, 1], [15, 9, 15], {"down": {"texture": "#inside", "uv": [1, 1, 15, 15]}}))
+    # behind the window in face A: a dark hollow (walls facing inwards, right behind the chest's own
+    # faces, so nothing shows through the window but the hollow and the drill)
+    dark = {"texture": "#inside", "uv": [0, 7, 16, 10]}
+    els.append(box([0, 6, 16], [16, 9, 16], {"north": dark}))
+    els.append(box([0, 6, 0], [16, 9, 0], {"south": dark}))
+    els.append(box([16, 6, 0], [16, 9, 16], {"west": dark}))
+    els.append(box([0, 6, 0], [0, 9, 16], {"east": dark}))
+    els.append(box([0, 6, 0], [16, 6, 16], {"up": {"texture": "#inside", "uv": [0, 0, 16, 16]}}))
+    els.append(box([0, 9, 0], [16, 9, 16], {"down": {"texture": "#inside", "uv": [0, 0, 16, 16]}}))
     return els
 
 
