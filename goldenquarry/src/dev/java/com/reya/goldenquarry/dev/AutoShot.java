@@ -65,6 +65,10 @@ public final class AutoShot {
         // converted in the first operation, with fortune X and autosmelt
         STEPS.add(new Step(10, () -> signal(false)));
         STEPS.add(new Step(80, () -> shot("quarry_gui_converted.png")));
+        // a smaller GUI scale, so the name plate above the GUI fits on the screen too
+        STEPS.add(new Step(10, () -> guiScale(2)));
+        STEPS.add(new Step(20, () -> shot("quarry_gui_small.png")));
+        STEPS.add(new Step(10, () -> guiScale(0)));
         // the reference photo's view: sunset, narrow view, drill resting (a redstone signal stops it)
         STEPS.add(new Step(20, AutoShot::photoSetUp));
         // close up, the way the in-game reference shots (reference/ingame) look at it
@@ -200,6 +204,12 @@ public final class AutoShot {
             if (server.overworld().getBlockEntity(POS) instanceof QuarryBlockEntity be) NetworkHooks.openScreen(p, be, POS);
         });
         Minecraft.getInstance().options.hideGui = false;
+    }
+
+    private static void guiScale(int scale) {
+        Minecraft mc = Minecraft.getInstance();
+        mc.options.guiScale().set(scale);
+        mc.resizeDisplay();
     }
 
     private static void photoSetUp() {
