@@ -13,12 +13,12 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 
 /**
- * Goes into the quarry's upgrade slots; each item in the stacks counts, up to the kind's maximum.
- * Fortune comes in levels (2, 5, 10) and has a slot of its own, left of the bars.
+ * Goes into the converter's upgrade slots, one of each kind: autosmelt, stack and the infinite engine
+ * on the right; the fortune module (levels 2, 5, 10) in its own slot left of the bars.
  */
 public class QuarryUpgradeItem extends Item {
     public enum Kind {
-        SPEED(8), RANGE(8), FORTUNE(1), SMELTING(1);
+        FORTUNE(1), SMELTING(1), STACK(1), INFINITE(1);
 
         public final int max;
 
@@ -52,6 +52,5 @@ public class QuarryUpgradeItem extends Item {
             return;
         }
         tooltip.add(Component.translatable("item.goldenquarry." + kind.id() + "_upgrade.tip").withStyle(ChatFormatting.GRAY));
-        tooltip.add(Component.translatable("item.goldenquarry.upgrade.max", kind.max).withStyle(ChatFormatting.DARK_GRAY));
     }
 }

@@ -34,8 +34,9 @@ import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.network.NetworkHooks;
 
 /**
- * One block: the golden chest, hollow at the top between its front and back walls, with the open
- * cage on it and the drill inside (drawn by the block entity renderer, so it can turn).
+ * The golden fortune converter, one block: the golden chest, hollow at the top between its front and
+ * back walls, with the glass cage on it and the drill inside (drawn by the block entity renderer, so
+ * it can turn while ores are converted).
  */
 public class QuarryBlock extends BaseEntityBlock {
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
@@ -109,7 +110,7 @@ public class QuarryBlock extends BaseEntityBlock {
     @SuppressWarnings("deprecation")
     public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean moving) {
         if (!state.is(newState.getBlock()) && level.getBlockEntity(pos) instanceof QuarryBlockEntity be) {
-            for (IItemHandler h : new IItemHandler[]{be.common(), be.valuables(), be.upgrades()}) {
+            for (IItemHandler h : new IItemHandler[]{be.input(), be.output(), be.upgrades()}) {
                 for (int i = 0; i < h.getSlots(); i++) {
                     Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), h.getStackInSlot(i));
                 }

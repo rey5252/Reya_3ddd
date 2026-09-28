@@ -176,7 +176,7 @@ def main():
             tex.set(gx, 69 + j, samp(gx, 80 + j))
 
     # 7. the three golden frames on the right are upgrade slots: their cards become the upgrade
-    #    items (range, speed, smelting from top to bottom), and the frames are left empty in the texture
+    #    items (stack, infinite engine, autosmelt from top to bottom), and the frames are left empty in the texture
     cards = []
     for n in range(3):
         card = [[samp(182 + i, 17 + 18 * n + j) for i in range(14)] for j in range(14)]
@@ -215,7 +215,7 @@ def main():
             else:
                 c = samp(gx, gy)
             tex.set(gx, gy, c)
-    for name, card in zip(("range_upgrade", "speed_upgrade", "smelting_upgrade"), cards):
+    for name, card in zip(("stack_upgrade", "infinite_upgrade", "smelting_upgrade"), cards):
         save_item(name, card)
 
     os.makedirs(OUT, exist_ok=True)

@@ -13,7 +13,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.Containers;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
@@ -27,53 +26,58 @@ import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.Tags;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.FakePlayer;
-import net.minecraftforge.common.util.FakePlayerFactory;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.energy.EnergyStorage;
 import net.minecraftforge.energy.IEnergyStorage;
-import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.items.ItemStackHandler;
 
 /**
- * Digs out the square around it, one block at a time, row by row and layer by layer from just
- * below itself down to bedrock. Stone, dirt and other plain blocks go into the upper storage,
- * ores, raw metals, gems and everything smelted into the lower one. Needs energy (makes a bit on
- * its own, takes more from any Forge Energy cable); stops while a redstone signal reaches it.
+ * The fortune converter: turns ores into what they give when mined with Fortune, one ore per
+ * operation (or everything in its input at once with the stack upgrade). Ores go into the upper
+ * storage (by hand, or from pipes and hoppers, best from above); the results go into the lower
+ * storage and on into any container touching its sides or bottom. Upgrades: a fortune module
+ * (level 2, 5 or 10: that level of Fortune), autosmelt (the results come out smelted), stack (the
+ * whole input in one operation) and the infinite engine (no energy needed). Needs energy otherwise
+ * (makes a little on its own, takes more from any Forge Energy cable); stops while a redstone
+ * signal reaches it.
  */
 public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
     public static final int STORAGE = 27, UPGRADES = 4;
-    /** The upgrade slot left of the bars: only the fortune charms go there, the other upgrades go right. */
+    /** The upgrade slot left of the bars: only the fortune modules go there, the other upgrades go right. */
     public static final int FORTUNE_SLOT = 3;
 
-    public static final int STATUS_WORKING = 0, STATUS_STOPPED = 1, STATUS_NO_ENERGY = 2, STATUS_FULL = 3,
-            STATUS_FINISHED = 4, STATUS_REDSTONE = 5, STATUS_WAITING = 6;
-    /** How many empty or skipped positions one tick may look through for the next block to dig. */
-    private static final int SCAN_BUDGET = 1024;
-    private static final int NOT_STARTED = Integer.MIN_VALUE;
+    public static final int STATUS_WORKING = 0, STATUS_IDLE = 1, STATUS_NO_ENERGY = 2, STATUS_FULL = 3, STATUS_REDSTONE = 5;
 
-    private boolean finished;
-    private int status = STATUS_WORKING;
+    private int status = STATUS_IDLE;
     private int progress;
     private int maxProgress = 20;
-    private int cursorY = NOT_STARTED;
-    private int cursorIndex;
-    private int scanRadius = -1;
-    private int radius = -1;
-    private long minedBlocks;
+    private long converted;
 
-    private final ItemStackHandler common = output();
-    private final ItemStackHandler valuables = output();
+    private final ItemStackHandler input = new ItemStackHandler(STORAGE) {
+        @Override
+        public boolean isItemValid(int slot, @Nonnull ItemStack stack) {
+            return isOre(stack);
+        }
+
+        @Override
+        protected void onContentsChanged(int slot) {
+            setChanged();
+        }
+    };
+    private final ItemStackHandler output = new ItemStackHandler(STORAGE) {
+        @Override
+        protected void onContentsChanged(int slot) {
+            setChanged();
+        }
+    };
     private final ItemStackHandler upgrades = new ItemStackHandler(UPGRADES) {
         @Override
         public boolean isItemValid(int slot, @Nonnull ItemStack stack) {
@@ -91,47 +95,41 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
         return stack.getItem() instanceof QuarryUpgradeItem up && (up.kind == QuarryUpgradeItem.Kind.FORTUNE) == (slot == FORTUNE_SLOT);
     }
 
+    /** What the converter takes: anything tagged as an ore. */
+    public static boolean isOre(ItemStack stack) {
+        return stack.is(Tags.Items.ORES);
+    }
+
     // client side: the spinning drill
-    private int clientTicksPerBlock = 20;
     private float drillAngle;
     private float prevDrillAngle;
     private float drillSpeed;
 
     private final Energy energy = new Energy();
 
-    private ItemStackHandler output() {
-        return new ItemStackHandler(STORAGE) {
-            @Override
-            protected void onContentsChanged(int slot) {
-                setChanged();
-            }
-        };
-    }
-
-    /** Hoppers and pipes may take anything out of both storages; nothing goes in from outside. */
+    /**
+     * Pipes and hoppers see the input first (ores go in, nothing comes out of it), then the output
+     * (things come out, nothing goes in).
+     */
     private final IItemHandler automation = new IItemHandler() {
         @Override
         public int getSlots() {
             return STORAGE * 2;
         }
 
-        private ItemStackHandler handler(int slot) {
-            return slot < STORAGE ? valuables : common;
-        }
-
         @Override
         public @Nonnull ItemStack getStackInSlot(int slot) {
-            return handler(slot).getStackInSlot(slot % STORAGE);
+            return slot < STORAGE ? input.getStackInSlot(slot) : output.getStackInSlot(slot - STORAGE);
         }
 
         @Override
         public @Nonnull ItemStack insertItem(int slot, @Nonnull ItemStack stack, boolean simulate) {
-            return stack;
+            return slot < STORAGE ? input.insertItem(slot, stack, simulate) : stack;
         }
 
         @Override
         public @Nonnull ItemStack extractItem(int slot, int amount, boolean simulate) {
-            return handler(slot).extractItem(slot % STORAGE, amount, simulate);
+            return slot < STORAGE ? ItemStack.EMPTY : output.extractItem(slot - STORAGE, amount, simulate);
         }
 
         @Override
@@ -141,13 +139,13 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
 
         @Override
         public boolean isItemValid(int slot, @Nonnull ItemStack stack) {
-            return false;
+            return slot < STORAGE && isOre(stack);
         }
     };
     private final LazyOptional<IItemHandler> automationCap = LazyOptional.of(() -> automation);
     private final LazyOptional<IEnergyStorage> energyCap = LazyOptional.of(() -> energy);
 
-    /** energy and capacity in 15-bit halves (container data syncs as shorts), progress, max, flags, status, layer, radius. */
+    /** energy and capacity in 15-bit halves (container data syncs as shorts), progress, max, ores waiting, status, fortune. */
     private final ContainerData data = new ContainerData() {
         @Override
         public int get(int index) {
@@ -158,10 +156,9 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
                 case 3 -> (energy.getMaxEnergyStored() >>> 15) & 0x7FFF;
                 case 4 -> progress;
                 case 5 -> maxProgress;
-                case 6 -> 0;
+                case 6 -> Math.min(0x7FFF, oresWaiting());
                 case 7 -> status;
-                case 8 -> cursorY == NOT_STARTED ? worldPosition.getY() - 1 : cursorY;
-                default -> radius();
+                default -> fortuneLevel();
             };
         }
 
@@ -171,7 +168,7 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
 
         @Override
         public int getCount() {
-            return 10;
+            return 9;
         }
     };
 
@@ -179,68 +176,57 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
         super(GoldenQuarry.QUARRY_BE.get(), pos, state);
     }
 
-    public ItemStackHandler common() {
-        return common;
+    public ItemStackHandler input() {
+        return input;
     }
 
-    public ItemStackHandler valuables() {
-        return valuables;
+    public ItemStackHandler output() {
+        return output;
     }
 
     public ItemStackHandler upgrades() {
         return upgrades;
     }
 
-    /** Client side: the radius and state come with the block update. */
+    /** Client side: the state comes with the block update. */
     public boolean isWorking() {
         return status == STATUS_WORKING;
     }
 
-    public int upgrades(QuarryUpgradeItem.Kind kind) {
-        int n = 0;
+    public boolean has(QuarryUpgradeItem.Kind kind) {
         for (int i = 0; i < UPGRADES; i++) {
-            ItemStack s = upgrades.getStackInSlot(i);
-            if (s.getItem() instanceof QuarryUpgradeItem u && u.kind == kind) n += s.getCount();
+            if (upgrades.getStackInSlot(i).getItem() instanceof QuarryUpgradeItem u && u.kind == kind) return true;
         }
-        return Math.min(kind.max, n);
+        return false;
     }
 
-    /** Highest fortune among the fortune upgrades in the slots. */
+    /** The fortune module's level (0 without one). */
     public int fortuneLevel() {
-        int best = 0;
-        for (int i = 0; i < UPGRADES; i++) {
-            if (upgrades.getStackInSlot(i).getItem() instanceof QuarryUpgradeItem u && u.kind == QuarryUpgradeItem.Kind.FORTUNE) {
-                best = Math.max(best, u.level);
-            }
-        }
-        return best;
+        return upgrades.getStackInSlot(FORTUNE_SLOT).getItem() instanceof QuarryUpgradeItem u && u.kind == QuarryUpgradeItem.Kind.FORTUNE ? u.level : 0;
     }
 
-    /** Blocks the dig area reaches out on each side. */
-    public int radius() {
-        if (level != null && level.isClientSide && radius >= 0) return radius;
-        return Config.BASE_RADIUS.get() + Config.RADIUS_PER_UPGRADE.get() * upgrades(QuarryUpgradeItem.Kind.RANGE);
+    /** Energy one ore costs: more with fortune and autosmelt, nothing with the infinite engine. */
+    public int energyPerOre() {
+        if (has(QuarryUpgradeItem.Kind.INFINITE)) return 0;
+        double k = 1.0D + 0.25D * fortuneLevel();
+        if (has(QuarryUpgradeItem.Kind.SMELTING)) k += 0.5D;
+        return (int) Math.round(Config.ENERGY_PER_ORE.get() * k);
     }
 
-    public int ticksPerBlock() {
-        return Math.max(1, (int) Math.round(Config.TICKS_PER_BLOCK.get() * Math.pow(0.65D, upgrades(QuarryUpgradeItem.Kind.SPEED))));
+    private int oresWaiting() {
+        int n = 0;
+        for (int i = 0; i < STORAGE; i++) n += input.getStackInSlot(i).getCount();
+        return n;
     }
 
-    /** Fortune and smelting make a block dearer. */
-    public int energyPerBlock() {
-        double k = 1.0D + 0.25D * fortuneLevel() + 0.2D * upgrades(QuarryUpgradeItem.Kind.SPEED);
-        if (upgrades(QuarryUpgradeItem.Kind.SMELTING) > 0) k += 0.5D;
-        return (int) Math.round(Config.ENERGY_PER_BLOCK.get() * k);
-    }
-
-    // ------------------------------------------------------------------ digging
+    // ------------------------------------------------------------------ converting
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, QuarryBlockEntity be) {
         if (!(level instanceof ServerLevel server)) return;
         be.tick(server);
     }
 
-    /** The drill speeds up while the quarry digs (faster with speed upgrades) and runs down when it stops. */
+    /** The drill turns slowly while the converter works and comes to rest square to the chest when it stops. */
     public static void clientTick(Level level, BlockPos pos, BlockState state, QuarryBlockEntity be) {
         float target = be.isWorking() ? 2.5F : 0.0F;   // slow and steady: one turn in about 7 seconds
         be.drillSpeed += (target - be.drillSpeed) * 0.15F;
@@ -248,7 +234,6 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
         be.prevDrillAngle = be.drillAngle;
         be.drillAngle += be.drillSpeed;
         if (target == 0.0F && Math.abs(be.drillSpeed) < 0.5F) {
-            // coming to rest square to the chest, the way the drill hangs when the quarry is idle
             float rest = Math.round(be.drillAngle / 90.0F) * 90.0F;
             be.drillAngle += (rest - be.drillAngle) * 0.2F;
         }
@@ -270,110 +255,64 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
     private void tick(ServerLevel level) {
         if (level.getGameTime() % 20L == 0L) pushOutputs(level);
         energy.generate(Config.PASSIVE_GENERATION.get());
-        int r = radius();
-        if (r != scanRadius) {
-            // a new area size: start again from the top, already dug layers are skipped quickly
-            scanRadius = r;
-            restart();
-            sync();
-        }
-        maxProgress = ticksPerBlock();
+        maxProgress = Config.TICKS_PER_OPERATION.get();
         int oldStatus = status;
         status = work(level);
         if (status != oldStatus) sync();
     }
 
     private int work(ServerLevel level) {
-        if (finished) return STATUS_FINISHED;
         if (level.hasNeighborSignal(worldPosition)) return STATUS_REDSTONE;
-        if (cursorY == NOT_STARTED) cursorY = worldPosition.getY() - 1;
-        BlockPos target = null;
-        for (int i = 0; i < SCAN_BUDGET && target == null; i++) {
-            if (cursorY < level.getMinBuildHeight()) {
-                finished = true;
+        if (oresWaiting() == 0) {
+            if (progress != 0) {
                 progress = 0;
                 setChanged();
-                return STATUS_FINISHED;
             }
-            BlockPos p = cursorPos();
-            if (!level.isLoaded(p)) return STATUS_WAITING;
-            if (canDig(level, p)) {
-                target = p;
-            } else {
-                advance();
-            }
+            return STATUS_IDLE;
         }
-        if (target == null) return STATUS_WORKING;
-        int cost = energyPerBlock();
+        int cost = energyPerOre();
         if (energy.getEnergyStored() < cost) return STATUS_NO_ENERGY;
         if (progress < maxProgress) {
             progress++;
             setChanged();
             if (progress < maxProgress) return STATUS_WORKING;
         }
-        BlockState state = level.getBlockState(target);
-        FakePlayer digger = FakePlayerFactory.getMinecraft(level);
-        BlockEvent.BreakEvent event = new BlockEvent.BreakEvent(level, target, state, digger);
-        MinecraftForge.EVENT_BUS.post(event);
-        if (event.isCanceled()) {
-            // protected by a claim or another mod: leave it
-            advance();
-            progress = 0;
-            return STATUS_WORKING;
-        }
-        List<ItemStack> commonDrops = new ArrayList<>();
-        List<ItemStack> valuableDrops = new ArrayList<>();
-        for (ItemStack drop : Block.getDrops(state, level, target, null, digger, tool())) {
-            if (drop.isEmpty()) continue;
-            ItemStack stack = smelt(level, drop);
-            if (isValuable(stack)) {
-                valuableDrops.add(stack);
-            } else {
-                commonDrops.add(stack);
+        // one ore, or with the stack upgrade every ore in the input, as far as energy and room allow
+        boolean all = has(QuarryUpgradeItem.Kind.STACK);
+        int done = 0;
+        for (int slot = 0; slot < STORAGE; slot++) {
+            while (!input.getStackInSlot(slot).isEmpty()) {
+                if (energy.getEnergyStored() < cost) break;
+                List<ItemStack> results = convert(level, input.getStackInSlot(slot));
+                if (!fits(output, results)) break;
+                input.extractItem(slot, 1, false);
+                for (ItemStack r : results) ItemHandlerHelper.insertItemStacked(output, r, false);
+                energy.use(cost);
+                done++;
+                if (!all) break;
             }
+            if (done > 0 && !all) break;
         }
-        if (!fits(common, commonDrops) || !fits(valuables, valuableDrops)) return STATUS_FULL;
-        level.levelEvent(2001, target, Block.getId(state));
-        level.setBlock(target, state.getFluidState().createLegacyBlock(), 3);
-        for (ItemStack s : commonDrops) spill(level, ItemHandlerHelper.insertItemStacked(common, s, false));
-        for (ItemStack s : valuableDrops) spill(level, ItemHandlerHelper.insertItemStacked(valuables, s, false));
-        energy.use(cost);
-        minedBlocks++;
         progress = 0;
-        advance();
         setChanged();
+        if (done == 0) return energy.getEnergyStored() < cost ? STATUS_NO_ENERGY : STATUS_FULL;
+        converted += done;
         return STATUS_WORKING;
     }
 
-    private BlockPos cursorPos() {
-        int side = 2 * scanRadius + 1;
-        int row = cursorIndex / side, col = cursorIndex % side;
-        // snake through the rows so the digging moves on smoothly
-        if ((row & 1) == 1) col = side - 1 - col;
-        return new BlockPos(worldPosition.getX() - scanRadius + col, cursorY, worldPosition.getZ() - scanRadius + row);
-    }
-
-    private void advance() {
-        int side = 2 * scanRadius + 1;
-        if (++cursorIndex >= side * side) {
-            cursorIndex = 0;
-            cursorY--;
+    /** What one ore gives when mined with a pickaxe with the module's Fortune, smelted with autosmelt. */
+    private List<ItemStack> convert(ServerLevel level, ItemStack ore) {
+        List<ItemStack> out = new ArrayList<>();
+        List<ItemStack> drops;
+        if (ore.getItem() instanceof BlockItem bi) {
+            drops = Block.getDrops(bi.getBlock().defaultBlockState(), level, worldPosition, null, null, tool());
+        } else {
+            drops = List.of(ore.copyWithCount(1));
         }
-    }
-
-    private void restart() {
-        cursorY = worldPosition.getY() - 1;
-        cursorIndex = 0;
-        progress = 0;
-        finished = false;
-        setChanged();
-    }
-
-    private boolean canDig(ServerLevel level, BlockPos p) {
-        BlockState state = level.getBlockState(p);
-        if (state.isAir() || state.getBlock() instanceof LiquidBlock) return false;
-        if (state.getDestroySpeed(level, p) < 0.0F) return false;
-        return !(Config.SKIP_BLOCK_ENTITIES.get() && state.hasBlockEntity());
+        for (ItemStack drop : drops) {
+            if (!drop.isEmpty()) out.add(smelt(level, drop));
+        }
+        return out;
     }
 
     private ItemStack tool() {
@@ -383,9 +322,9 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
         return pick;
     }
 
-    /** With the smelting upgrade, ores and raw metals come out as ingots, gems and the like. */
+    /** With autosmelt, ores and raw metals come out as ingots, gems and the like. */
     private ItemStack smelt(ServerLevel level, ItemStack stack) {
-        if (upgrades(QuarryUpgradeItem.Kind.SMELTING) <= 0) return stack;
+        if (!has(QuarryUpgradeItem.Kind.SMELTING)) return stack;
         if (!stack.is(Tags.Items.RAW_MATERIALS) && !stack.is(Tags.Items.ORES)) return stack;
         return level.getRecipeManager().getRecipeFor(RecipeType.SMELTING, new SimpleContainer(stack), level)
                 .map(recipe -> {
@@ -394,11 +333,6 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
                     return result.isEmpty() ? stack : result;
                 })
                 .orElse(stack);
-    }
-
-    /** Ores, raw metals, gems, ingots and all other non-blocks go to the lower storage. */
-    private static boolean isValuable(ItemStack stack) {
-        return !(stack.getItem() instanceof BlockItem) || stack.is(Tags.Items.ORES) || stack.is(Tags.Items.STORAGE_BLOCKS);
     }
 
     private static boolean fits(ItemStackHandler handler, List<ItemStack> stacks) {
@@ -412,23 +346,18 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
         return true;
     }
 
-    private void spill(Level level, ItemStack rest) {
-        if (!rest.isEmpty()) Containers.dropItemStack(level, worldPosition.getX() + 0.5D, worldPosition.getY() + 1.0D, worldPosition.getZ() + 0.5D, rest);
-    }
-
-    /** Hands the dug items to containers touching the quarry, valuables first. */
+    /** Hands the results to containers touching the sides or the bottom (above is where ores come from). */
     private void pushOutputs(ServerLevel level) {
         for (Direction dir : Direction.values()) {
+            if (dir == Direction.UP) continue;
             BlockEntity neighbour = level.getBlockEntity(worldPosition.relative(dir));
             if (neighbour == null || neighbour instanceof QuarryBlockEntity) continue;
             neighbour.getCapability(ForgeCapabilities.ITEM_HANDLER, dir.getOpposite()).ifPresent(target -> {
-                for (ItemStackHandler from : new ItemStackHandler[]{valuables, common}) {
-                    for (int i = 0; i < from.getSlots(); i++) {
-                        ItemStack stack = from.getStackInSlot(i);
-                        if (stack.isEmpty()) continue;
-                        ItemStack rest = ItemHandlerHelper.insertItemStacked(target, stack.copy(), false);
-                        if (rest.getCount() != stack.getCount()) from.setStackInSlot(i, rest);
-                    }
+                for (int i = 0; i < output.getSlots(); i++) {
+                    ItemStack stack = output.getStackInSlot(i);
+                    if (stack.isEmpty()) continue;
+                    ItemStack rest = ItemHandlerHelper.insertItemStacked(target, stack.copy(), false);
+                    if (rest.getCount() != stack.getCount()) output.setStackInSlot(i, rest);
                 }
             });
         }
@@ -454,40 +383,24 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
     @Override
     protected void saveAdditional(CompoundTag tag) {
         super.saveAdditional(tag);
-        tag.put("Common", common.serializeNBT());
-        tag.put("Valuables", valuables.serializeNBT());
+        tag.put("Input", input.serializeNBT());
+        tag.put("Output", output.serializeNBT());
         tag.put("Upgrades", upgrades.serializeNBT());
         tag.putInt("Energy", energy.getEnergyStored());
         tag.putInt("Progress", progress);
-        tag.putInt("CursorY", cursorY);
-        tag.putInt("CursorIndex", cursorIndex);
-        tag.putInt("ScanRadius", scanRadius);
-        tag.putLong("Mined", minedBlocks);
-        writeState(tag);
-    }
-
-    private void writeState(CompoundTag tag) {
-        tag.putBoolean("Finished", finished);
+        tag.putLong("Converted", converted);
         tag.putInt("Status", status);
     }
 
     @Override
     public void load(CompoundTag tag) {
         super.load(tag);
-        if (tag.contains("Common")) common.deserializeNBT(sized(tag.getCompound("Common"), STORAGE));
-        if (tag.contains("Valuables")) valuables.deserializeNBT(sized(tag.getCompound("Valuables"), STORAGE));
+        if (tag.contains("Input")) input.deserializeNBT(sized(tag.getCompound("Input"), STORAGE));
+        if (tag.contains("Output")) output.deserializeNBT(sized(tag.getCompound("Output"), STORAGE));
         if (tag.contains("Upgrades")) upgrades.deserializeNBT(sized(tag.getCompound("Upgrades"), UPGRADES));
         if (tag.contains("Energy")) energy.set(tag.getInt("Energy"));
-        if (tag.contains("CursorY")) {
-            progress = tag.getInt("Progress");
-            cursorY = tag.getInt("CursorY");
-            cursorIndex = tag.getInt("CursorIndex");
-            scanRadius = tag.getInt("ScanRadius");
-            minedBlocks = tag.getLong("Mined");
-        }
-        if (tag.contains("Radius")) radius = tag.getInt("Radius");
-        if (tag.contains("TicksPerBlock")) clientTicksPerBlock = tag.getInt("TicksPerBlock");
-        finished = tag.getBoolean("Finished");
+        progress = tag.getInt("Progress");
+        converted = tag.getLong("Converted");
         status = tag.getInt("Status");
     }
 
@@ -496,13 +409,11 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
         return tag;
     }
 
-    /** The client only needs what the glowing border and the drill show. */
+    /** The client only needs whether the drill turns. */
     @Override
     public CompoundTag getUpdateTag() {
         CompoundTag tag = super.getUpdateTag();
-        writeState(tag);
-        tag.putInt("Radius", radius());
-        tag.putInt("TicksPerBlock", ticksPerBlock());
+        tag.putInt("Status", status);
         return tag;
     }
 

@@ -44,12 +44,12 @@ public class GoldenQuarry {
                     .lightLevel(state -> 10)));
     public static final RegistryObject<Item> QUARRY_ITEM = ITEMS.register("golden_quarry",
             () -> new BlockItem(QUARRY.get(), new Item.Properties().rarity(Rarity.EPIC)));
-    public static final RegistryObject<Item> SPEED_UPGRADE = upgrade("speed_upgrade", QuarryUpgradeItem.Kind.SPEED);
-    public static final RegistryObject<Item> RANGE_UPGRADE = upgrade("range_upgrade", QuarryUpgradeItem.Kind.RANGE);
     public static final RegistryObject<Item> FORTUNE_UPGRADE_2 = fortune(2);
     public static final RegistryObject<Item> FORTUNE_UPGRADE_5 = fortune(5);
     public static final RegistryObject<Item> FORTUNE_UPGRADE_10 = fortune(10);
     public static final RegistryObject<Item> SMELTING_UPGRADE = upgrade("smelting_upgrade", QuarryUpgradeItem.Kind.SMELTING);
+    public static final RegistryObject<Item> STACK_UPGRADE = upgrade("stack_upgrade", QuarryUpgradeItem.Kind.STACK);
+    public static final RegistryObject<Item> INFINITE_UPGRADE = upgrade("infinite_upgrade", QuarryUpgradeItem.Kind.INFINITE);
     public static final RegistryObject<BlockEntityType<QuarryBlockEntity>> QUARRY_BE = BLOCK_ENTITIES.register("golden_quarry",
             () -> BlockEntityType.Builder.of(QuarryBlockEntity::new, QUARRY.get()).build(null));
     public static final RegistryObject<MenuType<QuarryMenu>> QUARRY_MENU = MENUS.register("golden_quarry",
@@ -59,12 +59,12 @@ public class GoldenQuarry {
             .icon(() -> new ItemStack(QUARRY_ITEM.get()))
             .displayItems((params, output) -> {
                 output.accept(QUARRY_ITEM.get());
-                output.accept(SPEED_UPGRADE.get());
-                output.accept(RANGE_UPGRADE.get());
                 output.accept(FORTUNE_UPGRADE_2.get());
                 output.accept(FORTUNE_UPGRADE_5.get());
                 output.accept(FORTUNE_UPGRADE_10.get());
                 output.accept(SMELTING_UPGRADE.get());
+                output.accept(STACK_UPGRADE.get());
+                output.accept(INFINITE_UPGRADE.get());
             })
             .build());
 

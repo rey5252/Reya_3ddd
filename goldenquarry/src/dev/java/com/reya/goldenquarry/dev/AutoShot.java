@@ -130,13 +130,16 @@ public final class AutoShot {
                     .setValue(QuarryBlock.FACING, Direction.NORTH);
             level.setBlock(POS, lower, 3);
             if (level.getBlockEntity(POS) instanceof QuarryBlockEntity be) {
-                be.common().setStackInSlot(0, new ItemStack(Items.COBBLESTONE, 64));
-                be.common().setStackInSlot(1, new ItemStack(Items.COBBLESTONE, 64));
-                be.common().setStackInSlot(2, new ItemStack(Items.COBBLESTONE, 25));
-                for (int i = 0; i < 20; i++) be.valuables().setStackInSlot(i, new ItemStack(Items.IRON_INGOT, 64));
-                be.upgrades().setStackInSlot(0, new ItemStack(GoldenQuarry.RANGE_UPGRADE.get()));
-                be.upgrades().setStackInSlot(1, new ItemStack(GoldenQuarry.SPEED_UPGRADE.get()));
+                be.input().setStackInSlot(0, new ItemStack(Items.IRON_ORE, 64));
+                be.input().setStackInSlot(1, new ItemStack(Items.DEEPSLATE_GOLD_ORE, 48));
+                be.input().setStackInSlot(2, new ItemStack(Items.DIAMOND_ORE, 16));
+                be.input().setStackInSlot(3, new ItemStack(Items.REDSTONE_ORE, 32));
+                for (int i = 0; i < 6; i++) be.output().setStackInSlot(i, new ItemStack(Items.IRON_INGOT, 64));
+                be.upgrades().setStackInSlot(0, new ItemStack(GoldenQuarry.STACK_UPGRADE.get()));
+                be.upgrades().setStackInSlot(1, new ItemStack(GoldenQuarry.INFINITE_UPGRADE.get()));
                 be.upgrades().setStackInSlot(2, new ItemStack(GoldenQuarry.SMELTING_UPGRADE.get()));
+                // paused by a redstone signal, so the ores stay in for the pictures
+                level.setBlock(POS.below(), net.minecraft.world.level.block.Blocks.REDSTONE_BLOCK.defaultBlockState(), 3);
                 be.upgrades().setStackInSlot(QuarryBlockEntity.FORTUNE_SLOT, new ItemStack(GoldenQuarry.FORTUNE_UPGRADE_10.get()));
                 be.getCapability(ForgeCapabilities.ENERGY).ifPresent(e -> {
                     for (int i = 0; i < 20; i++) e.receiveEnergy(100_000, false);

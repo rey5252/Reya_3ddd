@@ -17,7 +17,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 
 /**
- * Golden quarry GUI, pixel for pixel the reference: textures/gui/quarry.png is read off the
+ * Fortune converter GUI, pixel for pixel the reference: textures/gui/quarry.png is read off the
  * reference screenshot (tools/extract_gui.py). This draws on it the energy and progress fills (cut
  * from the same screenshot, in quarry_widgets.png), and the tooltips.
  */
@@ -71,36 +71,37 @@ public class QuarryScreen extends AbstractContainerScreen<QuarryMenu> {
         if (lx >= TIP_X1 && lx < TIP_X2 && ly >= ENERGY_Y - 1 && ly < ENERGY_Y + BAR_H) {
             tip.add(Component.translatable("gui.goldenquarry.energy", String.format("%,d", menu.energy()), String.format("%,d", menu.capacity())));
             QuarryBlockEntity be = menu.quarry();
-            if (be != null) tip.add(Component.translatable("gui.goldenquarry.energy_per_block", be.energyPerBlock()).withStyle(ChatFormatting.GRAY));
+            if (be != null) tip.add(Component.translatable("gui.goldenquarry.energy_per_ore", be.energyPerOre()).withStyle(ChatFormatting.GRAY));
         } else if (lx >= TIP_X1 && lx < TIP_X2 && ly >= PROGRESS_Y - 1 && ly < PROGRESS_Y + BAR_H
 ) {
             tip.add(Component.translatable("gui.goldenquarry.status." + menu.status()).withStyle(statusColor(menu.status())));
-            int side = menu.radius() * 2 + 1;
-            tip.add(Component.translatable("gui.goldenquarry.area", side, side).withStyle(ChatFormatting.GRAY));
-            tip.add(Component.translatable("gui.goldenquarry.layer", menu.layer()).withStyle(ChatFormatting.GRAY));
+            tip.add(Component.translatable("gui.goldenquarry.waiting", menu.oresWaiting()).withStyle(ChatFormatting.GRAY));
             tip.add(Component.translatable("gui.goldenquarry.speed", String.format("%.2f", menu.maxProgress() / 20.0F)).withStyle(ChatFormatting.GRAY));
+            tip.add(Component.translatable("gui.goldenquarry.fortune", menu.fortune()).withStyle(ChatFormatting.GRAY));
             QuarryBlockEntity be = menu.quarry();
             if (be != null) {
                 tip.add(Component.translatable("gui.goldenquarry.upgrades",
-                        be.upgrades(QuarryUpgradeItem.Kind.SPEED), be.upgrades(QuarryUpgradeItem.Kind.RANGE),
-                        be.fortuneLevel(),
-                        Component.translatable(be.upgrades(QuarryUpgradeItem.Kind.SMELTING) > 0 ? "gui.goldenquarry.yes" : "gui.goldenquarry.no"))
+                        yesNo(be.has(QuarryUpgradeItem.Kind.SMELTING)), yesNo(be.has(QuarryUpgradeItem.Kind.STACK)),
+                        yesNo(be.has(QuarryUpgradeItem.Kind.INFINITE)))
                         .withStyle(ChatFormatting.DARK_GRAY));
             }
         } else if (hoveredSlot != null && hoveredSlot.index < QuarryMenu.MACHINE_SLOTS && !hoveredSlot.hasItem()) {
             int i = hoveredSlot.index;
-            tip.add(Component.translatable(i < QuarryMenu.VALUABLE_START ? "gui.goldenquarry.slot.common"
-                    : i < QuarryMenu.UPGRADE_START ? "gui.goldenquarry.slot.valuable"
+            tip.add(Component.translatable(i < QuarryMenu.OUTPUT_START ? "gui.goldenquarry.slot.input"
+                    : i < QuarryMenu.UPGRADE_START ? "gui.goldenquarry.slot.output"
                     : i == QuarryMenu.UPGRADE_START + QuarryBlockEntity.FORTUNE_SLOT ? "gui.goldenquarry.slot.fortune" : "gui.goldenquarry.slot.upgrade"));
         }
         if (!tip.isEmpty()) g.renderComponentTooltip(font, tip, mx, my);
     }
 
+    private static Component yesNo(boolean on) {
+        return Component.translatable(on ? "gui.goldenquarry.yes" : "gui.goldenquarry.no");
+    }
+
     private static ChatFormatting statusColor(int status) {
         return switch (status) {
             case QuarryBlockEntity.STATUS_WORKING -> ChatFormatting.GREEN;
-            case QuarryBlockEntity.STATUS_FINISHED -> ChatFormatting.GOLD;
-            case QuarryBlockEntity.STATUS_STOPPED, QuarryBlockEntity.STATUS_REDSTONE, QuarryBlockEntity.STATUS_WAITING -> ChatFormatting.YELLOW;
+            case QuarryBlockEntity.STATUS_IDLE, QuarryBlockEntity.STATUS_REDSTONE -> ChatFormatting.YELLOW;
             default -> ChatFormatting.RED;
         };
     }

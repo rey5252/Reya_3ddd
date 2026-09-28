@@ -16,22 +16,22 @@ import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.items.SlotItemHandler;
 
 /**
- * Laid out exactly like the reference GUI (textures/gui/quarry.png is built from it): plain blocks
- * 9x3 in the brown slots on top, the energy and progress bars in the middle, valuables 9x3 in the
- * golden slots below; three golden upgrade slots and the grey rack on the right; the player inventory
- * in its own panel underneath. All positions are texture pixels.
+ * Laid out exactly like the reference GUI (textures/gui/quarry.png is built from it): ores 9x3 in
+ * the brown slots on top, the energy and progress bars in the middle, the results 9x3 in the golden
+ * slots below; three golden upgrade slots and the grey rack on the right, the fortune module's slot
+ * left of the bars; the player inventory in its own panel underneath. All positions are texture pixels.
  */
 public class QuarryMenu extends AbstractContainerMenu {
     public static final int WIDTH = 212;
     public static final int HEIGHT = 247;
-    public static final int COMMON_X = 15, COMMON_Y = 15;
-    public static final int VALUABLE_X = 15, VALUABLE_Y = 95;
+    public static final int INPUT_X = 15, INPUT_Y = 15;
+    public static final int OUTPUT_X = 15, OUTPUT_Y = 95;
     /** Upgrade slots: the three golden frames on the right and the frame left of the bars. */
     public static final int[][] UPGRADE_POS = {{182, 19}, {182, 37}, {182, 55}, {16, 73}};
     public static final int INV_X = 26, INV_Y = 165, HOTBAR_Y = 223;
 
-    public static final int COMMON_START = 0;
-    public static final int VALUABLE_START = QuarryBlockEntity.STORAGE;
+    public static final int INPUT_START = 0;
+    public static final int OUTPUT_START = QuarryBlockEntity.STORAGE;
     public static final int UPGRADE_START = QuarryBlockEntity.STORAGE * 2;
     public static final int MACHINE_SLOTS = UPGRADE_START + QuarryBlockEntity.UPGRADES;
 
@@ -42,7 +42,7 @@ public class QuarryMenu extends AbstractContainerMenu {
 
     public QuarryMenu(int id, Inventory inventory, FriendlyByteBuf buf) {
         this(id, inventory, inventory.player.level().getBlockEntity(buf.readBlockPos()) instanceof QuarryBlockEntity b ? b : null,
-                new SimpleContainerData(10));
+                new SimpleContainerData(9));
     }
 
     public QuarryMenu(int id, Inventory inventory, @Nullable QuarryBlockEntity quarry, ContainerData data) {
@@ -50,11 +50,11 @@ public class QuarryMenu extends AbstractContainerMenu {
         this.quarry = quarry;
         this.pos = quarry != null ? quarry.getBlockPos() : BlockPos.ZERO;
         this.data = data;
-        IItemHandler common = quarry != null ? quarry.common() : new ItemStackHandler(QuarryBlockEntity.STORAGE);
-        IItemHandler valuables = quarry != null ? quarry.valuables() : new ItemStackHandler(QuarryBlockEntity.STORAGE);
+        IItemHandler input = quarry != null ? quarry.input() : new ItemStackHandler(QuarryBlockEntity.STORAGE);
+        IItemHandler output = quarry != null ? quarry.output() : new ItemStackHandler(QuarryBlockEntity.STORAGE);
         IItemHandler upgrades = quarry != null ? quarry.upgrades() : new ItemStackHandler(QuarryBlockEntity.UPGRADES);
-        addGrid(common, COMMON_X, COMMON_Y);
-        addGrid(valuables, VALUABLE_X, VALUABLE_Y);
+        addGrid(input, INPUT_X, INPUT_Y, true);
+        addGrid(output, OUTPUT_X, OUTPUT_Y, false);
         for (int i = 0; i < QuarryBlockEntity.UPGRADES; i++) {
             addSlot(new SlotItemHandler(upgrades, i, UPGRADE_POS[i][0], UPGRADE_POS[i][1]) {
                 @Override
@@ -74,14 +74,14 @@ public class QuarryMenu extends AbstractContainerMenu {
         addDataSlots(data);
     }
 
-    /** Output grid: things can be taken out, never put in. */
-    private void addGrid(IItemHandler handler, int x, int y) {
+    /** The ore grid takes ores; the result grid gives things out, nothing goes in. */
+    private void addGrid(IItemHandler handler, int x, int y, boolean ores) {
         for (int r = 0; r < 3; r++) {
             for (int c = 0; c < 9; c++) {
                 addSlot(new SlotItemHandler(handler, r * 9 + c, x + c * 18, y + r * 18) {
                     @Override
                     public boolean mayPlace(ItemStack stack) {
-                        return false;
+                        return ores && QuarryBlockEntity.isOre(stack);
                     }
                 });
             }
@@ -108,12 +108,12 @@ public class QuarryMenu extends AbstractContainerMenu {
         return data.get(7);
     }
 
-    public int layer() {
-        return data.get(8);
+    public int oresWaiting() {
+        return data.get(6);
     }
 
-    public int radius() {
-        return data.get(9);
+    public int fortune() {
+        return data.get(8);
     }
 
     @Nullable
@@ -131,6 +131,8 @@ public class QuarryMenu extends AbstractContainerMenu {
             if (!moveItemStackTo(stack, MACHINE_SLOTS, slots.size(), true)) return ItemStack.EMPTY;
         } else if (stack.getItem() instanceof QuarryUpgradeItem) {
             if (!moveItemStackTo(stack, UPGRADE_START, MACHINE_SLOTS, false)) return ItemStack.EMPTY;
+        } else if (QuarryBlockEntity.isOre(stack)) {
+            if (!moveItemStackTo(stack, INPUT_START, OUTPUT_START, false)) return ItemStack.EMPTY;
         } else {
             return ItemStack.EMPTY;
         }
