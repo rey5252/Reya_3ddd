@@ -13,7 +13,8 @@ def _lighten(c, t):
 
 
 def frame(px, shine_pos=None, glow=0.0, gem=()):
-    """px: 16x16 RGBA rows. A diagonal band of light at x + y = shine_pos; gem pixels lightened by glow."""
+    """px: 16x16 RGBA rows. A diagonal band of light at x - y = shine_pos, along the card's own light
+    streak (top left to bottom right); gem pixels lightened by glow."""
     out = []
     for y, row in enumerate(px):
         new = []
@@ -23,7 +24,7 @@ def frame(px, shine_pos=None, glow=0.0, gem=()):
                 continue
             t = 0.0
             if shine_pos is not None:
-                d = abs(x + y - shine_pos)
+                d = abs(x - y - shine_pos)
                 t = 0.55 if d < 0.75 else 0.28 if d < 1.75 else 0.0
             if (x, y) in gem:
                 t = max(t, glow)
@@ -44,8 +45,9 @@ def save(path, frames, frametime=2, first_hold=None):
 
 
 def shine_only(px):
-    """A card: the shine passes over it now and then."""
-    frames = [px] + [frame(px, shine_pos=p) for p in range(-2, 33, 3)]
+    """A card: now and then the shine runs along its light streak, from the top right corner over
+    to the bottom left."""
+    frames = [px] + [frame(px, shine_pos=p) for p in range(16, -17, -3)]
     return frames
 
 
@@ -55,6 +57,6 @@ def shine_and_glow(px, gem):
     n = 32
     for k in range(n):
         glow = 0.3 * (0.5 + 0.5 * math.sin(2 * math.pi * k / n))
-        shine = -2 + k * 2.2 if k < 16 else None
+        shine = 16 - k * 2.2 if k < 16 else None
         frames.append(frame(px, shine_pos=shine, glow=glow, gem=gem))
     return frames
