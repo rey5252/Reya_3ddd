@@ -166,7 +166,7 @@ def main():
         drill[j][12] = c
     for j, c in enumerate((m, m, m, M)):
         drill[j][13] = c
-    drill[0][15] = F                                   # the plain grey block at the foot, the brackets
+    drill[0][15] = F                                   # the plain grey brackets in the cage
     save("qi_drill", drill)
     # glass: very faintly blue, only where the cage and the side openings are open (the frame's own
     # pixels stay clear, so nothing lies on top of them). A few faint streaks on the cage's upper

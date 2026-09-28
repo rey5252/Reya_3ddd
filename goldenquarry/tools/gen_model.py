@@ -76,7 +76,7 @@ def drill_elements():
     1 and 3, see tools/extract_ingame.py): a black head 8.75 wide and 2.625 high whose texture is
     10 pixels across (0.875 each), a black shaft down to the floor, four grey blades on the
     diagonals (a thin upper part out under the head, a lower part in at the shaft, so they close in
-    towards the tip) and a plain grey block at the foot."""
+    towards the tip)."""
     els = []
     black = {"texture": "#drill", "uv": [10, 0, 11, 1]}
     side_a = {"texture": "#drill", "uv": [0, 10, 10, 13]}
@@ -87,13 +87,12 @@ def drill_elements():
     upper = {"texture": "#drill", "uv": [11, 0, 12, 2]}
     lower = [{"texture": "#drill", "uv": [12, 0, 13, 4]}, {"texture": "#drill", "uv": [13, 0, 14, 4]}]
     for i, (sx, sz) in enumerate(((-1, -1), (1, -1), (1, 1), (-1, 1))):
-        cx, cz = 8 + sx * 2.3, 8 + sz * 2.3
-        els.append(box([cx - 0.35, 9.9, cz - 0.35], [cx + 0.35, 11.8, cz + 0.35], {n: upper for n in SIDES + ["down"]}))
+        # the upper part reaches over the lower one, so there is no slit between them
+        cx, cz = 8 + sx * 2.15, 8 + sz * 2.15
+        els.append(box([cx - 0.45, 9.9, cz - 0.45], [cx + 0.45, 11.8, cz + 0.45], {n: upper for n in SIDES + ["down"]}))
         cx, cz = 8 + sx * 1.4, 8 + sz * 1.4
         low = lower[i % 2]
         els.append(box([cx - 0.45, 6.6, cz - 0.45], [cx + 0.45, 10.4, cz + 0.45], {n: low for n in SIDES + ["down"]}))
-    flat = {"texture": "#drill", "uv": [15, 0, 16, 1]}
-    els.append(box([5, 6, 9.75], [7, 7.25, 11.75], {n: flat for n in SIDES + ["up"]}))
     return els
 
 
