@@ -18,13 +18,14 @@ public final class ClientSetup {
 
     @SubscribeEvent
     public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
-        event.registerBlockEntityRenderer(GoldenQuarry.QUARRY_BE.get(), QuarryAreaRenderer::new);
+        event.registerBlockEntityRenderer(GoldenQuarry.QUARRY_BE.get(), QuarryRenderer::new);
     }
 
-    /** The spinning drill is a model of its own, not part of any block state. */
+    /** The spinning drill and the see-through glass are models of their own, not part of any block state. */
     @SubscribeEvent
     public static void registerModels(ModelEvent.RegisterAdditional event) {
-        event.register(QuarryAreaRenderer.DRILL_MODEL);
+        event.register(QuarryRenderer.DRILL_MODEL);
+        event.register(QuarryRenderer.GLASS_MODEL);
     }
 
     private ClientSetup() {

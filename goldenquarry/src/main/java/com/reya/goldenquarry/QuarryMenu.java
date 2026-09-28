@@ -104,10 +104,6 @@ public class QuarryMenu extends AbstractContainerMenu {
         return Math.max(1, data.get(5));
     }
 
-    public boolean showArea() {
-        return (data.get(6) & QuarryBlockEntity.FLAG_SHOW_AREA) != 0;
-    }
-
     public int status() {
         return data.get(7);
     }

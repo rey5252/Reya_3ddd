@@ -5,7 +5,6 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Containers;
@@ -101,13 +100,7 @@ public class QuarryBlock extends BaseEntityBlock {
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         if (level.isClientSide) return InteractionResult.SUCCESS;
         if (level.getBlockEntity(pos) instanceof QuarryBlockEntity be && player instanceof ServerPlayer sp) {
-            if (player.isShiftKeyDown() && player.getItemInHand(hand).isEmpty()) {
-                // sneak + empty hand: show or hide the glowing border
-                be.toggleShowArea();
-                sp.displayClientMessage(Component.translatable(be.showArea() ? "gui.goldenquarry.area_shown" : "gui.goldenquarry.area_hidden"), true);
-            } else {
-                NetworkHooks.openScreen(sp, be, pos);
-            }
+            NetworkHooks.openScreen(sp, be, pos);
         }
         return InteractionResult.CONSUME;
     }

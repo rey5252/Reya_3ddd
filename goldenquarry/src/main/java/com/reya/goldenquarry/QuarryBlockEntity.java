@@ -58,12 +58,10 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
 
     public static final int STATUS_WORKING = 0, STATUS_STOPPED = 1, STATUS_NO_ENERGY = 2, STATUS_FULL = 3,
             STATUS_FINISHED = 4, STATUS_REDSTONE = 5, STATUS_WAITING = 6;
-    public static final int FLAG_SHOW_AREA = 2;
     /** How many empty or skipped positions one tick may look through for the next block to dig. */
     private static final int SCAN_BUDGET = 1024;
     private static final int NOT_STARTED = Integer.MIN_VALUE;
 
-    private boolean showArea = true;
     private boolean finished;
     private int status = STATUS_WORKING;
     private int progress;
@@ -160,7 +158,7 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
                 case 3 -> (energy.getMaxEnergyStored() >>> 15) & 0x7FFF;
                 case 4 -> progress;
                 case 5 -> maxProgress;
-                case 6 -> showArea ? FLAG_SHOW_AREA : 0;
+                case 6 -> 0;
                 case 7 -> status;
                 case 8 -> cursorY == NOT_STARTED ? worldPosition.getY() - 1 : cursorY;
                 default -> radius();
@@ -191,10 +189,6 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
 
     public ItemStackHandler upgrades() {
         return upgrades;
-    }
-
-    public boolean showArea() {
-        return showArea;
     }
 
     /** Client side: the radius and state come with the block update. */
@@ -440,14 +434,6 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
         }
     }
 
-    // ------------------------------------------------------------------ buttons
-
-    public void toggleShowArea() {
-        showArea = !showArea;
-        setChanged();
-        sync();
-    }
-
     private void sync() {
         if (level != null && !level.isClientSide) level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
     }
@@ -481,7 +467,6 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
     }
 
     private void writeState(CompoundTag tag) {
-        tag.putBoolean("ShowArea", showArea);
         tag.putBoolean("Finished", finished);
         tag.putInt("Status", status);
     }
@@ -502,7 +487,6 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
         }
         if (tag.contains("Radius")) radius = tag.getInt("Radius");
         if (tag.contains("TicksPerBlock")) clientTicksPerBlock = tag.getInt("TicksPerBlock");
-        showArea = !tag.contains("ShowArea") || tag.getBoolean("ShowArea");
         finished = tag.getBoolean("Finished");
         status = tag.getInt("Status");
     }
@@ -529,8 +513,7 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
 
     @Override
     public AABB getRenderBoundingBox() {
-        int r = radius() + 2;
-        return new AABB(worldPosition).inflate(r, 1.0D, r);
+        return new AABB(worldPosition);
     }
 
     @Override

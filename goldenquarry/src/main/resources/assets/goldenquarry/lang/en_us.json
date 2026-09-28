@@ -33,7 +33,5 @@
   "gui.goldenquarry.slot.fortune": "Fortune charm (level 2, 5 or 10)",
   "item.goldenquarry.fortune_upgrade_2": "Quarry Fortune Upgrade II",
   "item.goldenquarry.fortune_upgrade_5": "Quarry Fortune Upgrade V",
-  "item.goldenquarry.fortune_upgrade_10": "Quarry Fortune Upgrade X",
-  "gui.goldenquarry.area_shown": "Area border shown",
-  "gui.goldenquarry.area_hidden": "Area border hidden"
+  "item.goldenquarry.fortune_upgrade_10": "Quarry Fortune Upgrade X"
 }

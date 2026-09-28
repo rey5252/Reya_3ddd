@@ -33,7 +33,5 @@
   "gui.goldenquarry.slot.fortune": "Удача (уровень 2, 5 или 10)",
   "item.goldenquarry.fortune_upgrade_2": "Улучшение удачи карьера II",
   "item.goldenquarry.fortune_upgrade_5": "Улучшение удачи карьера V",
-  "item.goldenquarry.fortune_upgrade_10": "Улучшение удачи карьера X",
-  "gui.goldenquarry.area_shown": "Рамка зоны показана",
-  "gui.goldenquarry.area_hidden": "Рамка зоны скрыта"
+  "item.goldenquarry.fortune_upgrade_10": "Улучшение удачи карьера X"
 }

@@ -1,0 +1,187 @@
+{
+  "render_type": "minecraft:translucent",
+  "ambientocclusion": false,
+  "textures": {
+    "particle": "goldenquarry:block/qi_glass",
+    "glass": "goldenquarry:block/qi_glass",
+    "glass_top": "goldenquarry:block/qi_glass_top"
+  },
+  "elements": [
+    {
+      "from": [
+        1,
+        10,
+        1
+      ],
+      "to": [
+        15,
+        16,
+        1
+      ],
+      "faces": {
+        "north": {
+          "texture": "#glass"
+        },
+        "south": {
+          "texture": "#glass",
+          "uv": [
+            15,
+            0,
+            1,
+            6
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        1,
+        10,
+        15
+      ],
+      "to": [
+        15,
+        16,
+        15
+      ],
+      "faces": {
+        "south": {
+          "texture": "#glass"
+        },
+        "north": {
+          "texture": "#glass",
+          "uv": [
+            1,
+            0,
+            15,
+            6
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        1,
+        10,
+        1
+      ],
+      "to": [
+        1,
+        16,
+        15
+      ],
+      "faces": {
+        "west": {
+          "texture": "#glass"
+        },
+        "east": {
+          "texture": "#glass",
+          "uv": [
+            1,
+            0,
+            15,
+            6
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        15,
+        10,
+        1
+      ],
+      "to": [
+        15,
+        16,
+        15
+      ],
+      "faces": {
+        "east": {
+          "texture": "#glass"
+        },
+        "west": {
+          "texture": "#glass",
+          "uv": [
+            15,
+            0,
+            1,
+            6
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        1,
+        16,
+        1
+      ],
+      "to": [
+        15,
+        16,
+        15
+      ],
+      "faces": {
+        "up": {
+          "texture": "#glass_top"
+        },
+        "down": {
+          "texture": "#glass_top"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        6,
+        4
+      ],
+      "to": [
+        0,
+        10,
+        12
+      ],
+      "faces": {
+        "west": {
+          "texture": "#glass"
+        },
+        "east": {
+          "texture": "#glass",
+          "uv": [
+            4,
+            6,
+            12,
+            10
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        16,
+        6,
+        4
+      ],
+      "to": [
+        16,
+        10,
+        12
+      ],
+      "faces": {
+        "east": {
+          "texture": "#glass"
+        },
+        "west": {
+          "texture": "#glass",
+          "uv": [
+            12,
+            6,
+            4,
+            10
+          ]
+        }
+      }
+    }
+  ]
+}

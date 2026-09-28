@@ -4,8 +4,8 @@ Run from the goldenquarry folder:  python3 tools/gen_model.py
 One block. The chest is 10 high: a solid bottom 6 high, and on it the ornate front and back walls
 (3 deep) with the sides open between them, so the drill inside shows; brown pillars stand at the
 openings' edges. On the chest sits the open cage (sheets one pixel in from the edges, 6 high, a
-ring on top). golden_quarry_drill is the drill standing in the hollow; the block entity renderer
-turns it slowly. The textures come from tools/extract_ingame.py and use the default UVs: every
+ring on top). golden_quarry_drill is the drill standing in the hollow, which the block entity renderer turns
+slowly; golden_quarry_glass is the glass over the cage and the side openings, drawn translucent. The textures come from tools/extract_ingame.py and use the default UVs: every
 face texture is laid out in block space.
 """
 import json
@@ -55,28 +55,51 @@ def top_elements():
     els.append(sheet([1, 10, 1], [1, 16, 15], "west", "east", "#side"))
     els.append(sheet([15, 10, 1], [15, 16, 15], "east", "west", "#side"))
     els.append(box([1, 16, 1], [15, 16, 15], {"up": {"texture": "#ring"}, "down": {"texture": "#ring"}}))
-    # little grey brackets stepping in from the cage's corners
-    grey = {"texture": "#bracket", "uv": [8, 1, 9, 2]}
+    # little grey brackets stepping in from the cage's corners, kept a hair off the cage sheets
+    # (faces in the same plane as a sheet flicker)
+    grey = {"texture": "#bracket", "uv": [12, 0, 13, 1]}
     for cx, cz, dx, dz in ((1, 1, 1, 1), (14, 1, -1, 1), (1, 14, 1, -1), (14, 14, -1, -1)):
         for step, y in ((0, 13), (1, 12)):
             x, z = cx + dx * step, cz + dz * step
-            els.append(box([x, y, z], [x + 1, y + 1, z + 1], {n: grey for n in SIDES + ["up", "down"]}))
+            lo = [x + (0.1 if x == 1 else 0), y, z + (0.1 if z == 1 else 0)]
+            hi = [x + 1 - (0.1 if x == 14 else 0), y + 1, z + 1 - (0.1 if z == 14 else 0)]
+            els.append(box(lo, hi, {n: grey for n in SIDES + ["up", "down"]}))
     return els
 
 
 def drill_elements():
-    """Black head with the tan ring on top, grey legs round a black shaft, down to the floor."""
+    """Black head with the tan ring on top and grey blocks round its sides; under it a black shaft
+    with a grey leg on each side, down to the floor, and a grey tooth at the foot."""
     els = []
     side = {"texture": "#drill", "uv": [0, 8, 8, 11]}
+    black = {"texture": "#drill", "uv": [10, 0, 12, 8]}
     els.append(box([4, 11, 4], [12, 14, 12], {"north": side, "south": side, "west": side, "east": side,
-                                             "up": {"texture": "#drill", "uv": [0, 0, 8, 8]},
-                                             "down": {"texture": "#drill", "uv": [0, 0, 8, 8]}}))
-    shaft = {"texture": "#drill", "uv": [10, 0, 12, 5]}
-    els.append(box([7, 6, 7], [9, 11, 9], {n: shaft for n in SIDES}))
+                                             "up": {"texture": "#drill", "uv": [0, 0, 8, 8]}, "down": black}))
+    els.append(box([7, 6, 7], [9, 11, 9], {n: black for n in SIDES}))
     leg = {"texture": "#drill", "uv": [8, 0, 10, 5]}
-    for frm, to in (([5, 6.5, 7.25], [6.5, 11, 8.75]), ([9.5, 6.5, 7.25], [11, 11, 8.75]),
-                    ([7.25, 6.5, 5], [8.75, 11, 6.5]), ([7.25, 6.5, 9.5], [8.75, 11, 11])):
-        els.append(box(frm, to, {n: leg for n in SIDES + ["down"]}))
+    for frm, to in (([5, 6, 7], [7, 11, 9]), ([9, 6, 7], [11, 11, 9]), ([7, 6, 5], [9, 11, 7]), ([7, 6, 9], [9, 11, 11])):
+        els.append(box(frm, to, {n: leg for n in SIDES}))
+    tooth = {"texture": "#drill", "uv": [12, 0, 13, 1]}
+    els.append(box([9, 6, 4.5], [10.5, 7, 6], {n: tooth for n in SIDES + ["up"]}))
+    return els
+
+
+def glass_elements():
+    """See-through glass over the cage's four sides and its top, and over the chest's side
+    openings; the glass texture is clear wherever the frame has pixels of its own."""
+    els = []
+    def pane(frm, to, out, inn, tex, mirror):
+        f = {out: {"texture": tex}}
+        f[inn] = {"texture": tex, "uv": mirror}
+        return box(frm, to, f)
+    rev, fwd = [15, 0, 1, 6], [1, 0, 15, 6]
+    els.append(pane([1, 10, 1], [15, 16, 1], "north", "south", "#glass", rev))
+    els.append(pane([1, 10, 15], [15, 16, 15], "south", "north", "#glass", fwd))
+    els.append(pane([1, 10, 1], [1, 16, 15], "west", "east", "#glass", fwd))
+    els.append(pane([15, 10, 1], [15, 16, 15], "east", "west", "#glass", rev))
+    els.append(box([1, 16, 1], [15, 16, 15], {"up": {"texture": "#glass_top"}, "down": {"texture": "#glass_top"}}))
+    els.append(pane([0, 6, 4], [0, 10, 12], "west", "east", "#glass", [4, 6, 12, 10]))
+    els.append(pane([16, 6, 4], [16, 10, 12], "east", "west", "#glass", [12, 6, 4, 10]))
     return els
 
 
@@ -115,6 +138,13 @@ def main():
         "ambientocclusion": False,
         "textures": {"particle": "goldenquarry:block/qi_drill", "drill": "goldenquarry:block/qi_drill"},
         "elements": drill_elements(),
+    })
+    write(f"{ASSETS}/models/block/golden_quarry_glass.json", {
+        "render_type": "minecraft:translucent",
+        "ambientocclusion": False,
+        "textures": {"particle": "goldenquarry:block/qi_glass", "glass": "goldenquarry:block/qi_glass",
+                     "glass_top": "goldenquarry:block/qi_glass_top"},
+        "elements": glass_elements(),
     })
     write(f"{ASSETS}/models/item/golden_quarry.json", {
         "parent": "minecraft:block/block",

@@ -93,7 +93,18 @@ def main():
     for x in range(16):
         pillar[0][x] = (252, 199, 106, 255)
     save("qi_pillar", pillar)
-    save("qi_walltop", [[(22, 22, 22, 255) if (x + y) % 3 else (37, 38, 39, 255) for x in range(16)] for y in range(16)])
+    # the tops of the front and back walls (shot 10, looking down on the front wall): gold and
+    # black meander, brown and tan at the corners; row 0 is the front edge (z 0), rows 13..15 the
+    # back wall's, mirrored so its outer edge is row 15
+    top = unwarp(10, ((58, 12), (893, 12), (43, 148), (890, 148)), 16, 3, 1.0)
+    top[0][2] = (37, 38, 39, 255)                  # a grey bracket in front of the far row there
+    wall = blank()
+    for j, row in enumerate((top[2], top[1], top[0])):
+        wall[j] = row
+        wall[15 - j] = row
+    for j in range(3, 13):
+        wall[j] = [(22, 22, 22, 255)] * 16
+    save("qi_walltop", wall)
     # the cage's top ring (shot 4): black bars with tan knobs, tan and brown caps at the corners
     ring = blank()
     T, Bn, K, G = (252, 199, 106, 255), (184, 125, 72, 255), (22, 22, 22, 255), (37, 38, 39, 255)
@@ -106,9 +117,11 @@ def main():
     for cx, cy in ((1, 1), (13, 1), (1, 13), (13, 13)):
         ring[cy][cx], ring[cy][cx + 1], ring[cy + 1][cx], ring[cy + 1][cx + 1] = T, Bn, Bn, T
     save("qi_ring", ring)
-    # the drill (shots 1 and 4): black head with a grey band and a tan ring on top, grey sides,
-    # grey legs and a black shaft
-    L, g, k, W = (124, 134, 138, 255), (84, 84, 93, 255), (34, 42, 43, 255), (230, 232, 232, 255)
+    # the drill (shots 4 and 8): black head with a grey band and a tan ring on top, dark grey
+    # blocks on its sides, grey legs round a black shaft, a grey tooth at the foot
+    K, G = (0, 0, 0, 255), (37, 38, 39, 255)
+    g1, g2, g3, g4 = (60, 59, 68, 255), (68, 68, 74, 255), (90, 101, 105, 255), (99, 108, 111, 255)
+    d1, d2, grey = (28, 34, 35, 255), (45, 54, 57, 255), (125, 125, 125, 255)
     Tl, Td = (252, 199, 106, 255), (130, 76, 50, 255)
     drill = blank()
     top = ["KKKKKKKK",
@@ -119,21 +132,48 @@ def main():
            "KGtttbGK",
            "KGGGGGGK",
            "KKKKKKKK"]
-    pal = {"K": K, "G": G, "t": Tl, "b": Bn, "d": Td, ".": (10, 10, 10, 255)}
+    pal = {"K": (22, 22, 22, 255), "G": G, "t": Tl, "b": Bn, "d": Td, ".": (10, 10, 10, 255)}
     for j, row in enumerate(top):
         for i, ch in enumerate(row):
             drill[j][i] = pal[ch]
-    sides = ["KKKKKKKK",
-             "LgKkLLKg",
-             "gLKkgLKL"]
-    pal = {"K": K, "L": L, "g": g, "k": k}
+    sides = ["KKKKKKKK",           # shot 8: the head's side, black top, two rows of grey blocks
+             "K12K21d2",
+             "K13K1d13"]
+    pal = {"K": K, "1": g1, "2": g2, "3": g3, "d": d1}
     for j, row in enumerate(sides):
         for i, ch in enumerate(row):
             drill[8 + j][i] = pal[ch]
-    for j in range(16):                              # legs (column 8..9) and shaft (10..11)
-        drill[j][8], drill[j][9] = (L, g) if j % 3 else (W, L)
-        drill[j][10], drill[j][11] = K, (16, 16, 16, 255)
+    legs = ["22", "14", "23", "1e", "d2"]          # shot 8: a leg, 2 wide, top to bottom
+    pal = {"1": g1, "2": g2, "3": g3, "4": g4, "d": d1, "e": d2}
+    for j, row in enumerate(legs):
+        for i, ch in enumerate(row):
+            drill[j][8 + i] = pal[ch]
+    for j in range(8):                                # shaft and the head's underside: black
+        drill[j][10], drill[j][11] = K, (8, 8, 8, 255)
+    drill[0][12] = grey                               # the tooth and the brackets in the cage
     save("qi_drill", drill)
+    # glass: faintly blue, with a few white streaks; only where the cage and the side openings
+    # are open (the frame's own pixels stay clear, so nothing lies on top of them)
+    fill, streak = (214, 236, 255, 46), (255, 255, 255, 150)
+    glass = blank()
+    for j, row in enumerate(CAGE_ROWS):
+        for i, ch in enumerate(row):
+            if ch == ".":
+                glass[j][1 + i] = fill
+    for j in range(6, 10):
+        for i in range(4, 12):
+            glass[j][i] = fill
+    for x, y in ((4, 2), (5, 3), (6, 4), (9, 2), (10, 3), (6, 7), (7, 8), (9, 7)):
+        glass[y][x] = streak
+    save("qi_glass", glass)
+    gtop = blank()
+    for j in range(2, 14):
+        for i in range(2, 14):
+            if not (j in (2, 13) and i in (2, 13)):
+                gtop[j][i] = fill
+    for x, y in ((4, 5), (5, 4), (6, 3), (5, 6), (6, 5), (7, 4), (10, 9), (11, 8), (9, 11), (10, 10)):
+        gtop[y][x] = streak
+    save("qi_glass_top", gtop)
 
 
 if __name__ == "__main__":
