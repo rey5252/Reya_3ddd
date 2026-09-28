@@ -60,7 +60,8 @@ public final class AutoShot {
         STEPS.add(new Step(40, () -> shot("quarry_top.png")));
         STEPS.add(new Step(20, () -> look(3.0D, 30, 0.0D, 10.0F)));
         STEPS.add(new Step(30, AutoShot::openGui));
-        STEPS.add(new Step(60, () -> shot("quarry_gui.png")));
+        STEPS.add(new Step(50, AutoShot::mouseAway));
+        STEPS.add(new Step(20, () -> shot("quarry_gui.png")));
         STEPS.add(new Step(60, () -> Minecraft.getInstance().stop()));
     }
 
@@ -146,7 +147,12 @@ public final class AutoShot {
         double x = POS.getX() + 0.5D + distance * Math.sin(a);
         double z = POS.getZ() + 0.5D + distance * Math.cos(a);
         MinecraftServer server = server();
-        server.execute(() -> server.getPlayerList().getPlayers().get(0).connection.teleport(x, POS.getY() + up, z, 180.0F - deg, pitch));
+        server.execute(() -> {
+            ServerPlayer p = server.getPlayerList().getPlayers().get(0);
+            p.connection.teleport(x, POS.getY() + up, z, 180.0F - deg, pitch);
+            p.getAbilities().flying = up > 0.5D;
+            p.onUpdateAbilities();
+        });
     }
 
     private static void openGui() {
@@ -155,9 +161,12 @@ public final class AutoShot {
             ServerPlayer p = server.getPlayerList().getPlayers().get(0);
             if (server.overworld().getBlockEntity(POS) instanceof QuarryBlockEntity be) NetworkHooks.openScreen(p, be, POS);
         });
+        Minecraft.getInstance().options.hideGui = false;
+    }
+
+    /** Mouse away from the slots, so no tooltip covers the GUI. */
+    private static void mouseAway() {
         Minecraft mc = Minecraft.getInstance();
-        mc.options.hideGui = false;
-        // mouse away from the slots, so no tooltip covers the GUI
         org.lwjgl.glfw.GLFW.glfwSetCursorPos(mc.getWindow().getWindow(), 4.0D, 4.0D);
     }
 
