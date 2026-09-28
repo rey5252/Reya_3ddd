@@ -25,10 +25,10 @@ import net.minecraftforge.items.SlotItemHandler;
  */
 public class VacuumChestMenu extends AbstractContainerMenu {
     public static final int WIDTH = 208;
-    public static final int HEIGHT = 234;
+    public static final int HEIGHT = 238;
     public static final int GRID_X = 24, GRID_Y = 28;
     public static final int MODE_X = 24, FILTER_X = 46, FILTER_Y = 96;
-    public static final int INV_X = 24, INV_Y = 153, HOTBAR_Y = 211;
+    public static final int INV_X = 24, INV_Y = 157, HOTBAR_Y = 215;
 
     public static final int FILTER_START = VacuumChestBlockEntity.SLOTS;
     public static final int MACHINE_SLOTS = FILTER_START + VacuumChestBlockEntity.FILTERS;

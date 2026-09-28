@@ -19,7 +19,18 @@ from PIL import Image
 ASSETS = "src/main/resources/assets/goldenquarry/textures"
 TOP = 14                         # GUI row of the reference that is the texture's row 0 (the title plate's top)
 BG = (146, 107, 68)              # the panel's brown
-PANEL_Y = 146                    # the inventory panel's top row in the texture (the frame's last black row)
+PANEL_Y = 150                    # the inventory panel's top row in the texture (the frame's last black row)
+# The GUI in the vacuum chest's own colours (its block texture): the brown frame becomes its steel,
+# the light lining and the slot rims its gold, the brown panel and slots its purple, the red button
+# its crystal. Greys, black and white stay.
+VACUUM_COLOURS = {
+    (132, 77, 51): (161, 166, 200), (96, 54, 44): (105, 105, 140),          # frame: steel
+    (255, 229, 151): (231, 208, 138), (255, 201, 107): (231, 182, 98),      # lining, slot rims: gold
+    (186, 126, 73): (169, 115, 66), (77, 46, 38): (34, 35, 35),             # buttons
+    (146, 107, 68): (61, 25, 112), (147, 103, 63): (61, 25, 112),           # the panel: purple
+    (134, 89, 58): (44, 14, 86), (124, 80, 54): (34, 9, 70),                # slots and their spiral
+    (188, 0, 31): (120, 15, 248), (224, 11, 46): (168, 51, 255), (163, 0, 27): (90, 2, 228),  # the crystal button
+}
 
 
 def gui():
@@ -47,13 +58,20 @@ def gui():
         for x in range(57, 150):
             g[y][x] = (198, 198, 198)
 
+    # the screenshot ends inside the frame's bottom: the rest of it is the top edge mirrored (row r
+    # of the bottom is row 189 - r of the top), the corner knobs with it
+    g += [[None] * w for _ in range(4)]
+    for y in range(157, 165):
+        for x in range(w):
+            if y >= 161 or x < 8 or x >= w - 8:
+                g[y][x] = g[189 - y][x]
     tex = Image.new("RGBA", (256, 256), (0, 0, 0, 0))
-    for y in range(TOP, h):
+    for y in range(TOP, len(g)):
         for x in range(w):
             c = g[y][x]
             if c[0] == c[1] == c[2] and 14 <= c[0] <= 18:      # the dimmed world behind the GUI
                 continue
-            tex.putpixel((x, y - TOP), c + (255,))
+            tex.putpixel((x, y - TOP), VACUUM_COLOURS.get(c, c) + (255,))
     inventory(tex, 16, PANEL_Y)
     tex.save(f"{ASSETS}/gui/vacuum_chest.png")
 
