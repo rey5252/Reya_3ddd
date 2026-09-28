@@ -74,17 +74,24 @@ def top_elements():
 def drill_elements():
     """The drill as measured on the reference shots (cameras fitted to the block's corners on shots
     1 and 3, see tools/extract_ingame.py): a black head 8.75 wide and 2.625 high whose texture is
-    10 pixels across (0.875 each), a grey column under it narrowing to the tip in three blocks."""
+    10 pixels across (0.875 each), a black shaft with three
+    layers of grey blocks round it, smaller and closer in towards the tip."""
     els = []
     black = {"texture": "#drill", "uv": [10, 0, 11, 1]}
     side_a = {"texture": "#drill", "uv": [0, 10, 10, 13]}
     side_b = {"texture": "#drill", "uv": [0, 13, 10, 16]}
     els.append(box([3.625, 11.8, 3.625], [12.375, 14.425, 12.375], {"north": side_a, "south": side_a, "west": side_b, "east": side_b,
                                                                    "up": {"texture": "#drill", "uv": [0, 0, 10, 10]}, "down": black}))
-    # the column narrows towards the tip: a big block under the head, a middle one, a small one
-    for half, y0, y1, uv in ((2.0, 9.6, 11.8, [10, 6, 14, 9]), (1.3, 7.8, 9.6, [10, 9, 13, 12]), (0.65, 6, 7.8, [13, 9, 15, 12])):
+    # a black shaft, and round it three layers of grey blocks on the diagonals, as the original:
+    # big ones under the head, middle ones, small ones at the tip, each layer closer in
+    els.append(box([7, 6, 7], [9, 11.8, 9], {n: {"texture": "#drill", "uv": [10, 0, 11, 5]} for n in SIDES + ["down"]}))
+    for size, d, y0, y1, uv in ((1.8, 2.3, 10.0, 11.8, [10, 6, 12, 8]), (1.4, 1.75, 8.2, 10.0, [10, 9, 12, 11]),
+                                (1.0, 1.25, 6.4, 8.2, [13, 9, 15, 11])):
         t = {"texture": "#drill", "uv": uv}
-        els.append(box([8 - half, y0, 8 - half], [8 + half, y1, 8 + half], {n: t for n in SIDES + ["down"] + (["up"] if y1 < 11.8 else [])}))
+        for sx, sz in ((-1, -1), (1, -1), (1, 1), (-1, 1)):
+            cx, cz = 8 + sx * d, 8 + sz * d
+            els.append(box([cx - size / 2, y0, cz - size / 2], [cx + size / 2, y1, cz + size / 2],
+                           {n: t for n in SIDES + ["down"] + (["up"] if y1 < 11.8 else [])}))
     return els
 
 

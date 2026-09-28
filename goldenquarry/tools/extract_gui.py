@@ -169,6 +169,7 @@ def main():
     for j in range(8):
         for x in range(160):
             widgets.px[8 + j][x] = filled[j][x % period] + (255,)          # progress stripes, repeated
+    draw_banner(widgets)
     for j in range(8):
         for gx in range(45, 173):
             tex.set(gx, 69 + j, track[j][0])
@@ -293,6 +294,80 @@ def crisp_card(n):
             line.append(CARD_COLORS[k])
         out.append(line)
     return out
+
+
+# The name plate above the GUI (like LoliUtility's): a dark brown plate with a gold rim and rolled
+# scroll ends, a heart before the name. Three pieces in quarry_widgets.png, rows 16..31: the left
+# end with the heart (23 wide, at x 0), one middle column (x 24) the screen stretches under the
+# name, and the right end (14 wide, at x 26).
+BANNER_COLORS = {"K": (34, 17, 8), "O": (226, 146, 50), "o": (160, 92, 34), "F": (60, 33, 18),
+                 "f": (46, 25, 14), "t": (242, 204, 134), "T": (214, 158, 94), "b": (150, 94, 50),
+                 "D": (84, 46, 22), "H": (112, 52, 24), "h": (250, 224, 160), "w": (255, 246, 214)}
+SCROLL = ["........",
+          "........",
+          "........",
+          "........",
+          "..tTTb..",
+          ".tTbbTb.",
+          "tTbDDbTK",
+          "tbDtTDbK",
+          "tbDbbDbK",
+          "tTbDDbTK",
+          ".tTbbTb.",
+          "..tTTb..",
+          "........",
+          "........",
+          "........",
+          "........"]
+PLATE_EDGE = ["....",          # the plate's rounded left end, columns 0..3 (the middle column follows)
+              "..KK",
+              ".KOO",
+              "KOoo",
+              "KOFF",
+              "KOFF",
+              "KOFF",
+              "KOFF",
+              "KOFF",
+              "KOFF",
+              "KOFF",
+              "KOFF",
+              "KOff",
+              ".KOO",
+              "..KK",
+              "...."]
+HEART = [".HH.HH.",
+         "HwhHhhH",
+         "HhhhhhH",
+         ".HhhhH.",
+         "..HhH..",
+         "...H..."]
+
+
+def draw_banner(widgets):
+    def put(x, y, ch):
+        if ch != ".":
+            widgets.px[16 + y][x] = BANNER_COLORS[ch] + (255,)
+    mid = ["." if j in (0, 15) else "K" if j in (1, 14) else "O" if j in (2, 13) else "o" if j == 3
+           else "f" if j == 12 else "F" for j in range(16)]
+    # left end: scroll (x 0..7), plate edge (x 8..11), plate fill with the heart (x 12..22)
+    for y in range(16):
+        for x, ch in enumerate(SCROLL[y]):
+            put(x, y, ch)
+        for x, ch in enumerate(PLATE_EDGE[y]):
+            put(8 + x, y, ch)
+        for x in range(12, 23):
+            put(x, y, mid[y])
+        put(24, y, mid[y])
+        # right end: plate fill (x 26..28), mirrored plate edge (x 29..32), mirrored scroll (x 33..40)
+        for x in range(26, 29):
+            put(x, y, mid[y])
+        for x, ch in enumerate(reversed(PLATE_EDGE[y])):
+            put(29 + x, y, ch)
+        for x, ch in enumerate(reversed(SCROLL[y])):
+            put(33 + x, y, ch)
+    for y, row in enumerate(HEART):
+        for x, ch in enumerate(row):
+            put(13 + x, 5 + y, ch)
 
 
 def save_item(name, card):
