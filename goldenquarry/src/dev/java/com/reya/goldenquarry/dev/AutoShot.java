@@ -61,6 +61,10 @@ public final class AutoShot {
         STEPS.add(new Step(30, AutoShot::openGui));
         STEPS.add(new Step(50, AutoShot::mouseAway));
         STEPS.add(new Step(20, () -> shot("quarry_gui.png")));
+        // let it run (redstone signal off): with stack and infinite engine the whole input is
+        // converted in the first operation, with fortune X and autosmelt
+        STEPS.add(new Step(10, () -> signal(false)));
+        STEPS.add(new Step(80, () -> shot("quarry_gui_converted.png")));
         // the reference photo's view: sunset, narrow view, drill resting (a redstone signal stops it)
         STEPS.add(new Step(20, AutoShot::photoSetUp));
         // close up, the way the in-game reference shots (reference/ingame) look at it
@@ -171,6 +175,12 @@ public final class AutoShot {
             p.getAbilities().flying = up > 0.5D;
             p.onUpdateAbilities();
         });
+    }
+
+    private static void signal(boolean on) {
+        MinecraftServer server = server();
+        server.execute(() -> server.overworld().setBlock(POS.below(), (on ? net.minecraft.world.level.block.Blocks.REDSTONE_BLOCK
+                : net.minecraft.world.level.block.Blocks.DIRT).defaultBlockState(), 3));
     }
 
     /** Spectator camera with the eye at the given place (in blocks from the quarry's corner). */
