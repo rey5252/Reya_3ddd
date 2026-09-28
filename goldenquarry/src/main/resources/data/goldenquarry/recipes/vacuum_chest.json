@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "IPI",
+    "AHA",
+    "ICI"
+  ],
+  "key": {
+    "I": { "item": "minecraft:iron_ingot" },
+    "P": { "item": "minecraft:ender_pearl" },
+    "A": { "item": "minecraft:amethyst_shard" },
+    "H": { "item": "minecraft:hopper" },
+    "C": { "item": "minecraft:chest" }
+  },
+  "result": { "item": "goldenquarry:vacuum_chest" }
+}

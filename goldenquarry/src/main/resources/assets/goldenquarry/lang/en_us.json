@@ -28,5 +28,22 @@
   "gui.goldenquarry.slot.input": "Ores (also from pipes and hoppers, best from above)",
   "gui.goldenquarry.slot.output": "Results (handed on to containers at the sides and below)",
   "gui.goldenquarry.slot.upgrade": "Upgrade: autosmelt, stack or infinite engine",
-  "gui.goldenquarry.slot.fortune": "Fortune module (level 2, 5 or 10)"
+  "gui.goldenquarry.slot.fortune": "Fortune module (level 2, 5 or 10)",
+  "block.goldenquarry.vacuum_chest": "Vacuum Chest",
+  "block.goldenquarry.vacuum_chest.tip": "Pulls in dropped items up to %s blocks away. Item filter, 27 slots.",
+  "gui.goldenquarry.vacuum.filter": "Item filter",
+  "gui.goldenquarry.vacuum.range": "Range",
+  "gui.goldenquarry.vacuum.plus": "Range +1",
+  "gui.goldenquarry.vacuum.minus": "Range -1",
+  "gui.goldenquarry.vacuum.area": "Show the working area",
+  "gui.goldenquarry.vacuum.area.on": "Shown",
+  "gui.goldenquarry.vacuum.area.off": "Hidden",
+  "gui.goldenquarry.vacuum.whitelist": "White list",
+  "gui.goldenquarry.vacuum.whitelist.tip": "Takes only the items in the filter (everything while it is empty)",
+  "gui.goldenquarry.vacuum.blacklist": "Black list",
+  "gui.goldenquarry.vacuum.blacklist.tip": "Takes everything except the items in the filter",
+  "gui.goldenquarry.vacuum.switch": "Click to switch",
+  "gui.goldenquarry.vacuum.range_value": "Range: %s blocks (area %s×%s×%s)",
+  "gui.goldenquarry.vacuum.filter_slot": "Filter slot",
+  "gui.goldenquarry.vacuum.filter_slot.tip": "Click with an item to add it, with an empty hand to clear"
 }

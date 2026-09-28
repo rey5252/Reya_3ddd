@@ -86,6 +86,20 @@ public final class AutoShot {
         STEPS.add(new Step(60, () -> shot("ref_cam1.png")));
         STEPS.add(new Step(20, () -> eye(-0.35D, 0.45D, 0.5D, -90.0F, -15.0F)));
         STEPS.add(new Step(60, () -> shot("ref_inside.png")));
+        // the vacuum chest: it pulls in gold nuggets lying round it (64, 64, 64 and 18, as the
+        // reference GUI shows them), then its GUI and the block, and its working area
+        STEPS.add(new Step(10, AutoShot::setUpVacuum));
+        STEPS.add(new Step(60, () -> vacuumEye(1.6D, 1.9D, 2.4D, 150.0F, 32.5F)));
+        STEPS.add(new Step(60, () -> shot("vacuum_block.png")));
+        STEPS.add(new Step(10, () -> guiScale(2)));
+        STEPS.add(new Step(20, AutoShot::openVacuumGui));
+        STEPS.add(new Step(40, AutoShot::mouseAway));
+        STEPS.add(new Step(20, () -> shot("vacuum_gui.png")));
+        STEPS.add(new Step(10, () -> Minecraft.getInstance().setScreen(null)));
+        STEPS.add(new Step(10, () -> guiScale(0)));
+        STEPS.add(new Step(10, AutoShot::vacuumArea));
+        STEPS.add(new Step(20, () -> vacuumEye(12.0D, 9.0D, 14.0D, 140.0F, 25.0F)));
+        STEPS.add(new Step(60, () -> shot("vacuum_area.png")));
         STEPS.add(new Step(60, () -> Minecraft.getInstance().stop()));
     }
 
@@ -204,6 +218,53 @@ public final class AutoShot {
             if (server.overworld().getBlockEntity(POS) instanceof QuarryBlockEntity be) NetworkHooks.openScreen(p, be, POS);
         });
         Minecraft.getInstance().options.hideGui = false;
+    }
+
+    private static final BlockPos VACUUM = new BlockPos(24, -60, 0);
+
+    private static void setUpVacuum() {
+        Minecraft.getInstance().options.hideGui = true;
+        MinecraftServer server = server();
+        server.execute(() -> {
+            ServerLevel level = server.overworld();
+            level.setBlock(VACUUM, GoldenQuarry.VACUUM_CHEST.get().defaultBlockState(), 3);
+            int[] counts = {64, 64, 64, 18};
+            for (int i = 0; i < counts.length; i++) {
+                net.minecraft.world.entity.item.ItemEntity e = new net.minecraft.world.entity.item.ItemEntity(level,
+                        VACUUM.getX() + 2.5D + i, VACUUM.getY() + 0.2D, VACUUM.getZ() + 3.5D, new ItemStack(Items.GOLD_NUGGET, counts[i]));
+                e.setDeltaMovement(0.0D, 0.0D, 0.0D);
+                level.addFreshEntity(e);
+            }
+        });
+    }
+
+    private static void openVacuumGui() {
+        MinecraftServer server = server();
+        server.execute(() -> {
+            ServerPlayer p = server.getPlayerList().getPlayers().get(0);
+            if (server.overworld().getBlockEntity(VACUUM) instanceof com.reya.goldenquarry.VacuumChestBlockEntity be) {
+                NetworkHooks.openScreen(p, be, VACUUM);
+            }
+        });
+        Minecraft.getInstance().options.hideGui = false;
+    }
+
+    private static void vacuumArea() {
+        Minecraft.getInstance().options.hideGui = true;
+        MinecraftServer server = server();
+        server.execute(() -> {
+            if (server.overworld().getBlockEntity(VACUUM) instanceof com.reya.goldenquarry.VacuumChestBlockEntity be) be.toggleShowArea();
+        });
+    }
+
+    /** Spectator camera with the eye at the given place (in blocks from the vacuum chest's corner). */
+    private static void vacuumEye(double x, double y, double z, float yaw, float pitch) {
+        MinecraftServer server = server();
+        server.execute(() -> {
+            ServerPlayer p = server.getPlayerList().getPlayers().get(0);
+            p.setGameMode(GameType.SPECTATOR);
+            p.connection.teleport(VACUUM.getX() + x, VACUUM.getY() + y - 1.62D, VACUUM.getZ() + z, yaw, pitch);
+        });
     }
 
     private static void guiScale(int scale) {

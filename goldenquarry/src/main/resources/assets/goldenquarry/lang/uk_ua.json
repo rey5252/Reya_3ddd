@@ -28,5 +28,22 @@
   "gui.goldenquarry.slot.input": "Руди (також трубами й воронками, найкраще зверху)",
   "gui.goldenquarry.slot.output": "Результат (сам іде в сусідні скрині з боків і знизу)",
   "gui.goldenquarry.slot.upgrade": "Покращення: автоплавка, стак або безкінечний двигун",
-  "gui.goldenquarry.slot.fortune": "Модуль удачі (рівень 2, 5 або 10)"
+  "gui.goldenquarry.slot.fortune": "Модуль удачі (рівень 2, 5 або 10)",
+  "block.goldenquarry.vacuum_chest": "Вакуумна скриня",
+  "block.goldenquarry.vacuum_chest.tip": "Затягує викинуті предмети до %s блоків навколо. Фільтр предметів, 27 слотів.",
+  "gui.goldenquarry.vacuum.filter": "Фільтр предметів",
+  "gui.goldenquarry.vacuum.range": "Дальність",
+  "gui.goldenquarry.vacuum.plus": "Дальність +1",
+  "gui.goldenquarry.vacuum.minus": "Дальність -1",
+  "gui.goldenquarry.vacuum.area": "Показати зону роботи",
+  "gui.goldenquarry.vacuum.area.on": "Показано",
+  "gui.goldenquarry.vacuum.area.off": "Сховано",
+  "gui.goldenquarry.vacuum.whitelist": "Білий список",
+  "gui.goldenquarry.vacuum.whitelist.tip": "Бере лише предмети з фільтра (усе, поки він порожній)",
+  "gui.goldenquarry.vacuum.blacklist": "Чорний список",
+  "gui.goldenquarry.vacuum.blacklist.tip": "Бере все, крім предметів з фільтра",
+  "gui.goldenquarry.vacuum.switch": "Натисни, щоб перемкнути",
+  "gui.goldenquarry.vacuum.range_value": "Дальність: %s блоків (зона %s×%s×%s)",
+  "gui.goldenquarry.vacuum.filter_slot": "Слот фільтра",
+  "gui.goldenquarry.vacuum.filter_slot.tip": "Натисни предметом, щоб додати, порожньою рукою — щоб прибрати"
 }

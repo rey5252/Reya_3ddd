@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
-    "goldenquarry:golden_quarry"
+    "goldenquarry:golden_quarry",
+    "goldenquarry:vacuum_chest"
   ]
 }

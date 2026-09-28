@@ -13,12 +13,16 @@ import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 public final class ClientSetup {
     @SubscribeEvent
     public static void onClientSetup(FMLClientSetupEvent event) {
-        event.enqueueWork(() -> MenuScreens.register(GoldenQuarry.QUARRY_MENU.get(), QuarryScreen::new));
+        event.enqueueWork(() -> {
+            MenuScreens.register(GoldenQuarry.QUARRY_MENU.get(), QuarryScreen::new);
+            MenuScreens.register(GoldenQuarry.VACUUM_CHEST_MENU.get(), VacuumChestScreen::new);
+        });
     }
 
     @SubscribeEvent
     public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerBlockEntityRenderer(GoldenQuarry.QUARRY_BE.get(), QuarryRenderer::new);
+        event.registerBlockEntityRenderer(GoldenQuarry.VACUUM_CHEST_BE.get(), VacuumChestRenderer::new);
     }
 
     /** The spinning drill and the see-through glass are models of their own, not part of any block state. */

@@ -54,6 +54,19 @@ public class GoldenQuarry {
             () -> BlockEntityType.Builder.of(QuarryBlockEntity::new, QUARRY.get()).build(null));
     public static final RegistryObject<MenuType<QuarryMenu>> QUARRY_MENU = MENUS.register("golden_quarry",
             () -> IForgeMenuType.create(QuarryMenu::new));
+    public static final RegistryObject<Block> VACUUM_CHEST = BLOCKS.register("vacuum_chest",
+            () -> new VacuumChestBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_PURPLE)
+                    .strength(3.0F, 6.0F)
+                    .sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops()
+                    .lightLevel(state -> 5)));
+    public static final RegistryObject<Item> VACUUM_CHEST_ITEM = ITEMS.register("vacuum_chest",
+            () -> new BlockItem(VACUUM_CHEST.get(), new Item.Properties().rarity(Rarity.RARE)));
+    public static final RegistryObject<BlockEntityType<VacuumChestBlockEntity>> VACUUM_CHEST_BE = BLOCK_ENTITIES.register("vacuum_chest",
+            () -> BlockEntityType.Builder.of(VacuumChestBlockEntity::new, VACUUM_CHEST.get()).build(null));
+    public static final RegistryObject<MenuType<VacuumChestMenu>> VACUUM_CHEST_MENU = MENUS.register("vacuum_chest",
+            () -> IForgeMenuType.create(VacuumChestMenu::new));
     public static final RegistryObject<CreativeModeTab> TAB = TABS.register("goldenquarry", () -> CreativeModeTab.builder()
             .title(Component.translatable("itemGroup.goldenquarry"))
             .icon(() -> new ItemStack(QUARRY_ITEM.get()))
@@ -65,6 +78,7 @@ public class GoldenQuarry {
                 output.accept(SMELTING_UPGRADE.get());
                 output.accept(STACK_UPGRADE.get());
                 output.accept(INFINITE_UPGRADE.get());
+                output.accept(VACUUM_CHEST_ITEM.get());
             })
             .build());
 

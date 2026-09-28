@@ -30,10 +30,6 @@ public class QuarryScreen extends AbstractContainerScreen<QuarryMenu> {
     /** Where the energy and progress tooltips answer (bars with their icons in front). */
     private static final int TIP_X1 = 36, TIP_X2 = 175;
 
-    /** The name plate over the GUI: the mod's name, short. */
-    private static final Component BANNER = Component.literal("GOLDQUARRY").withStyle(ChatFormatting.BOLD);
-    private static final int[][] OUTLINE = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
-
     private float shownProgress;
     private float shownEnergy;
 
@@ -58,7 +54,7 @@ public class QuarryScreen extends AbstractContainerScreen<QuarryMenu> {
         float energy = menu.energy() / (float) menu.capacity();
         shownEnergy += (energy - shownEnergy) * 0.25F;
         g.blit(TEXTURE, leftPos, topPos, 0, 0, imageWidth, imageHeight, 256, 256);
-        renderBanner(g);
+        Banner.draw(g, font, leftPos + imageWidth / 2, topPos - 17);
         int ew = Math.round(BAR_W * Mth.clamp(shownEnergy, 0.0F, 1.0F));
         if (ew > 0) g.blit(WIDGETS, leftPos + BAR_X, topPos + ENERGY_Y, 0, 0, ew, BAR_H, 256, 64);
         int pw = Math.round(BAR_W * Mth.clamp(shownProgress, 0.0F, 1.0F));
@@ -68,19 +64,6 @@ public class QuarryScreen extends AbstractContainerScreen<QuarryMenu> {
             int shift = working ? (int) (Util.getMillis() / 90L % 6L) : 0;
             g.blit(WIDGETS, leftPos + BAR_X, topPos + PROGRESS_Y, 6 - shift, 8, pw, BAR_H, 256, 64);
         }
-    }
-
-    /** The plate (left end with the heart, a middle stretched under the name, right end) and the name, outlined. */
-    private void renderBanner(GuiGraphics g) {
-        int tw = font.width(BANNER) + 2;
-        int w = 23 + tw + 15;
-        int x = leftPos + (imageWidth - w) / 2, y = topPos - 17;
-        g.blit(WIDGETS, x, y, 0, 16, 23, 16, 256, 64);
-        g.blit(WIDGETS, x + 23, y, tw, 16, 24, 16, 1, 16, 256, 64);
-        g.blit(WIDGETS, x + 23 + tw, y, 26, 16, 15, 16, 256, 64);
-        int tx = x + 24, ty = y + 4;
-        for (int[] d : OUTLINE) g.drawString(font, BANNER, tx + d[0], ty + d[1], 0x2A1408, false);
-        g.drawString(font, BANNER, tx, ty, 0xF8D890, false);
     }
 
     private void ownTooltips(GuiGraphics g, int mx, int my) {
