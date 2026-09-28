@@ -49,11 +49,13 @@ public class VacuumChestRenderer implements BlockEntityRenderer<VacuumChestBlock
         Level level = be.getLevel();
         float time = level == null ? 0.0F : (level.getGameTime() + partialTick) / 20.0F;
         VertexConsumer vc = buffers.getBuffer(RenderType.entityCutoutNoCull(SKIN));
+        // on the ground (a block under it) they creep out over it too
+        boolean ground = level != null && !level.isEmptyBlock(be.getBlockPos().below());
         for (Object[] t : TENTACLES) {
             Direction face = (Direction) t[0];
             int faceLight = level == null ? light : LevelRenderer.getLightColor(level, be.getBlockPos().relative(face));
-            tentacle(pose, vc, face, (float) t[1], (float) t[2], (float) t[3], (float) t[4], (float) t[5], (float) t[6], (float) t[7],
-                    time, faceLight);
+            tentacle(pose, vc, face, (float) t[1], (float) t[2], (float) t[3], (float) t[4] * 1.35F, (float) t[5], (float) t[6], (float) t[7],
+                    time, faceLight, ground);
         }
         if (be.showArea()) {
             int r = be.range();
@@ -64,7 +66,7 @@ public class VacuumChestRenderer implements BlockEntityRenderer<VacuumChestBlock
 
     /** One tentacle: its chain worked out for this moment, then drawn box by box. */
     private static void tentacle(PoseStack pose, VertexConsumer vc, Direction face, float fu, float fv, float heading, float length,
-                                 float thick, float phase, float curl, float time, int light) {
+                                 float thick, float phase, float curl, float time, int light, boolean ground) {
         Vec3 normal = new Vec3(face.getStepX(), face.getStepY(), face.getStepZ());
         Vec3 across, up;
         if (face.getAxis() == Direction.Axis.Y) {
@@ -89,6 +91,7 @@ public class VacuumChestRenderer implements BlockEntityRenderer<VacuumChestBlock
             Vec3 want = normal.scale(i <= 1 ? 0.8 : -1.4).add(along).add(0, -0.8 * s, 0).normalize();
             dir = dir.scale(0.3).add(want.scale(0.7)).normalize();
             p = keepOut(p.add(dir.scale(seg)));
+            if (ground && p.y < 0.015) p = new Vec3(p.x, 0.015, p.z);
             pts[i] = p;
         }
         Matrix4f m = pose.last().pose();
