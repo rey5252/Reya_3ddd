@@ -185,8 +185,9 @@ def main():
         for j in range(14):
             for i in range(14):
                 tex.set(182 + i, 17 + 18 * n + j, hole)
-    # the quarry icon left of the bars is the fortune charm's slot: frame kept, inside emptied
-    hole = samp(180, 24)
+    # the quarry icon left of the bars is the fortune charm's slot: frame kept, inside dark like the
+    # charms' own background in reference/fortune.jpg (on the gold they looked washed out)
+    hole = (24, 18, 16)
     for j in range(16):
         for i in range(16):
             tex.set(15 + i, 70 + j, hole)
