@@ -14,8 +14,7 @@ import net.minecraft.world.level.Level;
 
 /**
  * Goes into the quarry's upgrade slots; each item in the stacks counts, up to the kind's maximum.
- * Fortune comes in levels (2, 5, 10): the highest one in the slots or in a fortune block beside
- * the quarry is used.
+ * Fortune comes in levels (2, 5, 10): the highest one in the slots is used.
  */
 public class QuarryUpgradeItem extends Item {
     public enum Kind {

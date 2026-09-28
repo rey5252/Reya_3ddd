@@ -1,9 +1,6 @@
 {
   "replace": false,
   "values": [
-    "goldenquarry:golden_quarry",
-    "goldenquarry:fortune_block_2",
-    "goldenquarry:fortune_block_5",
-    "goldenquarry:fortune_block_10"
+    "goldenquarry:golden_quarry"
   ]
 }

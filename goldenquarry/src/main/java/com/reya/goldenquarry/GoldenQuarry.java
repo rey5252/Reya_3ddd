@@ -49,12 +49,6 @@ public class GoldenQuarry {
     public static final RegistryObject<Item> FORTUNE_UPGRADE_2 = fortune(2);
     public static final RegistryObject<Item> FORTUNE_UPGRADE_5 = fortune(5);
     public static final RegistryObject<Item> FORTUNE_UPGRADE_10 = fortune(10);
-    public static final RegistryObject<Block> FORTUNE_BLOCK_2 = fortuneBlock(2);
-    public static final RegistryObject<Block> FORTUNE_BLOCK_5 = fortuneBlock(5);
-    public static final RegistryObject<Block> FORTUNE_BLOCK_10 = fortuneBlock(10);
-    public static final RegistryObject<Item> FORTUNE_BLOCK_2_ITEM = blockItem(FORTUNE_BLOCK_2, Rarity.UNCOMMON);
-    public static final RegistryObject<Item> FORTUNE_BLOCK_5_ITEM = blockItem(FORTUNE_BLOCK_5, Rarity.RARE);
-    public static final RegistryObject<Item> FORTUNE_BLOCK_10_ITEM = blockItem(FORTUNE_BLOCK_10, Rarity.EPIC);
     public static final RegistryObject<Item> SILK_TOUCH_UPGRADE = upgrade("silk_touch_upgrade", QuarryUpgradeItem.Kind.SILK_TOUCH);
     public static final RegistryObject<Item> SMELTING_UPGRADE = upgrade("smelting_upgrade", QuarryUpgradeItem.Kind.SMELTING);
     public static final RegistryObject<BlockEntityType<QuarryBlockEntity>> QUARRY_BE = BLOCK_ENTITIES.register("golden_quarry",
@@ -71,9 +65,6 @@ public class GoldenQuarry {
                 output.accept(FORTUNE_UPGRADE_2.get());
                 output.accept(FORTUNE_UPGRADE_5.get());
                 output.accept(FORTUNE_UPGRADE_10.get());
-                output.accept(FORTUNE_BLOCK_2_ITEM.get());
-                output.accept(FORTUNE_BLOCK_5_ITEM.get());
-                output.accept(FORTUNE_BLOCK_10_ITEM.get());
                 output.accept(SILK_TOUCH_UPGRADE.get());
                 output.accept(SMELTING_UPGRADE.get());
             })
@@ -83,20 +74,6 @@ public class GoldenQuarry {
         Rarity rarity = level >= 10 ? Rarity.EPIC : level >= 5 ? Rarity.RARE : Rarity.UNCOMMON;
         return ITEMS.register("fortune_upgrade_" + level,
                 () -> new QuarryUpgradeItem(QuarryUpgradeItem.Kind.FORTUNE, level, new Item.Properties().stacksTo(1).rarity(rarity)));
-    }
-
-    private static RegistryObject<Block> fortuneBlock(int level) {
-        return BLOCKS.register("fortune_block_" + level, () -> new FortuneBoosterBlock(level, BlockBehaviour.Properties.of()
-                .mapColor(MapColor.COLOR_BLACK)
-                .strength(4.0F, 1200.0F)
-                .sound(SoundType.METAL)
-                .requiresCorrectToolForDrops()
-                .noOcclusion()
-                .lightLevel(state -> 7)));
-    }
-
-    private static RegistryObject<Item> blockItem(RegistryObject<Block> block, Rarity rarity) {
-        return ITEMS.register(block.getId().getPath(), () -> new BlockItem(block.get(), new Item.Properties().rarity(rarity)));
     }
 
     private static RegistryObject<Item> upgrade(String name, QuarryUpgradeItem.Kind kind) {

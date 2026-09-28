@@ -10,7 +10,6 @@ import com.reya.goldenquarry.QuarryUpgradeItem;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -20,7 +19,7 @@ import net.minecraft.world.entity.player.Inventory;
 /**
  * Golden quarry GUI, pixel for pixel the reference: textures/gui/quarry.png is read off the
  * reference screenshot (tools/extract_gui.py). This draws on it the energy and progress fills (cut
- * from the same screenshot, in quarry_widgets.png), dims the switches that are off, and the tooltips.
+ * from the same screenshot, in quarry_widgets.png), and the tooltips.
  */
 public class QuarryScreen extends AbstractContainerScreen<QuarryMenu> {
     private static final ResourceLocation TEXTURE = new ResourceLocation(GoldenQuarry.MODID, "textures/gui/quarry.png");
@@ -31,7 +30,6 @@ public class QuarryScreen extends AbstractContainerScreen<QuarryMenu> {
     /** Where the energy and progress tooltips answer (bars with their icons in front). */
     private static final int TIP_X1 = 36, TIP_X2 = 175;
     private static final int ICON_X1 = 14, ICON_Y1 = 71, ICON_X2 = 33, ICON_Y2 = 91;
-    private static final String[] BUTTON_KEYS = {"area", "power", "void"};
 
     private float shownProgress;
     private float shownEnergy;
@@ -40,16 +38,6 @@ public class QuarryScreen extends AbstractContainerScreen<QuarryMenu> {
         super(menu, inv, title);
         imageWidth = QuarryMenu.WIDTH;
         imageHeight = QuarryMenu.HEIGHT;
-    }
-
-    @Override
-    protected void init() {
-        super.init();
-        for (int i = 0; i < 3; i++) {
-            int id = i;
-            addRenderableWidget(new SwitchButton(leftPos + QuarryMenu.BUTTON_X, topPos + QuarryMenu.BUTTON_Y + i * QuarryMenu.BUTTON_STEP, id,
-                    b -> minecraft.gameMode.handleInventoryButtonClick(menu.containerId, id)));
-        }
     }
 
     @Override
@@ -72,7 +60,7 @@ public class QuarryScreen extends AbstractContainerScreen<QuarryMenu> {
         int pw = Math.round(BAR_W * Mth.clamp(shownProgress, 0.0F, 1.0F));
         if (pw > 0) {
             // the stripes move along while it digs
-            boolean working = menu.status() == QuarryBlockEntity.STATUS_WORKING && menu.enabled();
+            boolean working = menu.status() == QuarryBlockEntity.STATUS_WORKING;
             int shift = working ? (int) (Util.getMillis() / 90L % 6L) : 0;
             g.blit(WIDGETS, leftPos + BAR_X, topPos + PROGRESS_Y, 6 - shift, 8, pw, BAR_H, 256, 64);
         }
@@ -105,16 +93,6 @@ public class QuarryScreen extends AbstractContainerScreen<QuarryMenu> {
             int i = hoveredSlot.index;
             tip.add(Component.translatable(i < QuarryMenu.VALUABLE_START ? "gui.goldenquarry.slot.common"
                     : i < QuarryMenu.UPGRADE_START ? "gui.goldenquarry.slot.valuable" : "gui.goldenquarry.slot.upgrade"));
-        } else {
-            for (var child : children()) {
-                if (child instanceof SwitchButton b && b.isHovered()) {
-                    String key = "gui.goldenquarry.button." + BUTTON_KEYS[b.id];
-                    tip.add(Component.translatable(key));
-                    tip.add(Component.translatable(b.on() ? "gui.goldenquarry.on" : "gui.goldenquarry.off")
-                            .withStyle(b.on() ? ChatFormatting.GREEN : ChatFormatting.RED));
-                    tip.add(Component.translatable(key + ".tip").withStyle(ChatFormatting.GRAY));
-                }
-            }
         }
         if (!tip.isEmpty()) g.renderComponentTooltip(font, tip, mx, my);
     }
@@ -131,32 +109,5 @@ public class QuarryScreen extends AbstractContainerScreen<QuarryMenu> {
     @Override
     protected void renderLabels(GuiGraphics g, int mouseX, int mouseY) {
         // the reference has no titles
-    }
-
-    /**
-     * The golden switches are part of the background texture, lit as in the reference; a switch that
-     * is off gets its dimmed copy drawn over it.
-     */
-    private class SwitchButton extends Button {
-        final int id;
-
-        SwitchButton(int x, int y, int id, OnPress press) {
-            super(x, y, QuarryMenu.BUTTON_SIZE, QuarryMenu.BUTTON_SIZE, Component.translatable("gui.goldenquarry.button." + BUTTON_KEYS[id]), press, DEFAULT_NARRATION);
-            this.id = id;
-        }
-
-        boolean on() {
-            return switch (id) {
-                case QuarryMenu.BUTTON_POWER -> menu.enabled();
-                case QuarryMenu.BUTTON_AREA -> menu.showArea();
-                default -> menu.voidJunk();
-            };
-        }
-
-        @Override
-        public void renderWidget(GuiGraphics g, int mx, int my, float pt) {
-            if (!on()) g.blit(WIDGETS, getX(), getY(), id * 18, 16, width, height, 256, 64);
-            if (isHoveredOrFocused()) g.fill(getX() + 2, getY() + 2, getX() + width - 2, getY() + height - 2, 0x30FFFFFF);
-        }
     }
 }

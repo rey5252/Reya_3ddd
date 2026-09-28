@@ -34,9 +34,9 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.network.NetworkHooks;
 
 /**
- * Dev-only: with GOLDENQUARRY_AUTOSHOT=true the client makes a flat world, places the quarry (with a
- * fortune block beside it) and the three fortune blocks, takes screenshots from all sides, from
- * above, of the fortune blocks and of the open GUI, then quits.
+ * Dev-only: with GOLDENQUARRY_AUTOSHOT=true the client makes a flat world, places the quarry, takes
+ * screenshots from all sides, from above and of the open GUI (upgrades in it, fortune ones in the
+ * hotbar), then quits.
  */
 @Mod.EventBusSubscriber(modid = GoldenQuarry.MODID, value = Dist.CLIENT)
 public final class AutoShot {
@@ -58,8 +58,6 @@ public final class AutoShot {
         }
         STEPS.add(new Step(20, () -> look(3.2D, 30, 5.5D, 55.0F)));
         STEPS.add(new Step(40, () -> shot("quarry_top.png")));
-        STEPS.add(new Step(20, AutoShot::lookAtFortuneBlocks));
-        STEPS.add(new Step(40, () -> shot("fortune_blocks.png")));
         STEPS.add(new Step(20, () -> look(3.0D, 30, 0.0D, 10.0F)));
         STEPS.add(new Step(30, AutoShot::openGui));
         STEPS.add(new Step(60, () -> shot("quarry_gui.png")));
@@ -115,19 +113,14 @@ public final class AutoShot {
                     .setValue(QuarryBlock.FACING, Direction.NORTH).setValue(QuarryBlock.HALF, DoubleBlockHalf.LOWER);
             level.setBlock(POS, lower, 3);
             level.setBlock(POS.above(), lower.setValue(QuarryBlock.HALF, DoubleBlockHalf.UPPER), 3);
-            level.setBlock(POS.east(), GoldenQuarry.FORTUNE_BLOCK_10.get().defaultBlockState(), 3);
-            level.setBlock(new BlockPos(-3, -60, -7), GoldenQuarry.FORTUNE_BLOCK_2.get().defaultBlockState(), 3);
-            level.setBlock(new BlockPos(0, -60, -7), GoldenQuarry.FORTUNE_BLOCK_5.get().defaultBlockState(), 3);
-            level.setBlock(new BlockPos(3, -60, -7), GoldenQuarry.FORTUNE_BLOCK_10.get().defaultBlockState(), 3);
             if (level.getBlockEntity(POS) instanceof QuarryBlockEntity be) {
                 be.common().setStackInSlot(0, new ItemStack(Items.COBBLESTONE, 64));
                 be.common().setStackInSlot(1, new ItemStack(Items.COBBLESTONE, 64));
                 be.common().setStackInSlot(2, new ItemStack(Items.COBBLESTONE, 25));
                 for (int i = 0; i < 20; i++) be.valuables().setStackInSlot(i, new ItemStack(Items.IRON_INGOT, 64));
-                be.upgrades().setStackInSlot(0, new ItemStack(GoldenQuarry.FORTUNE_UPGRADE_10.get()));
-                be.upgrades().setStackInSlot(1, new ItemStack(GoldenQuarry.SPEED_UPGRADE.get(), 2));
-                be.upgrades().setStackInSlot(2, new ItemStack(GoldenQuarry.RANGE_UPGRADE.get()));
-                be.upgrades().setStackInSlot(3, new ItemStack(GoldenQuarry.SMELTING_UPGRADE.get()));
+                be.upgrades().setStackInSlot(0, new ItemStack(GoldenQuarry.RANGE_UPGRADE.get()));
+                be.upgrades().setStackInSlot(1, new ItemStack(GoldenQuarry.SPEED_UPGRADE.get()));
+                be.upgrades().setStackInSlot(2, new ItemStack(GoldenQuarry.SMELTING_UPGRADE.get()));
                 be.getCapability(ForgeCapabilities.ENERGY).ifPresent(e -> {
                     for (int i = 0; i < 20; i++) e.receiveEnergy(100_000, false);
                 });
@@ -136,10 +129,8 @@ public final class AutoShot {
             p.getInventory().setItem(0, new ItemStack(GoldenQuarry.FORTUNE_UPGRADE_2.get()));
             p.getInventory().setItem(1, new ItemStack(GoldenQuarry.FORTUNE_UPGRADE_5.get()));
             p.getInventory().setItem(2, new ItemStack(GoldenQuarry.FORTUNE_UPGRADE_10.get()));
-            p.getInventory().setItem(3, new ItemStack(GoldenQuarry.FORTUNE_BLOCK_2_ITEM.get()));
-            p.getInventory().setItem(4, new ItemStack(GoldenQuarry.FORTUNE_BLOCK_5_ITEM.get()));
-            p.getInventory().setItem(5, new ItemStack(GoldenQuarry.FORTUNE_BLOCK_10_ITEM.get()));
-            p.getInventory().setItem(6, new ItemStack(GoldenQuarry.QUARRY_ITEM.get()));
+            p.getInventory().setItem(3, new ItemStack(GoldenQuarry.SILK_TOUCH_UPGRADE.get()));
+            p.getInventory().setItem(4, new ItemStack(GoldenQuarry.QUARRY_ITEM.get()));
             p.getAbilities().flying = true;
             p.onUpdateAbilities();
         });
@@ -155,11 +146,6 @@ public final class AutoShot {
         double z = POS.getZ() + 0.5D + distance * Math.cos(a);
         MinecraftServer server = server();
         server.execute(() -> server.getPlayerList().getPlayers().get(0).connection.teleport(x, POS.getY() + up, z, 180.0F - deg, pitch));
-    }
-
-    private static void lookAtFortuneBlocks() {
-        MinecraftServer server = server();
-        server.execute(() -> server.getPlayerList().getPlayers().get(0).connection.teleport(0.5D, POS.getY() + 0.3D, -3.2D, 180.0F, 18.0F));
     }
 
     private static void openGui() {

@@ -52,18 +52,16 @@ import net.minecraftforge.items.ItemStackHandler;
  * its own, takes more from any Forge Energy cable); stops while a redstone signal reaches it.
  */
 public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
-    public static final int STORAGE = 27, UPGRADES = 4;
+    public static final int STORAGE = 27, UPGRADES = 3;
 
     public static final int STATUS_WORKING = 0, STATUS_STOPPED = 1, STATUS_NO_ENERGY = 2, STATUS_FULL = 3,
             STATUS_FINISHED = 4, STATUS_REDSTONE = 5, STATUS_WAITING = 6;
-    public static final int FLAG_ENABLED = 1, FLAG_SHOW_AREA = 2, FLAG_VOID_JUNK = 4;
+    public static final int FLAG_SHOW_AREA = 2;
     /** How many empty or skipped positions one tick may look through for the next block to dig. */
     private static final int SCAN_BUDGET = 1024;
     private static final int NOT_STARTED = Integer.MIN_VALUE;
 
-    private boolean enabled = true;
     private boolean showArea = true;
-    private boolean voidJunk;
     private boolean finished;
     private int status = STATUS_WORKING;
     private int progress;
@@ -156,7 +154,7 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
                 case 3 -> (energy.getMaxEnergyStored() >>> 15) & 0x7FFF;
                 case 4 -> progress;
                 case 5 -> maxProgress;
-                case 6 -> (enabled ? FLAG_ENABLED : 0) | (showArea ? FLAG_SHOW_AREA : 0) | (voidJunk ? FLAG_VOID_JUNK : 0);
+                case 6 -> showArea ? FLAG_SHOW_AREA : 0;
                 case 7 -> status;
                 case 8 -> cursorY == NOT_STARTED ? worldPosition.getY() - 1 : cursorY;
                 default -> radius();
@@ -195,7 +193,7 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
 
     /** Client side: the radius and state come with the block update. */
     public boolean isWorking() {
-        return status == STATUS_WORKING && enabled;
+        return status == STATUS_WORKING;
     }
 
     public int upgrades(QuarryUpgradeItem.Kind kind) {
@@ -207,19 +205,12 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
         return Math.min(kind.max, n);
     }
 
-    /** Highest fortune among the fortune upgrades in the slots and the fortune blocks beside either half. */
+    /** Highest fortune among the fortune upgrades in the slots. */
     public int fortuneLevel() {
         int best = 0;
         for (int i = 0; i < UPGRADES; i++) {
             if (upgrades.getStackInSlot(i).getItem() instanceof QuarryUpgradeItem u && u.kind == QuarryUpgradeItem.Kind.FORTUNE) {
                 best = Math.max(best, u.level);
-            }
-        }
-        if (level != null) {
-            for (BlockPos half : new BlockPos[]{worldPosition, worldPosition.above()}) {
-                for (Direction dir : Direction.Plane.HORIZONTAL) {
-                    if (level.getBlockState(half.relative(dir)).getBlock() instanceof FortuneBoosterBlock b) best = Math.max(best, b.level);
-                }
             }
         }
         return best;
@@ -294,7 +285,6 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
     }
 
     private int work(ServerLevel level) {
-        if (!enabled) return STATUS_STOPPED;
         if (finished) return STATUS_FINISHED;
         if (level.hasNeighborSignal(worldPosition)) return STATUS_REDSTONE;
         if (cursorY == NOT_STARTED) cursorY = worldPosition.getY() - 1;
@@ -339,7 +329,7 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
             ItemStack stack = smelt(level, drop);
             if (isValuable(stack)) {
                 valuableDrops.add(stack);
-            } else if (!voidJunk) {
+            } else {
                 commonDrops.add(stack);
             }
         }
@@ -451,22 +441,10 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
 
     // ------------------------------------------------------------------ buttons
 
-    public void toggleEnabled() {
-        enabled = !enabled;
-        if (enabled && finished) restart();
-        setChanged();
-        sync();
-    }
-
     public void toggleShowArea() {
         showArea = !showArea;
         setChanged();
         sync();
-    }
-
-    public void toggleVoidJunk() {
-        voidJunk = !voidJunk;
-        setChanged();
     }
 
     private void sync() {
@@ -502,9 +480,7 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
     }
 
     private void writeState(CompoundTag tag) {
-        tag.putBoolean("Enabled", enabled);
         tag.putBoolean("ShowArea", showArea);
-        tag.putBoolean("VoidJunk", voidJunk);
         tag.putBoolean("Finished", finished);
         tag.putInt("Status", status);
     }
@@ -525,9 +501,7 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
         }
         if (tag.contains("Radius")) radius = tag.getInt("Radius");
         if (tag.contains("TicksPerBlock")) clientTicksPerBlock = tag.getInt("TicksPerBlock");
-        enabled = !tag.contains("Enabled") || tag.getBoolean("Enabled");
         showArea = !tag.contains("ShowArea") || tag.getBoolean("ShowArea");
-        voidJunk = tag.getBoolean("VoidJunk");
         finished = tag.getBoolean("Finished");
         status = tag.getInt("Status");
     }

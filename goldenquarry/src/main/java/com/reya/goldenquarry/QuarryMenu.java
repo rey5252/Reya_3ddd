@@ -18,7 +18,7 @@ import net.minecraftforge.items.SlotItemHandler;
 /**
  * Laid out exactly like the reference GUI (textures/gui/quarry.png is built from it): plain blocks
  * 9x3 in the brown slots on top, the energy and progress bars in the middle, valuables 9x3 in the
- * golden slots below; three switches and the grey upgrade rack on the right; the player inventory
+ * golden slots below; three golden upgrade slots and the grey rack on the right; the player inventory
  * in its own panel underneath. All positions are texture pixels.
  */
 public class QuarryMenu extends AbstractContainerMenu {
@@ -26,11 +26,9 @@ public class QuarryMenu extends AbstractContainerMenu {
     public static final int HEIGHT = 247;
     public static final int COMMON_X = 15, COMMON_Y = 15;
     public static final int VALUABLE_X = 15, VALUABLE_Y = 95;
-    public static final int UP_X = 185, UP_Y = 84, UP_STEP = 17;
-    public static final int BUTTON_X = 181, BUTTON_Y = 18, BUTTON_STEP = 18, BUTTON_SIZE = 18;
+    /** Upgrade slots: the three golden frames on the right. */
+    public static final int UP_X = 182, UP_Y = 19, UP_STEP = 18;
     public static final int INV_X = 26, INV_Y = 165, HOTBAR_Y = 223;
-    /** Buttons from top to bottom, in the order of their icons in the reference. */
-    public static final int BUTTON_AREA = 0, BUTTON_POWER = 1, BUTTON_VOID = 2;
 
     public static final int COMMON_START = 0;
     public static final int VALUABLE_START = QuarryBlockEntity.STORAGE;
@@ -106,16 +104,8 @@ public class QuarryMenu extends AbstractContainerMenu {
         return Math.max(1, data.get(5));
     }
 
-    public boolean enabled() {
-        return (data.get(6) & QuarryBlockEntity.FLAG_ENABLED) != 0;
-    }
-
     public boolean showArea() {
         return (data.get(6) & QuarryBlockEntity.FLAG_SHOW_AREA) != 0;
-    }
-
-    public boolean voidJunk() {
-        return (data.get(6) & QuarryBlockEntity.FLAG_VOID_JUNK) != 0;
     }
 
     public int status() {
@@ -133,20 +123,6 @@ public class QuarryMenu extends AbstractContainerMenu {
     @Nullable
     public QuarryBlockEntity quarry() {
         return quarry;
-    }
-
-    @Override
-    public boolean clickMenuButton(Player player, int id) {
-        if (quarry == null) return false;
-        switch (id) {
-            case BUTTON_POWER -> quarry.toggleEnabled();
-            case BUTTON_AREA -> quarry.toggleShowArea();
-            case BUTTON_VOID -> quarry.toggleVoidJunk();
-            default -> {
-                return false;
-            }
-        }
-        return true;
     }
 
     @Override

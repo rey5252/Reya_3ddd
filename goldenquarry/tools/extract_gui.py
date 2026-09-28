@@ -5,7 +5,8 @@ The screenshot shows the GUI at 1.892 screen pixels per GUI pixel; every GUI pix
 from its centre, so the texture is the reference pixel for pixel. What the screenshot shows on top
 of the background is taken off again: the items and counts in the slots (the slots are rebuilt
 from the empty ones), the filled energy and progress bars (their fills go to quarry_widgets.png and
-the screen draws them). The three missing top rows of the frame are mirrored from its bottom.
+the screen draws them), and the golden cards in the three frames on the right, which are upgrade
+slots: the cards become the upgrade item textures. The three missing top rows of the frame are mirrored from its bottom.
 
 GUI pixel (gx, gy) of the screenshot lands at texture pixel (gx + 1, gy + 3).
 """
@@ -174,12 +175,38 @@ def main():
         for gx in (44, 173):                      # end caps of the empty track
             tex.set(gx, 69 + j, samp(gx, 80 + j))
 
-    # 7. buttons: the screenshot shows them lit; a dimmed copy is the "off" look
+    # 7. the three golden frames on the right are upgrade slots: their cards become the upgrade
+    #    items (range, speed, smelting from top to bottom; silk touch is the speed card with a new
+    #    symbol), and the frames are left empty in the texture
+    cards = []
     for n in range(3):
-        for j in range(18):
-            for i in range(18):
-                c = samp(180 + i, 15 + 18 * n + j)
-                widgets.px[16 + j][18 * n + i] = tuple(int(v * 0.55) for v in c) + (255,)
+        card = [[samp(182 + i, 17 + 18 * n + j) for i in range(14)] for j in range(14)]
+        cards.append(card)
+        hole = samp(180, 24 + 18 * n)
+        for j in range(14):
+            for i in range(14):
+                tex.set(182 + i, 17 + 18 * n + j, hole)
+    for name, card in zip(("range_upgrade", "speed_upgrade", "smelting_upgrade"), cards):
+        save_item(name, card)
+    silk = [row[:] for row in cards[1]]
+    glyph_col = min((c for row in silk for c in row), key=lambda c: sum(c))
+    for j in range(2, 12):
+        for i in range(2, 12):
+            if sum(silk[j][i]) < 330:                       # erase the old symbol
+                silk[j][i] = silk[j][1] if sum(silk[j][1]) >= 330 else silk[1][i]
+    feather = ["......##",
+               ".....#.#",
+               "....#.#.",
+               "...#.#..",
+               "..#.#...",
+               "..##....",
+               ".#......",
+               "#......."]
+    for j, row in enumerate(feather):
+        for i, ch in enumerate(row):
+            if ch == "#":
+                silk[3 + j][3 + i] = glyph_col
+    save_item("silk_touch_upgrade", silk)
 
     os.makedirs(OUT, exist_ok=True)
     tex.save(f"{OUT}/quarry.png")
@@ -192,6 +219,15 @@ def main():
                 c = tex.px[y // 3][x // 3]
                 big[y][x] = c if c[3] else ((60, 60, 70, 255) if ((x // 12) + (y // 12)) % 2 else (50, 50, 58, 255))
         write_png(f"{out}/gui_texture_preview.png", 256 * 3, 256 * 3, big)
+
+
+def save_item(name, card):
+    """A 14x14 card in the middle of a 16x16 item texture, as it sits in the slot."""
+    px = [[(0, 0, 0, 0)] * 16 for _ in range(16)]
+    for j, row in enumerate(card):
+        for i, c in enumerate(row):
+            px[1 + j][1 + i] = tuple(c) + (255,)
+    write_png(f"src/main/resources/assets/goldenquarry/textures/item/{name}.png", 16, 16, px)
 
 
 def best_period(rows):

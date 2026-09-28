@@ -32,17 +32,9 @@
   "gui.goldenquarry.slot.common": "Камень, земля и другие блоки",
   "gui.goldenquarry.slot.valuable": "Руды, слитки, самоцветы и другие ценности",
   "gui.goldenquarry.slot.upgrade": "Улучшение",
-  "gui.goldenquarry.button.power": "Питание",
-  "gui.goldenquarry.button.power.tip": "Запустить или остановить копание. Если карьер закончил, включение начнёт заново сверху.",
-  "gui.goldenquarry.button.area": "Показать зону",
-  "gui.goldenquarry.button.area.tip": "Светящаяся рамка вокруг зоны копания",
-  "gui.goldenquarry.button.void": "Уничтожать мусор",
-  "gui.goldenquarry.button.void.tip": "Уничтожать камень, землю и другие простые блоки вместо хранения",
   "item.goldenquarry.fortune_upgrade_2": "Улучшение удачи карьера II",
   "item.goldenquarry.fortune_upgrade_5": "Улучшение удачи карьера V",
   "item.goldenquarry.fortune_upgrade_10": "Улучшение удачи карьера X",
-  "block.goldenquarry.fortune_block_2": "Блок удачи II",
-  "block.goldenquarry.fortune_block_5": "Блок удачи V",
-  "block.goldenquarry.fortune_block_10": "Блок удачи X",
-  "block.goldenquarry.fortune_block.tip": "Поставь рядом с карьером: он будет копать с удачей %s"
+  "gui.goldenquarry.area_shown": "Рамка зоны показана",
+  "gui.goldenquarry.area_hidden": "Рамка зоны скрыта"
 }

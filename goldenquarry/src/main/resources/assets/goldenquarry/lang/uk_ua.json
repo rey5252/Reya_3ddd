@@ -32,17 +32,9 @@
   "gui.goldenquarry.slot.common": "Камінь, земля та інші блоки",
   "gui.goldenquarry.slot.valuable": "Руди, злитки, самоцвіти та інші цінності",
   "gui.goldenquarry.slot.upgrade": "Покращення",
-  "gui.goldenquarry.button.power": "Живлення",
-  "gui.goldenquarry.button.power.tip": "Запустити або зупинити копання. Якщо кар'єр закінчив, увімкнення почне знову згори.",
-  "gui.goldenquarry.button.area": "Показати зону",
-  "gui.goldenquarry.button.area.tip": "Світна рамка навколо зони копання",
-  "gui.goldenquarry.button.void": "Знищувати мотлох",
-  "gui.goldenquarry.button.void.tip": "Знищувати камінь, землю та інші прості блоки замість зберігання",
   "item.goldenquarry.fortune_upgrade_2": "Покращення удачі кар'єру II",
   "item.goldenquarry.fortune_upgrade_5": "Покращення удачі кар'єру V",
   "item.goldenquarry.fortune_upgrade_10": "Покращення удачі кар'єру X",
-  "block.goldenquarry.fortune_block_2": "Блок удачі II",
-  "block.goldenquarry.fortune_block_5": "Блок удачі V",
-  "block.goldenquarry.fortune_block_10": "Блок удачі X",
-  "block.goldenquarry.fortune_block.tip": "Постав поруч із кар'єром: він копатиме з удачею %s"
+  "gui.goldenquarry.area_shown": "Рамку зони показано",
+  "gui.goldenquarry.area_hidden": "Рамку зони сховано"
 }
