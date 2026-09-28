@@ -188,14 +188,16 @@ def main():
     # the icon box left of the bars becomes the fortune charm's slot: the reference's box (dark
     # outline stepping in at the middle of each side, brown rim, gold rim, gold inside), redrawn
     # straight and the same on all four sides, round the 16x16 item at texture 16..31 x 73..88
-    panel, outline, rim, gold_rim = (146, 107, 68), (95, 47, 25), (127, 77, 44), (214, 165, 80)
-    inside = (240, 200, 76)
+    panel, outline, rim, gold_rim = (146, 107, 68), (95, 47, 25), (150, 98, 50), (196, 140, 58)
+    inside_light, inside_dark = (255, 228, 128), (222, 164, 58)
     for y in range(69, 93):                       # texture pixels
         for x in range(12, 36):
             ring = max(abs(2 * x - 47), abs(2 * y - 161)) // 2   # 7 = inside edge
             middle = 22 <= x <= 25 or 79 <= y <= 82               # the notches
             if ring <= 7:
-                c = inside
+                # smooth gold: light in the middle, deeper towards the rim
+                d = min(1.0, ((x - 23.5) ** 2 + (y - 80.5) ** 2) ** 0.5 / 10.5)
+                c = tuple(int(round(l + (k - l) * d * d)) for l, k in zip(inside_light, inside_dark))
             elif ring == 8:
                 c = gold_rim
             elif ring == 9:
