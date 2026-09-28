@@ -221,6 +221,12 @@ def main():
             sy = gy if gy <= 77 else 155 - gy
             if (sx, sy) != (gx, gy):
                 tex.set(gx, gy, tex.get(sx, sy))
+    # widened by a pixel left, right and on top, so the charm (16 wide, 15 high, in the slot's top
+    # rows) has one pixel of gold all round and does not reach over the frame
+    box = {(gx, gy): tex.get(gx, gy) for gx in range(10, 36) for gy in range(66, 90)}
+    for gy in range(66, 90):
+        for gx in range(10, 36):
+            tex.set(gx, gy, box[(gx + 1 if gx <= 22 else gx - 1, gy + 1 if gy <= 77 else gy)])
     for name, card in zip(("stack_upgrade", "infinite_upgrade", "smelting_upgrade"), cards):
         save_item(name, card)
 

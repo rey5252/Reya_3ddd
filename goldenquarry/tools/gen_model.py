@@ -74,8 +74,7 @@ def top_elements():
 def drill_elements():
     """The drill as measured on the reference shots (cameras fitted to the block's corners on shots
     1 and 3, see tools/extract_ingame.py): a black head 8.75 wide and 2.625 high whose texture is
-    10 pixels across (0.875 each), a grey column under it narrowing to the tip in three blocks, and four short grey blades on the
-    diagonals under the head."""
+    10 pixels across (0.875 each), a grey column under it narrowing to the tip in three blocks."""
     els = []
     black = {"texture": "#drill", "uv": [10, 0, 11, 1]}
     side_a = {"texture": "#drill", "uv": [0, 10, 10, 13]}
@@ -86,11 +85,6 @@ def drill_elements():
     for half, y0, y1, uv in ((2.0, 9.6, 11.8, [10, 6, 14, 9]), (1.3, 7.8, 9.6, [10, 9, 13, 12]), (0.65, 6, 7.8, [13, 9, 15, 12])):
         t = {"texture": "#drill", "uv": uv}
         els.append(box([8 - half, y0, 8 - half], [8 + half, y1, 8 + half], {n: t for n in SIDES + ["down"] + (["up"] if y1 < 11.8 else [])}))
-    upper = {"texture": "#drill", "uv": [11, 0, 12, 2]}
-    for sx, sz in ((-1, -1), (1, -1), (1, 1), (-1, 1)):
-        # short blades on the diagonals, out under the head
-        cx, cz = 8 + sx * 2.15, 8 + sz * 2.15
-        els.append(box([cx - 0.45, 9.9, cz - 0.45], [cx + 0.45, 11.8, cz + 0.45], {n: upper for n in SIDES + ["down"]}))
     return els
 
 
