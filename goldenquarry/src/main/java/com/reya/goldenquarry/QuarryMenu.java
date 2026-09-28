@@ -27,7 +27,7 @@ public class QuarryMenu extends AbstractContainerMenu {
     public static final int INPUT_X = 15, INPUT_Y = 15;
     public static final int OUTPUT_X = 15, OUTPUT_Y = 95;
     /** Upgrade slots: the three golden frames on the right and the frame left of the bars. */
-    public static final int[][] UPGRADE_POS = {{182, 19}, {182, 37}, {182, 55}, {16, 73}};
+    public static final int[][] UPGRADE_POS = {{181, 19}, {181, 37}, {181, 55}, {16, 73}};
     public static final int INV_X = 26, INV_Y = 165, HOTBAR_Y = 223;
 
     public static final int INPUT_START = 0;

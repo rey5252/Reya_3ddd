@@ -92,10 +92,10 @@ def drill_elements():
         els.append(box([cx - 0.45, 9.9, cz - 0.45], [cx + 0.45, 11.8, cz + 0.45], {n: upper for n in SIDES + ["down"]}))
         # a joint where the two parts meet on the diagonal, so nothing shows through between them
         cx, cz = 8 + sx * 1.775, 8 + sz * 1.775
-        els.append(box([cx - 0.45, 9.9, cz - 0.45], [cx + 0.45, 10.4, cz + 0.45], {n: upper for n in SIDES}))
+        els.append(box([cx - 0.45, 9.9, cz - 0.45], [cx + 0.45, 10.4, cz + 0.45], {n: upper for n in SIDES + ["up", "down"]}))
         cx, cz = 8 + sx * 1.4, 8 + sz * 1.4
         low = lower[i % 2]
-        els.append(box([cx - 0.45, 6.6, cz - 0.45], [cx + 0.45, 10.4, cz + 0.45], {n: low for n in SIDES + ["down"]}))
+        els.append(box([cx - 0.45, 6.6, cz - 0.45], [cx + 0.45, 10.4, cz + 0.45], {n: low for n in SIDES + ["up", "down"]}))
     return els
 
 

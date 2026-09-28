@@ -182,8 +182,8 @@ def main():
     for n in range(3):
         hole = samp(180, 24 + 18 * n)
         for j in range(14):
-            for i in range(-1, 14):                 # also the card's left edge column
-                tex.set(182 + i, 17 + 18 * n + j, hole)
+            for i in range(-1, 15):                 # the whole slot hole
+                tex.set(181 + i, 17 + 18 * n + j, hole)
     # the icon box left of the bars becomes the fortune charm's slot: the box is the reference's own,
     # pixel for pixel; only the picture drawn inside it is taken out, and the gold behind it is
     # the reference's gold, fitted smooth (a quadratic over its visible gold pixels)
@@ -239,7 +239,7 @@ def main():
 
 # The infinite engine card as the original item draws it (reference/ingame/24.png, 14x14, read
 # cell by cell), with its seven colours. The GUI screenshot shows the cards one GUI pixel further
-# left and blurred, and with the shine passing over them; its cards are read back into these colours.
+# left and blurred; its cards are read back into these colours.
 CARD_COLORS = {"A": (186, 101, 17), "B": (202, 125, 25), "C": (231, 156, 36), "D": (252, 235, 95),
                "E": (255, 255, 255), "F": (242, 187, 57), "G": (91, 78, 60)}
 ENGINE_CARD = ["AAABBCCCCBBAAA",
@@ -258,30 +258,32 @@ ENGINE_CARD = ["AAABBCCCCBBAAA",
                "AAAABBBBBBAAAA"]
 
 
+def card_color(c):
+    """The original's colour for a screenshot pixel of a card."""
+    r, g, b = c
+    if 0.3 * r + 0.59 * g + 0.11 * b < 120:
+        return "G"
+    if b > 180:
+        return "E"
+    if b >= 95 and r > 240 and g > 212:
+        return "D"
+    return "F" if g > 175 else "C"
+
+
 def crisp_card(n):
-    """Card n (0 stack, 1 infinite engine, 2 autosmelt) in the original's colours: the frame, the
-    light edge and the two white glints are the original's; the icon is read off the screenshot."""
-    if n == 1:
-        return [[CARD_COLORS[k] for k in row] for row in ENGINE_CARD]
-    # the screenshot's colour for each of the original's colours, from the infinite engine card
-    seen = {}
-    for j, row in enumerate(ENGINE_CARD):
-        for i, k in enumerate(row):
-            seen.setdefault(k, []).append(samp(181 + i, 35 + j))
-    mean = {k: [sum(c[q] for c in v) / len(v) for q in range(3)] for k, v in seen.items()}
+    """Card n (0 stack, 1 infinite engine, 2 autosmelt) in the original's colours: the frame and the
+    two white glints are the original's; the icon and the light streak across the card are read
+    off the screenshot (the engine's icon is the original's own)."""
     out = []
     for j, row in enumerate(ENGINE_CARD):
         line = []
         for i, k in enumerate(row):
-            if 2 <= i <= 11 and 3 <= j <= 11 and k not in "DE":
-                c = samp(181 + i, 17 + 18 * n + j)
-                k2 = min(mean, key=lambda m: sum((c[q] - mean[m][q]) ** 2 for q in range(3)))
-                if k2 == "G":
-                    k = "G"
-                elif k2 in "FC":
-                    k = k2
-                elif k in "G":                  # the shine lies over it: the background there
-                    k = "F" if j <= 7 else "C"
+            if 2 <= i <= 11 and 2 <= j <= 11 and k not in "DE" or (i, j) in ((12, 2), (12, 3), (12, 4)):
+                k2 = card_color(samp(181 + i, 17 + 18 * n + j))
+                if k2 in "DE" and not (n == 1 and k == "G"):
+                    k = k2                          # the light streak
+                elif n != 1:
+                    k = k2 if k2 in "GFC" else k
             line.append(CARD_COLORS[k])
         out.append(line)
     return out
