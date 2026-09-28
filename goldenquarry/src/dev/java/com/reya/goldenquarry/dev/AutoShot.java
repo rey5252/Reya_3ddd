@@ -23,7 +23,6 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.LevelSettings;
 import net.minecraft.world.level.WorldDataConfiguration;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.levelgen.WorldOptions;
 import net.minecraft.world.level.levelgen.presets.WorldPresets;
 import net.minecraftforge.api.distmarker.Dist;
@@ -117,9 +116,8 @@ public final class AutoShot {
             ServerLevel level = server.overworld();
             level.setDayTime(6000L);
             BlockState lower = GoldenQuarry.QUARRY.get().defaultBlockState()
-                    .setValue(QuarryBlock.FACING, Direction.NORTH).setValue(QuarryBlock.HALF, DoubleBlockHalf.LOWER);
+                    .setValue(QuarryBlock.FACING, Direction.NORTH);
             level.setBlock(POS, lower, 3);
-            level.setBlock(POS.above(), lower.setValue(QuarryBlock.HALF, DoubleBlockHalf.UPPER), 3);
             if (level.getBlockEntity(POS) instanceof QuarryBlockEntity be) {
                 be.common().setStackInSlot(0, new ItemStack(Items.COBBLESTONE, 64));
                 be.common().setStackInSlot(1, new ItemStack(Items.COBBLESTONE, 64));

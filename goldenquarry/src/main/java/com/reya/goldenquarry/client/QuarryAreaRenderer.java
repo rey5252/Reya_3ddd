@@ -48,12 +48,12 @@ public class QuarryAreaRenderer implements BlockEntityRenderer<QuarryBlockEntity
         haze(vc, m, min, max, 0.45F, 255, 180, 50, 0.28F * pulse);
     }
 
-    /** The drill model hangs in the cage of the upper half; it turns around its middle and shakes a little while digging. */
+    /** The drill model stands in the chest under the cage; it turns around its middle and shakes a little while digging. */
     private static void renderDrill(QuarryBlockEntity be, float partialTick, PoseStack pose, MultiBufferSource buffers, int overlay) {
         if (be.getLevel() == null) return;
         Minecraft mc = Minecraft.getInstance();
         BakedModel model = mc.getModelManager().getModel(DRILL_MODEL);
-        int light = LevelRenderer.getLightColor(be.getLevel(), be.getBlockPos().above());
+        int light = LevelRenderer.getLightColor(be.getLevel(), be.getBlockPos());
         float angle = be.drillAngle(partialTick);
         float shake = be.drillSpin() * 0.012F * Mth.sin(angle * 0.35F);
         // turned with the chest like the block model (blockstate y rotation), then spinning
@@ -64,7 +64,7 @@ public class QuarryAreaRenderer implements BlockEntityRenderer<QuarryBlockEntity
             default -> 0;
         };
         pose.pushPose();
-        pose.translate(0.5D, 1.0D + shake, 0.5D);
+        pose.translate(0.5D, shake, 0.5D);
         pose.mulPose(Axis.YP.rotationDegrees(angle - facingRot));
         pose.translate(-0.5D, 0.0D, -0.5D);
         mc.getBlockRenderer().getModelRenderer().renderModel(pose.last(), buffers.getBuffer(RenderType.cutout()), null, model,

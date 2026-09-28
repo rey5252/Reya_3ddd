@@ -1,12 +1,12 @@
-"""Writes the Golden Quarry blockstate and models (after reference photo 1).
+"""Writes the Golden Quarry blockstate and models (after the in-game shots in reference/ingame).
 
 Run from the goldenquarry folder:  python3 tools/gen_model.py
-The quarry is two blocks tall: golden_quarry_base is the plain dark stand, golden_quarry_top the
-golden chest (9 units high; two different faces, A and B, as in the photo) with the open cage on
-it (6 units high, nothing across the top) and a dark hollow inside, seen through a window in face A.
-golden_quarry_drill is the drill: motor in the cage, its body in the hollow, standing on its floor;
-the block entity renderer spins it while the quarry digs. The item shows chest, cage and drill.
-All textures come from the photo (tools/extract_block.py) and are shown unshaded, like the photo.
+One block. The chest is 10 high: a solid bottom 6 high, and on it the ornate front and back walls
+(3 deep) with the sides open between them, so the drill inside shows; brown pillars stand at the
+openings' edges. On the chest sits the open cage (sheets one pixel in from the edges, 6 high, a
+ring on top). golden_quarry_drill is the drill standing in the hollow; the block entity renderer
+turns it slowly. The textures come from tools/extract_ingame.py and use the default UVs: every
+face texture is laid out in block space.
 """
 import json
 import os
@@ -16,64 +16,80 @@ SIDES = ["north", "south", "west", "east"]
 
 
 def box(frm, to, faces):
-    return {"from": frm, "to": to, "shade": False, "faces": faces}
+    return {"from": frm, "to": to, "faces": faces}
+
+
+def faces(tex, only=None, **over):
+    names = only or SIDES + ["up", "down"]
+    out = {n: {"texture": over.get(n, tex)} for n in names}
+    return out
 
 
 def top_elements():
     els = []
-    # the chest: faces A on north/south, B on east/west, so every corner shows an A and a B
-    body = {n: {"texture": "#side_a" if n in ("north", "south") else "#side_b", "uv": [0, 7, 16, 16]} for n in SIDES}
-    body["up"] = {"texture": "#top"}
-    body["down"] = {"texture": "#top", "cullface": "down"}
-    els.append(box([0, 0, 0], [16, 9, 16], body))
-    # the cage: four sheets one unit in from the edges, drawn inside and out; open on top
-    outer, inner = [1, 10, 15, 16], [15, 10, 1, 16]
-    els.append(box([1, 9, 1], [15, 15, 1], {"north": {"texture": "#cage_a", "uv": outer}, "south": {"texture": "#cage_a", "uv": inner}}))
-    els.append(box([1, 9, 15], [15, 15, 15], {"south": {"texture": "#cage_a", "uv": outer}, "north": {"texture": "#cage_a", "uv": inner}}))
-    els.append(box([1, 9, 1], [1, 15, 15], {"west": {"texture": "#cage_b", "uv": outer}, "east": {"texture": "#cage_b", "uv": inner}}))
-    els.append(box([15, 9, 1], [15, 15, 15], {"east": {"texture": "#cage_b", "uv": outer}, "west": {"texture": "#cage_b", "uv": inner}}))
-    # behind the window in face A: a dark hollow (walls facing inwards, right behind the chest's own
-    # faces, so nothing shows through the window but the hollow and the drill)
-    dark = {"texture": "#inside", "uv": [0, 7, 16, 10]}
-    els.append(box([0, 6, 16], [16, 9, 16], {"north": dark}))
-    els.append(box([0, 6, 0], [16, 9, 0], {"south": dark}))
-    els.append(box([16, 6, 0], [16, 9, 16], {"west": dark}))
-    els.append(box([0, 6, 0], [0, 9, 16], {"east": dark}))
-    els.append(box([0, 6, 0], [16, 6, 16], {"up": {"texture": "#inside", "uv": [0, 0, 16, 16]}}))
-    els.append(box([0, 9, 0], [16, 9, 16], {"down": {"texture": "#inside", "uv": [0, 0, 16, 16]}}))
+    # the solid bottom of the chest; its top is the floor of the hollow
+    els.append(box([0, 0, 0], [16, 6, 16], {
+        "north": {"texture": "#front"}, "south": {"texture": "#front"},
+        "west": {"texture": "#side"}, "east": {"texture": "#side"},
+        "up": {"texture": "#bottom"}, "down": {"texture": "#bottom", "cullface": "down"}}))
+    # the front and back walls: ornate outside, gold and black inside
+    els.append(box([0, 6, 0], [16, 10, 3], {
+        "north": {"texture": "#front"}, "south": {"texture": "#inner"},
+        "west": {"texture": "#side"}, "east": {"texture": "#side"}, "up": {"texture": "#walltop"}}))
+    els.append(box([0, 6, 13], [16, 10, 16], {
+        "south": {"texture": "#front"}, "north": {"texture": "#inner"},
+        "west": {"texture": "#side"}, "east": {"texture": "#side"}, "up": {"texture": "#walltop"}}))
+    # brown pillars at the edges of the side openings, one pixel above the chest
+    for x in (0, 15):
+        for z in (3, 12):
+            els.append(box([x, 6, z], [x + 1, 11, z + 1], faces("#pillar")))
+    # the cage: four sheets one pixel in from the edges, drawn inside and out, and the ring on top
+    def sheet(frm, to, out, inn, tex):
+        f = {out: {"texture": tex}}
+        # the inside of a sheet shows the same picture mirrored
+        u = [15, 0, 1, 6] if out in ("north", "east") else [1, 0, 15, 6]
+        f[inn] = {"texture": tex, "uv": u}
+        return box(frm, to, f)
+    els.append(sheet([1, 10, 1], [15, 16, 1], "north", "south", "#front"))
+    els.append(sheet([1, 10, 15], [15, 16, 15], "south", "north", "#front"))
+    els.append(sheet([1, 10, 1], [1, 16, 15], "west", "east", "#side"))
+    els.append(sheet([15, 10, 1], [15, 16, 15], "east", "west", "#side"))
+    els.append(box([1, 16, 1], [15, 16, 15], {"up": {"texture": "#ring"}, "down": {"texture": "#ring"}}))
+    # little grey brackets stepping in from the cage's corners
+    grey = {"texture": "#bracket", "uv": [8, 1, 9, 2]}
+    for cx, cz, dx, dz in ((1, 1, 1, 1), (14, 1, -1, 1), (1, 14, 1, -1), (14, 14, -1, -1)):
+        for step, y in ((0, 13), (1, 12)):
+            x, z = cx + dx * step, cz + dz * step
+            els.append(box([x, y, z], [x + 1, y + 1, z + 1], {n: grey for n in SIDES + ["up", "down"]}))
     return els
 
 
 def drill_elements():
-    """Dark motor with its lid, a funnel and the bit standing on the chest."""
-    def sides(uv_a, uv_b=None):
-        return {n: {"texture": "#drill", "uv": uv_a if n in ("north", "south") else (uv_b or uv_a)} for n in SIDES}
+    """Black head with the tan ring on top, grey legs round a black shaft, down to the floor."""
     els = []
-    f = sides([0, 2, 9, 3])
-    f["up"] = {"texture": "#drill", "uv": [0, 6, 8, 14]}
-    f["down"] = {"texture": "#drill", "uv": [0, 6, 8, 14]}
-    els.append(box([3.5, 12.5, 3.5], [12.5, 13, 12.5], f))
-    f = sides([0, 0, 8, 2], [8, 0, 16, 2])
-    f["down"] = {"texture": "#drill", "uv": [0, 6, 8, 14]}
-    els.append(box([4, 10.75, 4], [12, 12.5, 12], f))
-    f = sides([0, 3, 6, 4])
-    f["down"] = {"texture": "#drill", "uv": [0, 6, 6, 12]}
-    els.append(box([5, 10, 5], [11, 10.75, 11], f))
-    # the neck goes down through the chest's lid; below it, inside the chest and seen through the
-    # window in face A, the drill's body stands on the floor of the hollow
-    els.append(box([6.5, 9, 6.5], [9.5, 10, 9.5], sides([0, 4, 3, 5])))
-    els.append(box([5, 6, 5], [11, 9, 11], sides([8, 6, 14, 9])))
+    side = {"texture": "#drill", "uv": [0, 8, 8, 11]}
+    els.append(box([4, 11, 4], [12, 14, 12], {"north": side, "south": side, "west": side, "east": side,
+                                             "up": {"texture": "#drill", "uv": [0, 0, 8, 8]},
+                                             "down": {"texture": "#drill", "uv": [0, 0, 8, 8]}}))
+    shaft = {"texture": "#drill", "uv": [10, 0, 12, 5]}
+    els.append(box([7, 6, 7], [9, 11, 9], {n: shaft for n in SIDES}))
+    leg = {"texture": "#drill", "uv": [8, 0, 10, 5]}
+    for frm, to in (([5, 6.5, 7.25], [6.5, 11, 8.75]), ([9.5, 6.5, 7.25], [11, 11, 8.75]),
+                    ([7.25, 6.5, 5], [8.75, 11, 6.5]), ([7.25, 6.5, 9.5], [8.75, 11, 11])):
+        els.append(box(frm, to, {n: leg for n in SIDES + ["down"]}))
     return els
 
 
 TEXTURES = {
-    "particle": "goldenquarry:block/quarry_side_a",
-    "side_a": "goldenquarry:block/quarry_side_a",
-    "side_b": "goldenquarry:block/quarry_side_b",
-    "top": "goldenquarry:block/quarry_gold_top",
-    "cage_a": "goldenquarry:block/quarry_cage_a",
-    "cage_b": "goldenquarry:block/quarry_cage_b",
-    "inside": "goldenquarry:block/quarry_inside",
+    "particle": "goldenquarry:block/qi_front",
+    "front": "goldenquarry:block/qi_front",
+    "side": "goldenquarry:block/qi_side",
+    "inner": "goldenquarry:block/qi_inner",
+    "bottom": "goldenquarry:block/qi_bottom",
+    "pillar": "goldenquarry:block/qi_pillar",
+    "walltop": "goldenquarry:block/qi_walltop",
+    "ring": "goldenquarry:block/qi_ring",
+    "bracket": "goldenquarry:block/qi_drill",
 }
 
 
@@ -84,39 +100,34 @@ def write(path, obj):
 
 
 def main():
-    base_faces = {n: {"texture": "#base", "cullface": n} for n in SIDES + ["up", "down"]}
-    write(f"{ASSETS}/models/block/golden_quarry_base.json", {
-        "parent": "minecraft:block/block",
-        "textures": {"particle": "goldenquarry:block/quarry_base", "base": "goldenquarry:block/quarry_base"},
-        "elements": [box([0, 0, 0], [16, 16, 16], base_faces)],
-    })
-    write(f"{ASSETS}/models/block/golden_quarry_top.json", {
+    for old in ("golden_quarry_base", "golden_quarry_top"):
+        p = f"{ASSETS}/models/block/{old}.json"
+        if os.path.exists(p):
+            os.remove(p)
+    write(f"{ASSETS}/models/block/golden_quarry.json", {
         "parent": "minecraft:block/block",
         "render_type": "minecraft:cutout",
-        "ambientocclusion": False,
         "textures": TEXTURES,
         "elements": top_elements(),
     })
     write(f"{ASSETS}/models/block/golden_quarry_drill.json", {
         "render_type": "minecraft:cutout",
         "ambientocclusion": False,
-        "textures": {"particle": "goldenquarry:block/quarry_drill", "drill": "goldenquarry:block/quarry_drill"},
+        "textures": {"particle": "goldenquarry:block/qi_drill", "drill": "goldenquarry:block/qi_drill"},
         "elements": drill_elements(),
     })
     write(f"{ASSETS}/models/item/golden_quarry.json", {
         "parent": "minecraft:block/block",
         "render_type": "minecraft:cutout",
-        "ambientocclusion": False,
-        "textures": dict(TEXTURES, drill="goldenquarry:block/quarry_drill"),
+        "textures": dict(TEXTURES, drill="goldenquarry:block/qi_drill"),
         "elements": top_elements() + drill_elements(),
     })
     variants = {}
     for facing, rot in [("north", 0), ("east", 90), ("south", 180), ("west", 270)]:
-        variants[f"facing={facing},half=lower"] = {"model": "goldenquarry:block/golden_quarry_base"}
-        top = {"model": "goldenquarry:block/golden_quarry_top"}
+        v = {"model": "goldenquarry:block/golden_quarry"}
         if rot:
-            top["y"] = rot
-        variants[f"facing={facing},half=upper"] = top
+            v["y"] = rot
+        variants[f"facing={facing}"] = v
     write(f"{ASSETS}/blockstates/golden_quarry.json", {"variants": variants})
 
 

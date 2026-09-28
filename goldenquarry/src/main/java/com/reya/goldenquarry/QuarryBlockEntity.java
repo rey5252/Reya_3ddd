@@ -248,7 +248,7 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
 
     /** The drill speeds up while the quarry digs (faster with speed upgrades) and runs down when it stops. */
     public static void clientTick(Level level, BlockPos pos, BlockState state, QuarryBlockEntity be) {
-        float target = be.isWorking() ? 360.0F / Math.max(4, be.clientTicksPerBlock) : 0.0F;
+        float target = be.isWorking() ? 2.5F : 0.0F;   // slow and steady: one turn in about 7 seconds
         be.drillSpeed += (target - be.drillSpeed) * 0.15F;
         if (Math.abs(be.drillSpeed) < 0.01F) be.drillSpeed = 0.0F;
         be.prevDrillAngle = be.drillAngle;

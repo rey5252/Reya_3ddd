@@ -41,7 +41,7 @@ public class GoldenQuarry {
                     .sound(SoundType.METAL)
                     .requiresCorrectToolForDrops()
                     .pushReaction(PushReaction.BLOCK)
-                    .lightLevel(state -> QuarryBlock.isLower(state) ? 0 : 10)));
+                    .lightLevel(state -> 10)));
     public static final RegistryObject<Item> QUARRY_ITEM = ITEMS.register("golden_quarry",
             () -> new BlockItem(QUARRY.get(), new Item.Properties().rarity(Rarity.EPIC)));
     public static final RegistryObject<Item> SPEED_UPGRADE = upgrade("speed_upgrade", QuarryUpgradeItem.Kind.SPEED);
