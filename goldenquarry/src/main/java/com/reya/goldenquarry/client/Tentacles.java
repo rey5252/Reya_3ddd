@@ -1,86 +1,60 @@
 package com.reya.goldenquarry.client;
 
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.reya.goldenquarry.GoldenQuarry;
 import net.minecraft.Util;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.util.Mth;
+import net.minecraft.resources.ResourceLocation;
 
 /**
- * Purple tentacles round the vacuum chest's GUI, drawn pixel by pixel: they come out from behind the
- * frame, thick at the root and thin at the tip, waves run along them into the chest, they are drawn
- * back in and reach out again, and the light suckers on their side slide in. Drawn before the GUI,
- * so the frame covers their roots.
+ * The tentacles round the vacuum chest's GUI and the stars they pull in. The tentacles are drawn
+ * frame by frame by tools/gen_tentacles.py (purple glossy back with dark spots, pink underside
+ * with round suckers, the tip curled; they wave, the waves running in, and are drawn in and reach
+ * out again): one row of 16 frames per tentacle in vacuum_chest_tentacles.png. Their roots are
+ * under the frame, which is drawn over them. The stars drift in along them, twinkling, and go in
+ * under the frame.
  */
 final class Tentacles {
-    /** Root (GUI pixels), direction out, length, phase. */
-    private record Tentacle(float x, float y, float dx, float dy, float length, float phase) {
-    }
+    private static final ResourceLocation SHEET = new ResourceLocation(GoldenQuarry.MODID, "textures/gui/vacuum_chest_tentacles.png");
+    private static final ResourceLocation STARS = new ResourceLocation(GoldenQuarry.MODID, "textures/gui/vacuum_chest_stars.png");
+    private static final int SIZE = 96, FRAMES = 16, REACH = 40;
+    /** Root x, y (GUI pixels), direction out, length: as in tools/gen_tentacles.py, in its order. */
+    private static final float[][] TENTACLES;
 
-    private static final int OUTLINE = 0x10041E;
-    private static final int[] BODY = {0x240846, 0x351068, 0x4C1A8E, 0x6828B4, 0x8A40D8, 0xAE62F2, 0xD08CFF};
-    private static final int SUCKER = 0xE8B8FF;
-    private final Tentacle[] tentacles;
-
-    /** Tentacles for a GUI of this width: at the top corners, down the sides and at the bottom corners. */
-    Tentacles(int width, int frameBottom) {
-        float r = width - 1;
-        tentacles = new Tentacle[]{
-                new Tentacle(5, 14, -0.8F, -0.6F, 30, 0.0F),
-                new Tentacle(32, 12, -0.3F, -0.95F, 24, 1.7F),
-                new Tentacle(4, 46, -1.0F, -0.1F, 22, 3.1F),
-                new Tentacle(r - 5, 14, 0.8F, -0.6F, 30, 2.3F),
-                new Tentacle(r - 32, 12, 0.3F, -0.95F, 24, 4.2F),
-                new Tentacle(r - 4, 46, 1.0F, -0.1F, 22, 0.9F),
-                new Tentacle(4, 100, -1.0F, 0.2F, 26, 5.0F),
-                new Tentacle(r - 4, 96, 1.0F, 0.2F, 26, 1.2F),
-                new Tentacle(8, 152, -0.85F, 0.55F, 28, 3.6F),
-                new Tentacle(18, frameBottom + 12, -0.45F, 0.9F, 22, 0.4F),
-                new Tentacle(r - 8, 152, 0.85F, 0.55F, 28, 2.8F),
-                new Tentacle(r - 18, frameBottom + 12, 0.45F, 0.9F, 22, 5.6F)};
-    }
-
-    private static int width(float f) {
-        return f < 0.22F ? 4 : f < 0.5F ? 3 : f < 0.8F ? 2 : 1;
-    }
-
-    /** The point s pixels out along the tentacle: {x, y}. */
-    private static float[] point(Tentacle tc, float len, float t, float s) {
-        float f = s / len;
-        float wave = Mth.sin(s * 0.34F + t * 4.2F + tc.phase) * 3.4F * (float) Math.pow(f, 0.8D);
-        return new float[]{tc.x + tc.dx * s - tc.dy * wave, tc.y + tc.dy * s + tc.dx * wave};
+    static {
+        float r = 216 - 1;
+        TENTACLES = new float[][]{
+                {6, 14, -0.75F, -0.66F, 54}, {34, 13, -0.2F, -0.98F, 40}, {4, 48, -0.98F, -0.2F, 40},
+                {4, 104, -0.97F, 0.25F, 46}, {9, 152, -0.8F, 0.6F, 52}, {18, 160, -0.4F, 0.92F, 40},
+                {r - 6, 14, 0.75F, -0.66F, 54}, {r - 34, 13, 0.2F, -0.98F, 40}, {r - 4, 48, 0.98F, -0.2F, 40},
+                {r - 4, 104, 0.97F, 0.25F, 46}, {r - 9, 152, 0.8F, 0.6F, 52}, {r - 18, 160, 0.4F, 0.92F, 40}};
     }
 
     void draw(GuiGraphics g, int left, int top) {
-        float t = Util.getMillis() / 1000.0F;
-        for (Tentacle tc : tentacles) {
-            float len = tc.length * (0.6F + 0.4F * (0.5F + 0.5F * Mth.sin(t * 1.3F + tc.phase)));
-            // the dark outline first, then the body over it
-            for (int pass = 0; pass < 2; pass++) {
-                for (float s = 0.0F; s <= len; s += 0.5F) {
-                    float f = s / len;
-                    float[] p = point(tc, len, t, s);
-                    int px = left + Math.round(p[0]), py = top + Math.round(p[1]);
-                    int w = width(f);
-                    int alpha = f < 0.85F ? 255 : (int) (255 * (1.0F - (f - 0.85F) / 0.15F));
-                    if (alpha <= 0) continue;
-                    int x0 = px - w / 2, y0 = py - w / 2;
-                    if (pass == 0) {
-                        g.fill(x0 - 1, y0 - 1, x0 + w + 1, y0 + w + 1, alpha << 24 | OUTLINE);
-                    } else {
-                        g.fill(x0, y0, x0 + w, y0 + w, alpha << 24 | BODY[Math.min(BODY.length - 1, (int) (f * BODY.length))]);
-                    }
-                }
-            }
-            // the suckers, sliding in along one side
-            float shift = (t * 9.0F + tc.phase * 3.0F) % 4.0F;
-            for (float s = 4.0F - shift; s <= len * 0.8F; s += 4.0F) {
-                if (s <= 1.0F) continue;
-                int w = width(s / len);
-                if (w < 2) continue;
-                float[] p = point(tc, len, t, s);
-                float off = w / 2.0F - 0.5F;
-                int px = left + Math.round(p[0] - tc.dy * off), py = top + Math.round(p[1] + tc.dx * off);
-                g.fill(px, py, px + 1, py + 1, 0xC8000000 | SUCKER);
-            }
+        long now = Util.getMillis();
+        for (int i = 0; i < TENTACLES.length; i++) {
+            float[] tc = TENTACLES[i];
+            int frame = (int) ((now / 90L + i * 5L) % FRAMES);
+            int x = left + Math.round(tc[0] - (SIZE / 2.0F - REACH * tc[2]));
+            int y = top + Math.round(tc[1] - (SIZE / 2.0F - REACH * tc[3]));
+            g.blit(SHEET, x, y, frame * SIZE, i * SIZE, SIZE, SIZE, SIZE * FRAMES, SIZE * TENTACLES.length);
+        }
+        // stars pulled in along the tentacles, speeding up as they go, and fading in out there
+        double t = now / 1000.0D;
+        for (int k = 0; k < 24; k++) {
+            float[] tc = TENTACLES[k % TENTACLES.length];
+            double p = (t * 0.45D + k * 0.37D) % 1.0D;
+            double side = ((k * 7) % 5 - 2) * 5.0D;
+            double sx = tc[0] + tc[2] * tc[4] * 0.95D - tc[3] * side, sy = tc[1] + tc[3] * tc[4] * 0.95D + tc[2] * side;
+            double ex = tc[0] - tc[2] * 4.0D, ey = tc[1] - tc[3] * 4.0D;
+            double e = Math.pow(p, 1.6D);
+            int cx = left + (int) Math.round(sx + (ex - sx) * e), cy = top + (int) Math.round(sy + (ey - sy) * e);
+            float alpha = (float) Math.min(1.0D, p / 0.25D);
+            int frame = (int) ((now / 110L + k) % 8);
+            RenderSystem.enableBlend();
+            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, alpha);
+            g.blit(STARS, cx - 4, cy - 4, frame * 9, 0, 9, 9, 72, 9);
+            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         }
     }
 }

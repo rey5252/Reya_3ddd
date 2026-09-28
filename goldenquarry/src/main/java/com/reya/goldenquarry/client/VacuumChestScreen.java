@@ -40,10 +40,9 @@ public class VacuumChestScreen extends AbstractContainerScreen<VacuumChestMenu> 
     private static final int TITLE_X1 = 61, TITLE_X2 = 153, TITLE_Y = 3;
     private static final int LABEL_Y = 84, FILTER_LABEL_X = 27, RANGE_LABEL_END = 201;
     private static final int RANGE_END = 178, RANGE_Y = 99;
-    private static final int FRAME_BOTTOM = 148;
     private static final int[] PARTICLE_COLOURS = {0xB24BF3, 0xD472FF, 0x8A2BE2, 0xE58CFF, 0xF0C8FF};
 
-    private final Tentacles tentacles = new Tentacles(VacuumChestMenu.WIDTH, FRAME_BOTTOM);
+    private final Tentacles tentacles = new Tentacles();
 
     public VacuumChestScreen(VacuumChestMenu menu, Inventory inv, Component title) {
         super(menu, inv, title);
