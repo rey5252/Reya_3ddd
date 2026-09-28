@@ -57,7 +57,7 @@ def top_elements():
     els.append(box([1, 16, 1], [15, 16, 15], {"up": {"texture": "#ring"}, "down": {"texture": "#ring"}}))
     # little grey brackets stepping in from the cage's corners, kept a hair off the cage sheets
     # (faces in the same plane as a sheet flicker)
-    grey = {"texture": "#bracket", "uv": [12, 0, 13, 1]}
+    grey = {"texture": "#bracket", "uv": [12, 4, 13, 5]}
     for cx, cz, dx, dz in ((1, 1, 1, 1), (14, 1, -1, 1), (1, 14, 1, -1), (14, 14, -1, -1)):
         for step, y in ((0, 13), (1, 12)):
             x, z = cx + dx * step, cz + dz * step
@@ -68,19 +68,31 @@ def top_elements():
 
 
 def drill_elements():
-    """Black head with the tan ring on top and grey blocks round its sides; under it a black shaft
-    with a grey leg on each side, down to the floor, and a grey tooth at the foot."""
+    """After shot 11: a square black plate with a grey band (8 wide), a grey cap in the middle with
+    the tan ring on top, a grey block on the middle of each side of the plate with a leg hanging
+    from it and stepping in to the floor, a grey column under the middle, a grey tooth at the foot."""
     els = []
-    side = {"texture": "#drill", "uv": [0, 8, 8, 11]}
+    blocks = {"texture": "#drill", "uv": [12, 0, 16, 4]}
+    small = {"texture": "#drill", "uv": [12, 0, 14, 2]}
     black = {"texture": "#drill", "uv": [10, 0, 12, 8]}
-    els.append(box([4, 11, 4], [12, 14, 12], {"north": side, "south": side, "west": side, "east": side,
-                                             "up": {"texture": "#drill", "uv": [0, 0, 8, 8]}, "down": black}))
-    els.append(box([7, 6, 7], [9, 11, 9], {n: black for n in SIDES}))
-    leg = {"texture": "#drill", "uv": [8, 0, 10, 5]}
-    for frm, to in (([5, 6, 7], [7, 11, 9]), ([9, 6, 7], [11, 11, 9]), ([7, 6, 5], [9, 11, 7]), ([7, 6, 9], [9, 11, 11])):
-        els.append(box(frm, to, {n: leg for n in SIDES}))
-    tooth = {"texture": "#drill", "uv": [12, 0, 13, 1]}
-    els.append(box([9, 6, 4.5], [10.5, 7, 6], {n: tooth for n in SIDES + ["up"]}))
+    plate_side = {"texture": "#drill", "uv": [0, 8, 8, 9]}
+    els.append(box([4, 11, 4], [12, 12, 12], {"north": plate_side, "south": plate_side, "west": plate_side,
+                                             "east": plate_side, "up": {"texture": "#drill", "uv": [0, 0, 8, 8]},
+                                             "down": black}))
+    els.append(box([6, 12, 6], [10, 15, 10], {"north": blocks, "south": blocks, "west": blocks, "east": blocks,
+                                             "up": {"texture": "#drill", "uv": [2, 2, 6, 6]}}))
+    for frm, to in (([4, 12, 7], [6, 14, 9]), ([10, 12, 7], [12, 14, 9]), ([7, 12, 4], [9, 14, 6]), ([7, 12, 10], [9, 14, 12])):
+        els.append(box(frm, to, {n: small for n in SIDES + ["up"]}))
+    leg = {"texture": "#drill", "uv": [8, 0, 9, 3]}
+    for sx, sz in ((-1, 0), (1, 0), (0, -1), (0, 1)):
+        for r, y0, y1 in ((3.5, 8.5, 11), (2.5, 6, 8.5)):
+            cx, cz = 8 + sx * (r + 0.5), 8 + sz * (r + 0.5)
+            els.append(box([cx - 0.5, y0, cz - 0.5], [cx + 0.5, y1, cz + 0.5], {n: leg for n in SIDES}))
+    els.append(box([6.75, 8.5, 6.75], [9.25, 11, 9.25], {n: blocks for n in SIDES + ["down"]}))
+    column = {"texture": "#drill", "uv": [8, 0, 10, 5]}
+    els.append(box([7, 6, 7], [9, 8.5, 9], {n: column for n in SIDES}))
+    tooth = {"texture": "#drill", "uv": [12, 4, 13, 5]}
+    els.append(box([9, 6, 4.5], [11, 7.5, 6.5], {n: tooth for n in SIDES + ["up"]}))
     return els
 
 

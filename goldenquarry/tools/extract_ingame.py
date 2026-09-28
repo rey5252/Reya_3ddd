@@ -80,10 +80,10 @@ def main():
     side = unwarp(1, ((112, 340), (880, 340), (120, 810), (872, 810)), 16, 10, 0.6)
     save("qi_front", face(front))
     save("qi_side", face(side))
-    # inside of the front and back walls: the front's gold and black, a little darker
+    # inside of the front and back walls (shot 13): the front's own picture, seen from behind
     inner = blank()
     for j in range(10):
-        inner[6 + j] = [tuple(int(q * 0.8) for q in c[:3]) + (255,) for c in front[j]]
+        inner[6 + j] = list(reversed(front[j]))
     save("qi_inner", inner)
     # the bottom (shot 5), also the floor of the hollow the drill stands on
     bottom = unwarp(5, ((15, 38), (720, 38), (42, 708), (695, 708)), 16, 16, 0.5)
@@ -150,7 +150,15 @@ def main():
             drill[j][8 + i] = pal[ch]
     for j in range(8):                                # shaft and the head's underside: black
         drill[j][10], drill[j][11] = K, (8, 8, 8, 255)
-    drill[0][12] = grey                               # the tooth and the brackets in the cage
+    blocks = ["2e31",                                 # shot 11: the grey blocks, 2x2 shades
+              "e123",
+              "31e4",
+              "1d32"]
+    pal = {"1": g1, "2": g2, "3": g3, "4": g4, "d": d1, "e": d2}
+    for j, row in enumerate(blocks):
+        for i, ch in enumerate(row):
+            drill[j][12 + i] = pal[ch]
+    drill[4][12] = grey                               # the tooth and the brackets in the cage
     save("qi_drill", drill)
     # glass: faintly blue, with a few white streaks; only where the cage and the side openings
     # are open (the frame's own pixels stay clear, so nothing lies on top of them)
