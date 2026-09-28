@@ -29,7 +29,8 @@ import net.minecraft.world.item.Items;
 public class VacuumChestScreen extends AbstractContainerScreen<VacuumChestMenu> {
     private static final ResourceLocation TEXTURE = new ResourceLocation(GoldenQuarry.MODID, "textures/gui/vacuum_chest.png");
     private static final ResourceLocation VORTEX = new ResourceLocation(GoldenQuarry.MODID, "textures/gui/vacuum_chest_vortex.png");
-    private static final int VORTEX_X = 12, VORTEX_Y = 20, VORTEX_W = 192, VORTEX_H = 121, VORTEX_FRAMES = 12;
+    /** The vortex under the panel: down to the inventory, which sits right under the panel as LoliUtility's do. */
+    private static final int VORTEX_X = 12, VORTEX_Y = 20, VORTEX_W = 192, VORTEX_H = 137, VORTEX_FRAMES = 12;
     /** Buttons: x, y, width, height (texture pixels) and the menu button id. */
     private static final int[][] BUTTONS = {
             {182, 95, 8, 8, VacuumChestMenu.BUTTON_PLUS},
@@ -101,7 +102,7 @@ public class VacuumChestScreen extends AbstractContainerScreen<VacuumChestMenu> 
             double a = a0 + p * 2.4D;
             int x = (int) Math.round(cx + Math.cos(a) * r * 94.0D);
             int y = (int) Math.round(cy + Math.sin(a) * r * 58.0D);
-            if (x < VORTEX_X || x >= VORTEX_X + VORTEX_W || y < VORTEX_Y || y >= VORTEX_Y + VORTEX_H) continue;
+            if (x < VORTEX_X || x >= VORTEX_X + VORTEX_W || y < VORTEX_Y || y > 140) continue;
             int alpha = (int) (Mth.sin((float) (p * Math.PI)) * 235.0F);
             if (alpha < 12) continue;
             int colour = alpha << 24 | PARTICLE_COLOURS[(int) ((h >>> 4) % PARTICLE_COLOURS.length)];

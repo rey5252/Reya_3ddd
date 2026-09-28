@@ -150,7 +150,7 @@ def distances():
     return d
 
 
-VORTEX_X, VORTEX_Y, VORTEX_W, VORTEX_H, VORTEX_FRAMES = SHIFT + 8, FRAME_TOP + 8, 192, 121, 12
+VORTEX_X, VORTEX_Y, VORTEX_W, VORTEX_H, VORTEX_FRAMES = SHIFT + 8, FRAME_TOP + 8, 192, INV_Y - FRAME_TOP - 8, 12
 
 
 def vortex(x, y, turn=0.0):

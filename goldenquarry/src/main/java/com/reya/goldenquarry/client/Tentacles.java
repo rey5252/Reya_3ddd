@@ -33,9 +33,9 @@ final class Tentacles {
                 new Tentacle(4, 100, -1.0F, 0.2F, 26, 5.0F),
                 new Tentacle(r - 4, 96, 1.0F, 0.2F, 26, 1.2F),
                 new Tentacle(8, 152, -0.85F, 0.55F, 28, 3.6F),
-                new Tentacle(14, frameBottom + 14, -0.45F, 0.9F, 22, 0.4F),
+                new Tentacle(18, frameBottom + 12, -0.45F, 0.9F, 22, 0.4F),
                 new Tentacle(r - 8, 152, 0.85F, 0.55F, 28, 2.8F),
-                new Tentacle(r - 14, frameBottom + 14, 0.45F, 0.9F, 22, 5.6F)};
+                new Tentacle(r - 18, frameBottom + 12, 0.45F, 0.9F, 22, 5.6F)};
     }
 
     private static int width(float f) {
