@@ -63,10 +63,15 @@ public final class AutoShot {
         STEPS.add(new Step(20, () -> shot("quarry_gui.png")));
         // the reference photo's view: sunset, narrow view, drill resting (a redstone signal stops it)
         STEPS.add(new Step(20, AutoShot::photoSetUp));
-        STEPS.add(new Step(60, () -> look(8.5D, 40, 0.0D, 4.0F)));
-        STEPS.add(new Step(60, () -> shot("photo_view.png")));
-        STEPS.add(new Step(20, () -> look(2.6D, 40, 0.1D, 2.0F)));
-        STEPS.add(new Step(60, () -> shot("photo_closeup.png")));
+        // close up, the way the in-game reference shots (reference/ingame) look at it
+        STEPS.add(new Step(60, () -> look(1.5D, 0, 0.0D, 34.0F)));
+        STEPS.add(new Step(60, () -> shot("ref_front.png")));
+        STEPS.add(new Step(20, () -> look(1.5D, 90, 0.0D, 34.0F)));
+        STEPS.add(new Step(60, () -> shot("ref_side.png")));
+        STEPS.add(new Step(20, () -> look(2.0D, 45, 0.3D, 34.0F)));
+        STEPS.add(new Step(60, () -> shot("ref_diagonal.png")));
+        STEPS.add(new Step(20, () -> look(0.05D, 0, 1.4D, 89.9F)));
+        STEPS.add(new Step(60, () -> shot("ref_top.png")));
         STEPS.add(new Step(60, () -> Minecraft.getInstance().stop()));
     }
 
@@ -172,11 +177,11 @@ public final class AutoShot {
         Minecraft mc = Minecraft.getInstance();
         mc.setScreen(null);
         mc.options.hideGui = true;
-        mc.options.fov().set(30);
+        mc.options.fov().set(70);
         MinecraftServer server = server();
         server.execute(() -> {
             ServerLevel level = server.overworld();
-            level.setDayTime(12600L);
+            level.setDayTime(6000L);
             level.setBlock(POS.below(), net.minecraft.world.level.block.Blocks.REDSTONE_BLOCK.defaultBlockState(), 3);
         });
     }
