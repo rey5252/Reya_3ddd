@@ -13,6 +13,7 @@ GUI pixel (gx, gy) of the screenshot lands at texture pixel (gx + 1, gy + 3).
 import os
 import sys
 
+import anim
 from png_io import read_png, write_png
 
 REF = "reference/gui.png"
@@ -183,7 +184,7 @@ def main():
         cards.append(card)
         hole = samp(180, 24 + 18 * n)
         for j in range(14):
-            for i in range(14):
+            for i in range(-1, 14):                 # also the card's left edge column
                 tex.set(182 + i, 17 + 18 * n + j, hole)
     # the icon box left of the bars becomes the fortune charm's slot: the box is the reference's own,
     # pixel for pixel; only the picture drawn inside it is taken out, and the gold behind it is
@@ -215,6 +216,13 @@ def main():
             else:
                 c = samp(gx, gy)
             tex.set(gx, gy, c)
+    # made straight: the box's top left quarter mirrored round the slot's middle (gui 22.5, 77.5)
+    for gy in range(66, 90):
+        for gx in range(10, 35):
+            sx = gx if gx <= 22 else 45 - gx
+            sy = gy if gy <= 77 else 155 - gy
+            if (sx, sy) != (gx, gy):
+                tex.set(gx, gy, tex.get(sx, sy))
     for name, card in zip(("stack_upgrade", "infinite_upgrade", "smelting_upgrade"), cards):
         save_item(name, card)
 
@@ -237,7 +245,8 @@ def save_item(name, card):
     for j, row in enumerate(card):
         for i, c in enumerate(row):
             px[1 + j][1 + i] = tuple(c) + (255,)
-    write_png(f"src/main/resources/assets/goldenquarry/textures/item/{name}.png", 16, 16, px)
+    # animated: a shine passes over the card now and then (tools/anim.py)
+    anim.save(f"src/main/resources/assets/goldenquarry/textures/item/{name}.png", anim.shine_only(px), 2, 60)
 
 
 def best_period(rows):

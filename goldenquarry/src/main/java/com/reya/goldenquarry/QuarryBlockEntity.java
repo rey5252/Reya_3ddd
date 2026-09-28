@@ -226,17 +226,11 @@ public class QuarryBlockEntity extends BlockEntity implements MenuProvider {
         be.tick(server);
     }
 
-    /** The drill turns slowly while the converter works and comes to rest square to the chest when it stops. */
+    /** The drill always turns slowly, one turn in about 7 seconds. */
     public static void clientTick(Level level, BlockPos pos, BlockState state, QuarryBlockEntity be) {
-        float target = be.isWorking() ? 2.5F : 0.0F;   // slow and steady: one turn in about 7 seconds
-        be.drillSpeed += (target - be.drillSpeed) * 0.15F;
-        if (Math.abs(be.drillSpeed) < 0.01F) be.drillSpeed = 0.0F;
+        be.drillSpeed += (2.5F - be.drillSpeed) * 0.15F;
         be.prevDrillAngle = be.drillAngle;
         be.drillAngle += be.drillSpeed;
-        if (target == 0.0F && Math.abs(be.drillSpeed) < 0.5F) {
-            float rest = Math.round(be.drillAngle / 90.0F) * 90.0F;
-            be.drillAngle += (rest - be.drillAngle) * 0.2F;
-        }
         if (be.drillAngle >= 360.0F) {
             be.drillAngle -= 360.0F;
             be.prevDrillAngle -= 360.0F;

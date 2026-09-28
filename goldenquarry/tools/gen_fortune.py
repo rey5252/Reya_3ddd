@@ -14,6 +14,8 @@ import sys
 
 from PIL import Image
 
+import anim
+
 A = "src/main/resources/assets/goldenquarry"
 D = "src/main/resources/data"
 REF = "reference/fortune.jpg"
@@ -129,9 +131,12 @@ def textures():
         rgba = [[(c + (255,)) if c else (0, 0, 0, 0) for c in row] for row in img]
         path = f"{A}/textures/item/fortune_upgrade_{lvl}.png"
         os.makedirs(os.path.dirname(path), exist_ok=True)
+        # animated: the gem glows on and off and a shine passes over (tools/anim.py); the art was
+        # moved up a row above, so the gem's cells are one row higher
+        gem = {(u, v - 1) for u, v in GEM}
+        anim.save(path, anim.shine_and_glow(rgba, gem), 2)
         im = Image.new("RGBA", (N, N))
         im.putdata([c for row in rgba for c in row])
-        im.save(path)
         out[lvl] = im
     return out
 
