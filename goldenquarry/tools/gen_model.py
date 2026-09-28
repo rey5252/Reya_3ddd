@@ -3,7 +3,8 @@
 Run from the goldenquarry folder:  python3 tools/gen_model.py
 The quarry is two blocks tall: golden_quarry_base is the plain dark stand, golden_quarry_top the
 golden chest (9 units high; two different faces, A and B, as in the photo) with the open cage on
-it (6 units high, nothing across the top). golden_quarry_drill is the drill hanging in the cage;
+it (6 units high, nothing across the top) and a dark hollow inside, seen through a window in face A.
+golden_quarry_drill is the drill: motor in the cage, its body in the hollow, standing on its floor;
 the block entity renderer spins it while the quarry digs. The item shows chest, cage and drill.
 All textures come from the photo (tools/extract_block.py) and are shown unshaded, like the photo.
 """
@@ -31,6 +32,14 @@ def top_elements():
     els.append(box([1, 9, 15], [15, 15, 15], {"south": {"texture": "#cage_a", "uv": outer}, "north": {"texture": "#cage_a", "uv": inner}}))
     els.append(box([1, 9, 1], [1, 15, 15], {"west": {"texture": "#cage_b", "uv": outer}, "east": {"texture": "#cage_b", "uv": inner}}))
     els.append(box([15, 9, 1], [15, 15, 15], {"east": {"texture": "#cage_b", "uv": outer}, "west": {"texture": "#cage_b", "uv": inner}}))
+    # behind the window in face A: a dark hollow (walls facing inwards) where the drill stands
+    dark = {"texture": "#inside", "uv": [1, 7, 15, 10]}
+    els.append(box([1, 6, 15], [15, 9, 15], {"north": dark}))
+    els.append(box([1, 6, 1], [15, 9, 1], {"south": dark}))
+    els.append(box([15, 6, 1], [15, 9, 15], {"west": dark}))
+    els.append(box([1, 6, 1], [1, 9, 15], {"east": dark}))
+    els.append(box([1, 6, 1], [15, 6, 15], {"up": {"texture": "#inside", "uv": [1, 1, 15, 15]}}))
+    els.append(box([1, 9, 1], [15, 9, 15], {"down": {"texture": "#inside", "uv": [1, 1, 15, 15]}}))
     return els
 
 
@@ -49,8 +58,10 @@ def drill_elements():
     f = sides([0, 3, 6, 4])
     f["down"] = {"texture": "#drill", "uv": [0, 6, 6, 12]}
     els.append(box([5, 10, 5], [11, 10.75, 11], f))
-    # the bit stands on the chest, so the drill never hangs in the air
-    els.append(box([6.5, 8, 6.5], [9.5, 10, 9.5], sides([0, 4, 3, 5])))
+    # the neck goes down through the chest's lid; below it, inside the chest and seen through the
+    # window in face A, the drill's body stands on the floor of the hollow
+    els.append(box([6.5, 9, 6.5], [9.5, 10, 9.5], sides([0, 4, 3, 5])))
+    els.append(box([5, 6, 5], [11, 9, 11], sides([8, 6, 14, 9])))
     return els
 
 
@@ -61,6 +72,7 @@ TEXTURES = {
     "top": "goldenquarry:block/quarry_gold_top",
     "cage_a": "goldenquarry:block/quarry_cage_a",
     "cage_b": "goldenquarry:block/quarry_cage_b",
+    "inside": "goldenquarry:block/quarry_inside",
 }
 
 

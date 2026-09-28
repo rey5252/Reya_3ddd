@@ -9,6 +9,7 @@
     "top": "goldenquarry:block/quarry_gold_top",
     "cage_a": "goldenquarry:block/quarry_cage_a",
     "cage_b": "goldenquarry:block/quarry_cage_b",
+    "inside": "goldenquarry:block/quarry_inside",
     "drill": "goldenquarry:block/quarry_drill"
   },
   "elements": [
@@ -198,6 +199,150 @@
             10,
             1,
             16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        1,
+        6,
+        15
+      ],
+      "to": [
+        15,
+        9,
+        15
+      ],
+      "shade": false,
+      "faces": {
+        "north": {
+          "texture": "#inside",
+          "uv": [
+            1,
+            7,
+            15,
+            10
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        1,
+        6,
+        1
+      ],
+      "to": [
+        15,
+        9,
+        1
+      ],
+      "shade": false,
+      "faces": {
+        "south": {
+          "texture": "#inside",
+          "uv": [
+            1,
+            7,
+            15,
+            10
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        15,
+        6,
+        1
+      ],
+      "to": [
+        15,
+        9,
+        15
+      ],
+      "shade": false,
+      "faces": {
+        "west": {
+          "texture": "#inside",
+          "uv": [
+            1,
+            7,
+            15,
+            10
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        1,
+        6,
+        1
+      ],
+      "to": [
+        1,
+        9,
+        15
+      ],
+      "shade": false,
+      "faces": {
+        "east": {
+          "texture": "#inside",
+          "uv": [
+            1,
+            7,
+            15,
+            10
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        1,
+        6,
+        1
+      ],
+      "to": [
+        15,
+        6,
+        15
+      ],
+      "shade": false,
+      "faces": {
+        "up": {
+          "texture": "#inside",
+          "uv": [
+            1,
+            1,
+            15,
+            15
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        1,
+        9,
+        1
+      ],
+      "to": [
+        15,
+        9,
+        15
+      ],
+      "shade": false,
+      "faces": {
+        "down": {
+          "texture": "#inside",
+          "uv": [
+            1,
+            1,
+            15,
+            15
           ]
         }
       }
@@ -394,7 +539,7 @@
     {
       "from": [
         6.5,
-        8,
+        9,
         6.5
       ],
       "to": [
@@ -438,6 +583,57 @@
             4,
             3,
             5
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        5,
+        6,
+        5
+      ],
+      "to": [
+        11,
+        9,
+        11
+      ],
+      "shade": false,
+      "faces": {
+        "north": {
+          "texture": "#drill",
+          "uv": [
+            8,
+            6,
+            14,
+            9
+          ]
+        },
+        "south": {
+          "texture": "#drill",
+          "uv": [
+            8,
+            6,
+            14,
+            9
+          ]
+        },
+        "west": {
+          "texture": "#drill",
+          "uv": [
+            8,
+            6,
+            14,
+            9
+          ]
+        },
+        "east": {
+          "texture": "#drill",
+          "uv": [
+            8,
+            6,
+            14,
+            9
           ]
         }
       }

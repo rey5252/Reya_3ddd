@@ -3,8 +3,8 @@
 Run from the goldenquarry folder:  python3 tools/extract_block.py [--preview DIR]
 The chest's two visible faces, the cage above them, the dark stand and the drill are unwarped from
 the photo into 64x64 textures (4 pixels per model unit), so the block carries the photo's pixels
-one to one. Where the photo's drill hangs in front of the chest and cage, the pixels behind it are
-filled in; the drill itself is a separate model that spins (tools/gen_model.py, QuarryAreaRenderer).
+one to one. Where the photo sees the drill through the chest's left face, the face is cut out and the
+drill (a separate model that spins, tools/gen_model.py and QuarryAreaRenderer) shows through it.
 """
 import os
 import sys
@@ -91,13 +91,23 @@ def chest_side(quad, patch=None):
     return img
 
 
-def patch_body_a(face):
-    """The photo's drill shaft and its white tip hang in front of the left face's upper middle
-    (units 8..11 of the top three rows): fill in the plain gold from units 3..5 beside it."""
-    for j in range(0, 3 * R):
-        for i in range(8 * R, 12 * R):
-            u, k = divmod(i, R)
-            face[j][i] = face[j][(3 + (u - 8) % 3) * R + k]
+# where the photo sees the drill through the left face (units u, v of the chest's top three rows):
+# these pixels are cut out, so the real drill shows through them (and spins)
+WINDOW = {0: (10, 11, 12), 1: (10, 11, 12), 2: (9, 10, 11, 12)}
+
+
+def unit(face, u, v):
+    """The photo's colour of one pixel of the art (a 4x4 block of the unwarped face)."""
+    cs = [face[v * R + j][u * R + i] for j in (1, 2) for i in (1, 2)]
+    return tuple(sum(c[q] for c in cs) // 4 for q in range(3))
+
+
+def window_body_a(face):
+    for v, us in WINDOW.items():
+        for u in us:
+            for j in range(R):
+                for i in range(R):
+                    face[v * R + j][u * R + i] = None
 
 
 def cage_side(quad, shift=0):
@@ -129,7 +139,7 @@ def cage_side(quad, shift=0):
 def main():
     os.makedirs(OUT, exist_ok=True)
     imgs = {
-        "quarry_side_a": chest_side(BODY_A, patch_body_a),
+        "quarry_side_a": chest_side(BODY_A, window_body_a),
         "quarry_side_b": chest_side(BODY_B),
         "quarry_cage_a": cage_side(CAGE_A),
         "quarry_cage_b": cage_side(CAGE_B, 1),
@@ -160,7 +170,21 @@ def main():
         for x in range(8):
             corner = x in (1, 6) and y in (7, 12)
             drill[y][x] = (pal["G"] if corner else pal["D"] if (x + y) % 3 else pal["d"]) + (255,)
+    # the drill's body inside the chest, as the photo sees it through the window (its side's left four
+    # pixels land on the window's columns u 9..12, the rest mirror them): dark shaft with a pale edge,
+    # ochre collar, white tip
+    fa = unwarp(BODY_A, 16 * R, 9 * R)
+    body = {"P": (196, 152, 124), "D": (64, 32, 16), "d": (104, 54, 30), "O": (178, 116, 36),
+            "T": (170, 128, 80), "W": unit(fa, 10, 2), "G": (150, 118, 100)}
+    for v, row in enumerate(("PDPdPD", "OOTdTO", "WWGdGW")):
+        for x, ch in enumerate(row):
+            drill[6 + v][8 + x] = body[ch] + (255,)
     write_png(f"{OUT}/quarry_drill.png", 16, 16, drill)
+    # inside the chest: dark like the lines of its pattern
+    dark = [unit(fa, u, v) for v in (3, 4) for u in range(1, 8)]
+    avg = [sum(c[q] for c in dark) // len(dark) for q in range(3)]
+    inside = [[tuple(max(0, a - (6 if (x * 3 + y * 5) % 7 < 3 else 0)) for a in avg) + (255,) for x in range(16)] for y in range(16)]
+    write_png(f"{OUT}/quarry_inside.png", 16, 16, inside)
     for name, im in imgs.items():
         save(name, im)
 
