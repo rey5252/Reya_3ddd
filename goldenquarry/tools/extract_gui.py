@@ -185,28 +185,36 @@ def main():
         for j in range(14):
             for i in range(14):
                 tex.set(182 + i, 17 + 18 * n + j, hole)
-    # the icon box left of the bars becomes the fortune charm's slot: the reference's box (dark
-    # outline stepping in at the middle of each side, brown rim, gold rim, gold inside), redrawn
-    # straight and the same on all four sides, round the 16x16 item at texture 16..31 x 73..88
-    panel, outline, rim, gold_rim = (146, 107, 68), (95, 47, 25), (150, 98, 50), (196, 140, 58)
-    inside_light, inside_dark = (255, 228, 128), (222, 164, 58)
-    for y in range(69, 93):                       # texture pixels
-        for x in range(12, 36):
-            ring = max(abs(2 * x - 47), abs(2 * y - 161)) // 2   # 7 = inside edge
-            middle = 22 <= x <= 25 or 79 <= y <= 82               # the notches
-            if ring <= 7:
-                # smooth gold: light in the middle, deeper towards the rim
-                d = min(1.0, ((x - 23.5) ** 2 + (y - 80.5) ** 2) ** 0.5 / 10.5)
-                c = tuple(int(round(l + (k - l) * d * d)) for l, k in zip(inside_light, inside_dark))
-            elif ring == 8:
-                c = gold_rim
-            elif ring == 9:
-                c = outline if middle else rim
-            elif ring == 10:
-                c = panel if middle else outline
+    # the icon box left of the bars becomes the fortune charm's slot: the box is the reference's own,
+    # pixel for pixel; only the picture drawn inside it is taken out, and the gold behind it is
+    # the reference's gold, fitted smooth (a quadratic over its visible gold pixels)
+    def is_gold(c):
+        return c[0] > 215 and c[1] > 150 and c[2] < 140 and c[0] - c[2] > 110
+
+    terms = lambda x, y: (1.0, x, y, x * x, y * y, x * y)
+    pts = [(gx, gy, samp(gx, gy)) for gy in range(71, 86) for gx in range(15, 30)]
+    pts = [(gx, gy, c) for gx, gy, c in pts if is_gold(c)]
+    coef = []
+    for q in range(3):
+        m = [[sum(terms(gx, gy)[i] * terms(gx, gy)[j] for gx, gy, _ in pts) for j in range(6)] for i in range(6)]
+        v = [sum(terms(gx, gy)[i] * c[q] for gx, gy, c in pts) for i in range(6)]
+        for col in range(6):                                   # Gauss-Jordan
+            piv = max(range(col, 6), key=lambda r: abs(m[r][col]))
+            m[col], m[piv], v[col], v[piv] = m[piv], m[col], v[piv], v[col]
+            for r in range(6):
+                if r != col:
+                    f = m[r][col] / m[col][col]
+                    m[r] = [a - f * b for a, b in zip(m[r], m[col])]
+                    v[r] -= f * v[col]
+        coef.append([v[i] / m[i][i] for i in range(6)])
+    for gy in range(66, 90):
+        for gx in range(10, 35):
+            if 15 <= gx <= 29 and 71 <= gy <= 85:
+                t = terms(gx, gy)
+                c = tuple(max(0, min(255, int(round(sum(k * x for k, x in zip(coef[q], t)))))) for q in range(3))
             else:
-                c = panel
-            tex.set(x - DX, y - DY, c)
+                c = samp(gx, gy)
+            tex.set(gx, gy, c)
     for name, card in zip(("range_upgrade", "speed_upgrade", "smelting_upgrade"), cards):
         save_item(name, card)
 
