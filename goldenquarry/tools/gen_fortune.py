@@ -30,6 +30,15 @@ GEM = {(9, 4), (8, 5), (7, 6), (8, 6), (6, 7), (7, 7), (8, 7), (9, 7), (6, 8), (
        (7, 9), (8, 9), (7, 10), (6, 11)}
 DARK = 60        # darker cells are the black background: transparent
 MERGE = 14       # colours closer than this are one colour (JPEG noise)
+# the JPEG and the median dull the colours: give them back their glow (saturation, brightness)
+SAT, BRIGHT = 1.35, 1.12
+
+
+def vivid(c, sat=SAT, bright=BRIGHT):
+    import colorsys
+    h, l, s = colorsys.rgb_to_hls(*(x / 255 for x in c))
+    r, g, b = colorsys.hls_to_rgb(h, min(1.0, l * bright), min(1.0, s * sat))
+    return tuple(min(255, int(round(x * 255))) for x in (r, g, b))
 
 
 def solve(m, b):
@@ -115,7 +124,7 @@ def textures():
     for lvl, s in samples.items():
         gem = [[s[v][u] if (u, v) in GEM else None for u in range(N)] for v in range(N)]
         gem = merge_colours(gem)
-        img = [[gem[v][u] or body[v][u] for u in range(N)] for v in range(N)]
+        img = [[vivid(gem[v][u], 1.3, 0.97) if gem[v][u] else vivid(body[v][u]) if body[v][u] else None for u in range(N)] for v in range(N)]
         rgba = [[(c + (255,)) if c else (0, 0, 0, 0) for c in row] for row in img]
         path = f"{A}/textures/item/fortune_upgrade_{lvl}.png"
         os.makedirs(os.path.dirname(path), exist_ok=True)
