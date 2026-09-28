@@ -74,9 +74,8 @@ def top_elements():
 def drill_elements():
     """The drill as measured on the reference shots (cameras fitted to the block's corners on shots
     1 and 3, see tools/extract_ingame.py): a black head 8.75 wide and 2.625 high whose texture is
-    10 pixels across (0.875 each), a grey column under it narrowing to the tip in three blocks, four grey blades on the
-    diagonals (a thin upper part out under the head, a lower part in at the shaft, so they close in
-    towards the tip)."""
+    10 pixels across (0.875 each), a grey column under it narrowing to the tip in three blocks, and four short grey blades on the
+    diagonals under the head."""
     els = []
     black = {"texture": "#drill", "uv": [10, 0, 11, 1]}
     side_a = {"texture": "#drill", "uv": [0, 10, 10, 13]}
@@ -88,17 +87,10 @@ def drill_elements():
         t = {"texture": "#drill", "uv": uv}
         els.append(box([8 - half, y0, 8 - half], [8 + half, y1, 8 + half], {n: t for n in SIDES + ["down"] + (["up"] if y1 < 11.8 else [])}))
     upper = {"texture": "#drill", "uv": [11, 0, 12, 2]}
-    lower = [{"texture": "#drill", "uv": [12, 0, 13, 4]}, {"texture": "#drill", "uv": [13, 0, 14, 4]}]
-    for i, (sx, sz) in enumerate(((-1, -1), (1, -1), (1, 1), (-1, 1))):
-        # the upper part reaches over the lower one, so there is no slit between them
+    for sx, sz in ((-1, -1), (1, -1), (1, 1), (-1, 1)):
+        # short blades on the diagonals, out under the head
         cx, cz = 8 + sx * 2.15, 8 + sz * 2.15
         els.append(box([cx - 0.45, 9.9, cz - 0.45], [cx + 0.45, 11.8, cz + 0.45], {n: upper for n in SIDES + ["down"]}))
-        # a joint where the two parts meet on the diagonal, so nothing shows through between them
-        cx, cz = 8 + sx * 1.775, 8 + sz * 1.775
-        els.append(box([cx - 0.45, 9.9, cz - 0.45], [cx + 0.45, 10.4, cz + 0.45], {n: upper for n in SIDES + ["up", "down"]}))
-        cx, cz = 8 + sx * 1.4, 8 + sz * 1.4
-        low = lower[i % 2]
-        els.append(box([cx - 0.45, 6.6, cz - 0.45], [cx + 0.45, 10.4, cz + 0.45], {n: low for n in SIDES + ["up", "down"]}))
     return els
 
 
