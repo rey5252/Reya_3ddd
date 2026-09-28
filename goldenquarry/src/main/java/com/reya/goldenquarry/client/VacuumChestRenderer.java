@@ -22,8 +22,8 @@ import org.joml.Matrix4f;
  * The vacuum chest's tentacles in 3D, and its working area. A few tentacles come out of the
  * crystals on its sides and top, glossy purple backs and pink undersides with suckers
  * (textures/entity/vacuum_tentacle.png): each is a chain of little boxes that bends out of its
- * crystal, sways slowly and falls under its own weight, lying over the block's faces and hanging
- * over its edges (it is kept out of the block). While the red button is on, the working area is
+ * crystal, sways slowly and lies along the block's faces, falling under its own weight and
+ * hanging over the edges (it is kept out of the block). While the red button is on, the working area is
  * outlined in purple.
  */
 public class VacuumChestRenderer implements BlockEntityRenderer<VacuumChestBlockEntity> {
@@ -85,7 +85,8 @@ public class VacuumChestRenderer implements BlockEntityRenderer<VacuumChestBlock
             double ang = Math.toRadians(heading) + 0.55 * Math.sin(time * 0.9 + phase + s * 2.6) + curl * 1.9 * s * s * s
                     + 0.12 * Math.sin(time * 2.3 + phase * 2 + s * 7.0);
             Vec3 along = across.scale(Math.cos(ang)).add(up.scale(Math.sin(ang)));
-            Vec3 want = normal.scale(i <= 2 ? 2.0 : 0.25 * (1 - s)).add(along).add(0, -0.55 * s, 0).normalize();
+            // out of the crystal first, then drawn to the block's faces and falling under its weight
+            Vec3 want = normal.scale(i <= 2 ? 2.0 : -0.45).add(along).add(0, -0.7 * s, 0).normalize();
             dir = dir.scale(0.55).add(want.scale(0.45)).normalize();
             p = keepOut(p.add(dir.scale(seg)));
             pts[i] = p;
@@ -94,7 +95,7 @@ public class VacuumChestRenderer implements BlockEntityRenderer<VacuumChestBlock
         Matrix3f n = pose.last().normal();
         for (int i = 0; i < SEGMENTS; i++) {
             double s = i / (double) SEGMENTS;
-            double w = thick * 1.25 * Math.pow(1 - s, 0.7) + 0.025;
+            double w = thick * 0.85 * Math.pow(1 - s, 0.7) + 0.02;
             Vec3 a = pts[i], b = pts[i + 1];
             Vec3 tangent = b.subtract(a);
             if (tangent.lengthSqr() < 1.0E-8) continue;
