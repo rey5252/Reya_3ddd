@@ -3,6 +3,6 @@
   "textures": {
     "top": "quantumsolar:block/woven_panel_azure_top",
     "side": "quantumsolar:block/woven_panel_azure_side",
-    "bottom": "quantumsolar:block/woven_panel_azure_side"
+    "bottom": "quantumsolar:block/bottom"
   }
 }

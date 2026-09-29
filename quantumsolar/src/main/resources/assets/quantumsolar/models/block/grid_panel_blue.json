@@ -3,6 +3,6 @@
   "textures": {
     "top": "quantumsolar:block/grid_panel_blue_top",
     "side": "quantumsolar:block/grid_panel_blue_side",
-    "bottom": "quantumsolar:block/grid_panel_blue_side"
+    "bottom": "quantumsolar:block/bottom"
   }
 }

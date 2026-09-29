@@ -3,6 +3,6 @@
   "textures": {
     "top": "quantumsolar:block/spiral_generator_orange_top",
     "side": "quantumsolar:block/spiral_generator_orange_side",
-    "bottom": "quantumsolar:block/spiral_generator_orange_side"
+    "bottom": "quantumsolar:block/bottom"
   }
 }

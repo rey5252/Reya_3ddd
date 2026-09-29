@@ -3,6 +3,6 @@
   "textures": {
     "top": "quantumsolar:block/core_generator_jade_top",
     "side": "quantumsolar:block/core_generator_jade_side",
-    "bottom": "quantumsolar:block/core_generator_jade_side"
+    "bottom": "quantumsolar:block/bottom"
   }
 }

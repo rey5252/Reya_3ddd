@@ -3,6 +3,6 @@
   "textures": {
     "top": "quantumsolar:block/meteor_generator_iris_top",
     "side": "quantumsolar:block/meteor_generator_iris_side",
-    "bottom": "quantumsolar:block/meteor_generator_iris_side"
+    "bottom": "quantumsolar:block/bottom"
   }
 }

@@ -3,6 +3,6 @@
   "textures": {
     "top": "quantumsolar:block/serpent_generator_frost_top",
     "side": "quantumsolar:block/serpent_generator_frost_side",
-    "bottom": "quantumsolar:block/serpent_generator_frost_side"
+    "bottom": "quantumsolar:block/bottom"
   }
 }

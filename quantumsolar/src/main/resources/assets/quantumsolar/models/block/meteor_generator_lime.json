@@ -3,6 +3,6 @@
   "textures": {
     "top": "quantumsolar:block/meteor_generator_lime_top",
     "side": "quantumsolar:block/meteor_generator_lime_side",
-    "bottom": "quantumsolar:block/meteor_generator_lime_side"
+    "bottom": "quantumsolar:block/bottom"
   }
 }

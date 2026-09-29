@@ -296,6 +296,23 @@ def fill_weave(a):
     return out
 
 
+def mirror_edges(a, cols=3):
+    """A front's two edges are halves of the sockets that meet round the block's corners (and the
+    next block's): the originals have each edge the other's mirror image. The photos give one edge
+    of a block the neighbour's pixels as often as not, so the richer of the two (the one with more
+    colour in it) is kept and mirrored onto the other."""
+    def rich(block):
+        c = block.reshape(-1, 3).astype(float)
+        return ((c.max(axis=1) - c.min(axis=1)) * c.max(axis=1)).mean()
+    out = a.copy()
+    left, right = a[:, :cols], a[:, 16 - cols:]
+    if rich(left) >= rich(right):
+        out[:, 16 - cols:] = left[:, ::-1]
+    else:
+        out[:, :cols] = right[:, ::-1]
+    return out
+
+
 def straighten(fam, colour, top, side, faces):
     """The faces the picture shows crooked, drawn again straight and centred in the picture's own
     design and colours (tools/straight.py); the rest are left as the picture has them."""
@@ -351,6 +368,8 @@ def main():
     extract_hearts.main()
     import extract_originals
     extract_originals.main()
+    import extract_bottom
+    extract_bottom.main()
     faces = {n: enhance(f) for n, f in all_faces(size=16, sub=4)}
     # where the grid has been laid exactly on the face (tools/fit.py), read it from there
     import fit
@@ -409,12 +428,14 @@ def main():
             # these four have their originals (reference/cores.png): read off them pixel for pixel
             top = side = np.asarray(Image.open(f"{ASSETS}/textures/block/core_generator_{colour}_top.png").convert("RGB"))
         rgb = main_colour(top if fam != "core" else side)
+        if fam != "core":
+            side = mirror_edges(side)
         Image.fromarray(top).save(f"{ASSETS}/textures/block/{bid}_top.png")
         Image.fromarray(side).save(f"{ASSETS}/textures/block/{bid}_side.png")
         write_json(f"{ASSETS}/models/block/{bid}.json", {
             "parent": "minecraft:block/cube_bottom_top",
             "textures": {"top": f"{MOD}:block/{bid}_top", "side": f"{MOD}:block/{bid}_side",
-                         "bottom": f"{MOD}:block/{bid}_side"}})
+                         "bottom": f"{MOD}:block/bottom"}})
         write_json(f"{ASSETS}/models/item/{bid}.json", {"parent": f"{MOD}:block/{bid}"})
         write_json(f"{ASSETS}/blockstates/{bid}.json", {"variants": {"": {"model": f"{MOD}:block/{bid}"}}})
         write_json(f"{DATA}/loot_tables/blocks/{bid}.json", {

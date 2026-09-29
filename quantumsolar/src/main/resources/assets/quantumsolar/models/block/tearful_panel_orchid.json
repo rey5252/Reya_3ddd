@@ -3,6 +3,6 @@
   "textures": {
     "top": "quantumsolar:block/tearful_panel_orchid_top",
     "side": "quantumsolar:block/tearful_panel_orchid_side",
-    "bottom": "quantumsolar:block/tearful_panel_orchid_side"
+    "bottom": "quantumsolar:block/bottom"
   }
 }

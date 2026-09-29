@@ -3,6 +3,6 @@
   "textures": {
     "top": "quantumsolar:block/core_generator_ice_heart_top",
     "side": "quantumsolar:block/core_generator_ice_heart_side",
-    "bottom": "quantumsolar:block/core_generator_ice_heart_side"
+    "bottom": "quantumsolar:block/bottom"
   }
 }
