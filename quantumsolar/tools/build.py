@@ -65,11 +65,11 @@ BLOCKS = [
     ("tearful", "sky", ("LB1", 0), "FD0", "Sky", "Небесна", "Небесная"),
     ("tearful", "meadow", ("LB0", 1), "FD1", "Meadow", "Лугова", "Луговая"),
     ("tearful", "dusk", ("LB2", 2), "FD2", "Dusk", "Сутінкова", "Сумеречная"),
-    ("tearful", "sunrise", ("LB0", 3), "FD3", "Sunrise", "Світанкова", "Рассветная"),
-    ("tearful", "spring", ("LB1", 4), "FD4", "Spring", "Весняна", "Весенняя"),
-    ("tearful", "honey", ("LB2", 5), "FD5", "Honey", "Медова", "Медовая"),
+    ("tearful", "sunrise", ("LB5", 3), "FD3", "Sunrise", "Світанкова", "Рассветная"),
+    ("tearful", "spring", ("LB3", 4), "FD4", "Spring", "Весняна", "Весенняя"),
+    ("tearful", "honey", ("LB4", 5), "FD5", "Honey", "Медова", "Медовая"),
     ("tearful", "orchid", ("LB1", 6), "FD6", "Orchid", "Орхідейна", "Орхидейная"),
-    ("tearful", "twilight", ("LB0", 7), ("FD6", "top"), "Twilight", "Вечорова", "Вечерняя"),
+    ("tearful", "twilight", ("LB2", 7), ("FD6", "top"), "Twilight", "Вечорова", "Вечерняя"),
     ("serpent", "violet", "RA0", ("FRB2", "top"), "Violet", "Фіолетовий", "Фиолетовый"),
     ("serpent", "coral", "RA1", ("FRB2", "top"), "Coral", "Кораловий", "Коралловый"),
     ("serpent", "frost", "RA2", ("FRB3", "top"), "Frost", "Морозний", "Морозный"),
@@ -276,6 +276,25 @@ def meteor_side(base, colours):
     return out
 
 
+def fill_weave(a):
+    """The woven tops repeat every 8 texels each way; where the picture gives a corner of one the
+    shadow beside it instead (much darker than the weave), that pixel is taken from the weave 8
+    texels over."""
+    lum = a.astype(float) @ [0.3, 0.59, 0.11]
+    med = np.median(lum)
+    out = a.copy()
+    dark = lum < med * 0.45
+    for y in range(16):
+        for x in range(16):
+            if dark[y, x]:
+                for dx, dy in ((8, 0), (0, 8), (8, 8)):
+                    xx, yy = (x + dx) % 16, (y + dy) % 16
+                    if not dark[yy, xx]:
+                        out[y, x] = a[yy, xx]
+                        break
+    return out
+
+
 def straighten(fam, colour, top, side, faces):
     """The faces the picture shows crooked, drawn again straight and centred in the picture's own
     design and colours (tools/straight.py); the rest are left as the picture has them."""
@@ -288,9 +307,9 @@ def straighten(fam, colour, top, side, faces):
         cell = tuple(int(v) for v in cell)
         return st.top_grid(cell, rim), st.side_bolt(st.light(cell, 0.3))
     if fam == "woven":
-        return top, st.side_bolt(tuple(int(v) for v in vivid(main_colour(top), 1.1)))
+        return fill_weave(top), side
     if fam == "flare":
-        return top, st.even_ornament(side, None)
+        return top, side
     if fam == "tearful":
         return top, st.side_face(TEARS[colour])
     if fam in ("serpent", "spiral"):
@@ -327,6 +346,10 @@ def write_json(path, obj):
 
 def main():
     faces = {n: enhance(f) for n, f in all_faces(size=16, sub=4)}
+    # where the grid has been laid exactly on the face (tools/fit.py), read it from there
+    import fit
+    for n, q in json.load(open("tools/fitted.json")).items():
+        faces[n] = enhance(fit.read(q))
     os.makedirs(f"{ASSETS}/textures/block", exist_ok=True)
     lang = {"en_us": {}, "uk_ua": {}, "ru_ru": {}}
     table = []
@@ -345,6 +368,11 @@ def main():
             src, k = top_src
             main, second = TEARFUL_COLOURS[k]
             top = gradient_map(faces[src], main, second)
+            # no two alike: each turned or turned over its own way
+            top = np.rot90(top, k % 4)
+            if k >= 4:
+                top = top[:, ::-1]
+            top = np.ascontiguousarray(top)
         elif fam == "core":
             top = None
         else:
