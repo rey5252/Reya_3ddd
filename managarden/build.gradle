@@ -35,6 +35,9 @@ minecraft {
             workingDirectory project.file('run')
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
+            // Botania's mixins carry SRG names in their refmap: remap them to the dev names
+            property 'mixin.env.remapRefMap', 'true'
+            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
             mods {
                 "${mod_id}" {
                     source sourceSets.main
@@ -77,6 +80,11 @@ dependencies {
     implementation fg.deobf("vazkii.botania:Botania:${botania_version}")
     runtimeOnly fg.deobf("vazkii.patchouli:Patchouli:${patchouli_version}")
     runtimeOnly fg.deobf("top.theillusivec4.curios:curios-forge:${curios_version}")
+}
+
+// the refmap remapping file above has to exist before the game starts
+tasks.matching { it.name == 'runClient' || it.name == 'runServer' }.configureEach {
+    dependsOn tasks.matching { it.name == 'createSrgToMcp' }
 }
 
 tasks.named('processResources', ProcessResources).configure {
