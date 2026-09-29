@@ -104,6 +104,14 @@ def main():
     # the game draws a front darker than it is (the face turned from the light): its white
     # heart shows the factor, and all of it is lit back up by that
     ice = np.clip(ice * (250.0 / np.percentile(ice.max(axis=2), 97)), 0, 255)
+    # right inside the rim the originals have their ground; the photo gives that ring a lighter
+    # stripe (the rim and the ground run together at the photo's slant): it takes the ground's colour
+    # from the ring inside it
+    for y in range(1, 15):
+        for x in range(1, 15):
+            if max(abs(x - 7.5), abs(y - 7.5)) == 6.5:
+                ix, iy = min(max(x, 2), 13), min(max(y, 2), 13)
+                ice[y, x] = ice[iy, ix] if ice[iy, ix].max() < 90 else np.array([28, 28, 31])
     faces = {"ice_heart": ice, "sun_heart": sun_front(ice)}
     tops = [read(top, fit(top, q)) for q in TOPS]
     # where the two tops disagree, keep the one nearer the texel's neighbours (glare or the cursor
