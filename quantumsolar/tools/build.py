@@ -23,6 +23,7 @@ from PIL import Image, ImageEnhance
 
 sys.path.insert(0, os.path.dirname(__file__))
 from rectify import all_faces  # noqa: E402
+import extract_cores  # noqa: E402
 
 MOD = "quantumsolar"
 RES = "src/main/resources"
@@ -345,6 +346,7 @@ def write_json(path, obj):
 
 
 def main():
+    extract_cores.main()
     faces = {n: enhance(f) for n, f in all_faces(size=16, sub=4)}
     # where the grid has been laid exactly on the face (tools/fit.py), read it from there
     import fit
@@ -391,6 +393,9 @@ def main():
             top = meteor_top(METEOR_COLOURS[colour])
             side = meteor_side(faces["FRB2"], METEOR_COLOURS[colour])
         top, side = straighten(fam, colour, top, side, faces)
+        if fam == "core" and colour in extract_cores.NAMES:
+            # these four have their originals (reference/cores.png): read off them pixel for pixel
+            top = side = np.asarray(Image.open(f"{ASSETS}/textures/block/core_generator_{colour}_top.png").convert("RGB"))
         rgb = main_colour(top if fam != "core" else side)
         Image.fromarray(top).save(f"{ASSETS}/textures/block/{bid}_top.png")
         Image.fromarray(side).save(f"{ASSETS}/textures/block/{bid}_side.png")
