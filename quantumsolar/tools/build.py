@@ -276,71 +276,6 @@ def meteor_side(base, colours):
     return out
 
 
-GRID = {"grey": (118, 120, 128), "blue": (60, 112, 165), "indigo": (84, 84, 176), "teal": (30, 172, 160)}
-WOVEN = {"white": (214, 218, 224), "red": (214, 52, 44), "teal": (28, 176, 148), "orange": (236, 118, 34),
-         "graphite": (104, 108, 110), "azure": (80, 168, 236), "lime": (118, 206, 52), "violet": (166, 78, 218)}
-FLARE_RINGS = {"sunset": ((230, 60, 50), (255, 200, 60), (255, 130, 40)),
-               "aurora": ((80, 110, 230), (170, 110, 240), (130, 225, 255)),
-               "ember": ((220, 70, 70), (80, 110, 230), (255, 170, 70)),
-               "glyph": ((170, 90, 220), (240, 230, 120), (255, 255, 255)),
-               "amber": ((240, 150, 40), (255, 230, 160), (200, 80, 30)),
-               "blaze": ((255, 120, 30), (255, 210, 90), (210, 40, 40))}
-TEARS = {"sky": (90, 200, 240), "meadow": (180, 220, 60), "dusk": (200, 110, 230), "sunrise": (255, 190, 70),
-         "spring": (120, 230, 160), "honey": (250, 200, 60), "orchid": (240, 110, 210), "twilight": (140, 110, 240)}
-SERPENT = {"violet": ((150, 100, 255), (220, 190, 255)), "coral": ((255, 100, 100), (255, 225, 150)),
-           "frost": ((190, 225, 255), (255, 255, 255)), "cyan": ((40, 220, 230), (220, 255, 255)),
-           "prism": ((255, 120, 200), (120, 220, 255))}
-SPIRAL = {"orange": ((255, 140, 40), (255, 220, 120)), "gold": ((255, 200, 50), (255, 250, 180)),
-          "violet": ((150, 110, 255), (230, 210, 255)), "lavender": ((170, 190, 255), (255, 255, 255)),
-          "prism": ((255, 160, 60), (160, 120, 255))}
-HEARTS = {"ice_heart": ((110, 230, 240), (120, 60, 170)), "sun_heart": ((110, 230, 240), (235, 140, 50))}
-CORE_MARKS = [(170, 70, 220), (170, 70, 220), (120, 220, 230), (240, 240, 250), (26, 22, 34), (200, 90, 230)]
-
-
-def own_colours(face, n=6):
-    img = Image.fromarray(face).quantize(n, method=Image.Quantize.MEDIANCUT)
-    pal = img.getpalette()[:n * 3]
-    return [tuple(pal[i * 3:i * 3 + 3]) for i in range(n)]
-
-
-def draw_block(fam, colour, faces, top_src):
-    """A block's top and side, drawn clean (tools/draw.py) in its colours from the picture."""
-    import draw
-    if fam == "grid":
-        c = GRID[colour]
-        return draw.top_grid(c), draw.side_bolt(draw.light(c, 0.25))
-    if fam == "woven":
-        c = WOVEN[colour]
-        return draw.top_woven(c), draw.side_bolt(c if colour != "graphite" else (170, 176, 180))
-    if fam == "flare":
-        face = faces[top_src]
-        return draw.top_picture(face, own_colours(face)), draw.side_ring(*FLARE_RINGS[colour])
-    if fam == "tearful":
-        src, k = top_src
-        main, second = TEARFUL_COLOURS[k]
-        face = gradient_map(faces[src], main, second)
-        return draw.top_picture(face, own_colours(face, 5)), draw.side_face(TEARS[colour])
-    if fam == "serpent":
-        c = SERPENT[colour]
-        return draw.top_serpent(c, colour == "prism"), draw.side_chain_bolt(c[0])
-    if fam == "spiral":
-        c = SPIRAL[colour]
-        return draw.top_spiral(c, colour == "prism"), draw.side_chain_bolt(c[0])
-    if fam == "meteor":
-        c = METEOR_COLOURS[colour]
-        return draw.top_meteor(c), draw.side_chain_slashes(c)
-    c = HEARTS[colour][0] if colour in HEARTS else CORE_COLOURS[colour]
-    side = draw.side_heart(*HEARTS[colour]) if colour in HEARTS else draw.side_squares(c)
-    return draw.top_core(c, CORE_MARKS), side
-
-
-def block_colour(fam, colour):
-    table = {"grid": GRID, "woven": WOVEN, "tearful": TEARS, "meteor": {k: v[0] for k, v in METEOR_COLOURS.items()},
-             "serpent": {k: v[0] for k, v in SERPENT.items()}, "spiral": {k: v[0] for k, v in SPIRAL.items()},
-             "flare": {k: v[0] for k, v in FLARE_RINGS.items()}, "core": CORE_COLOURS}
-    return table[fam][colour]
-
-
 def dye(rgb):
     return min(DYES, key=lambda d: sum((a - b) ** 2 for a, b in zip(DYES[d], rgb)))
 
@@ -371,8 +306,31 @@ def main():
         tiers[kind] += 1
         bid = f"{fam}_{'panel' if kind == 'solar' else 'generator'}_{colour}"
         ids.append(bid)
-        top, side = draw_block(fam, colour, faces, top_src)
-        rgb = block_colour(fam, colour)
+        if isinstance(top_src, tuple) and isinstance(top_src[1], str):
+            # a face of the same kind in this block's colour (the picture's own is cut by the corner)
+            top = recolour(faces[top_src[0]], (150, 200, 40))
+        elif isinstance(top_src, tuple):
+            src, k = top_src
+            main, second = TEARFUL_COLOURS[k]
+            top = gradient_map(faces[src], main, second)
+        elif fam == "core":
+            top = None
+        else:
+            top = faces[top_src]
+        if isinstance(side_src, tuple):
+            src, to = side_src
+            side = faces[src] if to is None else recolour(faces[src], main_colour(top))
+        else:
+            side = faces[side_src]
+        if fam == "meteor":
+            cols = METEOR_COLOURS[colour]
+            top = meteor_top(cols)
+            side = meteor_side(faces["FRB2"], cols)
+        if fam == "core":
+            top = core_top(side, main_colour(side))
+        else:
+            side = clean_edges(side, brown=fam == "tearful")
+        rgb = CORE_COLOURS[colour] if fam == "core" else METEOR_COLOURS[colour][0] if fam == "meteor" else main_colour(top)
         Image.fromarray(top).save(f"{ASSETS}/textures/block/{bid}_top.png")
         Image.fromarray(side).save(f"{ASSETS}/textures/block/{bid}_side.png")
         write_json(f"{ASSETS}/models/block/{bid}.json", {
