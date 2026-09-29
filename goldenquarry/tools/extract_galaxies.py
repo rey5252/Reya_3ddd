@@ -5,7 +5,7 @@ python3 tools/extract_galaxies.py
 The reference is a sheet of 8 x 8 pixel-art galaxies drawn 8.5 screen pixels a pixel; its grid is
 found from where the picture changes most (every 8.5 pixels from 8.25), each pixel read as the
 median of its middle; the cells are 15 pixels with a line of the frame between them (every 16).
-The sheet's dark ground becomes see-through (its near shades half so).
+The sheet's dark ground becomes see-through (its near shades half so); the rest is lit a little.
 Writes textures/gui/vacuum_chest_galaxies.png: 8 x 8 sprites of 15 x 15.
 """
 import numpy as np
@@ -32,7 +32,8 @@ def main():
             c = art[FIRST + 16 * j:FIRST + 16 * j + CELL, FIRST + 16 * i:FIRST + 16 * i + CELL]
             d = np.abs(c - ground).sum(axis=2)
             a = np.where(d < 18, 0, np.where(d < 40, 150, 255))
-            sheet[j * CELL:(j + 1) * CELL, i * CELL:(i + 1) * CELL, :3] = c
+            # a little brighter than the sheet, so they show against the dark round the chest
+            sheet[j * CELL:(j + 1) * CELL, i * CELL:(i + 1) * CELL, :3] = np.clip(c * 1.45 + 18, 0, 255)
             sheet[j * CELL:(j + 1) * CELL, i * CELL:(i + 1) * CELL, 3] = a
     Image.fromarray(sheet, "RGBA").save(OUT)
 
