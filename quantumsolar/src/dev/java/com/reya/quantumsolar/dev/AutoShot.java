@@ -55,10 +55,13 @@ public final class AutoShot {
         STEPS.add(new Step(10, () -> eye(-3.0D, 3.8D, 9.0D, 1.5D, 1.0D, 3.0D)));
         STEPS.add(new Step(60, () -> shot("blocks_right.png")));
         STEPS.add(new Step(10, () -> guiScale(3)));
-        STEPS.add(new Step(10, () -> open(new BlockPos(-3, BASE + 2, -2))));
+        // the GUI stays open only within 8 blocks: stand by the block first
+        STEPS.add(new Step(10, () -> eye(-3.5D, 4.5D, 1.5D, -3.0D, 2.5D, -2.0D)));
+        STEPS.add(new Step(20, () -> open(new BlockPos(-3, BASE + 2, -2))));
         STEPS.add(new Step(40, () -> shot("gui_solar.png")));
         STEPS.add(new Step(10, () -> Minecraft.getInstance().setScreen(null)));
-        STEPS.add(new Step(10, () -> open(new BlockPos(3, BASE + 3, 3))));
+        STEPS.add(new Step(10, () -> eye(0.0D, 5.5D, 4.5D, 3.5D, 3.5D, 3.5D)));
+        STEPS.add(new Step(20, () -> open(new BlockPos(3, BASE + 3, 3))));
         STEPS.add(new Step(40, () -> shot("gui_quantum.png")));
         STEPS.add(new Step(40, () -> Minecraft.getInstance().stop()));
     }
