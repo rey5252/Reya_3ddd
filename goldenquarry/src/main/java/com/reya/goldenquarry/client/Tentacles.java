@@ -25,6 +25,11 @@ final class Tentacles {
     private static final ResourceLocation SHEET = new ResourceLocation(GoldenQuarry.MODID, "textures/gui/vacuum_chest_tentacles.png");
     private static final ResourceLocation ACTS = new ResourceLocation(GoldenQuarry.MODID, "textures/gui/vacuum_chest_catchers.png");
     private static final ResourceLocation STARS = new ResourceLocation(GoldenQuarry.MODID, "textures/gui/vacuum_chest_stars.png");
+    private static final ResourceLocation CRACKS = new ResourceLocation(GoldenQuarry.MODID, "textures/gui/vacuum_chest_cracks.png");
+    /** The cracks' sprites (tools/gen_opening.py): one row per catcher, growing over CRACK_FRAMES frames, the middle on the root. */
+    private static final int CRACK = 72, CRACK_FRAMES = 10;
+    /** How long the cracks take to close up again after the tentacle has come out. */
+    private static final float HEAL_MS = 900.0F;
     private static final int SIZE = 96, FRAMES = 32, REACH = 40;
     /** One frame of the loop lasts this long: a whole sway, in and out, takes FRAMES of them. */
     private static final long FRAME_MS = 180L;
@@ -83,6 +88,65 @@ final class Tentacles {
             } else {
                 int frame = (int) ((now / FRAME_MS + i * 7L) % FRAMES);
                 g.blit(SHEET, left + ox, top + oy, frame * SIZE, ROW[i] * SIZE, SIZE, SIZE, SIZE * FRAMES, SIZE * OTHERS);
+            }
+        }
+    }
+
+    /**
+     * Where a catcher drags its star in, the frame cracks (drawn over the frame): a hole breaks out
+     * at the root and cracks run from it while the star goes in, shards fly off it, ender light
+     * throbs in it while the tentacle is in there, and it all closes up again when it comes out.
+     */
+    void cracks(GuiGraphics g, int left, int top) {
+        long now = Util.getMillis();
+        int dragStart = ACT_START[firstOf(2)], hidden = ACT_START[firstOf(0)], out = hidden + ACT_MS[firstOf(0)];
+        for (int i = 0; i < TENTACLES.length; i++) {
+            if (!CATCHER[i]) continue;
+            int c = ROW[i];
+            int t = (int) ((now + c * 1811L) % ACT_TOTAL);
+            float grow, fade = 1.0F;
+            if (t < dragStart) continue;
+            if (t < hidden) {
+                grow = (t - dragStart) / (float) (hidden - dragStart);
+            } else {
+                grow = 1.0F;
+                if (t > out) fade = 1.0F - (t - out) / HEAL_MS;
+            }
+            if (fade <= 0.0F) continue;
+            int rx = left + Math.round(TENTACLES[i][0]), ry = top + Math.round(TENTACLES[i][1]);
+            int f = Math.min(CRACK_FRAMES - 1, (int) (grow * CRACK_FRAMES));
+            RenderSystem.enableBlend();
+            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, fade);
+            g.blit(CRACKS, rx - CRACK / 2, ry - CRACK / 2, f * CRACK, c * CRACK, CRACK, CRACK, CRACK * CRACK_FRAMES, CRACK * CATCHERS);
+            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+            float ox = -TENTACLES[i][2], oy = -TENTACLES[i][3];            // into the chest
+            // shards knocked off as it breaks: flung out, slowing, falling, going out
+            float since = (t - dragStart) / 1000.0F;
+            if (since < 0.9F) {
+                for (int k = 0; k < 9; k++) {
+                    long h = hash(k * 31L + c * 977L);
+                    double ang = Math.atan2(oy, ox) + ((h % 1000) / 1000.0D - 0.5D) * 3.4D;
+                    float speed = 14.0F + (h >> 12) % 14;
+                    float d = speed * (1.0F - (1.0F - since) * (1.0F - since)) * 1.1F;
+                    int px = rx + Math.round((float) Math.cos(ang) * d), py = ry + Math.round((float) Math.sin(ang) * d + since * since * 18.0F);
+                    int a = alpha(1.0F - since / 0.9F);
+                    int rgb = k % 3 == 0 ? 0xE7B662 : k % 3 == 1 ? 0xC4C8DC : 0x8A4DE0;       // gold, steel, purple
+                    g.fill(px, py, px + 2, py + 1, a | rgb);
+                    if (k % 2 == 0) g.fill(px, py + 1, px + 1, py + 2, a | 0x2A1040);
+                }
+            }
+            // while it is in there: ender light throbbing in the hole, sparks sucked into it
+            if (t >= hidden && t < out + HEAL_MS) {
+                float pulse = 0.5F + 0.5F * Mth.sin((t - hidden) / 140.0F);
+                g.fill(rx - 1, ry - 1, rx + 2, ry + 2, alpha(pulse * 0.8F * fade) | 0xD9A0FF);
+                for (int k = 0; k < 6; k++) {
+                    long h = hash(k * 17L + c * 131L);
+                    float p = ((t + (h % 700)) % 700) / 700.0F;
+                    double ang = (h >> 10) % 628 / 100.0D;
+                    float d = (1.0F - p) * 16.0F;
+                    int px = rx + Math.round((float) Math.cos(ang) * d), py = ry + Math.round((float) Math.sin(ang) * d);
+                    g.fill(px, py, px + 1, py + 1, alpha(Mth.sin(p * Mth.PI) * fade) | STAR_RGB[k % 3]);
+                }
             }
         }
     }
@@ -190,11 +254,11 @@ final class Tentacles {
         return 0;
     }
 
-    private static int alpha(float a) {
+    static int alpha(float a) {
         return (int) (Mth.clamp(a, 0.0F, 1.0F) * 255.0F) << 24;
     }
 
-    private static long hash(long v) {
+    static long hash(long v) {
         v ^= v >>> 33;
         v *= 0xFF51AFD7ED558CCDL;
         v ^= v >>> 33;
@@ -202,7 +266,7 @@ final class Tentacles {
     }
 
     /** One star from the sheet: kind (sparkle, four-, eight-pointed), colour (pink, gold, ice), frame. */
-    private static void star(GuiGraphics g, int x, int y, int kind, int colour, int frame, float alpha) {
+    static void star(GuiGraphics g, int x, int y, int kind, int colour, int frame, float alpha) {
         if (alpha <= 0.02F) return;
         RenderSystem.enableBlend();
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, Math.min(1.0F, alpha));

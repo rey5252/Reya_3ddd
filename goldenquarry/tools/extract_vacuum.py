@@ -216,6 +216,15 @@ GEM = ["....KK....",
        "...KGGK...",
        "....KK...."]
 GEM_COLOURS = {"K": BLACK, "G": (231, 182, 98), "p": (168, 51, 255), "w": (255, 255, 255), "P": (90, 2, 228)}
+# smaller crystals set in the side bars, halfway down
+SIDE_GEM = [".KK.",
+            "KGGK",
+            "GppG",
+            "GwpG",
+            "GpPG",
+            "GPPG",
+            "KGGK",
+            ".KK."]
 # gold corner brackets: light gold with a dark inner edge
 BRACKET = ["LLL", "LD.", "L.."]
 BRACKET_COLOURS = {"L": (242, 214, 146), "D": (34, 9, 70)}
@@ -245,9 +254,11 @@ def details(tex):
     brackets round the slot groups, sparkles on the panel."""
     for x in (32, 52, 72, 92, 122, 142, 162, 182):
         rivet(tex, x, FRAME_TOP + 1)
-    for y in (44, 64, 84, 104, 124):
+    for y in (44, 64, 104, 124):
         rivet(tex, SHIFT + 1, y)
         rivet(tex, WIDTH - SHIFT - 3, y)
+    put_pattern(tex, SIDE_GEM, GEM_COLOURS, SHIFT + 2, 81)
+    put_pattern(tex, SIDE_GEM, GEM_COLOURS, WIDTH - SHIFT - 6, 81, flip_x=True)
     put_pattern(tex, GEM, GEM_COLOURS, WIDTH // 2 - 5, FRAME_TOP - 1)
     # brackets round the storage (boxes x 27..188, y 27..80) and the filter row (x 27..138, y 95..112)
     for x0, y0, x1, y1 in ((27, 27, 188, 80), (27, 95, 138, 112)):

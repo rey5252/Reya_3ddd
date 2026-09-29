@@ -3,6 +3,7 @@ package com.reya.goldenquarry.client;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.reya.goldenquarry.GoldenQuarry;
 import com.reya.goldenquarry.VacuumChestMenu;
 import net.minecraft.ChatFormatting;
@@ -25,9 +26,27 @@ import net.minecraft.world.item.Items;
  * it tentacles are drawn into the chest. This writes on it what the reference shows in text, in the
  * player's language: the title on the grey plate, "Item filter", "Range" and the range; draws the
  * name plate over it and the white/black list switch in the brown slot, and answers the buttons.
+ * <p>
+ * It opens out of a galaxy (vacuum_chest_galaxy.png, by tools/gen_opening.py): the galaxy turns up
+ * in the middle, spinning and growing, stars twinkling round it, and the GUI swells out of its
+ * middle, a little past its size and back, while the galaxy fades. Then now and then a light runs
+ * over the frame (vacuum_chest_glint.png), the crystals and knobs twinkle, and where a tentacle
+ * drags a star in, the frame cracks.
  */
 public class VacuumChestScreen extends AbstractContainerScreen<VacuumChestMenu> {
     private static final ResourceLocation TEXTURE = new ResourceLocation(GoldenQuarry.MODID, "textures/gui/vacuum_chest.png");
+    private static final ResourceLocation GALAXY = new ResourceLocation(GoldenQuarry.MODID, "textures/gui/vacuum_chest_galaxy.png");
+    private static final ResourceLocation GLINT = new ResourceLocation(GoldenQuarry.MODID, "textures/gui/vacuum_chest_glint.png");
+    private static final int GALAXY_SIZE = 128, GALAXY_FRAMES = 16, GLINT_H = 170, GLINT_FRAMES = 24;
+    /** The opening: the galaxy all along, the GUI swelling out from MENU_FROM for MENU_MS. */
+    private static final long OPEN_MS = 1500L, MENU_FROM = 320L, MENU_MS = 820L;
+    /** The glint runs over the frame for GLINT_MS once every GLINT_EVERY. */
+    private static final long GLINT_MS = 1100L, GLINT_EVERY = 5200L;
+    /** The middle the GUI opens from: the panel's. */
+    private static final int MIDDLE_X = VacuumChestMenu.WIDTH / 2, MIDDLE_Y = 88;
+    /** Where it twinkles on the frame: x, y, kind of star, colour (the crystals pink, the knobs gold). */
+    private static final int[][] TWINKLES = {{108, 16, 2, 0}, {8, 85, 1, 0}, {207, 85, 1, 0}, {4, 12, 1, 1}, {211, 12, 1, 1},
+            {16, 164, 1, 1}, {199, 164, 1, 1}, {30, 20, 0, 2}, {186, 20, 0, 2}};
     private static final ResourceLocation VORTEX = new ResourceLocation(GoldenQuarry.MODID, "textures/gui/vacuum_chest_vortex.png");
     /** The vortex under the panel: down to the inventory, which sits right under the panel as LoliUtility's do. */
     private static final int VORTEX_X = 12, VORTEX_Y = 20, VORTEX_W = 192, VORTEX_H = 137, VORTEX_FRAMES = 12;
@@ -43,6 +62,7 @@ public class VacuumChestScreen extends AbstractContainerScreen<VacuumChestMenu> 
     private static final int[] PARTICLE_COLOURS = {0xB24BF3, 0xD472FF, 0x8A2BE2, 0xE58CFF, 0xF0C8FF};
 
     private final Tentacles tentacles = new Tentacles();
+    private final long openedAt = Util.getMillis();
 
     public VacuumChestScreen(VacuumChestMenu menu, Inventory inv, Component title) {
         super(menu, inv, title);
@@ -53,9 +73,66 @@ public class VacuumChestScreen extends AbstractContainerScreen<VacuumChestMenu> 
     @Override
     public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
         renderBackground(g);
-        super.render(g, mouseX, mouseY, partialTick);
-        renderTooltip(g, mouseX, mouseY);
-        if (hoveredSlot == null || !hoveredSlot.hasItem()) ownTooltips(g, mouseX, mouseY);
+        long t = Util.getMillis() - openedAt;
+        if (t >= OPEN_MS) {
+            super.render(g, mouseX, mouseY, partialTick);
+            renderTooltip(g, mouseX, mouseY);
+            if (hoveredSlot == null || !hoveredSlot.hasItem()) ownTooltips(g, mouseX, mouseY);
+            return;
+        }
+        int cx = leftPos + MIDDLE_X, cy = topPos + MIDDLE_Y;
+        galaxy(g, cx, cy, t);
+        float p = (t - MENU_FROM) / (float) MENU_MS;
+        if (p > 0.0F) {
+            float s = p >= 1.0F ? 1.0F : backOut(p);
+            g.pose().pushPose();
+            g.pose().translate(cx, cy, 0.0F);
+            g.pose().scale(s, s, 1.0F);
+            g.pose().translate(-cx, -cy, 0.0F);
+            super.render(g, -1000, -1000, partialTick);                 // nothing hovered while it opens
+            g.pose().popPose();
+        }
+        galaxyStars(g, cx, cy, t);
+    }
+
+    /** Eases out past 1 and back: the GUI swells a little past its size and settles. */
+    private static float backOut(float p) {
+        float c1 = 1.5F, c3 = c1 + 1.0F, q = p - 1.0F;
+        return 1.0F + c3 * q * q * q + c1 * q * q;
+    }
+
+    /** The galaxy, spinning in from nothing and growing, spinning slower as it grows, then fading as the GUI comes out. */
+    private void galaxy(GuiGraphics g, int cx, int cy, long t) {
+        float grow = Math.min(1.0F, t / 700.0F);
+        float scale = 0.12F + 1.9F * (1.0F - (1.0F - grow) * (1.0F - grow) * (1.0F - grow));
+        float alpha = Math.min(1.0F, t / 180.0F) * (t > 850L ? Math.max(0.0F, 1.0F - (t - 850L) / 650.0F) : 1.0F);
+        if (alpha <= 0.0F) return;
+        // the turn slows down: fast at first, a frame every 40 ms, then every 90
+        int frame = (int) ((t < 600L ? t / 40L : 15L + (t - 600L) / 90L) % GALAXY_FRAMES);
+        g.pose().pushPose();
+        g.pose().translate(cx, cy, 0.0F);
+        g.pose().scale(scale, scale, 1.0F);
+        RenderSystem.enableBlend();
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, alpha);
+        g.blit(GALAXY, -GALAXY_SIZE / 2, -GALAXY_SIZE / 2, frame % 4 * GALAXY_SIZE, frame / 4 * GALAXY_SIZE,
+                GALAXY_SIZE, GALAXY_SIZE, GALAXY_SIZE * 4, GALAXY_SIZE * 4);
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+        g.pose().popPose();
+    }
+
+    /** Stars twinkling round the galaxy, flying out with it as it grows and going round with it. */
+    private void galaxyStars(GuiGraphics g, int cx, int cy, long t) {
+        float grow = Math.min(1.0F, t / 900.0F);
+        float spread = 1.0F - (1.0F - grow) * (1.0F - grow);
+        float fade = t > 1000L ? 1.0F - (t - 1000L) / (float) (OPEN_MS - 1000L) : Math.min(1.0F, t / 150.0F);
+        for (int k = 0; k < 34; k++) {
+            long h = Tentacles.hash(k * 2654435761L + 17L);
+            double r = (18 + (h % 110)) * spread;
+            double a = (h >> 8) % 628 / 100.0D + t / 900.0D * (1.4D - r / 140.0D);
+            int x = cx + (int) Math.round(Math.cos(a) * r * 1.25D), y = cy + (int) Math.round(Math.sin(a) * r * 0.8D);
+            float tw = 0.5F + 0.5F * Mth.sin(t / (90.0F + h % 60) + k);
+            Tentacles.star(g, x, y, (int) ((h >> 20) % 3), 1 + (int) ((h >> 24) % 2), (int) ((t / 110L + k) % 8), fade * (0.35F + 0.65F * tw));
+        }
     }
 
     @Override
@@ -65,6 +142,9 @@ public class VacuumChestScreen extends AbstractContainerScreen<VacuumChestMenu> 
         g.blit(VORTEX, leftPos + VORTEX_X, topPos + VORTEX_Y, 0, frame * VORTEX_H, VORTEX_W, VORTEX_H, VORTEX_W, VORTEX_H * VORTEX_FRAMES);
         enderParticles(g);
         g.blit(TEXTURE, leftPos, topPos, 0, 0, imageWidth, imageHeight, 256, 256);
+        glint(g);
+        tentacles.cracks(g, leftPos, topPos);
+        twinkles(g);
         Banner.draw(g, leftPos + imageWidth / 2, topPos - Banner.HEIGHT);
         // the title on the grey plate, in the plate's own little letters
         String title = getTitle().getString();
@@ -82,6 +162,28 @@ public class VacuumChestScreen extends AbstractContainerScreen<VacuumChestMenu> 
                 g.renderOutline(x - 1, y - 1, b[2] + 2, b[3] + 2, 0xFFFFE08A);
             }
             if (inside(b, mouseX, mouseY)) g.fill(x, y, x + b[2], y + b[3], 0x40FFFFFF);
+        }
+    }
+
+    /** A light running down over the frame's steel and gold, once in a while (the first as soon as it has opened). */
+    private void glint(GuiGraphics g) {
+        long t = (Util.getMillis() - openedAt - OPEN_MS + 200L) % GLINT_EVERY;
+        if (t < 0L || t >= GLINT_MS) return;
+        int frame = (int) (t * GLINT_FRAMES / GLINT_MS);
+        RenderSystem.enableBlend();
+        g.blit(GLINT, leftPos, topPos, 0, frame * GLINT_H, imageWidth, GLINT_H, imageWidth, GLINT_H * GLINT_FRAMES);
+    }
+
+    /** The crystals and knobs on the frame light up by turns, each a star flaring and going out. */
+    private void twinkles(GuiGraphics g) {
+        long now = Util.getMillis();
+        for (int i = 0; i < TWINKLES.length; i++) {
+            int[] w = TWINKLES[i];
+            long period = 2300L + i * 370L;
+            float p = ((now + i * 811L) % period) / (float) period;
+            if (p > 0.3F) continue;
+            float a = Mth.sin(p / 0.3F * Mth.PI);
+            Tentacles.star(g, leftPos + w[0], topPos + w[1], w[2], w[3], (int) (p / 0.3F * 7.99F), a);
         }
     }
 
@@ -129,6 +231,7 @@ public class VacuumChestScreen extends AbstractContainerScreen<VacuumChestMenu> 
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (Util.getMillis() - openedAt < OPEN_MS) return true;           // still opening
         if (button == 0 && minecraft != null && minecraft.gameMode != null) {
             for (int[] b : BUTTONS) {
                 if (inside(b, mouseX, mouseY)) {

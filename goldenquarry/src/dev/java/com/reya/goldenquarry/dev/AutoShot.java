@@ -93,7 +93,11 @@ public final class AutoShot {
         STEPS.add(new Step(60, () -> shot("vacuum_block.png")));
         STEPS.add(new Step(10, () -> guiScale(2)));
         STEPS.add(new Step(20, AutoShot::openVacuumGui));
-        STEPS.add(new Step(40, AutoShot::mouseAway));
+        // it opens out of a galaxy: a few moments of that
+        STEPS.add(new Step(4, () -> shot("vacuum_open_1.png")));
+        STEPS.add(new Step(6, () -> shot("vacuum_open_2.png")));
+        STEPS.add(new Step(6, () -> shot("vacuum_open_3.png")));
+        STEPS.add(new Step(24, AutoShot::mouseAway));
         STEPS.add(new Step(20, () -> shot("vacuum_gui.png")));
         // the catchers' act goes on: a few more moments of it
         for (int k = 1; k <= 3; k++) {
