@@ -64,7 +64,7 @@ public final class Panels {
             new Panel("meteor_generator_magenta", true, 14, 7282365, 0x9D4B9A),
             new Panel("meteor_generator_carnival", true, 15, 10195311, 0x99786A),
             new Panel("core_generator_ice_heart", true, 16, 14273435, 0x8E52BF),
-            new Panel("core_generator_sun_heart", true, 17, 19982809, 0xCF7568),
+            new Panel("core_generator_sun_heart", true, 17, 19982809, 0xC67271),
             new Panel("core_generator_ruby", true, 18, 27975933, 0xEA3950),
             new Panel("core_generator_jade", true, 19, 39166306, 0x7990D0),
             new Panel("core_generator_topaz", true, 20, 54832828, 0x8896C8),

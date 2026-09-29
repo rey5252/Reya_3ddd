@@ -82,6 +82,37 @@ def heart_mask(a):
     return m
 
 
+def centre_heart(a):
+    """The heart set in the middle of the front: everything inside the rim moved so that the heart's
+    bounds are even round the middle, what is uncovered filled with the ground."""
+    heart = heart_mask(a)
+    ys, xs = np.nonzero(heart)
+    dx = int(round(7.5 - (xs.min() + xs.max()) / 2))
+    dy = int(round(7.5 - (ys.min() + ys.max()) / 2))
+    out = a.copy()
+    ground = np.array([28, 28, 31], dtype=float)
+    for y in range(1, 15):
+        for x in range(1, 15):
+            sx, sy = x - dx, y - dy
+            out[y, x] = a[sy, sx] if 2 <= sx <= 13 and 2 <= sy <= 13 else ground
+    # the photo's heart is a pixel off even at its lobes: made even, each pixel it lacks on one
+    # side taken from the pixel mirroring it on the other
+    heart = heart_mask(out)
+    even = out.copy()
+    for y in range(2, 14):
+        for x in range(2, 14):
+            m = 15 - x
+            if not heart[y, x] and heart[y, m]:
+                even[y, x] = out[y, m]
+    out = even
+    # the ring right inside the rim stays ground
+    for y in range(1, 15):
+        for x in range(1, 15):
+            if max(abs(x - 7.5), abs(y - 7.5)) == 6.5 and out[y, x].max() > 90 and not heart_mask(out)[y, x]:
+                out[y, x] = ground
+    return out
+
+
 def sun_front(ice):
     """The sun heart's front is the ice heart's with its dark ground orange (reference/hearts_side.png
     shows it so): each ground pixel's lightness put onto the orange's own shades."""
@@ -112,6 +143,7 @@ def main():
             if max(abs(x - 7.5), abs(y - 7.5)) == 6.5:
                 ix, iy = min(max(x, 2), 13), min(max(y, 2), 13)
                 ice[y, x] = ice[iy, ix] if ice[iy, ix].max() < 90 else np.array([28, 28, 31])
+    ice = centre_heart(ice)
     faces = {"ice_heart": ice, "sun_heart": sun_front(ice)}
     tops = [read(top, fit(top, q)) for q in TOPS]
     # where the two tops disagree, keep the one nearer the texel's neighbours (glare or the cursor
