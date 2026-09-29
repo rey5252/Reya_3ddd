@@ -95,23 +95,49 @@ def galaxy_frame(turn, stars):
     return img
 
 
+REFERENCE = "reference/vacuum/galaxy.jpg"
+CORE, RADIUS = (373, 323), 312          # the galaxy's bright core in the reference, and how far it reaches
+SIGNATURE = (70, 548, 165, 592)         # the painter's signature, left out
+COLOURS = 32
+HAZE = 32
+
+
 def galaxy():
-    g = rng(7)
-    stars = []
-    for i in range(70):
-        sr = float(np.sqrt(g.uniform(0.02, 0.9)))
-        # most on the arms
-        base = 3.1 * math.log(sr) + (math.pi if i % 2 else 0)
-        sa = base + g.normal(0, 0.25) if i % 3 else g.uniform(0, 2 * math.pi)
-        stars.append((sr, sa, int(g.integers(0, 3)), g.uniform(0, 6.28)))
-    sheet = np.zeros((GALAXY * 4, GALAXY * 4, 4), dtype=np.uint8)
+    """The reference, pixel for pixel: turned round its core (a sixteenth of a turn each frame),
+    each sprite pixel the mean of the reference's pixels it covers, the black sky taken off
+    (alpha from how bright it is), faded out towards the rim so no square shows, and all frames
+    put into the same COLOURS colours taken from the reference."""
+    ref = Image.open(REFERENCE).convert("RGB")
+    a = np.asarray(ref).copy()
+    x0, y0, x1, y1 = SIGNATURE
+    a[y0:y1, x0:x1] = 0
+    side = 2 * RADIUS
+    big = Image.new("RGB", (side, side))
+    big.paste(Image.fromarray(a), (RADIUS - CORE[0], RADIUS - CORE[1]))
+    ys, xs = np.mgrid[0:GALAXY, 0:GALAXY]
+    rim = np.hypot(xs - GALAXY / 2 + 0.5, ys - GALAXY / 2 + 0.5) / (GALAXY / 2)
+    fade = np.clip((1.0 - rim) / 0.18, 0, 1)
     frames = []
     for f in range(FRAMES):
-        img = galaxy_frame(f / FRAMES * math.pi, stars)
-        frames.append(img)
+        turned = big.rotate(-360.0 * f / FRAMES, resample=Image.BICUBIC, center=(RADIUS, RADIUS))
+        small = np.asarray(turned.resize((GALAXY, GALAXY), Image.BOX)).astype(float)
+        # the sky's haze (about 30) taken off; what is left is the galaxy's light over black
+        light = np.clip(small - HAZE, 0, None)
+        alpha = np.clip((light.max(axis=2) - 12) / 110.0, 0, 1) * fade
+        # its colour as the reference has it (the dark lanes stay dark); only the faint rim, which
+        # is see-through, without the black it was mixed with
+        colour = np.clip(light * 1.12 / np.maximum(np.minimum(alpha[..., None] * 1.6, 1.0), 0.45), 0, 255)
+        frames.append((colour, alpha))
+    # one palette for all frames, from the reference's own colours
+    strip = np.concatenate([c for c, al in frames], axis=1).astype(np.uint8)
+    pal_img = Image.fromarray(strip).quantize(COLOURS, method=Image.Quantize.MEDIANCUT)
+    sheet = np.zeros((GALAXY * 4, GALAXY * 4, 4), dtype=np.uint8)
+    for f, (colour, alpha) in enumerate(frames):
+        q = np.asarray(Image.fromarray(colour.astype(np.uint8)).quantize(palette=pal_img, dither=Image.Dither.NONE).convert("RGB"))
+        al = np.select([alpha < 0.1, alpha < 0.3, alpha < 0.55], [0, 110, 190], 255).astype(np.uint8)
+        img = np.dstack([q, al])
         sheet[(f // 4) * GALAXY:(f // 4 + 1) * GALAXY, (f % 4) * GALAXY:(f % 4 + 1) * GALAXY] = img
     Image.fromarray(sheet, "RGBA").save(f"{OUT}/vacuum_chest_galaxy.png")
-    return frames
 
 
 GUI_TEX = f"{OUT}/vacuum_chest.png"
