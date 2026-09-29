@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "active=false": {
+      "model": "managarden:block/mana_greenhouse"
+    },
+    "active=true": {
+      "model": "managarden:block/mana_greenhouse"
+    }
+  }
+}
