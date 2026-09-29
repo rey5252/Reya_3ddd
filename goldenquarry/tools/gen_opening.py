@@ -163,6 +163,7 @@ def galaxy(twist_sign=1.0):
 GUI_TEX = f"{OUT}/vacuum_chest.png"
 PANEL = (12, 20, 204, 157)          # the open panel (the vortex under it): x0, y0, x1, y1 exclusive
 GLINT_H = 170                        # the glint runs over the frame, down to the steps
+INV_TOP, INV_X0, INV_X1 = 157, 20, 196   # the inventory panel's top and sides (no glint on it)
 
 
 def on_gui(tex):
@@ -269,22 +270,25 @@ def cracks():
 
 
 def glint():
-    """A soft band of light running down over the frame from the top left, one frame each."""
+    """A glint running down over the frame from the top left, pixel sharp: two bright bands at 45
+    degrees (a wide one and a thin one after it), only on the frame's steel and gold, not on the
+    slots, the panel or the inventory."""
     tex = np.array(Image.open(GUI_TEX).convert("RGBA"))[:GLINT_H]
     h, w = tex.shape[:2]
     shiny = tex[:, :, 3] > 0
     x0, y0, x1, y1 = PANEL
-    inner = np.zeros_like(shiny)
-    inner[y0 + 1:y1 - 1, x0 + 1:x1 - 1] = True
-    shiny &= ~inner
+    shiny[y0:y1, x0:x1] = False
+    shiny[INV_TOP:, INV_X0:INV_X1] = False          # the inventory panel under the frame
     ys, xs = np.mgrid[0:h, 0:w]
-    s = xs + ys * 0.7
+    s = xs + ys
     sheet = np.zeros((h * GLINT_FRAMES, w, 4), dtype=np.uint8)
+    span = w + h + 8
     for f in range(GLINT_FRAMES):
-        centre = -20 + (w + h * 0.7 + 40) * f / (GLINT_FRAMES - 1)
-        k = np.exp(-((s - centre) / 5.0) ** 2) + 0.5 * np.exp(-((s - centre + 11) / 2.0) ** 2)
-        a = np.where(shiny, np.clip(k * 190, 0, 255), 0).astype(np.uint8)
-        a[a < 20] = 0
+        head = -4 + span * f // (GLINT_FRAMES - 1)
+        a = np.zeros((h, w), dtype=np.uint8)
+        a[(s >= head - 2) & (s <= head)] = 170
+        a[s == head - 5] = 100
+        a[~shiny] = 0
         frame = np.zeros((h, w, 4), dtype=np.uint8)
         frame[:, :, :3] = (255, 250, 230)
         frame[:, :, 3] = a
