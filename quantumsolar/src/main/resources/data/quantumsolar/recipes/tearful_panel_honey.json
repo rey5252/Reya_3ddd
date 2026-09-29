@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "GCG",
+    "CPC",
+    "GCG"
+  ],
+  "key": {
+    "G": {
+      "item": "minecraft:orange_stained_glass"
+    },
+    "C": {
+      "item": "minecraft:echo_shard"
+    },
+    "P": {
+      "item": "quantumsolar:tearful_panel_spring"
+    }
+  },
+  "result": {
+    "item": "quantumsolar:tearful_panel_honey"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "GCG",
+    "CPC",
+    "GCG"
+  ],
+  "key": {
+    "G": {
+      "item": "minecraft:gray_stained_glass"
+    },
+    "C": {
+      "item": "minecraft:dragon_head"
+    },
+    "P": {
+      "item": "quantumsolar:meteor_generator_magenta"
+    }
+  },
+  "result": {
+    "item": "quantumsolar:meteor_generator_carnival"
+  }
+}

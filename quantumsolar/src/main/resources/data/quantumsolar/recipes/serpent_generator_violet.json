@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "GCG",
+    "CPC",
+    "GCG"
+  ],
+  "key": {
+    "G": {
+      "item": "minecraft:purple_stained_glass"
+    },
+    "C": {
+      "item": "minecraft:end_crystal"
+    },
+    "P": {
+      "item": "quantumsolar:tearful_panel_twilight"
+    }
+  },
+  "result": {
+    "item": "quantumsolar:serpent_generator_violet"
+  }
+}

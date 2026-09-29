@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "GCG",
+    "CPC",
+    "GCG"
+  ],
+  "key": {
+    "G": {
+      "item": "minecraft:light_gray_stained_glass"
+    },
+    "C": {
+      "item": "minecraft:diamond"
+    },
+    "P": {
+      "item": "quantumsolar:flare_panel_ember"
+    }
+  },
+  "result": {
+    "item": "quantumsolar:flare_panel_glyph"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "GCG",
+    "CPC",
+    "GCG"
+  ],
+  "key": {
+    "G": {
+      "item": "minecraft:gray_stained_glass"
+    },
+    "C": {
+      "item": "minecraft:beacon"
+    },
+    "P": {
+      "item": "quantumsolar:meteor_generator_lime2"
+    }
+  },
+  "result": {
+    "item": "quantumsolar:meteor_generator_rose"
+  }
+}

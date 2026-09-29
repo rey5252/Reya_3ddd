@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "GCG",
+    "CPC",
+    "GCG"
+  ],
+  "key": {
+    "G": {
+      "item": "minecraft:light_blue_stained_glass"
+    },
+    "C": {
+      "item": "minecraft:totem_of_undying"
+    },
+    "P": {
+      "item": "quantumsolar:serpent_generator_frost"
+    }
+  },
+  "result": {
+    "item": "quantumsolar:serpent_generator_cyan"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "GCG",
+    "CPC",
+    "GCG"
+  ],
+  "key": {
+    "G": {
+      "item": "minecraft:cyan_stained_glass"
+    },
+    "C": {
+      "item": "minecraft:lapis_lazuli"
+    },
+    "P": {
+      "item": "quantumsolar:grid_panel_indigo"
+    }
+  },
+  "result": {
+    "item": "quantumsolar:grid_panel_teal"
+  }
+}

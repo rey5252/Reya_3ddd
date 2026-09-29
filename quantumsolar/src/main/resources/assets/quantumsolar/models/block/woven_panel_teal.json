@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "quantumsolar:block/woven_panel_teal_top",
+    "side": "quantumsolar:block/woven_panel_teal_side",
+    "bottom": "quantumsolar:block/woven_panel_teal_side"
+  }
+}

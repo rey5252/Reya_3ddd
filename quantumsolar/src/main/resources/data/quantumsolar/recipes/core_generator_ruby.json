@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "GCG",
+    "CPC",
+    "GCG"
+  ],
+  "key": {
+    "G": {
+      "item": "minecraft:red_stained_glass"
+    },
+    "C": {
+      "item": "minecraft:nether_star"
+    },
+    "P": {
+      "item": "quantumsolar:core_generator_sun_heart"
+    }
+  },
+  "result": {
+    "item": "quantumsolar:core_generator_ruby"
+  }
+}

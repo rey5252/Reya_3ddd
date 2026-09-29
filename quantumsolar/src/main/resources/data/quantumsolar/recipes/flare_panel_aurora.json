@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "GCG",
+    "CPC",
+    "GCG"
+  ],
+  "key": {
+    "G": {
+      "item": "minecraft:light_blue_stained_glass"
+    },
+    "C": {
+      "item": "minecraft:iron_block"
+    },
+    "P": {
+      "item": "quantumsolar:flare_panel_sunset"
+    }
+  },
+  "result": {
+    "item": "quantumsolar:flare_panel_aurora"
+  }
+}

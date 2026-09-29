@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "quantumsolar:block/spiral_generator_violet_top",
+    "side": "quantumsolar:block/spiral_generator_violet_side",
+    "bottom": "quantumsolar:block/spiral_generator_violet_side"
+  }
+}

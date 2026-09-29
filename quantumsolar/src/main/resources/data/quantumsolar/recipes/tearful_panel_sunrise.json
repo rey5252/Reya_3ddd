@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "GCG",
+    "CPC",
+    "GCG"
+  ],
+  "key": {
+    "G": {
+      "item": "minecraft:orange_stained_glass"
+    },
+    "C": {
+      "item": "minecraft:netherite_scrap"
+    },
+    "P": {
+      "item": "quantumsolar:tearful_panel_dusk"
+    }
+  },
+  "result": {
+    "item": "quantumsolar:tearful_panel_sunrise"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "quantumsolar:block/core_generator_amethyst_top",
+    "side": "quantumsolar:block/core_generator_amethyst_side",
+    "bottom": "quantumsolar:block/core_generator_amethyst_side"
+  }
+}

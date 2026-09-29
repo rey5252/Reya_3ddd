@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "GCG",
+    "CPC",
+    "GCG"
+  ],
+  "key": {
+    "G": {
+      "item": "minecraft:orange_stained_glass"
+    },
+    "C": {
+      "item": "minecraft:beacon"
+    },
+    "P": {
+      "item": "quantumsolar:core_generator_ice_heart"
+    }
+  },
+  "result": {
+    "item": "quantumsolar:core_generator_sun_heart"
+  }
+}

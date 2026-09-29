@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "quantumsolar:block/grid_panel_indigo"
+    }
+  }
+}

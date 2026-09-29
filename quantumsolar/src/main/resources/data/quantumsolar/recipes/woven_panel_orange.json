@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "GCG",
+    "CPC",
+    "GCG"
+  ],
+  "key": {
+    "G": {
+      "item": "minecraft:orange_stained_glass"
+    },
+    "C": {
+      "item": "minecraft:amethyst_shard"
+    },
+    "P": {
+      "item": "quantumsolar:woven_panel_teal"
+    }
+  },
+  "result": {
+    "item": "quantumsolar:woven_panel_orange"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "quantumsolar:block/woven_panel_graphite"
+    }
+  }
+}

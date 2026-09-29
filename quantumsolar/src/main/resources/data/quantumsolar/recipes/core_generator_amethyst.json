@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "GCG",
+    "CPC",
+    "GCG"
+  ],
+  "key": {
+    "G": {
+      "item": "minecraft:purple_stained_glass"
+    },
+    "C": {
+      "item": "minecraft:dragon_head"
+    },
+    "P": {
+      "item": "quantumsolar:core_generator_topaz"
+    }
+  },
+  "result": {
+    "item": "quantumsolar:core_generator_amethyst"
+  }
+}

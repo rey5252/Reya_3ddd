@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "quantumsolar:block/serpent_generator_cyan_top",
+    "side": "quantumsolar:block/serpent_generator_cyan_side",
+    "bottom": "quantumsolar:block/serpent_generator_cyan_side"
+  }
+}

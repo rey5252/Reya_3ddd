@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "GCG",
+    "CPC",
+    "GCG"
+  ],
+  "key": {
+    "G": {
+      "item": "minecraft:red_stained_glass"
+    },
+    "C": {
+      "item": "minecraft:dragon_breath"
+    },
+    "P": {
+      "item": "quantumsolar:serpent_generator_violet"
+    }
+  },
+  "result": {
+    "item": "quantumsolar:serpent_generator_coral"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "GCG",
+    "CPC",
+    "GCG"
+  ],
+  "key": {
+    "G": {
+      "item": "minecraft:lime_stained_glass"
+    },
+    "C": {
+      "item": "minecraft:shulker_shell"
+    },
+    "P": {
+      "item": "quantumsolar:tearful_panel_sunrise"
+    }
+  },
+  "result": {
+    "item": "quantumsolar:tearful_panel_spring"
+  }
+}

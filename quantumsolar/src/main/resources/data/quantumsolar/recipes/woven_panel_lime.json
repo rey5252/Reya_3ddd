@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "GCG",
+    "CPC",
+    "GCG"
+  ],
+  "key": {
+    "G": {
+      "item": "minecraft:lime_stained_glass"
+    },
+    "C": {
+      "item": "minecraft:prismarine_crystals"
+    },
+    "P": {
+      "item": "quantumsolar:woven_panel_azure"
+    }
+  },
+  "result": {
+    "item": "quantumsolar:woven_panel_lime"
+  }
+}

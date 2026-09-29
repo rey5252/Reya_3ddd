@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "GCG",
+    "CPC",
+    "GCG"
+  ],
+  "key": {
+    "G": {
+      "item": "minecraft:cyan_stained_glass"
+    },
+    "C": {
+      "item": "minecraft:ender_pearl"
+    },
+    "P": {
+      "item": "quantumsolar:woven_panel_red"
+    }
+  },
+  "result": {
+    "item": "quantumsolar:woven_panel_teal"
+  }
+}

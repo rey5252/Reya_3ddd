@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "quantumsolar:block/spiral_generator_prism"
+    }
+  }
+}

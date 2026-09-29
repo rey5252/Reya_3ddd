@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "GCG",
+    "CPC",
+    "GCG"
+  ],
+  "key": {
+    "G": {
+      "item": "minecraft:white_stained_glass"
+    },
+    "C": {
+      "item": "minecraft:obsidian"
+    },
+    "P": {
+      "item": "quantumsolar:flare_panel_blaze"
+    }
+  },
+  "result": {
+    "item": "quantumsolar:woven_panel_white"
+  }
+}

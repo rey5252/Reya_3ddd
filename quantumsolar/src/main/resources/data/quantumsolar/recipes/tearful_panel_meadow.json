@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "GCG",
+    "CPC",
+    "GCG"
+  ],
+  "key": {
+    "G": {
+      "item": "minecraft:yellow_stained_glass"
+    },
+    "C": {
+      "item": "minecraft:ender_eye"
+    },
+    "P": {
+      "item": "quantumsolar:tearful_panel_sky"
+    }
+  },
+  "result": {
+    "item": "quantumsolar:tearful_panel_meadow"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "GCG",
+    "CPC",
+    "GCG"
+  ],
+  "key": {
+    "G": {
+      "item": "minecraft:purple_stained_glass"
+    },
+    "C": {
+      "item": "minecraft:recovery_compass"
+    },
+    "P": {
+      "item": "quantumsolar:spiral_generator_gold"
+    }
+  },
+  "result": {
+    "item": "quantumsolar:spiral_generator_violet"
+  }
+}
