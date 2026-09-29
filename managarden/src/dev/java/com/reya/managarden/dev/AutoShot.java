@@ -181,6 +181,8 @@ public final class AutoShot {
             for (int x = -4; x <= 5; x++) {
                 for (int z = -4; z <= 4; z++) {
                     if (Math.abs(x) <= 1 && Math.abs(z) <= 1 || x == 3 && z == -1) continue;
+                    // keep the cameras' spots clear
+                    if (Math.hypot(x - 2.3D, z - 2.0D) < 1.8D || Math.hypot(x + 1.2D, z - 2.6D) < 1.8D) continue;
                     long h = (x * 73856093L) ^ (z * 19349663L);
                     if (Math.floorMod(h, 5) == 0) {
                         level.setBlock(POS.offset(x, 0, z), block("botania", colours[k++ % colours.length] + "_mystical_flower").defaultBlockState(), 3);
@@ -234,8 +236,26 @@ public final class AutoShot {
 
     /** Mouse away from the GUI, so no tooltip covers it. */
     private static void mouseAway() {
+        setMouse(4.0D, 4.0D);
+    }
+
+    /**
+     * Puts the mouse at a window position: the virtual screen doesn't report the cursor moving,
+     * so the game's own record of it is set too.
+     */
+    private static void setMouse(double x, double y) {
         Minecraft mc = Minecraft.getInstance();
-        GLFW.glfwSetCursorPos(mc.getWindow().getWindow(), 4.0D, 4.0D);
+        GLFW.glfwSetCursorPos(mc.getWindow().getWindow(), x, y);
+        try {
+            java.lang.reflect.Field fx = net.minecraft.client.MouseHandler.class.getDeclaredField("xpos");
+            java.lang.reflect.Field fy = net.minecraft.client.MouseHandler.class.getDeclaredField("ypos");
+            fx.setAccessible(true);
+            fy.setAccessible(true);
+            fx.setDouble(mc.mouseHandler, x);
+            fy.setDouble(mc.mouseHandler, y);
+        } catch (ReflectiveOperationException e) {
+            ManaGarden.LOGGER.warn("AutoShot: can't move the mouse", e);
+        }
     }
 
     /** Mouse over a point of the GUI (menu coordinates). */
@@ -243,7 +263,7 @@ public final class AutoShot {
         Minecraft mc = Minecraft.getInstance();
         if (!(mc.screen instanceof AbstractContainerScreen<?> screen)) return;
         double scale = mc.getWindow().getGuiScale();
-        GLFW.glfwSetCursorPos(mc.getWindow().getWindow(), (screen.getGuiLeft() + x + 0.5D) * scale, (screen.getGuiTop() + y + 0.5D) * scale);
+        setMouse((screen.getGuiLeft() + x + 0.5D) * scale, (screen.getGuiTop() + y + 0.5D) * scale);
     }
 
     private static void clickGui(int x, int y) {

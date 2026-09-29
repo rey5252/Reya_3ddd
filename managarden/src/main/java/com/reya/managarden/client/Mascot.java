@@ -32,12 +32,12 @@ final class Mascot {
     /** How far her hand reaches over the panel's frame. */
     static final int OVERLAP = X + WIDTH;
     /** The face parts: where they go on the body, and where they are on the sheet. */
-    static final int EYES_X = 21, EYES_Y = 30, EYES_W = 22, EYES_H = 8, EYES_U = 128, EYES_V = 0;
-    static final int MOUTH_X = 29, MOUTH_Y = 41, MOUTH_W = 6, MOUTH_H = 4, MOUTH_U = 152, MOUTH_V = 0;
+    static final int EYES_X = 21, EYES_Y = 28, EYES_W = 22, EYES_H = 10, EYES_U = 128, EYES_V = 0;
+    static final int MOUTH_X = 29, MOUTH_Y = 38, MOUTH_W = 6, MOUTH_H = 4, MOUTH_U = 152, MOUTH_V = 0;
     /** The waving arm: drawn over the body at ARM_X, ARM_Y instead of the arm holding the frame. */
     static final int ARM_X = 36, ARM_Y = 34, ARM_W = 28, ARM_H = 40, ARM_U = 160, ARM_V = 0;
     /** The wand's tip, for its sparkles. */
-    static final int WAND_X = 6, WAND_Y = 42;
+    static final int WAND_X = 10, WAND_Y = 32;
 
     private static final int EYES_OPEN = 0, EYES_HALF = 1, EYES_SHUT = 2, EYES_HAPPY = 3, EYES_STARS = 4;
     private static final int MOUTH_SMILE = 0, MOUTH_OPEN = 1, MOUTH_HAPPY = 2;
@@ -100,10 +100,12 @@ final class Mascot {
         if (now < blinkUntil) eyes = now > blinkUntil - 50L || now < blinkUntil - 100L ? EYES_HALF : EYES_SHUT;
         else if (now < happyUntil && (now / 260L) % 4L == 0L) eyes = EYES_STARS;
         else eyes = happy ? EYES_HAPPY : EYES_OPEN;
-        g.blit(TEX, x + EYES_X, y + EYES_Y, EYES_U, EYES_V + eyes * EYES_H, EYES_W, EYES_H, TEX_W, TEX_H);
+        // on the breathing frame her head is a pixel higher, and her face with it
+        int lift = body == 1 ? 1 : 0;
+        g.blit(TEX, x + EYES_X, y + EYES_Y - lift, EYES_U, EYES_V + eyes * EYES_H, EYES_W, EYES_H, TEX_W, TEX_H);
         int mouth = now < speakUntil && (now - speechAt) < 1600L ? ((now / 140L) % 2L == 0L ? MOUTH_OPEN : MOUTH_SMILE)
                 : happy ? MOUTH_HAPPY : MOUTH_SMILE;
-        g.blit(TEX, x + MOUTH_X, y + MOUTH_Y, MOUTH_U, MOUTH_V + mouth * MOUTH_H, MOUTH_W, MOUTH_H, TEX_W, TEX_H);
+        g.blit(TEX, x + MOUTH_X, y + MOUTH_Y - lift, MOUTH_U, MOUTH_V + mouth * MOUTH_H, MOUTH_W, MOUTH_H, TEX_W, TEX_H);
 
         // her free arm: resting on the frame, or waving (two frames swinging) when she greets or is poked
         long since = t - (ENTER_FROM + ENTER_MS);
