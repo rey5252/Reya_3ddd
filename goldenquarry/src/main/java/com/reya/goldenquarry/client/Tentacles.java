@@ -19,12 +19,16 @@ import net.minecraft.util.Mth;
  * stays in there a while, comes out again holding it; the star struggles, the tentacle thrashes,
  * the star breaks free in a burst (a ring of light, a shower of little stars, or a flash of rays,
  * by turns) as the tip whips open, and the tentacle snatches after it and misses.
- * More stars drift in round them all: little sparkles, four- and eight-pointed stars, pink, gold, ice blue.
+ * Most times round a catcher catches one of the little galaxies (vacuum_chest_galaxies.png) instead of a star.
+ * More stars drift in round them all, and little galaxies among them: sparkles, four- and eight-pointed stars, pink, gold, ice blue.
  */
 final class Tentacles {
     private static final ResourceLocation SHEET = new ResourceLocation(GoldenQuarry.MODID, "textures/gui/vacuum_chest_tentacles.png");
     private static final ResourceLocation ACTS = new ResourceLocation(GoldenQuarry.MODID, "textures/gui/vacuum_chest_catchers.png");
     private static final ResourceLocation STARS = new ResourceLocation(GoldenQuarry.MODID, "textures/gui/vacuum_chest_stars.png");
+    /** Little galaxies (tools/extract_galaxies.py): what the tentacles catch besides stars, 8 x 8 of 15 x 15. */
+    private static final ResourceLocation GALAXIES = new ResourceLocation(GoldenQuarry.MODID, "textures/gui/vacuum_chest_galaxies.png");
+    private static final int GALAXY = 15, GALAXY_KINDS = 64;
     private static final ResourceLocation CRACKS = new ResourceLocation(GoldenQuarry.MODID, "textures/gui/vacuum_chest_cracks.png");
     /** The cracks' sprites (tools/gen_opening.py): one row per catcher, growing over CRACK_FRAMES frames, the middle on the root. */
     private static final int CRACK = 72, CRACK_FRAMES = 10;
@@ -164,6 +168,11 @@ final class Tentacles {
             double ex = tc[0] - tc[2] * 4.0D, ey = tc[1] - tc[3] * 4.0D;
             double e = Math.pow(p, 1.6D);
             int kind = k % 3 == 0 ? 2 : k % 3 == 1 ? 0 : 1;
+            if (k % 4 == 1) {                                  // a little galaxy drifting in among them
+                galaxy(g, left + (int) Math.round(sx + (ex - sx) * e), top + (int) Math.round(sy + (ey - sy) * e),
+                        (int) (hash(k * 13L) % GALAXY_KINDS), (float) Math.min(1.0D, p / 0.25D) * 0.9F);
+                continue;
+            }
             star(g, left + (int) Math.round(sx + (ex - sx) * e), top + (int) Math.round(sy + (ey - sy) * e),
                     kind, (k / 3) % 3, (int) ((now / (120L + k % 4 * 30L) + k) % 8), (float) Math.min(1.0D, p / 0.25D));
         }
@@ -189,13 +198,16 @@ final class Tentacles {
             y += (ACT_STAR[c][next][1] - here[1]) * frac;
         }
         int colour = (int) ((round + c) % 3);
+        // what it catches this time round: a star now and then, mostly one of the little galaxies
+        boolean galaxy = (round + c) % 3 != 0;
+        int kind = (int) (hash(round * 31L + c * 7L) % GALAXY_KINDS);
         int sx = left + ox + Math.round(x), sy = top + oy + Math.round(y);
         switch (state) {
-            case 1 -> star(g, sx, sy, 2, colour, (int) ((now / 140L) % 8), f < 2 ? (f + frac) / 2.0F : 1.0F);
-            case 2 -> star(g, sx, sy, 2, colour, 3 + (int) ((now / 200L) % 2), 1.0F);
+            case 1 -> prey(g, sx, sy, galaxy, kind, colour, (int) ((now / 140L) % 8), f < 2 ? (f + frac) / 2.0F : 1.0F);
+            case 2 -> prey(g, sx, sy, galaxy, kind, colour, 3 + (int) ((now / 200L) % 2), 1.0F);
             case 3 -> {                                        // struggling: shaking, flickering, throwing sparks
                 int jx = (int) (hash(now / 70L + c) % 3) - 1, jy = (int) (hash(now / 70L + c + 99) % 3) - 1;
-                star(g, sx + jx, sy + jy, 2, colour, 2 + (int) ((now / 60L) % 4), 1.0F);
+                prey(g, sx + jx, sy + jy, galaxy, kind, colour, 2 + (int) ((now / 60L) % 4), 1.0F);
                 for (int k = 0; k < 3; k++) {
                     long h = hash(now / 90L * 7 + k + c * 13);
                     float life = (now % 90L) / 90.0F;
@@ -208,7 +220,7 @@ final class Tentacles {
                 float since = (t - escape) / 1000.0F;
                 float fade = state == 5 ? 1.0F - (t - ACT_START[firstOf(5)]) / (float) (ACT_TOTAL - ACT_START[firstOf(5)]) : 1.0F;
                 burst(g, left + ox + ACT_STAR[c][firstOf(4)][0], top + oy + ACT_STAR[c][firstOf(4)][1], since, (int) ((round + c) % 3), colour);
-                star(g, sx, sy, 2, colour, state == 4 ? 4 : (int) ((now / 100L) % 8), fade);
+                prey(g, sx, sy, galaxy, kind, colour, state == 4 ? 4 : (int) ((now / 100L) % 8), fade);
             }
         }
     }
@@ -263,6 +275,21 @@ final class Tentacles {
         v *= 0xFF51AFD7ED558CCDL;
         v ^= v >>> 33;
         return v & Long.MAX_VALUE;
+    }
+
+    /** What a catcher has hold of: a star or a little galaxy. */
+    private static void prey(GuiGraphics g, int x, int y, boolean galaxy, int kind, int colour, int frame, float alpha) {
+        if (galaxy) galaxy(g, x, y, kind, alpha * (0.85F + 0.15F * Mth.sin(Util.getMillis() / 160.0F + kind)));
+        else star(g, x, y, 2, colour, frame, alpha);
+    }
+
+    /** One of the little galaxies, its middle at x, y. */
+    static void galaxy(GuiGraphics g, int x, int y, int kind, float alpha) {
+        if (alpha <= 0.02F) return;
+        RenderSystem.enableBlend();
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, Math.min(1.0F, alpha));
+        g.blit(GALAXIES, x - GALAXY / 2, y - GALAXY / 2, kind % 8 * GALAXY, kind / 8 * GALAXY, GALAXY, GALAXY, GALAXY * 8, GALAXY * 8);
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
     /** One star from the sheet: kind (sparkle, four-, eight-pointed), colour (pink, gold, ice), frame. */

@@ -195,9 +195,47 @@ def crack_paths(g, dx, dy):
             p = (int(round(x)), int(round(y)))
             if p not in pix or pix[p] > dist:
                 pix[p] = dist
-            if depth < 2 and dist > 3 and g.random() < 0.12:
+            if depth < 3 and dist > 3 and g.random() < 0.14:
                 todo.append((x, y, a + g.choice([-1, 1]) * g.uniform(0.5, 1.1), dist, dist + (length - dist) * 0.6, depth + 1))
     return pix
+
+
+def hairlines(g, paths):
+    """Fine hair cracks off the main ones: short, one pixel, running off to either side; each with
+    how far along its crack it starts (it shows once the crack has got there)."""
+    hair = {}
+    for (x, y), d in paths.items():
+        if d < 4 or g.random() > 0.22:
+            continue
+        a = g.uniform(0, 2 * math.pi)
+        hx, hy = float(x), float(y)
+        for k in range(int(g.integers(2, 7))):
+            hx += math.cos(a)
+            hy += math.sin(a)
+            a += g.normal(0, 0.5)
+            q = (int(round(hx)), int(round(hy)))
+            if q not in paths:
+                hair.setdefault(q, d + k)
+    return hair
+
+
+def arcs(g, dx, dy):
+    """The rings a blow cracks round where it struck: broken arcs across the cracks, a near one and
+    a far one, facing into the chest; each pixel with the ring it is on."""
+    base = math.atan2(-dy, -dx)
+    out = {}
+    for ring, rad in ((0, 8.5), (1, 13.5)):
+        a = base - 1.5
+        while a < base + 1.5:
+            if g.random() > 0.3:                     # gaps along it
+                r = rad + g.normal(0, 0.45)
+                out.setdefault((int(round(math.cos(a) * r)), int(round(math.sin(a) * r))), ring)
+            a += 1.0 / rad
+    return out
+
+
+def rad_now(grow):
+    return 1.5 + 3.5 * min(1.0, grow * 1.6)
 
 
 def cracks():
@@ -211,6 +249,10 @@ def cracks():
         g = rng(100 + row)
         paths = crack_paths(g, dx, dy)
         longest = max(paths.values())
+        hair = hairlines(g, paths)
+        rings = arcs(g, dx, dy)
+        embers = {p for p, d in paths.items() if d < 12 and g.random() < 0.18}
+        spall = [(int(g.integers(-6, 7)), int(g.integers(-6, 7)), g.random()) for _ in range(26)]
         hole = {}
         for j in range(-7, 8):
             for i in range(-7, 8):
@@ -249,6 +291,28 @@ def cracks():
                 put((x, y), col)
                 if d < 9 * grow and near < 0.5:                                 # wider near the hole
                     put((x + 1, y), (8, 0, 16))
+            # the hair cracks, fine and faint, no glow
+            for (x, y), d in hair.items():
+                if d <= reach:
+                    put((x, y), (70, 40, 100), 210, over=False)
+            # the broken rings across the cracks
+            for (x, y), ring in rings.items():
+                if grow > (0.45 if ring == 0 else 0.75):
+                    put((x, y), (26, 8, 44), 235, over=False)
+                    put((x - 1, y - 1), (200, 190, 225), 120, over=False)
+            # embers of ender light caught in the cracks near the hole
+            for (x, y) in embers:
+                if paths[(x, y)] <= reach:
+                    put((x, y), (255, 214, 255))
+            # the face round the hole flaking: pits and lifted flakes
+            for x, y, k in spall[:int(len(spall) * grow)]:
+                if math.hypot(x, y) < rad_now(grow) + 0.5:
+                    continue
+                if k < 0.5:
+                    put((x, y), (34, 20, 50), 220)
+                else:
+                    put((x, y), (190, 180, 215), 200)
+                    put((x + 1, y + 1), (60, 40, 80), 180, over=False)
             # chips knocked loose round the hole: little light shards with a dark underside
             for i, (x, y) in enumerate(chips[:int(len(chips) * grow)]):
                 if math.hypot(x, y) < 3:
@@ -257,7 +321,7 @@ def cracks():
                 put((x + 1, y), (120, 110, 150), 230)
                 put((x, y + 1), (40, 20, 60), 200)
             # the hole, broken out and rimmed with ender light
-            rad = 1.5 + 3.5 * min(1.0, grow * 1.6)
+            rad = rad_now(grow)
             for p, h in hole.items():
                 if h <= rad - 1.2:
                     put(p, (6, 0, 14))
