@@ -1,16 +1,13 @@
 """Draws the vacuum chest GUI's opening and its cracks as pixel art (needs numpy and Pillow).
 
 Run from the goldenquarry folder:  python3 tools/gen_opening.py
-- textures/gui/vacuum_chest_galaxy.png: the galaxy the GUI opens out of (after the reference's
-  spiral galaxy: a white-gold core, two arms wound round it, blue and ice outside, gold inside, dark
-  dust lanes between, stars scattered along them), GALAXY x GALAXY, FRAMES frames in a 4x4 grid,
-  turning half a turn in all (its two arms make it look the same after half a turn), dithered.
+- textures/gui/vacuum_chest_galaxy.png: the galaxy the GUI opens out of, read off
+  reference/vacuum/galaxy.jpg: OPEN_FRAMES frames (GALAXY x GALAXY, in a 6 x 4 grid) of it
+  unwinding from its core along its arms out to the whole galaxy.
 - textures/gui/vacuum_chest_cracks.png: the frame cracking where a catcher drags its star into
   the chest: a hole broken out at the root, rimmed with ender light, and cracks running from it
   over the frame and the panel, branching; one row per catcher, CRACK_FRAMES frames of them
   growing. The sprite's middle is on the tentacle's root; only what is on the GUI is drawn.
-- textures/gui/vacuum_chest_glint.png: a light sweeping over the frame's steel and gold (frames
-  stacked, the whole GUI each).
 """
 import math
 import os
@@ -25,7 +22,6 @@ from gen_tentacles import TENTACLES  # noqa: E402
 OUT = "src/main/resources/assets/goldenquarry/textures/gui"
 GALAXY, FRAMES = 128, 16
 CRACK, CRACK_FRAMES = 72, 10
-GLINT_FRAMES = 24
 BAYER = np.array([[0, 8, 2, 10], [12, 4, 14, 6], [3, 11, 1, 9], [15, 7, 13, 5]]) / 16.0 - 0.47
 
 # the galaxy's colours, dark to light, the arms' blue and the core's gold
@@ -162,8 +158,6 @@ def galaxy(twist_sign=1.0):
 
 GUI_TEX = f"{OUT}/vacuum_chest.png"
 PANEL = (12, 20, 204, 157)          # the open panel (the vortex under it): x0, y0, x1, y1 exclusive
-GLINT_H = 170                        # the glint runs over the frame, down to the steps
-INV_TOP, INV_X0, INV_X1 = 157, 20, 196   # the inventory panel's top and sides (no glint on it)
 
 
 def on_gui(tex):
@@ -333,34 +327,6 @@ def cracks():
     Image.fromarray(sheet, "RGBA").save(f"{OUT}/vacuum_chest_cracks.png")
 
 
-def glint():
-    """A glint running down over the frame from the top left, pixel sharp: two bright bands at 45
-    degrees (a wide one and a thin one after it), only on the frame's steel and gold, not on the
-    slots, the panel or the inventory."""
-    tex = np.array(Image.open(GUI_TEX).convert("RGBA"))[:GLINT_H]
-    h, w = tex.shape[:2]
-    shiny = tex[:, :, 3] > 0
-    x0, y0, x1, y1 = PANEL
-    shiny[y0:y1, x0:x1] = False
-    shiny[INV_TOP:, INV_X0:INV_X1] = False          # the inventory panel under the frame
-    ys, xs = np.mgrid[0:h, 0:w]
-    s = xs + ys
-    sheet = np.zeros((h * GLINT_FRAMES, w, 4), dtype=np.uint8)
-    span = w + h + 8
-    for f in range(GLINT_FRAMES):
-        head = -4 + span * f // (GLINT_FRAMES - 1)
-        a = np.zeros((h, w), dtype=np.uint8)
-        a[(s >= head - 2) & (s <= head)] = 170
-        a[s == head - 5] = 100
-        a[~shiny] = 0
-        frame = np.zeros((h, w, 4), dtype=np.uint8)
-        frame[:, :, :3] = (255, 250, 230)
-        frame[:, :, 3] = a
-        sheet[f * h:(f + 1) * h] = frame
-    Image.fromarray(sheet, "RGBA").save(f"{OUT}/vacuum_chest_glint.png")
-
-
 if __name__ == "__main__":
     galaxy()
     cracks()
-    glint()

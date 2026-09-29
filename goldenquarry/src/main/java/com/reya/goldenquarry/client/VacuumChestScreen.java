@@ -29,21 +29,17 @@ import net.minecraft.world.item.Items;
  * <p>
  * It opens out of a galaxy (vacuum_chest_galaxy.png, by tools/gen_opening.py): the galaxy turns up
  * in the middle, spinning and growing, stars twinkling round it, and the GUI swells out of its
- * middle, a little past its size and back, while the galaxy fades. Then now and then a light runs
- * over the frame (vacuum_chest_glint.png), the crystals and knobs twinkle, and where a tentacle
- * drags a star in, the frame cracks.
+ * middle, a little past its size and back, while the galaxy fades. Then the crystals and knobs
+ * twinkle, and where a tentacle drags a star in, the frame cracks.
  */
 public class VacuumChestScreen extends AbstractContainerScreen<VacuumChestMenu> {
     private static final ResourceLocation TEXTURE = new ResourceLocation(GoldenQuarry.MODID, "textures/gui/vacuum_chest.png");
     private static final ResourceLocation GALAXY = new ResourceLocation(GoldenQuarry.MODID, "textures/gui/vacuum_chest_galaxy.png");
-    private static final ResourceLocation GLINT = new ResourceLocation(GoldenQuarry.MODID, "textures/gui/vacuum_chest_glint.png");
-    private static final int GALAXY_SIZE = 128, GALAXY_FRAMES = 24, GALAXY_COLS = 6, GLINT_H = 170, GLINT_FRAMES = 24;
+    private static final int GALAXY_SIZE = 128, GALAXY_FRAMES = 24, GALAXY_COLS = 6;
     /** The opening: the galaxy all along, the GUI swelling out from MENU_FROM for MENU_MS. */
     private static final long OPEN_MS = 1600L, MENU_FROM = 560L, MENU_MS = 760L;
     /** The galaxy unwinds over its frames in UNWIND_MS. */
     private static final long UNWIND_MS = 900L;
-    /** The glint runs over the frame for GLINT_MS once every GLINT_EVERY. */
-    private static final long GLINT_MS = 1100L, GLINT_EVERY = 5200L;
     /** The middle the GUI opens from: the panel's. */
     private static final int MIDDLE_X = VacuumChestMenu.WIDTH / 2, MIDDLE_Y = 88;
     /** Where it twinkles on the frame: x, y, kind of star, colour (the crystals pink, the knobs gold). */
@@ -149,7 +145,6 @@ public class VacuumChestScreen extends AbstractContainerScreen<VacuumChestMenu> 
         g.blit(VORTEX, leftPos + VORTEX_X, topPos + VORTEX_Y, 0, frame * VORTEX_H, VORTEX_W, VORTEX_H, VORTEX_W, VORTEX_H * VORTEX_FRAMES);
         enderParticles(g);
         g.blit(TEXTURE, leftPos, topPos, 0, 0, imageWidth, imageHeight, 256, 256);
-        glint(g);
         tentacles.cracks(g, leftPos, topPos);
         twinkles(g);
         Banner.draw(g, leftPos + imageWidth / 2, topPos - Banner.HEIGHT);
@@ -170,15 +165,6 @@ public class VacuumChestScreen extends AbstractContainerScreen<VacuumChestMenu> 
             }
             if (inside(b, mouseX, mouseY)) g.fill(x, y, x + b[2], y + b[3], 0x40FFFFFF);
         }
-    }
-
-    /** A light running down over the frame's steel and gold, once in a while (the first as soon as it has opened). */
-    private void glint(GuiGraphics g) {
-        long t = (Util.getMillis() - openedAt - OPEN_MS + 200L) % GLINT_EVERY;
-        if (t < 0L || t >= GLINT_MS) return;
-        int frame = (int) (t * GLINT_FRAMES / GLINT_MS);
-        RenderSystem.enableBlend();
-        g.blit(GLINT, leftPos, topPos, 0, frame * GLINT_H, imageWidth, GLINT_H, imageWidth, GLINT_H * GLINT_FRAMES);
     }
 
     /** The crystals and knobs on the frame light up by turns, each a star flaring and going out. */
