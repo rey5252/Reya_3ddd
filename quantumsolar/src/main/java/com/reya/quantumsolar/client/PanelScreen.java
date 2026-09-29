@@ -28,7 +28,7 @@ public class PanelScreen extends AbstractContainerScreen<PanelMenu> {
     private static final int W = 196, H = 108;
     private static final int BOX_X = 10, BOX_Y = 22, BOX = 36;
     private static final int BAR_X = 12, BAR_Y = 66, BAR_W = 172, BAR_H = 10;
-    private static final int LAMPS = 16, LAMP_X = 13, LAMP_Y = 86, LAMP_STEP = 11;
+    private static final int LAMPS = 15, LAMP_X = 16, LAMP_Y = 86, LAMP_STEP = 11;
     private static final int TEXT_X = 52;
 
     private final Panels.Panel info;

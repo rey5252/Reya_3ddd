@@ -226,6 +226,9 @@ def top_colours(a, n=3):
     return [tuple(pal[i * 3:i * 3 + 3]) for i in range(n)]
 
 
+# the core generators' colours (their fronts are mostly dark: their own colour is in the middle)
+CORE_COLOURS = {"ice_heart": (120, 220, 235), "sun_heart": (245, 150, 50), "ruby": (225, 50, 70),
+                "jade": (60, 205, 150), "topaz": (245, 190, 60), "amethyst": (180, 100, 245)}
 # the meteor generators' dash colours, as the picture shows them (brightened: it shows them far off)
 METEOR_COLOURS = {"lime": [(170, 220, 50), (110, 190, 40), (220, 240, 120)],
                   "lime2": [(210, 215, 80), (160, 175, 60), (245, 235, 150)],
@@ -327,7 +330,7 @@ def main():
             top = core_top(side, main_colour(side))
         else:
             side = clean_edges(side, brown=fam == "tearful")
-        rgb = main_colour(top if fam != "core" else side)
+        rgb = CORE_COLOURS[colour] if fam == "core" else METEOR_COLOURS[colour][0] if fam == "meteor" else main_colour(top)
         Image.fromarray(top).save(f"{ASSETS}/textures/block/{bid}_top.png")
         Image.fromarray(side).save(f"{ASSETS}/textures/block/{bid}_side.png")
         write_json(f"{ASSETS}/models/block/{bid}.json", {
