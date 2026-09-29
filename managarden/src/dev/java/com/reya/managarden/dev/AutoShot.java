@@ -103,6 +103,14 @@ public final class AutoShot {
             if (mc.screen != null) mc.screen.onClose();
         }));
         STEPS.add(new Step(2, () -> shot("gui_closing.png")));
+        // the greenhouse's pages in the Lexica Botania
+        STEPS.add(new Step(10, AutoShot::unlockLexicon));
+        STEPS.add(new Step(30, () -> openLexicon("generating_flowers/managarden_greenhouse", 0)));
+        STEPS.add(new Step(30, () -> shot("lexicon.png")));
+        STEPS.add(new Step(5, () -> openLexicon("generating_flowers/managarden_greenhouse", 4)));
+        STEPS.add(new Step(30, () -> shot("lexicon_recipes.png")));
+        STEPS.add(new Step(5, () -> openLexicon("generating_flowers/managarden_upgrades", 2)));
+        STEPS.add(new Step(30, () -> shot("lexicon_upgrades.png")));
         STEPS.add(new Step(10, () -> Minecraft.getInstance().stop()));
     }
 
@@ -139,6 +147,7 @@ public final class AutoShot {
         rules.getRule(GameRules.RULE_DAYLIGHT).set(false, null);
         rules.getRule(GameRules.RULE_WEATHER_CYCLE).set(false, null);
         rules.getRule(GameRules.RULE_DOMOBSPAWNING).set(false, null);
+        rules.getRule(GameRules.RULE_ANNOUNCE_ADVANCEMENTS).set(false, null);
         LevelSettings settings = new LevelSettings("autoshot", GameType.CREATIVE, false, Difficulty.PEACEFUL, true, rules,
                 WorldDataConfiguration.DEFAULT);
         mc.createWorldOpenFlows().createFreshLevel("autoshot", settings, new WorldOptions(1L, false, false),
@@ -232,6 +241,27 @@ public final class AutoShot {
                 NetworkHooks.openScreen(p, be, POS);
             }
         });
+    }
+
+    /** The lexicon shows an entry once its advancement is earned: earn the greenhouse's. */
+    private static void unlockLexicon() {
+        MinecraftServer server = server();
+        server.execute(() -> server.getCommands().performPrefixedCommand(server.createCommandSourceStack().withSuppressedOutput(),
+                "advancement grant @a until botania:main/runic_altar_pickup"));
+    }
+
+    /** Opens the Lexica Botania at an entry's page (through Patchouli's API, which only runs here). */
+    private static void openLexicon(String entry, int page) {
+        Minecraft.getInstance().getToasts().clear();
+        try {
+            Class<?> api = Class.forName("vazkii.patchouli.api.PatchouliAPI");
+            Object instance = api.getMethod("get").invoke(null);
+            Class<?> type = Class.forName("vazkii.patchouli.api.PatchouliAPI$IPatchouliAPI");
+            type.getMethod("openBookEntry", ResourceLocation.class, ResourceLocation.class, int.class)
+                    .invoke(instance, new ResourceLocation("botania", "lexicon"), new ResourceLocation("botania", entry), page);
+        } catch (ReflectiveOperationException e) {
+            ManaGarden.LOGGER.warn("AutoShot: can't open the lexicon", e);
+        }
     }
 
     private static void guiScale(int scale) {

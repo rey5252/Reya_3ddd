@@ -61,5 +61,20 @@
   "gui.managarden.keeper.tip2": "Bind me to a mana pool with the Wand of the Forest and I'll fill it.",
   "gui.managarden.keeper.tip3": "Put a mana tablet in the blue slot and I'll charge it for you.",
   "gui.managarden.keeper.tip4": "Growth Upgrades make the flowers grow faster. Zoom!",
-  "gui.managarden.keeper.tip5": "No fuel, no water, no fuss: just love and mana~"
+  "gui.managarden.keeper.tip5": "No fuel, no water, no fuss: just love and mana~",
+
+  "managarden.lexicon.greenhouse": "Mana Greenhouse",
+  "managarden.lexicon.greenhouse0": "The $(item)Mana Greenhouse$() is a little house of glass and livingwood in which up to eight $(thing)generating flowers$() grow with no fuel, no water and no care at all.$(br2)It gathers the mana they make in a store of its own and hands it on.",
+  "managarden.lexicon.greenhouse1": "Plant generating flowers in the eight beds round its mana heart. Every $(thing)cycle$() (five seconds) the flowers make mana, each as much as it would at its best, and together they grow better still: every kind of flower past the first adds 5 percent of $(thing)harmony$().",
+  "managarden.lexicon.greenhouse2": "The mana flows on into $(item)mana pools$(), $(item)spreaders$() and other receivers right next to it, or into one bound to it: touch the greenhouse with the $(l:botania:basics/wand)Wand of the Forest$(/l) in bind mode, then the receiver.",
+  "managarden.lexicon.greenhouse3": "The blue slot on the right charges $(item)mana tablets$(), mirrors and rings. The buttons in its window set how it heeds $(thing)redstone$() and whether it gives its mana away, and a $(item)comparator$() reads how full it is.$(br2)Its keeper will gladly tell you what it needs.",
+  "managarden.lexicon.greenhouse4": "The $(item)Heart of the Greenhouse$() is born on the $(l:botania:basics/terrasteel)Terrestrial Agglomeration Plate$(/l).",
+  "managarden.lexicon.greenhouse5": "The Mana Greenhouse.",
+  "managarden.lexicon.upgrades": "Greenhouse Upgrades",
+  "managarden.lexicon.upgrades0": "A greenhouse takes four $(item)upgrades$() in the slots on the left of its window. Upgrades of a kind stack, and up to eight of a kind count.$(br2)They are made from a $(item)Blank Floral Tablet$() on the $(l:botania:basics/rune_altar)Runic Altar$(/l).",
+  "managarden.lexicon.upgrades1": "Two Blank Floral Tablets.",
+  "managarden.lexicon.upgrades2": "$(item)Growth$(): each one makes the cycles a quarter faster.",
+  "managarden.lexicon.upgrades3": "$(item)Reservoir$(): each one makes room for 350 000 more mana.",
+  "managarden.lexicon.upgrades4": "$(item)Fortune$(): each one gives a cycle one more chance in ten to be lucky and bring half as much mana again.",
+  "managarden.lexicon.upgrades5": "$(item)Abundance$(): each one makes every cycle bring 15 percent more mana."
 }

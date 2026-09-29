@@ -1,0 +1,34 @@
+{
+  "name": "managarden.lexicon.greenhouse",
+  "category": "botania:generating_flowers",
+  "icon": "managarden:mana_greenhouse",
+  "advancement": "botania:main/runic_altar_pickup",
+  "pages": [
+    {
+      "type": "text",
+      "text": "managarden.lexicon.greenhouse0"
+    },
+    {
+      "type": "text",
+      "text": "managarden.lexicon.greenhouse1"
+    },
+    {
+      "type": "text",
+      "text": "managarden.lexicon.greenhouse2"
+    },
+    {
+      "type": "text",
+      "text": "managarden.lexicon.greenhouse3"
+    },
+    {
+      "type": "botania:terrasteel",
+      "recipe": "managarden:greenhouse_heart",
+      "text": "managarden.lexicon.greenhouse4"
+    },
+    {
+      "type": "crafting",
+      "recipe": "managarden:mana_greenhouse",
+      "text": "managarden.lexicon.greenhouse5"
+    }
+  ]
+}

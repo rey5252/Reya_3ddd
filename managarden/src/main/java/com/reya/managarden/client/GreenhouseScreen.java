@@ -300,16 +300,21 @@ public class GreenhouseScreen extends AbstractContainerScreen<GreenhouseMenu> {
             String s = "+" + Format.shortMana(lastGainShown);
             float in = Math.min(1.0F, p * 8.0F), out = Math.min(1.0F, (1.0F - p) * 2.5F);
             int alpha = (int) (255 * Math.min(in, out));
-            if (alpha > 8) {
+            if (alpha > 12) {
                 int color = alpha << 24 | (lucky ? 0xFFE27A : 0xF2FFFF);
-                int edge = (alpha * 3 / 4) << 24 | (lucky ? 0x5A3606 : 0x0B2F5C);
+                // the dark edge fades faster than the text, so the number doesn't leave a smudge behind
+                // (and text under alpha 4 would be drawn opaque)
+                int edgeAlpha = alpha * alpha * 3 / (4 * 255);
+                int edge = edgeAlpha << 24 | (lucky ? 0x5A3606 : 0x0B2F5C);
                 int x = HEART_X - font.width(s) / 2, y = HEART_Y - 2 - Math.round(easeOut(p) * 11.0F);
                 g.pose().pushPose();
                 g.pose().translate(0.0F, 0.0F, 180.0F);     // over the planted flowers' items
-                g.drawString(font, s, x - 1, y, edge, false);
-                g.drawString(font, s, x + 1, y, edge, false);
-                g.drawString(font, s, x, y - 1, edge, false);
-                g.drawString(font, s, x, y + 1, edge, false);
+                if (edgeAlpha >= 4) {
+                    g.drawString(font, s, x - 1, y, edge, false);
+                    g.drawString(font, s, x + 1, y, edge, false);
+                    g.drawString(font, s, x, y - 1, edge, false);
+                    g.drawString(font, s, x, y + 1, edge, false);
+                }
                 g.drawString(font, s, x, y, color, false);
                 g.pose().popPose();
             }

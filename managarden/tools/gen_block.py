@@ -111,8 +111,9 @@ def soil():
 
 
 def post():
-    """A livingwood post: each face of the 2 px wide post shows u 0..2, v 3..12 of this texture, so
-    that strip carries the wood (lit column, shaded column) and a vine climbing it with little leaves."""
+    """A livingwood post, 2 px wide: its north, east, south and west faces show u 0..2, 2..4, 4..6 and
+    6..8 of this texture (v 3..12), so a thin vine can wind round it: on every face the vine runs down
+    from right to left and goes on round the corner onto the next face."""
     cv = Canvas(16, 16)
     for y in range(16):
         for x in range(16):
@@ -120,10 +121,16 @@ def post():
             if rnd2(x, y, 31) < 0.15:
                 c = shade(c, -0.2)
             cv.set(x, y, c)
-    vine = {(1, 3): L4, (1, 4): L3, (0, 5): L3, (0, 6): L2, (1, 6): L1, (1, 7): L3, (1, 8): L4,
-            (0, 9): L3, (0, 10): L2, (1, 10): L1, (1, 11): L3}
-    for (x, y), c in vine.items():
-        cv.set(x, y, c)
+    # the vine: one pixel of the post's circumference (8 px round) per pixel down
+    for y in range(3, 12):
+        c = y - 3
+        f, o = (c // 2) % 4, c % 2
+        cv.set(2 * f + 1 - o, y, L3 if o else L2)
+    # two leaves springing from it, and a glint of the livingwood's grain
+    for (x, y, col) in ((2, 6, L1), (3, 7, L4), (7, 10, L2), (6, 11, L4)):
+        cv.set(x, y, col)
+    cv.set(4, 4, LW0)
+    cv.set(0, 9, LW0)
     tex("greenhouse_post", cv)
 
 
@@ -260,7 +267,7 @@ def block_elements():
     # posts at the corners
     for (x, z) in ((0.5, 0.5), (13.5, 0.5), (0.5, 13.5), (13.5, 13.5)):
         els.append(element([x, 4, z], [x + 2, 13, z + 2], {
-            d: face("#post", [0, 3, 2, 12]) for d in ("north", "south", "west", "east")}))
+            d: face("#post", [2 * i, 3, 2 * i + 2, 12]) for i, d in enumerate(("north", "east", "south", "west"))}))
     # glass panes between the posts (outer and inner face), slightly in from the edge
     for (frm, to, faces) in (
             ([2.5, 4, 1], [13.5, 13, 1], ("north", "south")),
@@ -268,14 +275,17 @@ def block_elements():
             ([1, 4, 2.5], [1, 13, 13.5], ("west", "east")),
             ([15, 4, 2.5], [15, 13, 13.5], ("east", "west"))):
         els.append(element(frm, to, {f: face("#glass", [2.5, 3, 13.5, 12]) for f in faces}, shade_=True))
-    # the rim round the top
-    for (frm, to) in (([0.5, 13, 0.5], [15.5, 14, 2.5]), ([0.5, 13, 13.5], [15.5, 14, 15.5]),
-                      ([0.5, 13, 2.5], [2.5, 14, 13.5]), ([13.5, 13, 2.5], [15.5, 14, 13.5])):
-        uv_long = [0, 0, 15, 1]
-        els.append(element(frm, to, {
+    # the rim round the top: the north and south beams run the whole width, the west and east ones
+    # between them (their planks turned to run along them)
+    for z in (0.5, 13.5):
+        els.append(element([0.5, 13, z], [15.5, 14, z + 2], {
             "north": face("#rim", [0, 0, 15, 1]), "south": face("#rim", [0, 0, 15, 1]),
-            "west": face("#rim", [0, 0, 15, 1]), "east": face("#rim", [0, 0, 15, 1]),
+            "west": face("#rim", [0, 0, 2, 1]), "east": face("#rim", [0, 0, 2, 1]),
             "up": face("#rim", [0, 1, 15, 3]), "down": face("#rim", [0, 5, 15, 7])}))
+    for x in (0.5, 13.5):
+        els.append(element([x, 13, 2.5], [x + 2, 14, 13.5], {
+            "west": face("#rim", [0, 0, 11, 1]), "east": face("#rim", [0, 0, 11, 1]),
+            "up": dict(face("#rim", [0, 1, 11, 3]), rotation=90), "down": dict(face("#rim", [0, 5, 11, 7]), rotation=90)}))
     return els
 
 
