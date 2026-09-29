@@ -432,6 +432,8 @@ def main():
     for code in lang:
         lang[code].update(extra[code])
         write_json(f"{ASSETS}/lang/{code}.json", lang[code])
+    import animate_cores
+    animate_cores.main()
     java = open(JAVA, encoding="utf-8").read()
     body = "\n".join(
         f'            new Panel("{b}", {str(q).lower()}, {t}, {g}, 0x{r:02X}{gg:02X}{bb:02X}),'
