@@ -69,11 +69,11 @@ def galaxy_frame(turn, stars):
     for y in range(n):
         for x in range(n):
             lv = light[y, x] + BAYER[y % 4, x % 4] * 0.16
-            if lv < 0.06:
+            if lv < 0.13 or r[y, x] > 0.97:     # no faint dots out in the square's corners
                 continue
             pal = GOLDS if goldness[y, x] + BAYER[(y + 2) % 4, (x + 1) % 4] * 0.5 > 0.5 else BLUES
             i = min(len(pal) - 1, int(lv * (len(pal) - 0.2)))
-            a = 255 if lv > 0.14 else 170
+            a = 255 if lv > 0.2 else 170
             img[y, x] = pal[i] + (a,)
     # stars: white and pale ones along the arms, turning with the galaxy, twinkling
     for (sr, sa, kind, ph) in stars:
