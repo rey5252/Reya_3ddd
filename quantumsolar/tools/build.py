@@ -349,6 +349,8 @@ def main():
     extract_cores.main()
     import extract_hearts
     extract_hearts.main()
+    import extract_originals
+    extract_originals.main()
     faces = {n: enhance(f) for n, f in all_faces(size=16, sub=4)}
     # where the grid has been laid exactly on the face (tools/fit.py), read it from there
     import fit
@@ -395,6 +397,10 @@ def main():
             top = meteor_top(METEOR_COLOURS[colour])
             side = meteor_side(faces["FRB2"], METEOR_COLOURS[colour])
         top, side = straighten(fam, colour, top, side, faces)
+        if fam in ("flare", "tearful"):
+            # these have their originals (tools/extract_originals.py): read off them
+            top = np.asarray(Image.open(f"{ASSETS}/textures/block/{fam}_panel_{colour}_top.png").convert("RGB"))[:16]
+            side = np.asarray(Image.open(f"{ASSETS}/textures/block/{fam}_panel_{colour}_side.png").convert("RGB"))[:16]
         if fam == "core" and colour in ("ice_heart", "sun_heart"):
             # the hearts have their originals too (reference/hearts_*.png)
             top = np.asarray(Image.open(f"{ASSETS}/textures/block/core_generator_{colour}_top.png").convert("RGB"))[:16]
@@ -440,6 +446,7 @@ def main():
         write_json(f"{ASSETS}/lang/{code}.json", lang[code])
     import animate_cores
     animate_cores.main()
+    animate_cores.animate_panels()
     java = open(JAVA, encoding="utf-8").read()
     body = "\n".join(
         f'            new Panel("{b}", {str(q).lower()}, {t}, {g}, 0x{r:02X}{gg:02X}{bb:02X}),'

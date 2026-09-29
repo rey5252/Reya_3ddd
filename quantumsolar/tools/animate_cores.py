@@ -107,6 +107,74 @@ def frame_rim(a, f):
     return out
 
 
+def lighten(c, k):
+    return c * (1 + k) if k <= 0 else c + (255 - c) * k
+
+
+def panel_frame(a, f, style, centre):
+    """The flare and tearful panels: flare tops a band of light running across, flare fronts their
+    ornament throbbing out from its middle, tearful tops rings of light spreading from the dark
+    star, tearful fronts a glint running down the tears and the eyes glowing."""
+    out = a.astype(float).copy()
+    cx, cy = centre
+    t = f / FRAMES * WAVES
+    for y in range(1, 15):
+        for x in range(1, 15):
+            c = a[y, x].astype(float)
+            h, sat, v = colorsys.rgb_to_hsv(*(c / 255.0))
+            if style == "flare_top":
+                if v < 0.3:
+                    continue
+                k = 0.28 * np.cos(2 * np.pi * (t - (x - y) / 20.0))
+            elif style == "flare_side":
+                if sat < 0.3 or v < 0.3:
+                    continue
+                d = max(abs(x - 7.5), abs(y - 7.5))
+                k = 0.3 * np.cos(2 * np.pi * (t + d / 6.0))
+            elif style == "tearful_top":
+                if v < 0.25:
+                    continue
+                d = np.hypot(x - cx, y - cy)
+                k = 0.3 * np.cos(2 * np.pi * (t - d / 7.0))
+            else:                                        # tearful front
+                if sat < 0.3 or v < 0.25:
+                    continue
+                if 0.02 < h < 0.13:                       # the brown boards and orange eyes
+                    if c[0] > 180:                         # the eyes glow
+                        k = 0.3 * np.cos(2 * np.pi * t * 0.5)
+                    else:
+                        continue
+                else:                                     # the tears: a glint running down
+                    k = 0.6 * np.exp(-(((y / 16.0 - (t % 1.0)) % 1.0 - 0.5) / 0.08) ** 2) - 0.1
+            out[y, x] = lighten(c, k)
+    return out.round().clip(0, 255).astype(np.uint8)
+
+
+def dark_star(a):
+    """Where the tearful tops' dark star is: the middle of their darkest pixels inside the frame."""
+    lum = a[2:14, 2:14].astype(float).sum(axis=2)
+    ys, xs = np.nonzero(lum <= np.percentile(lum, 6))
+    return xs.mean() + 2, ys.mean() + 2
+
+
+PANELS = {"flare": ["sunset", "aurora", "ember", "glyph", "amber", "blaze"],
+          "tearful": ["sky", "meadow", "dusk", "sunrise", "spring", "honey", "orchid", "twilight"]}
+
+
+def animate_panels():
+    for fam, names in PANELS.items():
+        for name in names:
+            for part in ("top", "side"):
+                path = f"{T}/{fam}_panel_{name}_{part}.png"
+                a = np.asarray(Image.open(path).convert("RGB"))[:16]
+                style = f"{fam}_{part}"
+                centre = dark_star(a) if style == "tearful_top" else (7.5, 7.5)
+                strip = np.concatenate([panel_frame(a, f, style, centre) for f in range(FRAMES)], axis=0)
+                Image.fromarray(strip).save(path)
+                with open(path + ".mcmeta", "w") as fh:
+                    json.dump({"animation": {"frametime": FRAME_TICKS}}, fh)
+
+
 def main():
     for name in NAMES:
         for part in ("top", "side"):
@@ -127,3 +195,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    animate_panels()
