@@ -37,9 +37,11 @@ public class VacuumChestScreen extends AbstractContainerScreen<VacuumChestMenu> 
     private static final ResourceLocation TEXTURE = new ResourceLocation(GoldenQuarry.MODID, "textures/gui/vacuum_chest.png");
     private static final ResourceLocation GALAXY = new ResourceLocation(GoldenQuarry.MODID, "textures/gui/vacuum_chest_galaxy.png");
     private static final ResourceLocation GLINT = new ResourceLocation(GoldenQuarry.MODID, "textures/gui/vacuum_chest_glint.png");
-    private static final int GALAXY_SIZE = 128, GALAXY_FRAMES = 16, GLINT_H = 170, GLINT_FRAMES = 24;
+    private static final int GALAXY_SIZE = 128, GALAXY_FRAMES = 24, GALAXY_COLS = 6, GLINT_H = 170, GLINT_FRAMES = 24;
     /** The opening: the galaxy all along, the GUI swelling out from MENU_FROM for MENU_MS. */
-    private static final long OPEN_MS = 1500L, MENU_FROM = 320L, MENU_MS = 820L;
+    private static final long OPEN_MS = 1600L, MENU_FROM = 560L, MENU_MS = 760L;
+    /** The galaxy unwinds over its frames in UNWIND_MS. */
+    private static final long UNWIND_MS = 900L;
     /** The glint runs over the frame for GLINT_MS once every GLINT_EVERY. */
     private static final long GLINT_MS = 1100L, GLINT_EVERY = 5200L;
     /** The middle the GUI opens from: the panel's. */
@@ -101,21 +103,26 @@ public class VacuumChestScreen extends AbstractContainerScreen<VacuumChestMenu> 
         return 1.0F + c3 * q * q * q + c1 * q * q;
     }
 
-    /** The galaxy, spinning in from nothing and growing, spinning slower as it grows, then fading as the GUI comes out. */
+    /**
+     * The galaxy opening: it comes out of its bright core with its arms wound tight, unwinds along
+     * them out to the whole galaxy (its frames), turning all the while, a little slower as it
+     * opens, and fades as the GUI comes out of it.
+     */
     private void galaxy(GuiGraphics g, int cx, int cy, long t) {
-        float grow = Math.min(1.0F, t / 700.0F);
-        float scale = 0.12F + 1.9F * (1.0F - (1.0F - grow) * (1.0F - grow) * (1.0F - grow));
-        float alpha = Math.min(1.0F, t / 180.0F) * (t > 850L ? Math.max(0.0F, 1.0F - (t - 850L) / 650.0F) : 1.0F);
+        float open = Math.min(1.0F, t / (float) UNWIND_MS);
+        float scale = 1.3F + 0.6F * open;
+        float alpha = Math.min(1.0F, t / 120.0F) * (t > 950L ? Math.max(0.0F, 1.0F - (t - 950L) / 650.0F) : 1.0F);
         if (alpha <= 0.0F) return;
-        // the turn slows down: fast at first, a frame every 40 ms, then every 90
-        int frame = (int) ((t < 600L ? t / 40L : 15L + (t - 600L) / 90L) % GALAXY_FRAMES);
+        int frame = Math.min(GALAXY_FRAMES - 1, (int) (open * GALAXY_FRAMES));
+        float turn = (float) (t / 1000.0D * 150.0D - t * t / 1_000_000.0D * 35.0D);
         g.pose().pushPose();
         g.pose().translate(cx, cy, 0.0F);
+        g.pose().mulPose(com.mojang.math.Axis.ZP.rotationDegrees(-turn));
         g.pose().scale(scale, scale, 1.0F);
         RenderSystem.enableBlend();
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, alpha);
-        g.blit(GALAXY, -GALAXY_SIZE / 2, -GALAXY_SIZE / 2, frame % 4 * GALAXY_SIZE, frame / 4 * GALAXY_SIZE,
-                GALAXY_SIZE, GALAXY_SIZE, GALAXY_SIZE * 4, GALAXY_SIZE * 4);
+        g.blit(GALAXY, -GALAXY_SIZE / 2, -GALAXY_SIZE / 2, frame % GALAXY_COLS * GALAXY_SIZE, frame / GALAXY_COLS * GALAXY_SIZE,
+                GALAXY_SIZE, GALAXY_SIZE, GALAXY_SIZE * GALAXY_COLS, GALAXY_SIZE * (GALAXY_FRAMES / GALAXY_COLS));
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         g.pose().popPose();
     }

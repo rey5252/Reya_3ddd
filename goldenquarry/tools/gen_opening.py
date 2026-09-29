@@ -102,41 +102,61 @@ COLOURS = 32
 HAZE = 32
 
 
-def galaxy():
-    """The reference, pixel for pixel: turned round its core (a sixteenth of a turn each frame),
-    each sprite pixel the mean of the reference's pixels it covers, the black sky taken off
-    (alpha from how bright it is), faded out towards the rim so no square shows, and all frames
-    put into the same COLOURS colours taken from the reference."""
+OPEN_FRAMES = 24                        # the galaxy opening, in a 6 x 4 grid
+TWIST = 5.5                             # how tightly its arms are wound at first (radians per e-fold)
+WIND = -2.6                             # the reference's own arms: angle per e-fold of radius
+
+
+def galaxy(twist_sign=1.0):
+    """The galaxy opening as drawn over the reference: at first its arms wound tight round the bright
+    core, then unwinding outwards along their own spiral to the reference as it is; the arms reach
+    out ahead of the dark lanes between them. Each frame's pixels are the reference's (each sprite
+    pixel the mean of the reference's pixels it covers), the black sky taken off (alpha from how
+    bright it is), faded out towards the rim, all frames in the same COLOURS of the reference."""
     ref = Image.open(REFERENCE).convert("RGB")
     a = np.asarray(ref).copy()
     x0, y0, x1, y1 = SIGNATURE
     a[y0:y1, x0:x1] = 0
     side = 2 * RADIUS
-    big = Image.new("RGB", (side, side))
-    big.paste(Image.fromarray(a), (RADIUS - CORE[0], RADIUS - CORE[1]))
-    ys, xs = np.mgrid[0:GALAXY, 0:GALAXY]
-    rim = np.hypot(xs - GALAXY / 2 + 0.5, ys - GALAXY / 2 + 0.5) / (GALAXY / 2)
-    fade = np.clip((1.0 - rim) / 0.18, 0, 1)
+    big = np.zeros((side, side, 3), dtype=np.uint8)
+    big_img = Image.new("RGB", (side, side))
+    big_img.paste(Image.fromarray(a), (RADIUS - CORE[0], RADIUS - CORE[1]))
+    # the reference at 4x the sprite, to sample twisted and then average down
+    n4 = GALAXY * 4
+    src = np.asarray(big_img.resize((n4, n4), Image.BOX)).astype(float)
+    ys, xs = np.mgrid[0:n4, 0:n4]
+    u, v = (xs - n4 / 2 + 0.5) / (n4 / 2), (ys - n4 / 2 + 0.5) / (n4 / 2)
+    r = np.hypot(u, v) + 1e-6
+    th = np.arctan2(v, u)
     frames = []
-    for f in range(FRAMES):
-        turned = big.rotate(-360.0 * f / FRAMES, resample=Image.BICUBIC, center=(RADIUS, RADIUS))
-        small = np.asarray(turned.resize((GALAXY, GALAXY), Image.BOX)).astype(float)
-        # the sky's haze (about 30) taken off; what is left is the galaxy's light over black
+    for f in range(OPEN_FRAMES):
+        p = f / (OPEN_FRAMES - 1)
+        ease = 1 - (1 - p) ** 2
+        # wind the arms up: each radius turned by more the further out, less as it opens
+        twist = twist_sign * TWIST * (1 - ease) * np.log(np.clip(r, 0.03, 1.0))
+        sa = th - twist
+        sx = (np.cos(sa) * r * (n4 / 2) + n4 / 2 - 0.5).round().astype(int).clip(0, n4 - 1)
+        sy = (np.sin(sa) * r * (n4 / 2) + n4 / 2 - 0.5).round().astype(int).clip(0, n4 - 1)
+        img = src[sy, sx]
+        # how far it has opened: the arms (bright) out ahead of the lanes, along the spiral
+        arm = img.max(axis=2) / 255.0
+        edge = 0.08 + ease * 1.1 * (0.7 + 0.3 * arm) + 0.08 * np.cos(2 * (th - twist - WIND * np.log(r)))
+        reveal = np.clip((edge - r) / 0.12, 0, 1)
+        img = img * reveal[..., None]
+        small = img.reshape(GALAXY, 4, GALAXY, 4, 3).mean(axis=(1, 3))
         light = np.clip(small - HAZE, 0, None)
+        rr = r.reshape(GALAXY, 4, GALAXY, 4).mean(axis=(1, 3))
+        fade = np.clip((1.0 - rr) / 0.18, 0, 1)
         alpha = np.clip((light.max(axis=2) - 12) / 110.0, 0, 1) * fade
-        # its colour as the reference has it (the dark lanes stay dark); only the faint rim, which
-        # is see-through, without the black it was mixed with
         colour = np.clip(light * 1.12 / np.maximum(np.minimum(alpha[..., None] * 1.6, 1.0), 0.45), 0, 255)
         frames.append((colour, alpha))
-    # one palette for all frames, from the reference's own colours
     strip = np.concatenate([c for c, al in frames], axis=1).astype(np.uint8)
     pal_img = Image.fromarray(strip).quantize(COLOURS, method=Image.Quantize.MEDIANCUT)
-    sheet = np.zeros((GALAXY * 4, GALAXY * 4, 4), dtype=np.uint8)
+    sheet = np.zeros((GALAXY * 4, GALAXY * 6, 4), dtype=np.uint8)
     for f, (colour, alpha) in enumerate(frames):
         q = np.asarray(Image.fromarray(colour.astype(np.uint8)).quantize(palette=pal_img, dither=Image.Dither.NONE).convert("RGB"))
         al = np.select([alpha < 0.1, alpha < 0.3, alpha < 0.55], [0, 110, 190], 255).astype(np.uint8)
-        img = np.dstack([q, al])
-        sheet[(f // 4) * GALAXY:(f // 4 + 1) * GALAXY, (f % 4) * GALAXY:(f % 4 + 1) * GALAXY] = img
+        sheet[(f // 6) * GALAXY:(f // 6 + 1) * GALAXY, (f % 6) * GALAXY:(f % 6 + 1) * GALAXY] = np.dstack([q, al])
     Image.fromarray(sheet, "RGBA").save(f"{OUT}/vacuum_chest_galaxy.png")
 
 
