@@ -74,6 +74,39 @@ def frame(a, f):
     return out.round().clip(0, 255).astype(np.uint8)
 
 
+def beat(f):
+    """A heartbeat over the round: two quick throbs, then rest (twice a round)."""
+    t = (f / FRAMES * 2) % 1.0
+    return max(np.exp(-((t - 0.08) / 0.05) ** 2), 0.7 * np.exp(-((t - 0.26) / 0.05) ** 2))
+
+
+def heart_frame(a, f, top):
+    """The hearts: the rim's marks go round as on the others; on the front the heart throbs, on the
+    top a band of light runs along the diagonal stripes."""
+    out = frame_rim(a, f).astype(float)
+    for y in range(1, 15):
+        for x in range(1, 15):
+            c = a[y, x].astype(float)
+            if c.max() < 70:
+                continue
+            if top:
+                k = 0.3 * np.cos(2 * np.pi * (f / FRAMES * WAVES - (x + y) / 16.0))
+            else:
+                k = 0.35 * beat(f) - 0.08
+            out[y, x] = c * (1 + k) if k <= 0 else c + (255 - c) * k
+    return out.round().clip(0, 255).astype(np.uint8)
+
+
+def frame_rim(a, f):
+    out = a.copy()
+    n = len(RIM)
+    step = f * n // FRAMES
+    for i, (x, y) in enumerate(RIM):
+        sx, sy = RIM[(i - step) % n]
+        out[y, x] = a[sy, sx]
+    return out
+
+
 def main():
     for name in NAMES:
         for part in ("top", "side"):
@@ -81,8 +114,12 @@ def main():
             a = np.asarray(Image.open(path).convert("RGB"))
             if a.shape[0] != 16:
                 a = a[:16]
-            a = clean_rim(a)
-            strip = np.concatenate([frame(a, f) for f in range(FRAMES)], axis=0)
+            if "heart" in name:
+                a = clean_rim(a)
+                strip = np.concatenate([heart_frame(a, f, part == "top") for f in range(FRAMES)], axis=0)
+            else:
+                a = clean_rim(a)
+                strip = np.concatenate([frame(a, f) for f in range(FRAMES)], axis=0)
             Image.fromarray(strip).save(path)
             with open(path + ".mcmeta", "w") as fh:
                 json.dump({"animation": {"frametime": FRAME_TICKS}}, fh)

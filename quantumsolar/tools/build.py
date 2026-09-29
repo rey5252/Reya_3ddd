@@ -347,6 +347,8 @@ def write_json(path, obj):
 
 def main():
     extract_cores.main()
+    import extract_hearts
+    extract_hearts.main()
     faces = {n: enhance(f) for n, f in all_faces(size=16, sub=4)}
     # where the grid has been laid exactly on the face (tools/fit.py), read it from there
     import fit
@@ -393,6 +395,10 @@ def main():
             top = meteor_top(METEOR_COLOURS[colour])
             side = meteor_side(faces["FRB2"], METEOR_COLOURS[colour])
         top, side = straighten(fam, colour, top, side, faces)
+        if fam == "core" and colour in ("ice_heart", "sun_heart"):
+            # the hearts have their originals too (reference/hearts_*.png)
+            top = np.asarray(Image.open(f"{ASSETS}/textures/block/core_generator_{colour}_top.png").convert("RGB"))[:16]
+            side = np.asarray(Image.open(f"{ASSETS}/textures/block/core_generator_{colour}_side.png").convert("RGB"))[:16]
         if fam == "core" and colour in extract_cores.NAMES:
             # these four have their originals (reference/cores.png): read off them pixel for pixel
             top = side = np.asarray(Image.open(f"{ASSETS}/textures/block/core_generator_{colour}_top.png").convert("RGB"))
