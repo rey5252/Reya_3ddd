@@ -1,8 +1,8 @@
 """The heart generators' textures, read off photos of the originals pixel for pixel (needs numpy,
 scipy and Pillow). Run from the quantumsolar folder:  python3 tools/extract_hearts.py
 
-reference/hearts_side.png shows the two blocks' fronts (the ice heart on dark, the sun heart on
-orange), reference/hearts_top.png their tops (the same on both). Each face is given by its corners
+reference/ice_heart_side.png shows the ice heart's front close up, reference/hearts_top.png the two
+tops (the same on both); the sun heart's front is the ice heart's on orange (reference/hearts_side.png). Each face is given by its corners
 roughly; the 16 x 16 grid is then laid on it exactly (its corners moved about in shrinking steps
 while the texels come out more even inside, as tools/fit.py does for the big picture) and each
 texel is the median of the photo over its middle. The fronts are lit back up by as much as the game
@@ -16,8 +16,8 @@ from scipy.ndimage import map_coordinates
 OUT = "src/main/resources/assets/quantumsolar/textures/block"
 SUB, INNER = 5, 0.6
 # corners: top left, top right, bottom right, bottom left
-SIDES = {"ice_heart": [(80, 8), (386, 3), (386, 272), (105, 275)],
-         "sun_heart": [(389, 3), (700, 12), (655, 268), (389, 272)]}
+# the ice heart's front, from reference/ice_heart_side.png (close up, seen a little from above)
+ICE_FRONT = [(12.5, 17.5), (400.5, 15), (377.5, 350), (37.5, 360)]
 TOPS = [[(55, 28), (431, 27), (432, 407), (45, 408)],
         [(431, 27), (812, 25), (822, 405), (432, 407)]]
 
@@ -72,15 +72,39 @@ def read(img, q):
     return np.median(s.transpose(0, 2, 1, 3, 4).reshape(16, 16, -1, 3), axis=2)
 
 
+def heart_mask(a):
+    """The heart on a front: its light and coloured pixels inside the rim."""
+    m = np.zeros((16, 16), dtype=bool)
+    for y in range(1, 15):
+        for x in range(1, 15):
+            c = a[y, x]
+            m[y, x] = c.max() > 175 or (c.max() - c.min()) > 60
+    return m
+
+
+def sun_front(ice):
+    """The sun heart's front is the ice heart's with its dark ground orange (reference/hearts_side.png
+    shows it so): each ground pixel's lightness put onto the orange's own shades."""
+    out = ice.copy()
+    heart = heart_mask(ice)
+    lum = ice.sum(axis=2)
+    ground = [(y, x) for y in range(1, 15) for x in range(1, 15) if not heart[y, x]]
+    lo, hi = min(lum[p] for p in ground), max(lum[p] for p in ground)
+    dark, mid, light = np.array([150, 70, 32]), np.array([214, 116, 52]), np.array([240, 186, 112])
+    for (y, x) in ground:
+        t = (lum[y, x] - lo) / max(1.0, hi - lo)
+        out[y, x] = dark + (mid - dark) * min(1, t * 2) if t < 0.5 else mid + (light - mid) * (t - 0.5) * 2
+    return out
+
+
 def main():
-    side = np.asarray(Image.open("reference/hearts_side.png").convert("RGB")).astype(float)
+    front = np.asarray(Image.open("reference/ice_heart_side.png").convert("RGB")).astype(float)
     top = np.asarray(Image.open("reference/hearts_top.png").convert("RGB")).astype(float)
-    faces = {}
-    for name, q in SIDES.items():
-        f = read(side, fit(side, q))
-        # the game draws a front darker than it is (the face turned from the light): its white
-        # heart shows the factor, and all of it is lit back up by that
-        faces[name] = f * (250.0 / np.percentile(f.max(axis=2), 97))
+    ice = read(front, fit(front, ICE_FRONT, reach=5.0))
+    # the game draws a front darker than it is (the face turned from the light): its white
+    # heart shows the factor, and all of it is lit back up by that
+    ice = np.clip(ice * (250.0 / np.percentile(ice.max(axis=2), 97)), 0, 255)
+    faces = {"ice_heart": ice, "sun_heart": sun_front(ice)}
     tops = [read(top, fit(top, q)) for q in TOPS]
     # where the two tops disagree, keep the one nearer the texel's neighbours (glare or the cursor
     # is on one of them only)

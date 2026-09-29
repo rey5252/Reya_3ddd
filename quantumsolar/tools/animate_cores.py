@@ -80,20 +80,58 @@ def beat(f):
     return max(np.exp(-((t - 0.08) / 0.05) ** 2), 0.7 * np.exp(-((t - 0.26) / 0.05) ** 2))
 
 
-def heart_frame(a, f, top):
-    """The hearts: the rim's marks go round as on the others; on the front the heart throbs, on the
-    top a band of light runs along the diagonal stripes."""
+GLOW = {"ice_heart": np.array([140, 240, 255]), "sun_heart": np.array([255, 226, 130])}
+
+
+def heart_frame(a, f, top, name="ice_heart"):
+    """The hearts. Round the rim the marks go round as on the others. On the top a band of light
+    runs along the diagonal stripes. On the front the heart beats: at each throb it lights up and a
+    glow flares out round it into the ground and dies away; after each beat a crystal glint sweeps
+    across it corner to corner; and here and there in it a sparkle flashes."""
     out = frame_rim(a, f).astype(float)
+    if top:
+        for y in range(1, 15):
+            for x in range(1, 15):
+                c = a[y, x].astype(float)
+                if c.max() < 70:
+                    continue
+                k = 0.3 * np.cos(2 * np.pi * (f / FRAMES * WAVES - (x + y) / 16.0))
+                out[y, x] = c * (1 + k) if k <= 0 else c + (255 - c) * k
+        return out.round().clip(0, 255).astype(np.uint8)
+    heart = np.zeros((16, 16), dtype=bool)
     for y in range(1, 15):
         for x in range(1, 15):
             c = a[y, x].astype(float)
-            if c.max() < 70:
-                continue
-            if top:
-                k = 0.3 * np.cos(2 * np.pi * (f / FRAMES * WAVES - (x + y) / 16.0))
+            heart[y, x] = c.max() > 175 or (c.max() - c.min()) > 60
+    b = beat(f)
+    glow = GLOW[name]
+    half = FRAMES // 2
+    sweep = (f % half) / half * 30 - 6                   # the glint's place along x + y
+    sparks = [(5, 5, 0), (10, 6, 11), (7, 9, 22), (9, 11, 37), (4, 7, 48)]
+    for y in range(1, 15):
+        for x in range(1, 15):
+            c = a[y, x].astype(float)
+            if heart[y, x]:
+                k = 0.25 * b
+                if abs((x + y) - sweep) < 1.0:
+                    k = max(k, 0.75)
+                elif abs((x + y) - sweep) < 2.0:
+                    k = max(k, 0.35)
+                out[y, x] = c + (255 - c) * k
             else:
-                k = 0.35 * beat(f) - 0.08
-            out[y, x] = c * (1 + k) if k <= 0 else c + (255 - c) * k
+                # the glow round it, strongest next to it
+                d = min(abs(x - i) + abs(y - j) for j in range(1, 15) for i in range(1, 15) if heart[j, i]) if heart.any() else 99
+                if d <= 2:
+                    k = (0.75 if d == 1 else 0.35) * b
+                    out[y, x] = c * (1 - k) + glow * k
+    for x, y, at in sparks:
+        if heart[y, x]:
+            age = (f - at) % FRAMES
+            if age < 4:
+                out[y, x] = (255, 255, 255) if age < 2 else out[y, x] * 0.5 + 127
+                for i, j in ((x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)):
+                    if age < 2 and heart[j, i]:
+                        out[j, i] = out[j, i] * 0.5 + np.array([128, 128, 128])
     return out.round().clip(0, 255).astype(np.uint8)
 
 
@@ -184,7 +222,7 @@ def main():
                 a = a[:16]
             if "heart" in name:
                 a = clean_rim(a)
-                strip = np.concatenate([heart_frame(a, f, part == "top") for f in range(FRAMES)], axis=0)
+                strip = np.concatenate([heart_frame(a, f, part == "top", name) for f in range(FRAMES)], axis=0)
             else:
                 a = clean_rim(a)
                 strip = np.concatenate([frame(a, f) for f in range(FRAMES)], axis=0)
