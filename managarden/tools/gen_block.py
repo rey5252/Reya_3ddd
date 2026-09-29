@@ -111,21 +111,19 @@ def soil():
 
 
 def post():
-    """A livingwood post (2x2 in the model): dark red-brown with a glimmering green vein."""
+    """A livingwood post: each face of the 2 px wide post shows u 0..2, v 3..12 of this texture, so
+    that strip carries the wood (lit column, shaded column) and a vine climbing it with little leaves."""
     cv = Canvas(16, 16)
     for y in range(16):
         for x in range(16):
-            band = x % 4
-            c = [LW1, LW2, LW2, LW3][band]
-            if rnd2(x, y, 31) < 0.12:
+            c = [LW1, LW2][x % 2]
+            if rnd2(x, y, 31) < 0.15:
                 c = shade(c, -0.2)
             cv.set(x, y, c)
-    for y in range(16):
-        if (y // 3) % 2 == 0:
-            cv.set(1, y, L2 if y % 3 else L1)
-            cv.set(5, y, L2 if y % 3 else L1)
-            cv.set(9, y, L2 if y % 3 else L1)
-            cv.set(13, y, L2 if y % 3 else L1)
+    vine = {(1, 3): L4, (1, 4): L3, (0, 5): L3, (0, 6): L2, (1, 6): L1, (1, 7): L3, (1, 8): L4,
+            (0, 9): L3, (0, 10): L2, (1, 10): L1, (1, 11): L3}
+    for (x, y), c in vine.items():
+        cv.set(x, y, c)
     tex("greenhouse_post", cv)
 
 
@@ -166,7 +164,8 @@ def glass():
 
 def petal(outer):
     """A petal (the model maps its u 1..15, v 1..8.6): wide at the hinge (top rows), coming to a tip.
-    Outside: a green sepal with a pink edge; inside: a pink petal with mana veins."""
+    Outside a green sepal turning pink at the tip, with a darker midrib; inside a pink petal with a
+    glowing mana vein."""
     cv = Canvas(16, 16)
     L = 7.6
     for y in range(1, 9):
@@ -179,21 +178,25 @@ def petal(outer):
                 continue
             edge = dx > half - 1.0
             if outer:
-                if edge:
-                    c = P3 if t > 0.25 else L4
+                if t > 0.72:
+                    c = P3 if edge else (P1 if dx < 1.0 else P2)
+                elif edge:
+                    c = L4
+                elif dx < 0.8:
+                    c = L3 if t > 0.1 else L2
                 else:
-                    c = mix(L3, L2, 1.0 - t) if dx > 1.0 else L1
-                    if t > 0.7:
-                        c = mix(c, P2, (t - 0.7) / 0.3)
+                    c = mix(L1, L2, min(1.0, dx / 6.0)) if x < 8 else mix(L2, L3, min(1.0, dx / 6.0))
+                    if t > 0.55:
+                        c = mix(c, P2, (t - 0.55) / 0.4)
             else:
                 if edge:
                     c = P3
                 else:
-                    c = mix(P1, P0, t)
+                    c = mix(P2, P0, min(1.0, t * 1.2 + (0.2 if dx < 3 else 0.0)))
                     if dx < 0.8:
-                        c = M2 if t < 0.8 else M1
-                    elif abs(dx - 3.0 * (1 - t)) < 0.5 and t < 0.75:
-                        c = mix(P1, M1, 0.5)
+                        c = M2 if t < 0.75 else M1
+                    elif abs(dx - 3.2 * (1 - t)) < 0.5 and t < 0.7:
+                        c = mix(P1, M1, 0.45)
             cv.set(x, y, c)
     name = "greenhouse_petal_outer" if outer else "greenhouse_petal_inner"
     tex(name, cv)

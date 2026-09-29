@@ -13,7 +13,7 @@ public final class Config {
 
     public static final ForgeConfigSpec.IntValue CYCLE_TICKS = B
             .comment("Ticks one growth cycle takes without growth upgrades (20 ticks = 1 second).")
-            .defineInRange("cycleTicks", 100, 10, 72000);
+            .defineInRange("cycleTicks", 100, 10, 24000);
     public static final ForgeConfigSpec.IntValue BASE_CAPACITY = B
             .comment("Mana the greenhouse holds without reservoir upgrades (a mana pool holds 1000000).")
             .defineInRange("baseCapacity", 200_000, 1_000, 1_000_000_000);

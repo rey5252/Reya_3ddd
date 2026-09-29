@@ -64,7 +64,7 @@ public class GreenhouseBlockEntity extends BlockEntity implements MenuProvider, 
     /** Block events: how many players look inside; a cycle finished (param 1 if it was lucky). */
     public static final int EVENT_OPENERS = 1, EVENT_CYCLE = 2;
     /** What the menu's data holds (see {@link #data}). */
-    public static final int DATA_COUNT = 17;
+    public static final int DATA_COUNT = 18;
     /** Mana a tick for receivers that don't tell how much they still take (altars, plates...). */
     private static final int SMALL_GIFT = 250;
 
@@ -220,8 +220,9 @@ public class GreenhouseBlockEntity extends BlockEntity implements MenuProvider, 
                 case 12 -> lastGain & 0xFFFF;
                 case 13 -> lastGain >>> 16 & 0xFFFF;
                 case 14 -> kinds;
-                case 15 -> Math.min(15, speedUps) | Math.min(15, capacityUps) << 4 | Math.min(15, luckUps) << 8 | Math.min(15, yieldUps) << 12;
+                case 15 -> Math.min(255, speedUps) | Math.min(255, capacityUps) << 8;
                 case 16 -> (int) Math.min(30000L, Math.round(Config.LUCK_BONUS.get() * 100.0D));
+                case 17 -> Math.min(255, luckUps) | Math.min(255, yieldUps) << 8;
                 default -> 0;
             };
         }

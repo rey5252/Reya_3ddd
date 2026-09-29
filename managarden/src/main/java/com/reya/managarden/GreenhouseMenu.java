@@ -20,15 +20,16 @@ import net.minecraftforge.items.SlotItemHandler;
  * left, the charge slot on the right, the player's inventory under the panel.
  */
 public class GreenhouseMenu extends AbstractContainerMenu {
-    public static final int WIDTH = 256, HEIGHT = 240;
+    // the layout is the panel texture's (tools/gen_gui.py; tools/check_layout.py keeps the two in step)
+    public static final int WIDTH = 256, HEIGHT = 236;
     /** Middle of the mana heart the flowers ring. */
-    public static final int HEART_X = 128, HEART_Y = 64;
+    public static final int HEART_X = 128, HEART_Y = 60;
     /** Flower slots (item corners), clockwise from the top. */
     public static final int[][] FLOWER_POS = {
-            {120, 19}, {146, 30}, {157, 56}, {146, 82}, {120, 93}, {94, 82}, {83, 56}, {94, 30}};
-    public static final int UPGRADE_X = 22, UPGRADE_Y = 22, UPGRADE_STEP = 22;
-    public static final int CHARGE_X = 218, CHARGE_Y = 22;
-    public static final int INV_X = 48, INV_Y = 158, HOTBAR_Y = 216;
+            {120, 15}, {146, 26}, {157, 52}, {146, 78}, {120, 89}, {94, 78}, {83, 52}, {94, 26}};
+    public static final int UPGRADE_X = 19, UPGRADE_Y = 20, UPGRADE_STEP = 22;
+    public static final int CHARGE_X = 221, CHARGE_Y = 20;
+    public static final int INV_X = 48, INV_Y = 154, HOTBAR_Y = 212;
     public static final int BUTTON_REDSTONE = 0, BUTTON_OUTPUT = 1, BUTTON_UNBIND = 2;
 
     @Nullable
@@ -153,7 +154,8 @@ public class GreenhouseMenu extends AbstractContainerMenu {
     }
 
     public int upgrades(UpgradeKind kind) {
-        return (data.get(15) & 0xFFFF) >> kind.ordinal() * 4 & 15;
+        int word = data.get(kind.ordinal() < 2 ? 15 : 17) & 0xFFFF;
+        return word >> kind.ordinal() % 2 * 8 & 0xFF;
     }
 
     /** How much more a lucky cycle gives, in percent. */

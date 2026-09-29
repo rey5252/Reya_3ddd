@@ -258,44 +258,75 @@ def widgets():
     return cv
 
 
+def petal_pixels(cx, cy, angle, length, width, start=0.0):
+    """A teardrop petal from near the middle outwards: widest at 60% of its length, pointed tip."""
+    pix = set()
+    ca, sa = math.cos(angle), math.sin(angle)
+    steps = int(length * 3) + 2
+    for i in range(steps + 1):
+        t = i / steps
+        d = start + length * t
+        hw = width * (math.sin(math.pi * min(1.0, t / 0.62) * 0.5) if t < 0.62 else math.cos((t - 0.62) / 0.38 * math.pi / 2) ** 0.8)
+        px, py = cx + ca * d, cy + sa * d
+        n = int(hw * 3) + 1
+        for j in range(-n, n + 1):
+            o = hw * j / max(1, n)
+            pix.add((int(math.floor(px - sa * o)), int(math.floor(py + ca * o))))
+    return pix
+
+
 def bloom():
-    """The opening: a bud that swells and blooms into an eight-petal mana flower (8 frames of 64x64)."""
+    """The opening: a green bud that swells and blooms into a pink mana lotus (8 frames of 64x64), seen
+    from above; the heart glows mana-blue as it opens."""
+    from shapes import shade_shape, PETAL_PINK, PETAL_WHITE, LEAF
     frames = 8
     cv = Canvas(64 * frames, 64)
     for f in range(frames):
         t = f / (frames - 1)
+        ease = 1 - (1 - t) ** 2
         cx, cy = 64 * f + 32, 32
-        open_ = t
-        n = 8
-        length = 8 + 20 * open_
-        width = 4 + 6 * open_
-        for layer in (0, 1):
+        # sepals: green leaves under everything, opening first
+        n_sep = 8
+        sep_len = 6 + 22 * min(1.0, ease * 1.2)
+        for k in range(n_sep):
+            a = -math.pi / 2 + (k + 0.5) * math.tau / n_sep + 0.15 * (1 - t)
+            shade_shape(cv, petal_pixels(cx, cy, a, sep_len, 1.6 + 1.8 * ease), LEAF)
+        # outer petals: pink, 8 of them
+        if t > 0.05:
+            n = 8
+            ln = 4 + 20 * ease
+            wd = 2.0 + 4.6 * ease
             for k in range(n):
-                a = k / n * math.tau + (math.pi / n if layer else 0) - math.pi / 2
-                ln = length * (0.8 if layer else 1.0)
-                spread = open_ * (1.0 if layer == 0 else 0.85)
-                # petal: an ellipse from the middle outwards, tilted by how open it is
-                for s in range(int(ln * 3)):
-                    d = s / 3
-                    tt = d / ln
-                    hw = width * math.sin(math.pi * min(1.0, tt * 1.05)) * (0.6 + 0.4 * spread)
-                    px, py = cx + math.cos(a) * d * (0.35 + 0.65 * spread), cy + math.sin(a) * d * (0.35 + 0.65 * spread)
-                    for q in range(-int(hw * 2), int(hw * 2) + 1):
-                        o = q / 2
-                        x, y = px - math.sin(a) * o, py + math.cos(a) * o
-                        edge = abs(o) > hw - 1.0 or tt > 0.93
-                        base = mix(P1, P0, tt) if layer == 0 else mix(M1, M0, tt)
-                        if not layer and tt < 0.35:
-                            base = mix(M2, base, tt / 0.35)
-                        c = (P3 if layer == 0 else M3) if edge else base
-                        cv.set(int(math.floor(x)), int(math.floor(y)), c)
-        # the heart: a glowing mana pearl
-        r = 3 + 3 * open_
-        for y in range(int(cy - r) - 1, int(cy + r) + 2):
-            for x in range(int(cx - r) - 1, int(cx + r) + 2):
+                a = -math.pi / 2 + k * math.tau / n + 0.35 * (1 - ease)
+                shade_shape(cv, petal_pixels(cx, cy, a, ln, wd, start=1.0), PETAL_PINK)
+        # inner petals: white, between the outer ones, a little shorter
+        if t > 0.25:
+            n = 8
+            e2 = (t - 0.25) / 0.75
+            e2 = 1 - (1 - e2) ** 2
+            ln = 3 + 14 * e2
+            wd = 1.6 + 3.8 * e2
+            for k in range(n):
+                a = -math.pi / 2 + (k + 0.5) * math.tau / n + 0.3 * (1 - e2)
+                shade_shape(cv, petal_pixels(cx, cy, a, ln, wd, start=1.0), PETAL_WHITE, soft=True)
+        # the heart: a bud tip at first, then a glowing mana pearl ringed with golden stamens
+        r = 2.0 + 3.5 * ease
+        glow = set()
+        for y in range(int(cy - r) - 2, int(cy + r) + 3):
+            for x in range(int(cx - r) - 2, int(cx + r) + 3):
                 d = math.hypot(x + 0.5 - cx, y + 0.5 - cy)
                 if d <= r:
-                    cv.set(x, y, M0 if d < r * 0.4 else (M1 if d < r * 0.75 else M2))
+                    glow.add((x, y))
+                    c = M0 if d < r * 0.35 else (M1 if d < r * 0.7 else M2)
+                    if t < 0.2:
+                        c = P1 if d < r * 0.6 else P2
+                    cv.set(x, y, c)
+        if t >= 0.4:
+            for k in range(10):
+                a = k / 10 * math.tau + 0.3
+                x, y = cx + math.cos(a) * (r + 1.2), cy + math.sin(a) * (r + 1.2)
+                cv.set(int(math.floor(x)), int(math.floor(y)), hexc("FFD84A") if k % 2 == 0 else hexc("FFF4A0"))
+        cv.set(cx - 2, cy - 2, (255, 255, 255))
     cv.save(os.path.join(ASSETS, "textures", "gui", "greenhouse_bloom.png"))
     return cv
 

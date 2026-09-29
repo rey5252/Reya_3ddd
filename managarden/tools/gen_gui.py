@@ -356,8 +356,8 @@ def decorations(cv):
         pts = wave(xa, xb, 1, 1.6, 19.0, ph)
         vine(cv, pts)
     top_leaves = [
-        (16, -6, LEAF_DIAG), (30, 2, flip_v(LEAF_DIAG_S)), (44, -7, LEAF_BIG), (60, 2, flip_v(LEAF_DIAG)),
-        (74, -6, LEAF_DIAG_S), (175, -6, flip_h(LEAF_DIAG_S)), (190, 2, flip_h(flip_v(LEAF_DIAG))),
+        (16, -6, LEAF_DIAG), (30, 2, flip_v(LEAF_DIAG_S)), (44, -7, LEAF_BIG), (60, 1, flip_v(LEAF_DIAG)),
+        (74, -6, LEAF_DIAG_S), (175, -6, flip_h(LEAF_DIAG_S)), (190, 1, flip_h(flip_v(LEAF_DIAG))),
         (203, -7, flip_h(LEAF_BIG)), (220, 2, flip_h(flip_v(LEAF_DIAG_S))), (232, -6, flip_h(LEAF_DIAG))]
     for (x, y, rows) in top_leaves:
         cv.sprite(rows, x, y, PAL)

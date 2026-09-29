@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.reya.managarden.Config;
 import com.reya.managarden.Flowers;
@@ -52,7 +53,8 @@ public class GreenhouseScreen extends AbstractContainerScreen<GreenhouseMenu> {
     private static final int GAUGE_X1 = 223, GAUGE_Y1 = 42, GAUGE_X2 = 235, GAUGE_Y2 = 104;
     private static final int BAR_X1 = 52, BAR_Y1 = 115, BAR_X2 = 204, BAR_Y2 = 121;
     private static final int BUTTON_REDSTONE_X = 18, BUTTON_OUTPUT_X = 222, BUTTON_Y = 111, BUTTON_SIZE = 16;
-    private static final int MACHINE_H = 146;
+    /** The machine panel's height, and the inventory panel hanging under it (x from, to). */
+    private static final int MACHINE_H = 146, INV_PANEL_X1 = 36, INV_PANEL_X2 = 220;
     /** Name plates over the panel: the mod's badge and the block's plate. */
     private static final int PLATE_H = 15, BADGE_W = 88, BADGE_H = 13, PLATES_H = PLATE_H + BADGE_H - 2;
 
@@ -92,6 +94,15 @@ public class GreenhouseScreen extends AbstractContainerScreen<GreenhouseMenu> {
         return Util.getMillis() - openedAt;
     }
 
+    /** Where the GUI draws outside its panel: the keeper, the plates, the vines round the frame. */
+    public List<net.minecraft.client.renderer.Rect2i> extraAreas() {
+        List<net.minecraft.client.renderer.Rect2i> areas = new ArrayList<>();
+        areas.add(new net.minecraft.client.renderer.Rect2i(leftPos + Mascot.X, topPos + Mascot.Y, Mascot.WIDTH, Mascot.HEIGHT));
+        areas.add(new net.minecraft.client.renderer.Rect2i(leftPos - M, topPos - PLATES_H - 2, imageWidth + 2 * M, PLATES_H + 2));
+        areas.add(new net.minecraft.client.renderer.Rect2i(leftPos - M, topPos - M, imageWidth + 2 * M, MACHINE_H + 2 * M));
+        return areas;
+    }
+
     private boolean ready() {
         return age() >= READY_MS;
     }
@@ -103,6 +114,10 @@ public class GreenhouseScreen extends AbstractContainerScreen<GreenhouseMenu> {
         renderBackground(g);
         long t = age();
         track(t);
+        if (closingAt >= 0L) {
+            renderClosing(g, Util.getMillis() - closingAt, partialTick);
+            return;
+        }
         if (t < READY_MS) {
             renderOpening(g, t, partialTick);
             return;
@@ -179,6 +194,66 @@ public class GreenhouseScreen extends AbstractContainerScreen<GreenhouseMenu> {
 
     private boolean petalsOut;
 
+    /** Closing: the panel folds back into the heart and the bloom closes into a bud as it goes. */
+    private static final long CLOSE_MS = 230L;
+    private long closingAt = -1L;
+
+    private void renderClosing(GuiGraphics g, long t, float partialTick) {
+        float p = Math.min(1.0F, t / (float) CLOSE_MS);
+        int cx = leftPos + HEART_X, cy = topPos + HEART_Y;
+        float s = 1.0F - p * p * (2.2F - 1.2F * p);
+        if (s > 0.02F) {
+            g.pose().pushPose();
+            g.pose().translate(cx, cy, 0.0F);
+            g.pose().scale(s, s, 1.0F);
+            g.pose().translate(-cx, -cy, 0.0F);
+            super.render(g, -1000, -1000, partialTick);
+            g.pose().popPose();
+        }
+        int frame = Math.max(0, Math.min(BLOOM_FRAMES - 1, (int) ((1.0F - p) * BLOOM_FRAMES)));
+        float fade = p < 0.6F ? p / 0.6F : Math.max(0.0F, 1.0F - (p - 0.6F) / 0.4F);
+        g.pose().pushPose();
+        g.pose().translate(cx, cy, 200.0F);
+        g.pose().mulPose(com.mojang.math.Axis.ZP.rotationDegrees(20.0F * p));
+        float bs = 0.6F + 1.1F * (1.0F - p);
+        g.pose().scale(bs, bs, 1.0F);
+        RenderSystem.enableBlend();
+        g.setColor(1.0F, 1.0F, 1.0F, fade);
+        g.blit(BLOOM, -BLOOM_SIZE / 2, -BLOOM_SIZE / 2, frame * BLOOM_SIZE, 0, BLOOM_SIZE, BLOOM_SIZE,
+                BLOOM_SIZE * BLOOM_FRAMES, BLOOM_SIZE);
+        g.setColor(1.0F, 1.0F, 1.0F, 1.0F);
+        g.pose().popPose();
+    }
+
+    /** Esc or the inventory key: play the closing first (a second press closes at once). */
+    @Override
+    public void onClose() {
+        if (closingAt < 0L && ready()) {
+            closingAt = Util.getMillis();
+            return;
+        }
+        super.onClose();
+    }
+
+    /** While it folds up, Esc or the inventory key closes it at once; other keys wait. */
+    @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (closingAt >= 0L) {
+            if (keyCode == 256 || minecraft != null && minecraft.options.keyInventory.isActiveAndMatches(InputConstants.getKey(keyCode, scanCode))) {
+                super.onClose();
+            }
+            return true;
+        }
+        return super.keyPressed(keyCode, scanCode, modifiers);
+    }
+
+    @Override
+    protected void containerTick() {
+        super.containerTick();
+        // the closing done: close for real between frames
+        if (closingAt >= 0L && Util.getMillis() - closingAt >= CLOSE_MS) super.onClose();
+    }
+
     /** Eases out past 1 and back: the panel swells a little past its size and settles. */
     private static float backOut(float p) {
         float c1 = 1.4F, c3 = c1 + 1.0F, q = p - 1.0F;
@@ -219,18 +294,31 @@ public class GreenhouseScreen extends AbstractContainerScreen<GreenhouseMenu> {
         // the title is on the plate over the panel; the inventory needs no label
         long t = age();
         if (t - cycleAt < 1400L && lastGainShown > 0) {
-            // the mana a cycle brought floats up out of the heart
+            // the mana a cycle brought rises through the heart's glass and fades at its top
             float p = (t - cycleAt) / 1400.0F;
             boolean lucky = t - luckyAt < 1400L;
             String s = "+" + Format.shortMana(lastGainShown);
-            int alpha = (int) (255 * Math.min(1.0F, (1.0F - p) * 2.5F));
+            float in = Math.min(1.0F, p * 8.0F), out = Math.min(1.0F, (1.0F - p) * 2.5F);
+            int alpha = (int) (255 * Math.min(in, out));
             if (alpha > 8) {
-                int color = alpha << 24 | (lucky ? 0xFFE27A : 0xB8F6FF);
-                int y = HEART_Y - ORB_R - 12 - (int) (p * 12.0F);
-                g.drawString(font, s, HEART_X - font.width(s) / 2 + 1, y + 1, alpha / 3 << 24, false);
-                g.drawString(font, s, HEART_X - font.width(s) / 2, y, color, false);
+                int color = alpha << 24 | (lucky ? 0xFFE27A : 0xF2FFFF);
+                int edge = (alpha * 3 / 4) << 24 | (lucky ? 0x5A3606 : 0x0B2F5C);
+                int x = HEART_X - font.width(s) / 2, y = HEART_Y - 2 - Math.round(easeOut(p) * 11.0F);
+                g.pose().pushPose();
+                g.pose().translate(0.0F, 0.0F, 180.0F);     // over the planted flowers' items
+                g.drawString(font, s, x - 1, y, edge, false);
+                g.drawString(font, s, x + 1, y, edge, false);
+                g.drawString(font, s, x, y - 1, edge, false);
+                g.drawString(font, s, x, y + 1, edge, false);
+                g.drawString(font, s, x, y, color, false);
+                g.pose().popPose();
             }
         }
+    }
+
+    private static float easeOut(float p) {
+        float q = 1.0F - Mth.clamp(p, 0.0F, 1.0F);
+        return 1.0F - q * q * q;
     }
 
     // ------------------------------------------------------------------ the heart
@@ -423,19 +511,32 @@ public class GreenhouseScreen extends AbstractContainerScreen<GreenhouseMenu> {
         }
     }
 
-    /** Light runs round the mana vein inside the frame while the greenhouse works. */
+    /**
+     * Mana runs round the vein inside the frame while the greenhouse works: two drops with a white head
+     * and a cyan tail, lighting the panel beside them.
+     */
     private void drawVeinPulse(GuiGraphics g, long t) {
         if (!menu.running()) return;
         int x1 = 8, y1 = 8, x2 = GreenhouseMenu.WIDTH - 9, y2 = MACHINE_H - 9;
         int perimeter = 2 * (x2 - x1) + 2 * (y2 - y1);
         for (int k = 0; k < 2; k++) {
-            int head = (int) ((t / 18L + k * perimeter / 2) % perimeter);
-            for (int j = 0; j < 14; j++) {
+            int head = (int) ((t / 22L + k * perimeter / 2) % perimeter);
+            for (int j = 0; j < 18; j++) {
                 int d = head - j;
                 if (d < 0) d += perimeter;
                 int[] p = veinPoint(d, x1, y1, x2, y2);
-                int a = 200 - j * 14;
-                g.fill(leftPos + p[0], topPos + p[1], leftPos + p[0] + 1, topPos + p[1] + 1, a << 24 | 0xE8FFFF);
+                if ((p[0] == x1 || p[0] == x2) && (p[1] == y1 || p[1] == y2)) continue;   // under a corner rosette
+                float f = j / 18.0F;
+                int a = (int) (230 * (1.0F - f) * (1.0F - f)) + 10;
+                int c = j == 0 ? 0xF2FFFF : j < 3 ? 0xA6F6FF : 0x55D9F7;
+                int x = leftPos + p[0], y = topPos + p[1];
+                g.fill(x, y, x + 1, y + 1, a << 24 | c);
+                if (j < 7) {
+                    // its light on the panel, one pixel inwards
+                    int ix = p[0] == x1 ? 1 : p[0] == x2 ? -1 : 0, iy = p[1] == y1 ? 1 : p[1] == y2 ? -1 : 0;
+                    int glow = (int) (70 * (1.0F - j / 7.0F)) << 24 | 0x55D9F7;
+                    g.fill(x + ix, y + iy, x + ix + 1, y + iy + 1, glow);
+                }
             }
         }
     }
@@ -491,7 +592,7 @@ public class GreenhouseScreen extends AbstractContainerScreen<GreenhouseMenu> {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (!ready()) return true;
+        if (!ready() || closingAt >= 0L) return true;
         if (button == 0 && minecraft != null && minecraft.gameMode != null) {
             int id = -1;
             if (inside(BUTTON_REDSTONE_X, BUTTON_Y, BUTTON_SIZE, BUTTON_SIZE, mouseX, mouseY)) {
@@ -521,7 +622,7 @@ public class GreenhouseScreen extends AbstractContainerScreen<GreenhouseMenu> {
         if (mouseY >= top - PLATES_H && mouseY < top && Math.abs(mouseX - (left + imageWidth / 2.0D)) < 70) return false;
         double mx = mouseX - left, my = mouseY - top;
         boolean inMachine = mx >= 0 && mx < imageWidth && my >= 0 && my < MACHINE_H;
-        boolean inInventory = mx >= 36 && mx < 220 && my >= MACHINE_H && my < imageHeight;
+        boolean inInventory = mx >= INV_PANEL_X1 && mx < INV_PANEL_X2 && my >= MACHINE_H && my < imageHeight;
         return !inMachine && !inInventory;
     }
 

@@ -7,6 +7,7 @@ on:
       - 'managarden/src/**'
       - 'managarden/build.gradle'
       - 'managarden/gradle.properties'
+      - 'managarden/tools/**'
       - '.github/workflows/managarden-screenshots.yml'
 
 jobs:
@@ -24,6 +25,8 @@ jobs:
           distribution: temurin
           java-version: 17
       - uses: gradle/actions/setup-gradle@v4
+      - name: Check that the GUI code and its textures agree
+        run: python3 tools/check_layout.py
       - name: Versions on the mod mavens
         run: |
           for u in https://maven.blamejared.com/vazkii/botania/Botania/maven-metadata.xml \

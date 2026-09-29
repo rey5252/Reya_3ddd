@@ -27,42 +27,37 @@ P0, P1, P2, P3, P4 = hexc("FFF0F8"), hexc("FFC4E2"), hexc("EE8FC2"), hexc("C45A9
 TABLET = [
     "................",
     "...oooooooooo...",
-    "..oaaaaaaaaabo..",
-    "..oabbbbbbbbco..",
-    "..oab......bco..",
-    "..oab......bco..",
-    "..oab......bco..",
-    "..oab......bco..",
-    "..oab......bco..",
-    "..oab......bco..",
-    "..oab......bco..",
-    "..oab......bco..",
-    "..oabbbbbbbbco..",
-    "..obccccccccdo..",
+    "..oaaaaaaaaaaco.",
+    "..oaiiiiiiiiibo.",
+    "..oai........bo.",
+    "..oai........bo.",
+    "..oai........bo.",
+    "..oai........bo.",
+    "..oai........bo.",
+    "..oai........bo.",
+    "..oai........bo.",
+    "..oai........bo.",
+    "..oai........bo.",
+    "..oabbbbbbbbbdo.",
     "...oooooooooo...",
     "................"]
 
 
 def tablet(accent=None):
-    """The pearly tablet with a dark inset (x 5..10, y 4..11); accent tints the rim's shadow side."""
+    """The pearly tablet (like Botania's mana tablet) with a dark inset (x 5..12, y 4..12) for the symbol;
+    accent tints the rim's shadow side in the upgrade's colour."""
     cv = Canvas(16, 16)
     rim = list(PEARL_RIM)
-    pal = {"o": OUT, "a": rim[0], "b": rim[1], "c": rim[3] if accent is None else mix(rim[3], accent, 0.45),
-           "d": rim[4] if accent is None else mix(rim[4], accent, 0.35)}
+    pal = {"o": OUT, "a": rim[0], "b": rim[2] if accent is None else mix(rim[2], accent, 0.35),
+           "c": rim[1], "d": rim[3] if accent is None else mix(rim[3], accent, 0.5), "i": INSET[2]}
     cv.sprite(TABLET, 0, 0, pal)
-    # a soft iridescent sheen on the rim, like Botania's mana tablet
-    for (x, y, c) in ((4, 2, hexc("E8FFF8")), (5, 2, hexc("FFF0FA")), (10, 3, hexc("E0F4FF")), (3, 7, hexc("F0FFF4")),
-                      (12, 9, hexc("FFE8F4")), (7, 13, hexc("E8F0FF"))):
+    for y in range(4, 13):
+        for x in range(5, 13):
+            cv.set(x, y, INSET[1] if (x + y) % 7 else INSET[0])
+    # iridescent sheen on the rim, like the mana tablet's
+    for (x, y, c) in ((5, 2, hexc("E8FFF8")), (6, 2, hexc("FFF0FA")), (11, 2, hexc("E0F4FF")), (3, 8, hexc("F0FFF4")),
+                      (13, 10, hexc("FFE8F4")), (8, 13, hexc("E8F0FF"))):
         cv.set(x, y, c)
-    for y in range(4, 12):
-        for x in range(5, 11):
-            cv.set(x, y, INSET[1])
-    for x in range(5, 11):
-        cv.set(x, 4, INSET[2])
-    for y in range(4, 12):
-        cv.set(5, y, INSET[2])
-    for x in range(6, 11):
-        cv.set(x, 11, INSET[0])
     # rounded outer corners
     for (x, y) in ((3, 1), (12, 1), (3, 14), (12, 14)):
         cv.clear(x, y)
@@ -82,38 +77,42 @@ def symbol(cv, rows, pal, x=5, y=4):
     cv.sprite(rows, x, y, pal)
 
 
-SPEED = ["..hh..",
-         ".hLLh.",
-         "hLllLh",
-         "..hh..",
-         ".hLLh.",
-         "hLllLh",
-         "..dd..",
-         ".dddd."]
-CAPACITY = ["..w...",
-            "..Cw..",
-            ".CCCw.",
-            ".CcCC.",
-            "CccCCC",
-            "CcbbCC",
-            ".CbbC.",
-            "..CC.."]
-LUCK = [".gg.gg",
-        "gGGgGG",
-        "gGyGGg",
-        ".gg.gg",
-        "gg.gg.",
-        "GGgGGg",
-        "gGGgGg",
-        ".gg.s."]
-YIELD = [".p..p.",
-         "pPppPp",
-         ".pPYp.",
-         "pPYYPp",
-         ".pPPp.",
-         "p.pp.p",
-         "..ll..",
-         ".llll."]
+SPEED = ["...hh...",
+         "..hLLh..",
+         ".hLllLh.",
+         "hLl..lLh",
+         "...hh...",
+         "..hLLh..",
+         ".hLllLh.",
+         "hLl..lLh",
+         "........"]
+CAPACITY = ["...w....",
+            "...Cw...",
+            "..CCCw..",
+            "..CcCC..",
+            ".CccCCC.",
+            ".CcCCCC.",
+            ".CCCCbC.",
+            "..CCbC..",
+            "...CC..."]
+LUCK = [".gg..gg.",
+        "gGGggGGg",
+        "gGyGGyGg",
+        ".gGGGGg.",
+        ".gGGGGg.",
+        "gGyGGyGg",
+        "gGGggGGg",
+        ".gg.sgg.",
+        "...s...."]
+YIELD = ["...pp...",
+         "..pPPp..",
+         ".ppPPpp.",
+         "pPPYYPPp",
+         "pPPYYPPp",
+         ".ppPPpp.",
+         "..pPPp..",
+         "..lppl..",
+         ".ll..ll."]
 
 
 def upgrade(name, rows, pal, accent):
@@ -130,8 +129,8 @@ def upgrade(name, rows, pal, accent):
         band = -4 + k * 4
         for y in range(16):
             for x in range(16):
-                p = f.px[x, y]
-                if p[3] == 0 or p[:3] == OUT:
+                px = f.px[x, y]
+                if px[3] == 0 or px[:3] == OUT:
                     continue
                 d = (x + y) - (band + 8)
                 if abs(d) <= 1:

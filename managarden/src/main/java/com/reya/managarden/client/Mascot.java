@@ -129,7 +129,7 @@ final class Mascot {
 
     /**
      * Her speech bubble: a rounded cream box with a dark outline and a tail pointing at her head,
-     * above her if there is room, else beside her head over the panel.
+     * above her and left of the panel if there is room, else beside her head over the panel.
      */
     void drawSpeech(GuiGraphics g, Font font, int left, int top, int screenW) {
         long now = Util.getMillis();
@@ -141,7 +141,9 @@ final class Mascot {
         for (FormattedCharSequence l : lines) w = Math.max(w, font.width(l));
         int bw = w + 10, bh = lines.size() * 10 + 7;
         int headX = left + X + WIDTH / 2 - 2, headY = top + Y + 4;
-        int bx = Mth.clamp(headX - bw / 2, 2, Math.max(2, screenW - bw - 2));
+        // centred over her head, but kept off the panel and the leaves on its frame
+        int bx = Math.min(headX - bw / 2, left - 9 - bw);
+        bx = Mth.clamp(bx, 2, Math.max(2, screenW - bw - 2));
         int by = headY - bh - 7;
         boolean above = by >= 2;
         if (!above) {
