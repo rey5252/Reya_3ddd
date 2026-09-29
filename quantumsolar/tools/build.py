@@ -213,6 +213,101 @@ def fill_edges(a, brown=False):
     return out
 
 
+def top_colours(a, n=3):
+    """A face's n most common bright colours (for redrawing it)."""
+    px = [tuple(int(v) for v in c) for c in a.reshape(-1, 3)]
+    bright = [c for c in px if colorsys.rgb_to_hsv(*(np.array(c) / 255.0))[1] > 0.35
+              and colorsys.rgb_to_hsv(*(np.array(c) / 255.0))[2] > 0.45]
+    if not bright:
+        return [(200, 200, 210)] * n
+    img = Image.new("RGB", (len(bright), 1))
+    img.putdata(bright)
+    pal = img.quantize(n, method=Image.Quantize.MEDIANCUT).getpalette()[:n * 3]
+    return [tuple(pal[i * 3:i * 3 + 3]) for i in range(n)]
+
+
+# the core generators' colours (their fronts are mostly dark: their own colour is in the middle)
+CORE_COLOURS = {"ice_heart": (120, 220, 235), "sun_heart": (245, 150, 50), "ruby": (225, 50, 70),
+                "jade": (60, 205, 150), "topaz": (245, 190, 60), "amethyst": (180, 100, 245)}
+# the meteor generators' dash colours, as the picture shows them (brightened: it shows them far off)
+METEOR_COLOURS = {"lime": [(170, 220, 50), (110, 190, 40), (220, 240, 120)],
+                  "lime2": [(210, 215, 80), (160, 175, 60), (245, 235, 150)],
+                  "rose": [(240, 90, 140), (255, 150, 190), (200, 60, 110)],
+                  "iris": [(150, 120, 255), (110, 160, 255), (200, 170, 255)],
+                  "magenta": [(230, 80, 220), (255, 140, 240), (180, 60, 200)],
+                  "carnival": [(255, 100, 160), (255, 210, 70), (100, 180, 255)]}
+# the meteor generators' dashes: (x, y, colour index) of each dash's upper end; each runs 3 down-left
+METEOR_DASHES = [(4, 2, 0), (9, 1, 1), (13, 4, 2), (6, 6, 1), (11, 8, 0), (3, 10, 2), (8, 11, 0), (13, 12, 1)]
+
+
+def meteor_top(colours):
+    """The picture shows these tops only far off: dark, with short bright dashes falling to the left.
+    Redrawn so: a dark plate, a darker rim, the dashes lit at their heads."""
+    out = np.zeros((16, 16, 3), dtype=np.uint8)
+    for y in range(16):
+        for x in range(16):
+            out[y, x] = (24, 24, 30) if (x + y) % 5 else (28, 28, 35)
+            if x in (0, 15) or y in (0, 15):
+                out[y, x] = (12, 12, 16)
+    for x, y, k in METEOR_DASHES:
+        c = np.array(colours[k % len(colours)], dtype=float)
+        for i in range(3):
+            shade = 1.0 - i * 0.2
+            out[y + i, x - i] = (c * shade).clip(0, 255)
+            out[y + i, x - i + 1] = (c * shade * 0.7).clip(0, 255)
+        out[y, x] = (c * 0.5 + 127).clip(0, 255)
+    return out
+
+
+def meteor_side(base, colours):
+    """Their fronts: the chains of the spiral generators' fronts, and between them, in place of the
+    lightning, three bright slashes, as the picture shows."""
+    out = base.copy()
+    for y in range(16):
+        for x in range(3, 13):
+            h, sat, v = colorsys.rgb_to_hsv(*(out[y, x] / 255.0))
+            if (sat > 0.2 and v > 0.15) or (3 <= y <= 12 and 4 <= x <= 11 and v > 0.3):
+                out[y, x] = (22, 22, 28)
+    for k, (x, y0) in enumerate(((5, 4), (8, 3), (11, 5))):
+        c = np.array(colours[k % len(colours)], dtype=float)
+        for i in range(6):
+            xx = x - (i // 3)
+            out[y0 + i, xx] = (c * (1.0 - i * 0.08)).clip(0, 255)
+    return out
+
+
+def straighten(fam, colour, top, side, faces):
+    """The faces the picture shows crooked, drawn again straight and centred in the picture's own
+    design and colours (tools/straight.py); the rest are left as the picture has them."""
+    import straight as st
+    if fam == "grid":
+        face = faces[{"grey": "LA0", "blue": "LA1", "indigo": "LA2", "teal": "LA3"}[colour]]
+        rim = tuple(int(v) for v in np.concatenate([face[0], face[15], face[:, 0], face[:, 15]]).mean(axis=0))
+        cell = tuple(int(v) for v in face[5:11, 5:11].reshape(-1, 3).mean(axis=0))
+        cell = vivid(cell, 1.25)
+        cell = tuple(int(v) for v in cell)
+        return st.top_grid(cell, rim), st.side_bolt(st.light(cell, 0.3))
+    if fam == "woven":
+        return top, st.side_bolt(tuple(int(v) for v in vivid(main_colour(top), 1.1)))
+    if fam == "flare":
+        return top, st.even_ornament(side, None)
+    if fam == "tearful":
+        return top, st.side_face(TEARS[colour])
+    if fam in ("serpent", "spiral"):
+        c = top_colours(top, 2)
+        c = sorted(c, key=lambda q: sum(q))
+        a = (st.top_serpent if fam == "serpent" else st.top_spiral)(tuple(int(v) for v in vivid(c[0], 1.2)),
+                                                                   tuple(int(v) for v in vivid(c[1], 1.1)),
+                                                                   colour == "prism")
+        return a, st.side_chain_bolt(tuple(int(v) for v in vivid(main_colour(top), 1.2)))
+    return top, side
+
+
+# the tears on the tearful panels' fronts, as the picture shows them
+TEARS = {"sky": (90, 200, 240), "meadow": (180, 220, 60), "dusk": (200, 110, 230), "sunrise": (255, 190, 70),
+         "spring": (120, 230, 160), "honey": (250, 200, 60), "orchid": (240, 110, 210), "twilight": (140, 110, 240)}
+
+
 def dye(rgb):
     return min(DYES, key=lambda d: sum((a - b) ** 2 for a, b in zip(DYES[d], rgb)))
 
@@ -264,15 +359,10 @@ def main():
         if fam != "core":
             side = fill_edges(side, brown=fam == "tearful")
         if fam == "meteor":
-            # the picture cuts these fronts' bottom off with the spiral tops before them: their
-            # bottom rim is their own top rim, the other way up
-            side = side.copy()
-            side[13:16] = side[0:3][::-1]
-            for y in range(10, 13):
-                for x in range(3, 13):
-                    h, sat, v = colorsys.rgb_to_hsv(*(side[y, x] / 255.0))
-                    if sat > 0.15 and v > 0.3:
-                        side[y, x] = side[2, x]
+            # the picture shows these only far off: drawn as it shows them
+            top = meteor_top(METEOR_COLOURS[colour])
+            side = meteor_side(faces["FRB2"], METEOR_COLOURS[colour])
+        top, side = straighten(fam, colour, top, side, faces)
         rgb = main_colour(top if fam != "core" else side)
         Image.fromarray(top).save(f"{ASSETS}/textures/block/{bid}_top.png")
         Image.fromarray(side).save(f"{ASSETS}/textures/block/{bid}_side.png")
