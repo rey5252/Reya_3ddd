@@ -1,16 +1,18 @@
-"""The garden keeper: a little anime girl in a dress of leaves and mana, for the greenhouse GUI.
+"""The garden keeper: a little elf girl with silver twin tails, green eyes and a dress of white, gold
+and leaves, who holds the Heart of the Greenhouse in her arms; she stands beside the greenhouse GUI.
 
     python3 tools/gen_mascot.py [--preview]
 
-Writes textures/gui/mascot.png (256x128):
-  (0,0)    body frame 0, 64x112: without her free arm, eyes open, smiling
-  (64,0)   body frame 1: the same with her head a pixel up (breathing)
-  (128,0)  eyes, 22x10 each, one under the other: open, half, shut, happy, starry
-  (152,0)  mouths, 6x4 each: smile, open, happy
-  (160,0)  her free arm, 28x40 each: resting on the GUI's frame, waving (two frames)
+Writes textures/gui/mascot.png (256x256):
+  (0,0)     body frame 0, 96x136: everything but her arms and the heart, eyes open, smiling
+  (96,0)    body frame 1: the same with her head and shoulders a pixel up (breathing)
+  (192,0)   eyes, 40x18 each, one under the other: open, half, shut, happy, starry
+  (232,0)   mouths, 10x6 each: smile, open, happy
+  (0,136)   her arms with the heart, 80x52 each, three to a row: holding it, lifting it a little,
+            waving (two frames)
 The screen (client/Mascot.java) puts them together at the places noted there.
 
-She is drawn in parts from little pixel maps and shapes, back to front.
+She is drawn in parts from pixel maps and shapes, back to front, on a grid of palette keys.
 """
 import math
 import os
@@ -20,30 +22,36 @@ from PIL import Image
 
 from pix import Canvas, ASSETS, hexc, upscale, ROOT
 
-W, H = 64, 112
+W, H = 96, 136
+SHEET_W, SHEET_H = 256, 256
+# where the parts go on the body, and where they sit on the sheet (kept in step with client/Mascot.java)
+EYES_BOX = (28, 36, 40, 18)          # x, y, w, h on the body
+EYES_UV = (192, 0)
+MOUTH_BOX = (43, 55, 10, 6)
+MOUTH_UV = (232, 0)
+ARMS_BOX = (8, 44, 80, 52)
+ARMS_UV = (0, 136)                   # poses left to right, three to a row
 
 PAL = {
-    # outlines
-    "O": hexc("1C3F3C"),   # hair outline (deep teal)
-    "K": hexc("2B1A2E"),   # dark line (lashes)
-    "X": hexc("C07A68"),   # skin outline
-    # hair: mint green to cyan tips
-    "H": hexc("EFFFEE"), "h": hexc("B9F4C4"), "g": hexc("84DDAA"), "G": hexc("55BD93"), "D": hexc("348C77"),
-    "c": hexc("A4F4FF"), "C": hexc("56D2F0"), "q": hexc("2E9CC4"),
+    # hair: silver with icy mana-blue shadows, mana-cyan tips
+    "O": hexc("56628F"), "D": hexc("97A7D0"), "G": hexc("BFCDEA"), "g": hexc("E3EBF8"), "h": hexc("F5F9FF"),
+    "H": hexc("FFFFFF"), "c": hexc("A6F6FF"), "C": hexc("5CD6F2"), "q": hexc("2A9FE2"),
     # skin
-    "S": hexc("FFF1E8"), "s": hexc("FFDFCF"), "x": hexc("F6BFA8"), "z": hexc("E39F88"), "b": hexc("FFA2B6"),
-    # eyes
-    "k": hexc("6A4460"), "w": hexc("FFFFFF"), "e": hexc("EAF4FF"),
-    "i": hexc("86F2FF"), "I": hexc("33B4EA"), "J": hexc("1E6CC0"), "p": hexc("0E2F5E"),
-    "m": hexc("B8455E"), "n": hexc("FF8FA3"),
-    # dress: white with leaves and mana
-    "W": hexc("FFFFFF"), "V": hexc("E8F0FA"), "U": hexc("C2D0E4"), "u": hexc("8E9EBD"),
+    "S": hexc("FFF4EC"), "s": hexc("FFE4D6"), "x": hexc("F5C6B3"), "X": hexc("C98A76"), "e": hexc("F4A99C"),
+    # eyes (green), lashes, brows, blush, mouth
+    "K": hexc("2A1B3D"), "k": hexc("6B4E6E"), "j": hexc("D8A294"), "W": hexc("FFFFFF"), "w": hexc("DDE6F2"),
+    "1": hexc("12422A"), "2": hexc("1F6B3A"), "3": hexc("35A04F"), "4": hexc("6FD568"), "5": hexc("B9F59C"),
+    "p": hexc("0B2616"), "b": hexc("FFC2CC"), "B": hexc("FF8FA6"), "m": hexc("A8445A"), "n": hexc("FF9CAF"),
+    # dress: white, gold, leaves
+    "V": hexc("FFFFFF"), "v": hexc("EEF1F8"), "U": hexc("D2D8EA"), "u": hexc("8E97B8"),
+    "Y": hexc("FFE688"), "y": hexc("F4C842"), "T": hexc("C98B1A"), "t": hexc("7A4E0C"),
     "L": hexc("A8E563"), "l": hexc("6DC043"), "M": hexc("45922F"), "N": hexc("2A6428"), "Q": hexc("173D1C"),
-    "A": hexc("A6F6FF"), "a": hexc("55D9F7"), "B": hexc("2A9FE2"), "Z": hexc("1B64B8"),
-    # livingwood (belt, boots, wand)
-    "T": hexc("A2512A"), "t": hexc("7A3314"), "r": hexc("5E240B"), "R": hexc("310B04"),
-    # flowers
-    "P": hexc("FFF0F8"), "F": hexc("FFC4E2"), "f": hexc("EE8FC2"), "E": hexc("C45A97"), "Y": hexc("FFD84A"), "y": hexc("D69A1C"),
+    # mana (the heart, gems, hem)
+    "A": hexc("E6FDFF"), "a": hexc("A6F6FF"), "Z": hexc("55D9F7"), "z": hexc("2A9FE2"), "7": hexc("1B64B8"),
+    "8": hexc("0B2F5C"),
+    # flowers, boots
+    "P": hexc("FFF0F8"), "F": hexc("FFC4E2"), "f": hexc("EE8FC2"), "E": hexc("C45A97"),
+    "r": hexc("8A3C18"), "R": hexc("4A1A08"), "o": hexc("B45E30"),
 }
 
 
@@ -68,19 +76,16 @@ class Grid:
             for i, ch in enumerate(row):
                 if ch in ". ":
                     continue
-                if ch == "_":           # explicitly clear
+                if ch == "_":
                     self.set(x + i, y + j, ".")
                     continue
                 if only_on is not None and self.get(x + i, y + j) not in only_on:
                     continue
                 self.set(x + i, y + j, ch)
 
-    def paste(self, other, x, y, keep=None):
-        for j in range(other.h):
-            for i in range(other.w):
-                k = other.get(i, j)
-                if k != "." and (keep is None or keep(i, j, k)):
-                    self.set(x + i, y + j, k)
+    def fill(self, pix, k):
+        for (x, y) in pix:
+            self.set(x, y, k)
 
     def to_canvas(self, cv, ox=0, oy=0):
         for y in range(self.h):
@@ -96,16 +101,17 @@ class Grid:
                 g.set(i, j, self.get(x + i, y + j))
         return g
 
-
-def spans_mask(spans):
-    pix = set()
-    for y, (a, b) in spans.items():
-        for x in range(a, b + 1):
-            pix.add((x, y))
-    return pix
+    def copy(self):
+        g = Grid(self.w, self.h)
+        g.c = [row[:] for row in self.c]
+        return g
 
 
-def poly_mask(points):
+def mirror(x):
+    return W - 1 - x
+
+
+def poly(points):
     """Pixels whose centres are inside the polygon."""
     xs = [p[0] for p in points]
     ys = [p[1] for p in points]
@@ -127,547 +133,762 @@ def poly_mask(points):
     return pix
 
 
-def edge_of(pix):
+def ellipse(cx, cy, rx, ry):
+    pix = set()
+    for y in range(int(cy - ry) - 1, int(cy + ry) + 2):
+        for x in range(int(cx - rx) - 1, int(cx + rx) + 2):
+            if ((x + 0.5 - cx) / rx) ** 2 + ((y + 0.5 - cy) / ry) ** 2 <= 1.0:
+                pix.add((x, y))
+    return pix
+
+
+def mirrored(pix):
+    return {(mirror(x), y) for (x, y) in pix}
+
+
+def edge(pix):
     return {(x, y) for (x, y) in pix if any((x + dx, y + dy) not in pix for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)))}
 
 
-def outline_set(g, pix, k):
-    for (x, y) in edge_of(pix):
-        g.set(x, y, k)
+def outline(g, pix, k):
+    for p in edge(pix):
+        g.set(p[0], p[1], k)
 
 
-def outline(g, key, skip=()):
-    """Every filled pixel next to an empty one (4-neighbours), not of a skipped kind, becomes key."""
-    marks = []
-    for y in range(g.h):
-        for x in range(g.w):
-            k = g.get(x, y)
-            if k == "." or k in skip:
+def ring_of(pix):
+    """The pixels just outside a shape (4-neighbours)."""
+    out = set()
+    for (x, y) in pix:
+        for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            q = (x + dx, y + dy)
+            if q not in pix:
+                out.add(q)
+    return out
+
+
+# ---------------------------------------------------------------- head
+
+FACE_TOP, CHIN = 28, 63
+
+
+def face_halfwidth(y):
+    """Half the face's width on a row: a wide round chibi face with a small soft chin."""
+    table = {53: 17.8, 54: 17.4, 55: 16.9, 56: 16.2, 57: 15.3, 58: 14.2, 59: 12.8, 60: 11.0, 61: 8.8, 62: 6.0}
+    if y <= 52:
+        return 18.0
+    return table.get(y, 0.0)
+
+
+def face_pixels():
+    pix = set()
+    for y in range(FACE_TOP, CHIN):
+        hw = face_halfwidth(y)
+        for x in range(W):
+            if abs(x + 0.5 - W / 2) <= hw:
+                pix.add((x, y))
+    return pix
+
+
+def twin_tail(side):
+    """One of her twin tails, tied high on the side of the head: puffy near the tie, falling in a soft
+    wave behind her to below her waist and curling in at the tip."""
+    pts = [(21, 13), (15, 9), (9, 10), (4.5, 15), (2, 23), (1.5, 33), (3, 43), (5, 52), (5.5, 61), (4.5, 70),
+           (4.5, 79), (6.5, 88), (10, 97), (14, 104), (18, 108.5), (16.5, 101), (16, 94), (17, 86), (18.5, 77),
+           (19.5, 68), (20.5, 58), (21.5, 47), (22.5, 36), (23, 26), (23, 18)]
+    pix = poly(pts)
+    return pix if side == 0 else mirrored(pix)
+
+
+def ear(side):
+    """A long elf ear pointing out and a little up."""
+    pts = [(31, 44.5), (22, 42), (14, 38.5), (11, 38), (13.5, 41), (18, 45.5), (23, 50), (28, 53.5), (31, 54)]
+    pix = poly(pts)
+    return pix if side == 0 else mirrored(pix)
+
+
+def draw_twin_tails(g):
+    for side in (0, 1):
+        pix = twin_tail(side)
+        rows = {}
+        for (x, y) in pix:
+            rows.setdefault(y, []).append(x)
+        for (x, y) in pix:
+            xs = rows[y]
+            lo, hi = min(xs), max(xs)
+            # t: 0 on the outer edge, 1 on the edge by her body
+            t = (x - lo) / max(1, hi - lo) if side == 0 else (hi - x) / max(1, hi - lo)
+            if y > 99:
+                k = "C" if t > 0.55 or y > 104 else "c"
+            elif y > 92:
+                k = "c" if t < 0.5 else "G"
+            elif t > 0.86:
+                k = "D"
+            elif t > 0.62:
+                k = "G"
+            elif t < 0.22 and y < 84:
+                k = "h"
+            else:
+                k = "g"
+            g.set(x, y, k)
+        # two strands winding down the lock, and a shine where it puffs out below the tie
+        for y in range(16, 96):
+            xs = rows.get(y)
+            if not xs:
                 continue
-            if any(g.get(x + dx, y + dy) == "." for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))):
-                marks.append((x, y))
-    for (x, y) in marks:
-        g.set(x, y, key)
+            lo, hi = min(xs), max(xs)
+            for (f, k) in ((0.40, "G"), (0.58, "D" if y > 30 else "G")):
+                pos = f + 0.06 * math.sin(y / 7.0)
+                x = int(round(lo + (hi - lo) * (pos if side == 0 else 1 - pos)))
+                if (x, y) in pix and g.get(x, y) not in ("c", "C"):
+                    g.set(x, y, k)
+        for y in range(14, 34):
+            xs = rows.get(y)
+            if xs:
+                lo, hi = min(xs), max(xs)
+                x = lo + 2 if side == 0 else hi - 2
+                g.set(x, y, "H" if 18 <= y <= 26 else "h")
+        outline(g, pix, "O")
 
 
-# ---------------------------------------------------------------- head: 40 x 46, face centre at x = 20
+def draw_back_hair(g, lift=0):
+    dome = ellipse(48, 34 - lift, 28.5, 28.5)
+    sides = poly([(18, 34 - lift), (29, 34 - lift), (30, 60 - lift), (27, 72 - lift), (22, 70 - lift), (18, 58 - lift)])
+    sides |= mirrored(sides)
+    pix = dome | sides
+    for (x, y) in pix:
+        g.set(x, y, "G" if y > 44 - lift else "g")
+    outline(g, pix, "O")
+    return pix
 
-def head():
-    g = Grid(40, 46)
-    hair = {4: (15, 24), 5: (12, 27), 6: (10, 29), 7: (8, 31), 8: (7, 32), 9: (6, 33), 10: (5, 34), 11: (4, 35),
-            12: (4, 35), 13: (3, 36), 14: (3, 36), 15: (3, 36), 16: (2, 37)}
-    for y in range(17, 34):
-        hair[y] = (2, 37)
-    hair_pix = spans_mask(hair)
-    for y in range(34, 46):
-        for x in list(range(2, 9)) + list(range(31, 38)):
-            hair_pix.add((x, y))
-    for (x, y) in hair_pix:
-        g.set(x, y, "g")
-    face = {18: (9, 30), 19: (8, 31), 20: (8, 31), 21: (8, 31), 22: (8, 31), 23: (8, 31), 24: (8, 31), 25: (8, 31),
-            26: (8, 31), 27: (8, 31), 28: (8, 31), 29: (8, 31), 30: (9, 30), 31: (9, 30), 32: (10, 29), 33: (11, 28),
-            34: (12, 27), 35: (13, 26), 36: (15, 24), 37: (17, 22), 38: (18, 21)}
-    face_pix = spans_mask(face)
-    for (x, y) in face_pix:
+
+def draw_ears(g, lift=0):
+    for side in (0, 1):
+        pix = {(x, y - lift) for (x, y) in ear(side)}
+        for (x, y) in pix:
+            g.set(x, y, "S")
+        # the inside of the ear: a pink hollow along its length, shade on the lower edge
+        for (x, y) in pix:
+            xx = x if side == 0 else mirror(x)
+            yy = y + lift
+            if 15 <= xx <= 28 and abs(yy - (39.5 + (xx - 13) * 0.42)) < 1.0:
+                g.set(x, y, "e")
+            elif (x, y + 1) not in pix:
+                g.set(x, y, "x")
+        outline(g, pix, "X")
+        # an earring: a gold cap and a mana crystal drop under the lobe
+        ex = 25 if side == 0 else mirror(25) - 2
+        drop = ["yY.", ".Z.", "aZz", "Zz7", ".7."]
+        g.draw(drop, ex, 53 - lift)
+        g.set(ex, 53 - lift, "T" if side else "y")
+
+
+def draw_face(g, lift=0):
+    pix = {(x, y - lift) for (x, y) in face_pixels()}
+    for (x, y) in pix:
         g.set(x, y, "S")
-    for y in range(37, 46):
-        for x in range(17, 23):
-            if g.get(x, y) == ".":
-                g.set(x, y, "x" if y < 40 else "s")
-    for (x, y) in face_pix:
-        if x in (8, 31) or (x in (9, 30) and y > 29):
+    # soft shade down the sides of the face and under the bangs
+    for (x, y) in pix:
+        yy = y + lift
+        hw = face_halfwidth(yy)
+        d = min(abs(x + 0.5 - (W / 2 - hw)), abs(x + 0.5 - (W / 2 + hw)))
+        if d < 1.6 and yy > 38:
             g.set(x, y, "s")
-    for (x, y) in face_pix:
-        if (x, y + 1) not in face_pix and y > 30:
-            g.set(x, y, "x")
-    # bangs: pointed locks hanging over the forehead; the middle one dips between the eyes
-    tips = [(9, 24.5), (14, 23.0), (19.5, 26.0), (25, 23.0), (30, 24.5)]
+    for (x, y) in edge(pix):
+        if y + lift >= 50:
+            g.set(x, y, "X")
+    # the neck in shadow under the chin
+    for y in range(CHIN - 1, CHIN + 5):
+        for x in range(43, 53):
+            if g.get(x, y - lift) == ".":
+                g.set(x, y - lift, "x" if y < CHIN + 2 else "s")
+    return pix
 
-    def bang_bottom(x):
-        return max(18.0, max(ty - 1.35 * abs(x + 0.5 - tx) for tx, ty in tips))
 
-    for x in range(8, 32):
-        yb = bang_bottom(x)
-        for y in range(16, int(math.floor(yb)) + 1):
-            g.set(x, y, "g")
-        yb_i = int(math.floor(yb))
-        g.set(x, yb_i, "O")
-        if g.get(x, yb_i - 1) == "g":
-            g.set(x, yb_i - 1, "D")
-    crown = (19.5, 4.0)
-    for (ex, ey) in [(4, 20), (6, 22)] + [(tx, ty - 2) for tx, ty in tips] + [(33, 22), (35, 20)]:
-        n = 50
+def bang_line(x):
+    """How far down the bangs reach over the forehead: parted a little in the middle, sweeping down
+    to each side, pointed locks."""
+    dx = abs(x + 0.5 - W / 2)
+    base = 31.0 + min(8.5, dx * 0.95) if dx < 12 else 39.5 + (dx - 12) * 0.55
+    # locks: little points along the edge
+    wiggle = 1.2 * max(0.0, math.cos((dx - 2.0) / 3.2 * math.pi)) if dx > 3 else 0.0
+    return base + wiggle
+
+
+def draw_bangs(g, lift=0):
+    pix = set()
+    for x in range(26, 70):
+        yb = bang_line(x)
+        for y in range(8, int(math.floor(yb)) + 1):
+            pix.add((x, y - lift))
+    # side locks framing the face, falling to the jaw in points
+    for side in (0, 1):
+        lock = poly([(27, 36), (32, 38), (33.5, 50), (33, 60), (31.5, 66), (30, 60), (28, 50)])
+        lock = {(x, y - lift) for (x, y) in lock}
+        pix |= lock if side == 0 else mirrored(lock)
+    top = ellipse(48, 34 - lift, 28.5, 28.5)
+    pix = {p for p in pix if p in top or p[1] + lift >= 34}
+    for (x, y) in pix:
+        g.set(x, y, "g")
+    # strands from the crown to the lock points, darker; shine across the top
+    crown = (47.5, 6 - lift)
+    for tx in (28, 33, 38, 43, 52, 57, 62, 67):
+        ty = bang_line(tx) - lift
+        n = 60
         for s in range(n + 1):
             t = s / n
-            bx = crown[0] + (ex - crown[0]) * t + (ex - crown[0]) * 0.22 * math.sin(t * math.pi)
-            by = crown[1] + (ey - crown[1]) * t
+            bx = crown[0] + (tx - crown[0]) * t + (tx - crown[0]) * 0.18 * math.sin(t * math.pi)
+            by = crown[1] + (ty - crown[1]) * t
             x, y = int(round(bx)), int(round(by))
-            if t > 0.2 and g.get(x, y) == "g":
+            if t > 0.35 and (x, y) in pix:
                 g.set(x, y, "G")
-    for x in range(8, 32):
-        yb = int(math.floor(bang_bottom(x)))
-        if (x, yb + 1) in face_pix:
-            g.set(x, yb + 1, "x")
-    # the shine band across the top of the head
-    for x in range(7, 33):
-        y = 9 + round(((x - 19.5) / 12.5) ** 2 * 3.0)
-        if g.get(x, y) == "g":
-            g.set(x, y, "h")
-        if g.get(x, y - 1) == "g" and x % 4 in (1, 2):
-            g.set(x, y - 1, "h")
-    for (x, y) in ((12, 9), (13, 9), (26, 9), (27, 9), (19, 8), (20, 8)):
-        if g.get(x, y) in ("h", "g"):
-            g.set(x, y, "H")
-    # side locks: strands, shadow by the face, highlight outside (they go on down over her shoulders)
-    for y in range(20, 46):
-        for (x1, x2, inner, sign) in ((2, 8, 8, -1), (31, 37, 31, 1)):
-            wave = round(math.sin(y / 5.0) * 0.6)
-            for x in range(x1, x2 + 1):
-                if g.get(x, y) not in ("g", "G", "D", "h"):
-                    continue
-                k = "g"
-                if x == inner:
-                    k = "D"
-                elif x == inner - sign:
-                    k = "G"
-                elif x == (5 if sign < 0 else 34) + wave:
-                    k = "G"
-                elif x == (3 if sign < 0 else 36):
-                    k = "h" if y < 34 else "g"
-                g.set(x, y, k)
-    for y in range(18, 34):
-        for x in (7, 32):
-            if g.get(x, y) == "g":
-                g.set(x, y, "G")
-    outline(g, "O", skip=("S", "s", "x", "z", "X"))
-    # the locks go on below the grid: no outline across their bottom
-    for x in list(range(2, 9)) + list(range(31, 38)):
-        if g.get(x, 45) == "O" and g.get(x, 44) not in (".", "O"):
-            g.set(x, 45, g.get(x, 44))
-    for y in range(g.h):
-        for x in range(g.w):
-            if g.get(x, y) in ("S", "s", "x") and any(g.get(x + dx, y + dy) == "." for dx, dy in ((1, 0), (-1, 0), (0, 1))):
-                g.set(x, y, "X")
-    sprout = [
-        "..ll...lll.",
-        ".lLLl.lLLLl",
-        ".lLLlMlLLl.",
-        "..llMMll...",
-        "....Ml.....",
-        "....M......",
-    ]
-    g.draw(sprout, 15, 0)
-    # a flower pinned in her hair, over her left temple (the viewer's right), with two leaves
+    for x in range(20, 76):
+        y = 15 - lift + round(((x - 47.5) / 26.0) ** 2 * 5.0)
+        for (xx, yy, k) in ((x, y, "h"), (x, y + 1, "h" if x % 3 else "g")):
+            if g.get(xx, yy) in ("g", "G"):
+                g.set(xx, yy, k)
+    for (x, y) in ((33, 17), (34, 17), (61, 17), (62, 17), (47, 14), (48, 14)):
+        g.set(x, y - lift, "H")
+    # the edge of the bangs over the face: dark tips, a shade line just above
+    for x in range(26, 70):
+        yb = int(math.floor(bang_line(x))) - lift
+        if (x, yb) in pix:
+            g.set(x, yb, "O")
+            if g.get(x, yb - 1) in ("g", "h"):
+                g.set(x, yb - 1, "D")
+        if g.get(x, yb + 1) == "S":
+            g.set(x, yb + 1, "s")
+    for side in (0, 1):
+        lock = poly([(27, 36), (32, 38), (33.5, 50), (33, 60), (31.5, 66), (30, 60), (28, 50)])
+        lock = {(x, y - lift) for (x, y) in lock}
+        lock = lock if side == 0 else mirrored(lock)
+        for (x, y) in lock:
+            g.set(x, y, "G" if (x + y) % 4 else "D")
+        outline(g, lock, "O")
+
+
+def draw_ties_and_flower(g, lift=0):
+    """Gold rings with a leaf where the twin tails are tied, a pink flower and a sprout on top."""
+    for side in (0, 1):
+        tie = ["..yY..", ".yYYy.", "TyyyyT", ".TttT."]
+        x = 18 if side == 0 else mirror(18) - 5
+        g.draw(tie, x, 14 - lift)
+        leaf = ["..LL", ".LlN", "LlN.", "N..."]
+        g.draw(leaf if side == 0 else [r[::-1] for r in leaf], (14 if side == 0 else mirror(14) - 3), 11 - lift)
     g.draw([
-        "...LL.....",
-        "..lLLl.EE.",
-        "..NlMEEFFE",
-        "...NEFFPFE",
-        "..EEFPYPFE",
-        ".EFFPYyYPE",
-        ".EFFFPYPFE",
-        "..EFFFPFE.",
-        "...EEEFE..",
-        ".....EE...",
-    ], 27, 6)
-    return g
+        "..EE.EE..",
+        ".EFFEFFE.",
+        "EFPFFFPFE",
+        "EFFfYfFFE",
+        ".EfYyYfE.",
+        "EFFfYfFFE",
+        "EFPFFFPFE",
+        ".EFFEFFE.",
+        "..EE.EE..",
+    ], 61, 17 - lift)
+    g.draw([
+        ".LL...LL.",
+        "LlLL.LLlL",
+        ".NLlMlLN.",
+        "...NMN...",
+        "....M....",
+        "....M....",
+    ], 43, 0 - lift)
 
 
-# eyes: the viewer's left eye; the right one mirrors its shape but keeps the glint on the left
-EYES = {
-    "open": [
-        "..KKKKKK",
-        "KKKkkkkK",
-        ".KwwJJJK",
-        ".KwwJpJK",
-        ".KJJppJK",
-        ".KIIppIK",
-        ".KIIIIiK",
-        ".KiiiwiK",
-        "..KiiiK.",
-        "...kkk..",
-    ],
-    "half": [
-        "........",
-        "........",
-        "........",
-        "..KKKKKK",
-        "KKKkkkkK",
-        ".KJJppJK",
-        ".KIIpIIK",
-        ".KiIIwiK",
-        "..KiiiK.",
-        "...kkk..",
-    ],
-    "shut": [
-        "........",
-        "........",
-        "........",
-        "........",
-        "........",
-        "........",
-        "KK....KK",
-        ".KKKKKK.",
-        "........",
-        "........",
-    ],
-    "happy": [
-        "........",
-        "........",
-        "........",
-        "...KKK..",
-        "..KKkKK.",
-        ".KK...KK",
-        "KK.....K",
-        "........",
-        "........",
-        "........",
-    ],
-    "stars": [
-        "..KKKKKK",
-        "KKKkkkkK",
-        ".KJJwJJK",
-        ".KJwwwJK",
-        ".KIIwIIK",
-        ".KwIIIwK",
-        ".KIIiIIK",
-        ".KiwiiiK",
-        "..KiiiK.",
-        "...kkk..",
-    ],
-}
-EYE_L = (9, 24)          # left eye's corner on the head grid
-EYE_R = (23, 24)
+def head(g, lift=0):
+    back = draw_back_hair(g, lift)
+    draw_ears(g, lift)
+    draw_face(g, lift)
+    draw_bangs(g, lift)
+    # the hair's silhouette gets its outline back where the bangs covered it
+    for (x, y) in back:
+        if g.get(x, y) in ("g", "G", "h", "H", "D") and any(g.get(x + dx, y + dy) == "." for dx, dy in ((1, 0), (-1, 0), (0, -1))):
+            g.set(x, y, "O")
+    draw_ties_and_flower(g, lift)
 
 
-def put_eyes(g, variant, ox=0, oy=0):
-    """Draws both eyes on the head grid (at ox, oy), clearing the skin under them first."""
-    rows = EYES[variant]
-    for (ex, ey), flip in ((EYE_L, False), (EYE_R, True)):
-        for j in range(10):
-            for i in range(8):
-                x, y = ox + ex + i, oy + ey + j
-                if g.get(x, y) in ("K", "k", "w", "J", "p", "I", "i"):
-                    g.set(x, y, "S")
-        sh = rows if not flip else [r[::-1] for r in rows]
-        # keep the glint on the left in the mirrored eye
-        if flip and variant in ("open", "half"):
-            sh = [r.replace("w", "I") for r in sh]
-            fixed = []
-            for j, r in enumerate(sh):
-                r = list(r)
-                if variant == "open" and j in (2, 3):
-                    r[2] = "w"
-                    r[3] = "w"
-                if variant == "open" and j == 7:
-                    r[5] = "w"
-                if variant == "half" and j == 7:
-                    r[5] = "w"
-                fixed.append("".join(r))
-            sh = fixed
-        g.draw(sh, ox + ex, oy + ey)
+# ---------------------------------------------------------------- face parts
+
+EYE_W, EYE_H = 14, 13
+
+
+def eye_rows(variant):
+    """The viewer's left eye, EYE_W x EYE_H: a thick upper lash flicked out at the outer corner, a big
+    iris dark at the top and bright green at the bottom, the pupil, two glints; closed and happy eyes
+    are lash curves."""
+    g = [["." for _ in range(EYE_W)] for _ in range(EYE_H)]
+
+    def put(x, y, k):
+        if 0 <= x < EYE_W and 0 <= y < EYE_H:
+            g[y][x] = k
+
+    if variant in ("open", "half", "stars"):
+        top = 2 if variant != "half" else 6
+        # the opening and the iris
+        for y in range(top + 1, 12):
+            for x in range(1, 13):
+                inside = ((x + 0.5 - 7.0) / 5.7) ** 2 + ((y + 0.5 - 7.0) / 4.9) ** 2 <= 1.0
+                if not inside:
+                    continue
+                iris = ((x + 0.5 - 7.3) / 3.9) ** 2 + ((y + 0.5 - 7.3) / 4.4) ** 2 <= 1.0
+                if iris:
+                    t = (y - 3) / 8.0
+                    k = "1" if t < 0.2 else "2" if t < 0.42 else "3" if t < 0.62 else "4" if t < 0.84 else "5"
+                    put(x, y, k)
+                else:
+                    put(x, y, "w" if y <= top + 1 else "W")
+        if variant != "stars":
+            for y in range(top + 1, 12):
+                for x in range(5, 11):
+                    if ((x + 0.5 - 7.6) / 1.4) ** 2 + ((y + 0.5 - 6.2) / 2.3) ** 2 <= 1.0 and g[y][x] in "12345":
+                        put(x, y, "p")
+            for (x, y) in ((5, 4), (6, 4), (5, 5), (6, 5), (9, 9), (4, 8)):
+                if y > top and g[y][x] in "12345p":
+                    put(x, y, "W")
+        else:
+            for (x, y) in ((7, 4), (6, 5), (7, 5), (8, 5), (7, 6), (5, 9), (4, 8), (9, 8), (10, 9), (9, 10)):
+                if g[y][x] in "12345":
+                    put(x, y, "W")
+        # the upper lash: thick, flicked out at the outer (left) corner
+        for x in range(1, 13):
+            put(x, top, "K")
+        for x in (2, 3, 11, 12):
+            put(x, top + 1, "K")
+        put(0, top - 1, "K")
+        put(1, top - 1, "K")
+        put(12, top + 1, "k")
+        if variant != "half":
+            for x in range(4, 10):
+                put(x, 0, "j")
+        # the lower lid: a soft line under the iris
+        for x in range(4, 11):
+            if g[12][x] == ".":
+                put(x, 12, "j")
+        put(3, 11, "k")
+        put(2, 10, "k")
+    elif variant == "shut":
+        for x in range(2, 12):
+            put(x, 8 + (1 if 4 <= x <= 9 else 0), "K")
+        put(1, 7, "K")
+        put(0, 6, "K")
+        put(12, 8, "k")
+    else:  # happy: upward curves
+        curve = [(1, 9), (2, 8), (3, 7), (4, 6), (5, 6), (6, 5), (7, 5), (8, 5), (9, 6), (10, 6), (11, 7), (12, 8)]
+        for (x, y) in curve:
+            put(x, y, "K")
+            if 3 <= x <= 10:
+                put(x, y + 1, "k" if x in (3, 10) else ".")
+    return ["".join(r) for r in g]
+
+
+def mirror_eye(rows):
+    """The right eye: the left one mirrored."""
+    return [r[::-1] for r in rows]
+
+
+EYE_L = (30, 36)                     # corner of the left eye's map on the body
+EYE_R = (W - EYE_L[0] - EYE_W, 36)
+
+
+def put_eyes(g, variant, lift=0):
+    # clear what an earlier variant left, back to skin
+    for (ex, ey) in (EYE_L, EYE_R):
+        for j in range(EYE_H):
+            for i in range(EYE_W):
+                if g.get(ex + i, ey + j - lift) in "KkjWw12345pH":
+                    g.set(ex + i, ey + j - lift, "S")
+    rows = eye_rows(variant)
+    g.draw(rows, EYE_L[0], EYE_L[1] - lift)
+    g.draw(mirror_eye(rows), EYE_R[0], EYE_R[1] - lift)
+    # eyebrows: short light strokes above, lifted when happy
+    by = 34 - lift - (1 if variant in ("happy", "stars") else 0)
+    for (x, y) in ((33, by + 1), (34, by), (35, by), (36, by), (37, by), (38, by)):
+        if g.get(x, y) in ("S", "s"):
+            g.set(x, y, "j")
+        if g.get(mirror(x), y) in ("S", "s"):
+            g.set(mirror(x), y, "j")
 
 
 MOUTHS = {
-    "smile": ["......", ".m..m.", "..mm..", "......"],
-    "open": ["......", "..mm..", ".mnnm.", "..mm.."],
-    "happy": ["......", ".mmmm.", ".mnnm.", "..mm.."],
+    "smile": [".........", "..m...m..", "...mmm...", "........."],
+    "open": [".........", "...mmm...", "..mnnnm..", "...mmm..."],
+    "happy": [".........", "..mmmmm..", "..mnnnm..", "...mmm..."],
 }
-MOUTH_AT = (17, 34)      # the mouth rect's corner on the head grid (6 x 4)
 
 
-def put_mouth(g, variant, ox=0, oy=0):
+def put_mouth(g, variant, lift=0):
+    mx, my = 44, 56
     for j in range(4):
-        for i in range(6):
-            x, y = ox + MOUTH_AT[0] + i, oy + MOUTH_AT[1] + j
-            if g.get(x, y) in ("m", "n"):
-                g.set(x, y, "S")
-    g.draw(MOUTHS[variant], ox + MOUTH_AT[0], oy + MOUTH_AT[1])
+        for i in range(9):
+            if g.get(mx + i, my + j - lift) in ("m", "n"):
+                g.set(mx + i, my + j - lift, "S")
+    g.draw(MOUTHS[variant], mx, my - lift)
 
 
-def put_blush(g, ox=0, oy=0):
-    g.draw(["bb.", ".bb"], ox + 9, oy + 33)
-    g.draw([".bb", "bb."], ox + 28, oy + 33)
+def put_blush_and_nose(g, lift=0):
+    blush = [".bbbbbb.", "bBbbBbbB", ".bBbbBb."]
+    g.draw(blush, 31, 51 - lift, only_on=("S", "s"))
+    g.draw(blush[::-1] if False else [r[::-1] for r in blush], mirror(31) - 7, 51 - lift, only_on=("S", "s"))
+    g.set(47, 53 - lift, "x")
+    g.set(48, 52 - lift, "S")
 
 
-# ---------------------------------------------------------------- body (sprite coordinates, 64 x 112)
+# ---------------------------------------------------------------- body
 
-HEAD_X, HEAD_Y = 12, 4           # where the 40 x 46 head grid goes; face centre x = 32
-SHOULDER_Y = 44
-FEET_Y = 108                      # soles' line
-DOWN = FEET_Y - 104               # everything below the head moves down this much to stand on the ground
+WAIST = 93
+HEM = 113
+FEET = 133
 
 
-def back_hair(g, dy):
-    """Long hair falling behind her back, in the hair's shadow tones, ending in mana-cyan points."""
-    pix = poly_mask([(17, 40 + dy), (46, 40 + dy), (49, 58 + dy), (48, 74 + dy), (15, 74 + dy), (14, 58 + dy)])
+def draw_collar(g, lift=0):
+    """A white sailor-ish collar edged in gold with two leaves, a mana gem at the throat."""
+    pix = poly([(36, 64), (59, 64), (62, 69), (54, 72), (48, 69), (41, 72), (33, 69)])
+    pix = {(x, y - lift) for (x, y) in pix}
     for (x, y) in pix:
-        k = "G"
-        if y > 66 + dy:
-            k = "C" if y > 70 + dy else "G"
-        if x in (22, 41) or (x + y) % 9 == 0:
-            k = "D" if y <= 70 + dy else "q"
-        g.set(x, y, k)
-    for x0 in (15, 20, 26, 36, 41, 46):
-        for d in range(3):
-            for w in range(3 - d):
-                g.set(x0 - 1 + d + w, 74 + dy + d, "C" if w else "q")
-    outline_set(g, {(x, y) for y in range(g.h) for x in range(g.w) if g.get(x, y) in ("G", "D", "C", "q")}, "O")
+        g.set(x, y, "V" if x < 48 else "v")
+    outline(g, pix, "u")
+    for (x, y) in edge(pix):
+        if y + lift >= 68:
+            g.set(x, y, "y")
+    g.draw(["LLL.", ".lLL", "..Nl"], 40, 65 - lift)
+    g.draw([".LLL", "LLl.", "lN.."], 52, 65 - lift)
+    g.draw([".y.", "yZy", "aZz", ".7."], 46, 65 - lift)
 
 
-def front_locks(g, dy):
-    """The side locks go on from the head down over her shoulders and end in cyan points."""
-    for (x1, x2, inner, sign) in ((14, 20, 20, -1), (43, 49, 43, 1)):
-        top = HEAD_Y + 46 + dy
-        bottom = 72 + dy
-        pix = set()
-        for y in range(top - 1, bottom + 1):
-            t = (y - top) / (bottom - top)
-            shrink = int(round(t * 2.2))
-            a, b = x1 + (shrink if sign < 0 else 0), x2 - (0 if sign < 0 else shrink)
-            if sign < 0:
-                a = x1 + int(round(t * 1.5))
-                b = x2 - int(round(t * 1.0))
-            else:
-                a = x1 + int(round(t * 1.0))
-                b = x2 - int(round(t * 1.5))
-            for x in range(a, b + 1):
-                pix.add((x, y))
-        for (x, y) in pix:
-            t = (y - top) / (bottom - top)
-            k = "g"
-            if x == inner or x == inner - sign * 0:
-                k = "D"
-            if x == inner - sign:
-                k = "G"
-            if x == (17 if sign < 0 else 46) + round(math.sin(y / 5.0) * 0.6):
-                k = "G"
-            if t > 0.6:
-                k = {"g": "c", "G": "C", "D": "q"}[k]
-            g.set(x, y, k)
-        # the point
-        for d in range(3):
-            g.set((x1 + x2) // 2 + (d if sign > 0 else -d), bottom + 1 + d, "C" if d < 2 else "q")
-        outline_set(g, pix | {((x1 + x2) // 2 + (d if sign > 0 else -d), bottom + 1 + d) for d in range(3)}, "O")
+def draw_torso(g, lift=0):
+    pix = poly([(35, 65), (60, 65), (65, 72), (62, 84), (59, WAIST + 1), (37, WAIST + 1), (34, 84), (31, 72)])
+    pix = {(x, y - lift) for (x, y) in pix}
+    for (x, y) in pix:
+        g.set(x, y, "V" if x < 44 else "v" if x < 55 else "U")
+    outline(g, pix, "u")
+    # gold piping down the front with little buttons, a leaf embroidery at each side
+    for y in range(70, WAIST):
+        g.set(47, y - lift, "y" if y % 4 else "T")
+    for (x, y) in ((38, 80), (57, 80)):
+        g.draw([".L.", "LlL", ".N."], x - 1, y - lift)
+    return pix
 
 
-def legs(g):
-    """White stockings and livingwood boots with a leaf at the cuff."""
-    for (x1, x2) in ((26, 31), (33, 38)):
-        for y in range(80 + DOWN, 98):
+def draw_skirt(g):
+    """A white skirt with a gold hem and a mana-blue scalloped trim, big leaves hanging over it."""
+    pix = poly([(36, WAIST), (59, WAIST), (70, HEM - 1), (72, HEM + 1), (23, HEM + 1), (25, HEM - 1)])
+    for (x, y) in pix:
+        t = (x - 23) / 49.0
+        g.set(x, y, "V" if t < 0.4 else "v" if t < 0.75 else "U")
+    for x in range(24, 72):
+        if (x, HEM - 2) in pix:
+            g.set(x, HEM - 2, "Y")
+            g.set(x, HEM - 1, "y")
+        if (x, HEM) in pix:
+            g.set(x, HEM, "T")
+        if (x, HEM + 1) in pix:
+            g.set(x, HEM + 1, "Z")
+    outline(g, pix, "u")
+    for x in range(23, 73):
+        if (x, HEM + 1) in pix or (x, HEM) in pix:
+            g.set(x, HEM + 1, "Z" if x % 4 else "z")
+            g.set(x, HEM + 2, "z" if x % 4 in (1, 2) else ".")
+            if x % 4 in (1, 2):
+                g.set(x, HEM + 3, "7" if x % 4 == 1 else ".")
+    # the leaves: five, from the waist, the middle one longest
+    for (bx, tip_x, length) in ((39, 30, 15), (43, 38, 18), (48, 48, 19), (53, 58, 18), (57, 66, 15)):
+        top = WAIST
+        pts = [(bx - 3.2, top), (bx + 3.2, top), (tip_x + 4.2, top + length - 7), (tip_x + 0.5, top + length),
+               (tip_x - 3.2, top + length - 7)]
+        leaf = poly(pts)
+        for (x, y) in leaf:
+            lit = x < bx + (tip_x - bx) * ((y - top) / length) + 0.5
+            g.set(x, y, "L" if lit else "l")
+        outline(g, leaf, "N")
+        for sgt in range(2, length - 1):
+            t = sgt / length
+            x = int(math.floor(bx + (tip_x + 0.5 - bx) * t))
+            y = top + sgt
+            if (x, y) in leaf and (x, y) not in edge(leaf):
+                g.set(x, y, "M")
+    # the gold sash at the waist, a pink flower on it
+    for x in range(35, 61):
+        g.set(x, WAIST - 1, "y")
+        g.set(x, WAIST, "T")
+    g.draw([".f.", "fYf", ".f."], 55, WAIST - 2)
+
+
+def draw_legs(g):
+    """White stockings with leaf garters, livingwood boots with gold cuffs."""
+    for (x1, x2) in ((39, 45), (51, 57)):
+        for y in range(HEM + 2, FEET - 6):
             for x in range(x1, x2):
-                g.set(x, y, "W" if x < x1 + 2 else ("V" if x < x2 - 1 else "U"))
+                g.set(x, y, "V" if x < x1 + 2 else "v" if x < x2 - 1 else "U")
             g.set(x1 - 1, y, "u")
             g.set(x2, y, "u")
-        for y in range(98, FEET_Y):
+        for x in range(x1 - 1, x2 + 1):
+            g.set(x, HEM + 4, "N" if x in (x1 - 1, x2) else "L" if x < x1 + 2 else "l")
+            g.set(x, HEM + 5, "N" if x in (x1 - 1, x2) else "M")
+        g.set(x1 + 1, HEM + 9, "V")
+        g.set(x1 + 2, HEM + 9, "V")
+        # boots
+        for y in range(FEET - 6, FEET):
             for x in range(x1 - 1, x2 + 1):
-                g.set(x, y, "t" if y < 100 else ("r" if y < FEET_Y - 1 else "R"))
+                g.set(x, y, "o" if x < x1 + 2 and y < FEET - 2 else "r")
             g.set(x1 - 1, y, "R")
             g.set(x2, y, "R")
-        g.set(x1, 99, "T")
-        g.set(x1 + 1, 99, "T")
-        g.set(x1 - 2, FEET_Y - 1, "R")
-        g.set(x2 + 1, FEET_Y - 1, "R")
-        g.draw(["Ll", ".lN"], x2 - 1, 96)
-        # a garter of leaves round the top of each stocking, just under the frills
         for x in range(x1 - 1, x2 + 1):
-            g.set(x, 86, "N" if x in (x1 - 1, x2) else ("L" if x < x1 + 2 else "l"))
-            g.set(x, 87, "N" if x in (x1 - 1, x2) else "M")
-        # the stockings' knees catch the light
-        g.set(x1 + 1, 91, "W")
-        g.set(x1 + 2, 91, "W")
+            g.set(x, FEET - 6, "Y" if x < x1 + 3 else "y")
+            g.set(x, FEET - 1, "R")
+        g.set(x1 - 2, FEET - 1, "R")
+        g.set(x2 + 1, FEET - 1, "R")
+        g.set(x1, FEET - 3, "Y")
 
 
-def skirt(g):
-    """A skirt of five big pointed leaves over white frills with a mana-blue hem."""
-    top_y, hem_y = 57 + DOWN, 80 + DOWN
-    frill = poly_mask([(24, top_y), (40, top_y), (49, hem_y), (15, hem_y)])
-    for (x, y) in frill:
-        g.set(x, y, "W" if y < hem_y - 2 else ("V" if y < hem_y - 1 else "a"))
-    for x in range(15, 50):
-        g.set(x, hem_y, "B" if x % 4 else "Z")
-        if x % 4 in (1, 2):
-            g.set(x, hem_y + 1, "B")
-    outline_set(g, frill | {(x, hem_y) for x in range(15, 50)} | {(x, hem_y + 1) for x in range(15, 50) if x % 4 in (1, 2)}, "u")
-    leaves = [(18.5, 19, 0), (45.5, 19, 4), (24.5, 21, 1), (39.5, 21, 3), (32, 22, 2)]
-    for (tip_x, length, i) in leaves:
-        base_x = 26 + i * 3.0
-        pts = [(base_x - 3.0, top_y), (base_x + 3.0, top_y), (tip_x + 4.5, top_y + length - 7),
-               (tip_x + 0.5, top_y + length), (tip_x - 3.5, top_y + length - 7)]
-        pix = poly_mask(pts)
-        for (x, y) in pix:
-            t = (y - top_y) / length
-            lit = x < base_x + (tip_x - base_x) * t
-            g.set(x, y, "L" if lit else "l")
-        outline_set(g, pix, "N")
-        for s in range(2, length - 1):
-            t = s / length
-            x = int(math.floor(base_x + (tip_x + 0.5 - base_x) * t))
-            y = top_y + s
-            if (x, y) in pix and (x, y) not in edge_of(pix):
-                g.set(x, y, "M")
-    for x in range(23, 42):
-        g.set(x, top_y, "N")
-
-
-def torso(g):
-    """Bodice: white, lit from the left, a collar of two leaves and a mana crystal brooch."""
-    d = DOWN
-    pix = poly_mask([(23, 43), (41, 43), (42, 46), (39, 56 + d), (25, 56 + d), (22, 46)])
-    for (x, y) in pix:
-        g.set(x, y, "W" if x < 29 else ("V" if x < 37 else "U"))
-    outline_set(g, pix, "u")
-    for y in range(48, 55 + d):
-        g.set(31 + (y % 2), y, "M")
-    for x in range(23, 42):
-        g.set(x, 54 + d, "T" if x < 30 else "t")
-        g.set(x, 55 + d, "t" if x < 30 else "r")
-        g.set(x, 56 + d, "R")
-    g.draw([".f.", "fYf", ".f."], 36, 53 + d)
-    g.draw(["LLLl.", ".lLLl", "..lMN", "...N."], 25, 42)
-    g.draw([".lLLL", "lLLl.", "NMl..", ".N..."], 34, 42)
-    g.draw([".a.", "aAB", ".Z."], 30, 45)
-
-
-def wand_arm(g):
-    """Her right arm (viewer's left) holds the Wand of the Forest up beside her."""
-    for y in range(36, 86):
-        g.set(10, y, "t" if y % 7 else "T")
-        g.set(11, y, "r")
-    g.set(10, 86, "R")
-    g.set(11, 86, "R")
-    g.draw(["..cc..", ".cAAc.", "cAWWAc", ".cAAc.", "..tt.."], 8, 30)
-    g.draw(["LL", "lN"], 12, 38)
-    sleeve = poly_mask([(18, 43), (24, 43), (25, 49), (19, 52), (16, 49)])
-    for (x, y) in sleeve:
-        g.set(x, y, "W" if x < 21 else "V")
-    outline_set(g, sleeve, "u")
-    g.draw(["LLlll", "NlMlN"], 16, 51)
-    arm = poly_mask([(17, 52), (21, 52), (15, 63), (11, 63)])
-    for (x, y) in arm:
-        g.set(x, y, "S" if x < 15 else "s")
-    outline_set(g, arm, "X")
-    g.draw([".XXX.", "XSSsX", "XssxX", ".XXX."], 8, 61)
-
-
-def ground(g):
-    """A tuft of grass and two little flowers under her feet."""
-    y0 = FEET_Y - 1
+def draw_ground(g):
+    """A tuft of grass and two tiny flowers under her feet."""
+    y0 = FEET - 1
     g.draw([
-        "..l....L..l.....M.l...L...l....",
-        ".lL.l.lLl.Ll.L.lMlL..lLl.lL.l..",
-        "lLLlLlLLLlLLlLlLLLLlLLLLlLLlLl.",
-        "NlMlNlMlNlMlNlMlNlMlNlMlNlMlN..",
-    ], 16, y0)
-    g.draw([".F.", "FYF", ".F."], 17, y0 - 2)
-    g.draw([".P.", "PYP", ".P."], 43, y0 - 1)
-
-
-def free_arm(pose):
-    """Her left arm (the viewer's right), 28 x 40, drawn over the body at (36, 34)."""
-    g = Grid(28, 40)
-    ox, oy = 36, 34
-    sleeve = poly_mask([(40 - ox, 43 - oy), (46 - ox, 43 - oy), (48 - ox, 49 - oy), (43 - ox, 52 - oy), (39 - ox, 48 - oy)])
-    if pose == "rest":
-        # reaching over to rest her hand on the GUI's frame
-        arm = poly_mask([(44 - ox, 49 - oy), (48 - ox, 49 - oy), (57 - ox, 59 - oy), (54 - ox, 62 - oy)])
-        hand = (52 - ox, 58 - oy, ["..XXX.", ".XSSSX", "XSSSSsX", "XssssX.", ".XXXX.."])
-    elif pose == "wave1":
-        arm = poly_mask([(44 - ox, 47 - oy), (48 - ox, 48 - oy), (52 - ox, 36 - oy), (48 - ox, 35 - oy)])
-        hand = (47 - ox, 29 - oy, [".X.X.X", "XSXSXS", "XSSSSX", "XSSSsX", ".XssX.", "..XX.."])
-    else:
-        arm = poly_mask([(44 - ox, 47 - oy), (48 - ox, 48 - oy), (54 - ox, 37 - oy), (50 - ox, 35 - oy)])
-        hand = (50 - ox, 29 - oy, ["X.X.X.", "SXSXSX", "XSSSSX", "XsSSSX", ".XssX.", "..XX.."])
-    for (x, y) in arm:
-        g.set(x, y, "S")
-    outline_set(g, arm, "X")
-    hx, hy, rows = hand
-    g.draw(rows, hx, hy)
-    for (x, y) in sleeve:
-        g.set(x, y, "V" if x < 44 - ox else "U")
-    outline_set(g, sleeve, "u")
-    g.draw(["lllLL", "NlMlN"], 41 - ox, 51 - oy)
-    return g
+        "..l....L..l.....M.l...L...l....l..",
+        ".lL.l.lLl.Ll.L.lMlL..lLl.lL.l.lLl.",
+        "lLLlLlLLLlLLlLlLLLLlLLLLlLLlLlLLLl",
+        "NlMlNlMlNlMlNlMlNlMlNlMlNlMlNlMlN.",
+    ], 31, y0)
+    g.draw([".F.", "FYF", ".F."], 31, y0 - 2)
+    g.draw([".P.", "PYP", ".P."], 62, y0 - 1)
 
 
 def body_frame(breath):
     g = Grid(W, H)
     lift = 1 if breath else 0
-    back_hair(g, -lift)
-    legs(g)
-    skirt(g)
-    torso(g)
-    wand_arm(g)
-    front_locks(g, -lift)
-    ground(g)
-    hd = head()
-    put_eyes(hd, "open")
-    put_mouth(hd, "smile")
-    put_blush(hd)
-    for y in range(hd.h):
-        for x in range(hd.w):
+    draw_twin_tails(g)
+    draw_legs(g)
+    draw_skirt(g)
+    draw_torso(g, lift)
+    draw_collar(g, lift)
+    draw_ground(g)
+    hd = Grid(W, H)
+    head(hd, lift)
+    put_eyes(hd, "open", lift)
+    put_blush_and_nose(hd, lift)
+    put_mouth(hd, "smile", lift)
+    for y in range(H):
+        for x in range(W):
             k = hd.get(x, y)
             if k == ".":
                 continue
-            yy = HEAD_Y + y - lift
-            # the neck ends in the collar
-            if yy >= SHOULDER_Y - 1 and k in ("s", "x", "X", "S"):
+            # the neck goes under the collar
+            if y + lift >= 64 and k in ("s", "x", "X", "S") and g.get(x, y) != ".":
                 continue
-            g.set(HEAD_X + x, yy, k)
+            g.set(x, y, k)
     return g
 
 
+# ---------------------------------------------------------------- arms and the heart
+
+def heart_pixels(cx, cy, w, h):
+    """A plump heart shape: two round lobes and a soft point."""
+    pix = set()
+    r = w / 4.0 + 0.4
+    for y in range(int(cy - h / 2) - 1, int(cy + h / 2) + 2):
+        for x in range(int(cx - w / 2) - 1, int(cx + w / 2) + 2):
+            px, py = x + 0.5, y + 0.5
+            lobe = min(math.hypot(px - (cx - w / 4.0), py - (cy - h / 2 + r)), math.hypot(px - (cx + w / 4.0), py - (cy - h / 2 + r))) <= r
+            # the lower part: a triangle-ish with round sides down to the point
+            yl = (py - (cy - h / 2 + r)) / (h - r)
+            lower = 0.0 <= yl <= 1.0 and abs(px - cx) <= (w / 2.0) * (1.0 - yl ** 1.35)
+            if lobe or lower:
+                pix.add((x, y))
+    return pix
+
+
+def draw_heart(g, cx, cy, w=30, h=26):
+    """The Heart of the Greenhouse: glossy mana, bright at the top-left, deep blue at the bottom-right,
+    a big shine on the left lobe and a sprout in the dip."""
+    pix = heart_pixels(cx, cy, w, h)
+    for (x, y) in pix:
+        t = ((x - (cx - w / 2)) / w) * 0.45 + ((y - (cy - h / 2)) / h) * 0.75
+        k = "a" if t < 0.35 else "Z" if t < 0.62 else "z" if t < 0.86 else "7"
+        g.set(x, y, k)
+    # rim light down the right side, the shine on the left lobe
+    for (x, y) in pix:
+        if (x + 1, y) not in pix and (x, y - 1) in pix and y > cy - h / 2 + 5:
+            g.set(x - 1, y, "z")
+    lx, ly = int(cx - w / 4.0) - 2, int(cy - h / 2) + 3
+    g.draw(["..AAA.", ".AAAAA", "AAAa..", "AAa...", "Aa....", "a....."], lx - 1, ly)
+    g.set(int(cx + w / 4.0) + 2, int(cy - h / 2) + 4, "A")
+    g.set(int(cx + w / 4.0) + 3, int(cy - h / 2) + 5, "a")
+    outline(g, pix, "8")
+    # the sprout in the dip
+    g.draw([".LL.LL", "LlL.lL", ".NlMN.", "..MN..", "..M..."], int(cx) - 3, int(cy - h / 2) - 3)
+    return pix
+
+
+def hand(g, x, y, flip=False):
+    """A small hand holding the side of the heart: fingers curled over its edge, one line between each."""
+    rows = [
+        "..XXX.",
+        ".XSSSX",
+        "XSSxSX",
+        "XSSSSX",
+        "XSxSSX",
+        ".XSSSX",
+        "..XXX.",
+    ]
+    g.draw(rows, x, y, flip=flip)
+
+
+def sleeve(g, cx, cy, lift=0, flip=False):
+    """A puffy white sleeve with a gold cuff."""
+    pix = ellipse(cx, cy - lift, 6.2, 5.2)
+    for (x, y) in pix:
+        g.set(x, y, "V" if (x < cx) != flip else "v")
+    outline(g, pix, "u")
+    for (x, y) in pix:
+        if (x, y + 1) not in pix:
+            g.set(x, y, "y")
+            if (x, y - 1) in pix:
+                g.set(x, y - 1, "Y")
+    return pix
+
+
+def arm(g, pts, width=4):
+    """An arm (skin) along the points, outlined."""
+    pix = set()
+    for (x1, y1), (x2, y2) in zip(pts, pts[1:]):
+        n = max(abs(x2 - x1), abs(y2 - y1), 1)
+        for i in range(n + 1):
+            x = x1 + (x2 - x1) * i / n
+            y = y1 + (y2 - y1) * i / n
+            pix |= ellipse(x, y, width / 2.0, width / 2.0)
+    for (x, y) in pix:
+        g.set(x, y, "S")
+    outline(g, pix, "X")
+    return pix
+
+
+def arms(pose):
+    """Her arms and the heart, drawn over the body (in body coordinates; cut to ARMS_BOX)."""
+    g = Grid(W, H)
+    if pose == "hold":
+        sleeve(g, 31, 72)
+        sleeve(g, 64, 72, flip=True)
+        arm(g, [(31, 76), (30, 83), (36, 88)])
+        arm(g, [(64, 76), (65, 83), (59, 88)])
+        draw_heart(g, 48, 81)
+        hand(g, 31, 83)
+        hand(g, 59, 83, flip=True)
+    elif pose == "lift":
+        sleeve(g, 31, 72)
+        sleeve(g, 64, 72, flip=True)
+        arm(g, [(31, 76), (31, 80), (35, 85)])
+        arm(g, [(64, 76), (64, 80), (60, 85)])
+        draw_heart(g, 48, 79)
+        hand(g, 31, 81)
+        hand(g, 59, 81, flip=True)
+    else:  # wave: her left hand keeps the heart, her right one waves beside her face (two frames)
+        tilt = 1 if pose == "wave2" else 0
+        sleeve(g, 31, 72)
+        sleeve(g, 64, 71, flip=True)
+        arm(g, [(31, 76), (30, 83), (36, 88)])
+        arm(g, [(67, 69), (71 + tilt, 62), (73 + 2 * tilt, 56)])
+        draw_heart(g, 47, 81)
+        hand(g, 30, 83)
+        palm = [
+            "..X.X.",
+            ".XSXSX",
+            "XXSXSX",
+            "XSSSSX",
+            "XSSSsX",
+            ".XSsX.",
+            "..XX..",
+        ] if not tilt else [
+            "...X.X",
+            "..XSXSX",
+            ".XXSXSX",
+            ".XSSSSX",
+            "XSSSsX.",
+            ".XSsX..",
+            "..XX...",
+        ]
+        g.draw(palm, 70 + 2 * tilt, 48)
+    return g
+
+
+# ---------------------------------------------------------------- the sheet
+
+EYE_VARIANTS = ("open", "half", "shut", "happy", "stars")
+MOUTH_VARIANTS = ("smile", "open", "happy")
+ARM_POSES = ("hold", "lift", "wave", "wave2")
+
+
 def face_parts():
-    """The eye and mouth overlays, cut from the head drawn with each variant (so they carry the hair
-    and skin round them too)."""
+    """The eye and mouth overlays, cut from the body drawn with each variant (so they carry the skin,
+    hair and blush round them too)."""
     eyes, mouths = [], []
-    for v in ("open", "half", "shut", "happy", "stars"):
-        hd = head()
-        put_eyes(hd, v)
-        put_mouth(hd, "smile")
-        put_blush(hd)
-        eyes.append(hd.crop(EYE_L[0], EYE_L[1], EYE_R[0] + 8 - EYE_L[0], 10))
-    for v in ("smile", "open", "happy"):
-        hd = head()
-        put_eyes(hd, "open")
-        put_mouth(hd, v)
-        put_blush(hd)
-        mouths.append(hd.crop(MOUTH_AT[0], MOUTH_AT[1], 6, 4))
+    for v in EYE_VARIANTS:
+        g = body_frame(False)
+        put_eyes(g, v)
+        ex, ey, ew, eh = EYES_BOX
+        eyes.append(g.crop(ex, ey, ew, eh))
+    for v in MOUTH_VARIANTS:
+        g = body_frame(False)
+        put_mouth(g, v)
+        mx, my, mw, mh = MOUTH_BOX
+        mouths.append(g.crop(mx, my, mw, mh))
     return eyes, mouths
 
 
 def sheet():
-    cv = Canvas(256, 128)
+    cv = Canvas(SHEET_W, SHEET_H)
     for f in (0, 1):
-        body_frame(f == 1).to_canvas(cv, 64 * f, 0)
+        body_frame(f == 1).to_canvas(cv, W * f, 0)
     eyes, mouths = face_parts()
     for i, e in enumerate(eyes):
-        e.to_canvas(cv, 128, i * 10)
+        e.to_canvas(cv, EYES_UV[0], EYES_UV[1] + i * EYES_BOX[3])
     for i, m in enumerate(mouths):
-        m.to_canvas(cv, 152, i * 4)
-    for i, pose in enumerate(("rest", "wave1", "wave2")):
-        free_arm(pose).to_canvas(cv, 160 + 28 * i, 0)
+        m.to_canvas(cv, MOUTH_UV[0], MOUTH_UV[1] + i * MOUTH_BOX[3])
+    ax, ay, aw, ah = ARMS_BOX
+    for i, pose in enumerate(ARM_POSES):
+        arms(pose).crop(ax, ay, aw, ah).to_canvas(cv, ARMS_UV[0] + i % 3 * aw, ARMS_UV[1] + i // 3 * ah)
     return cv
 
 
+def compose(img, body=0, eyes=0, mouth=0, pose=0, lift=None):
+    """Puts a frame together from the sheet the way client/Mascot.java does."""
+    lift = body if lift is None else lift
+    f = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    f.alpha_composite(img.crop((W * body, 0, W * body + W, H)), (0, 0))
+    ex, ey, ew, eh = EYES_BOX
+    f.alpha_composite(img.crop((EYES_UV[0], EYES_UV[1] + eyes * eh, EYES_UV[0] + ew, EYES_UV[1] + eyes * eh + eh)), (ex, ey - lift))
+    mx, my, mw, mh = MOUTH_BOX
+    f.alpha_composite(img.crop((MOUTH_UV[0], MOUTH_UV[1] + mouth * mh, MOUTH_UV[0] + mw, MOUTH_UV[1] + mouth * mh + mh)), (mx, my - lift))
+    ax, ay, aw, ah = ARMS_BOX
+    u, v = ARMS_UV[0] + pose % 3 * aw, ARMS_UV[1] + pose // 3 * ah
+    f.alpha_composite(img.crop((u, v, u + aw, v + ah)), (ax, ay - lift))
+    return f
+
+
 def preview(cv):
-    """The frames put together as the screen does, on the panel's colour, 6x."""
     out = os.path.join(ROOT, "build", "preview")
     os.makedirs(out, exist_ok=True)
-    img = cv.img
-    frames = []
-    for (body, eyes, mouth, arm) in ((0, 0, 0, 0), (1, 1, 1, 1), (0, 3, 2, 2), (0, 4, 2, 0), (0, 2, 0, 0)):
-        f = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-        f.alpha_composite(img.crop((64 * body, 0, 64 * body + 64, 112)), (0, 0))
-        lift = 1 if body == 1 else 0
-        f.alpha_composite(img.crop((128, eyes * 10, 150, eyes * 10 + 10)), (HEAD_X + EYE_L[0], HEAD_Y + EYE_L[1] - lift))
-        f.alpha_composite(img.crop((152, mouth * 4, 158, mouth * 4 + 4)), (HEAD_X + MOUTH_AT[0], HEAD_Y + MOUTH_AT[1] - lift))
-        f.alpha_composite(img.crop((160 + 28 * arm, 0, 188 + 28 * arm, 40)), (36, 34))
-        frames.append(f)
+    frames = [compose(cv.img, 0, 0, 0, 0), compose(cv.img, 1, 1, 1, 0), compose(cv.img, 0, 3, 2, 1),
+              compose(cv.img, 0, 4, 2, 2), compose(cv.img, 0, 3, 1, 3), compose(cv.img, 0, 2, 0, 0)]
     bg = Image.new("RGBA", (len(frames) * (W + 6) + 6, H + 12), (29, 76, 79, 255))
     for i, f in enumerate(frames):
         bg.alpha_composite(f, (6 + i * (W + 6), 6))
     upscale(bg, 4).save(os.path.join(out, "mascot.png"))
+    upscale(bg.crop((0, 0, W + 12, H + 12)), 7).save(os.path.join(out, "mascot_big.png"))
+
+
+def save_preview(grids, name, scale=6):
+    out = os.path.join(ROOT, "build", "preview")
+    os.makedirs(out, exist_ok=True)
+    gw = sum(gr.w for gr in grids) + 6 * (len(grids) + 1)
+    gh = max(gr.h for gr in grids) + 12
+    bg = Image.new("RGBA", (gw, gh), (29, 76, 79, 255))
+    x = 6
+    for gr in grids:
+        cv = Canvas(gr.w, gr.h)
+        gr.to_canvas(cv)
+        bg.alpha_composite(cv.img, (x, 6))
+        x += gr.w + 6
+    upscale(bg, scale).save(os.path.join(out, name))
 
 
 def main():

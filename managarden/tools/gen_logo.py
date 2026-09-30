@@ -73,7 +73,7 @@ def draw_title(cv, text, x0, y0, scale, ramp, edge):
 
 def panel(cv):
     """A rounded greenhouse panel: livingwood frame, a mana vein inside, the teal glass."""
-    x1, y1, x2, y2 = 30, 6, W - 1, H - 1
+    x1, y1, x2, y2 = 38, 6, W - 1, H - 1
     for y in range(y1, y2 + 1):
         for x in range(x1, x2 + 1):
             dx = min(x - x1, x2 - x)
@@ -113,13 +113,11 @@ SPARK = ["..w..", ".wWw.", "wWWWw", ".wWw.", "..w.."]
 
 
 def keeper(cv, x0, y0):
-    """The keeper's head and shoulders, beaming (from the GUI sheet: body, happy eyes and mouth)."""
+    """The keeper's head and shoulders, beaming (put together from the GUI sheet)."""
+    import gen_mascot
     sheet = Image.open(os.path.join(ASSETS, "textures", "gui", "mascot.png")).convert("RGBA")
-    body = Image.new("RGBA", (64, 112), (0, 0, 0, 0))
-    body.alpha_composite(sheet.crop((0, 0, 64, 112)), (0, 0))
-    body.alpha_composite(sheet.crop((128, 30, 150, 40)), (21, 28))      # happy eyes
-    body.alpha_composite(sheet.crop((152, 8, 158, 12)), (29, 38))       # happy mouth
-    part = body.crop((6, 0, 58, H - y0))
+    frame = gen_mascot.compose(sheet, body=0, eyes=3, mouth=2, pose=0)
+    part = frame.crop((12, 16, 84, 16 + H - y0))      # her face whole, the top of her hair cut off
     cv.img.alpha_composite(part, (x0, y0))
 
 
@@ -129,14 +127,14 @@ def build():
     # leaves and a blossom on the frame
     pal = {"o": L5, "l": L1, "m": L2, "d": L3}
     sprite(cv, LEAF, 186, 1, pal)
-    sprite(cv, [r[::-1] for r in LEAF], 58, 1, pal)
+    sprite(cv, [r[::-1] for r in LEAF], 70, 1, pal)
     sprite(cv, BLOSSOM, 176, 1, {"o": PINK[4], "q": PINK[1], "w": PINK[0], "p": PINK[2], "P": PINK[3], "Y": hexc("FFD84A")})
     # MANA over GARDEN, the greenhouse's heart beside MANA
-    draw_title(cv, "MANA", 70, 9, 3, [M0, M1, M2, M2, M3], M5)
-    draw_title(cv, "GARDEN", 70, 28, 3, [L0, L1, L2, L2, L3], L5)
+    draw_title(cv, "MANA", 78, 9, 3, [M0, M1, M2, M2, M3], M5)
+    draw_title(cv, "GARDEN", 78, 28, 3, [L0, L1, L2, L2, L3], L5)
     heart = Image.open(os.path.join(ASSETS, "textures", "item", "greenhouse_heart.png")).convert("RGBA")
-    cv.img.alpha_composite(heart, (140, 9))
-    for (x, y, big) in ((162, 12, True), (172, 30, False), (182, 18, True), (131, 7, False)):
+    cv.img.alpha_composite(heart, (148, 9))
+    for (x, y, big) in ((168, 12, True), (174, 30, False), (184, 19, True), (139, 7, False)):
         sprite(cv, SPARK if big else ["w"], x, y, {"w": M1, "W": M0})
     # a sprig with a blossom growing in the panel's corner
     sprite(cv, LEAF, 171, 37, pal)

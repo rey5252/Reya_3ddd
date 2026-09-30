@@ -145,6 +145,7 @@ public class GreenhouseScreen extends AbstractContainerScreen<GreenhouseMenu> {
             cycleAt = t;
             lastGainShown = menu.lastGain();
             burst(HEART_X, HEART_Y, 10, 0x55D9F7, 0.9F, false);
+            mascot.pulse();
         }
         if (lastLucky >= 0 && lucky != lastLucky) {
             luckyAt = t;
@@ -644,7 +645,7 @@ public class GreenhouseScreen extends AbstractContainerScreen<GreenhouseMenu> {
             if (mascot.contains((int) mouseX - leftPos, (int) mouseY - topPos)) {
                 mascot.poke(tip());
                 minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.AMETHYST_BLOCK_CHIME, 1.6F, 0.6F));
-                burst(Mascot.X + Mascot.WIDTH / 2, Mascot.Y + 20, 8, 0xFFC4E2, 1.0F, true);
+                burst(Mascot.X + Mascot.HEART_X, Mascot.Y + Mascot.HEART_Y - 8, 8, 0xFFC4E2, 1.0F, true);
                 return true;
             }
         }
