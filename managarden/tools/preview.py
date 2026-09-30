@@ -14,7 +14,7 @@ import sys
 
 from PIL import Image
 
-from pix import ROOT, ASSETS, upscale, hexc, mix, rnd, rnd2
+from pix import ROOT, ASSETS, upscale, mix, rnd2
 import style as st
 
 BOTANIA = os.environ.get("BOTANIA", "/home/user/vazkiimods/botania")
@@ -33,7 +33,7 @@ def botania_icon(name):
 
 
 def preview_gui(cv, extra=None, scale=3, name="gui.png"):
-    from gen_gui import M, FLOWERS, UPGRADES, CHARGE
+    from gen_gui import M, FLOWERS, CHARGE
     img = cv.img.copy()
     bg = Image.new("RGBA", (img.width + 40, img.height + 40), (40, 44, 52, 255))
     bg.alpha_composite(img, (20, 20))
@@ -142,7 +142,7 @@ def preview_screen(lang="en", scale=3, width=640, height=360, name=None):
 
     # layout, as GreenhouseScreen.init()
     M = G.M
-    px_mascot_x, px_mascot_w, px_mascot_h = -104, 88, 74
+    px_mascot_x, px_mascot_w = -104, 88
     left = px_mascot_w - (px_mascot_x + px_mascot_w)
     scroll_up = 12
     leftPos = max(left + 2, (width - G.W - left) // 2 + left)

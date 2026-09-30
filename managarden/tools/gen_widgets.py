@@ -13,10 +13,9 @@ Sheet layout (the screen, client/GreenhouseScreen.java, reads it at these places
 import math
 import os
 
-from pix import Canvas, ASSETS, mix, shade, hexc, rnd, rnd2
-from style import OUT, VOUT, N0, N1, N2, N3, N4, N5, G0, G1, G2, G3, G4, G5, S0, S1, S2, S3, S4, Y0, Y1, Y2, Y3, Y4, \
-    P0, P1, P2, P3, P4, P5, R0, R1, R2, R3, R4, M0, M1, M2, M3, M4, M5
-from sprites import PAL
+from pix import Canvas, ASSETS, mix, shade, hexc, rnd2
+from style import OUT, N0, N1, N2, N3, N4, N5, G0, G1, G2, G3, G4, S2, Y3, P0, P1, P2, P3, P4, P5, R0, R1, R2, R3, R4, \
+    M0, M1, M2, M4
 
 SHEET_W, SHEET_H = 256, 128
 BUTTON_UV = (0, 0)
@@ -229,7 +228,7 @@ def glow(cv, x0, y0):
                 continue
             a = max(0.0, 1.0 - (d - 1.0) / 3.4) ** 1.8
             if a > 0.02:
-                cv.set(x0 + x, y0 + y, (255, 255, 255), int(a * 190))
+                cv.set(x0 + x, y0 + y, (255, 255, 255), int(a * 150))
 
 
 # ---------------------------------------------------------------- the title scroll
