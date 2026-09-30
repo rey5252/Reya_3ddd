@@ -50,9 +50,9 @@ public class PortalRenderer implements BlockEntityRenderer<PortalBlockEntity> {
     private static final int FRAMES = 20, FRAME_TICKS = 2;
     /** The gold lights on the vine: texture pixels of gate_vines.png (tools/gen_block.py), front pane and back. */
     private static final int[][] LIGHTS = {{14, 1}, {0, 13}};
-    private static final float VINE_FRONT_Z = 5.9F, VINE_BACK_Z = 10.1F;
+    private static final float VINE_FRONT_Z = 6.9F, VINE_BACK_Z = 9.1F;
     /** The gem's front and back faces (model pixels). */
-    private static final float GEM_X = 8.0F, GEM_Y = 14.5F, GEM_FRONT_Z = 5.0F, GEM_BACK_Z = 11.0F;
+    private static final float GEM_X = 8.0F, GEM_Y = 14.5F, GEM_FRONT_Z = 6.0F, GEM_BACK_Z = 10.0F;
     /** The natura crystals over the lower step's corners (model pixels x, z), their height at rest and afloat. */
     private static final float[][] CRYSTALS = {{2.0F, 3.0F}, {14.0F, 3.0F}, {2.0F, 13.0F}, {14.0F, 13.0F}};
     private static final float CRYSTAL_REST_Y = 2.3F, CRYSTAL_FLOAT_Y = 3.6F, CRYSTAL_W = 0.8F, CRYSTAL_H = 1.3F;
@@ -169,9 +169,9 @@ public class PortalRenderer implements BlockEntityRenderer<PortalBlockEntity> {
             glow(pose, buffer, LIGHTS[i][0] + 0.5F, y, VINE_BACK_Z + 0.3F, 1.4F, k, 0.85F * k, 0.35F * k, turn);
         }
         if (fade <= 0.01F) return;
-        float gem = fade * (0.55F + 0.25F * Mth.sin(time / 5.0F) + 0.4F * flash);
-        glow(pose, buffer, GEM_X, GEM_Y, GEM_FRONT_Z - 0.3F, 2.2F, 0.45F * gem, gem, 0.4F * gem, turn);
-        glow(pose, buffer, GEM_X, GEM_Y, GEM_BACK_Z + 0.3F, 2.2F, 0.45F * gem, gem, 0.4F * gem, turn);
+        float gem = fade * (0.35F + 0.15F * Mth.sin(time / 5.0F) + 0.4F * flash);
+        glow(pose, buffer, GEM_X, GEM_Y, GEM_FRONT_Z - 0.3F, 1.5F, 0.3F * gem, gem, 0.35F * gem, turn);
+        glow(pose, buffer, GEM_X, GEM_Y, GEM_BACK_Z + 0.3F, 1.5F, 0.3F * gem, gem, 0.35F * gem, turn);
         int[] colours = {0xFFE27A, 0xFF9AD8, 0xB6F59A};
         for (int k = 0; k < 3; k++) {
             float a = time * 0.07F + k * 2.0F * PI / 3.0F;

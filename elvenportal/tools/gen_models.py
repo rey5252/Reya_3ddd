@@ -25,9 +25,9 @@ TEXTURES = {
     "base": "elvenportal:block/gate_base",
     "base_side": "elvenportal:block/gate_base_side",
 }
-RING_Z = (6, 10)                     # the ring's depth
-GEM_BOX = ([7, 13, 5], [9, 16, 11])  # the gem stands out of the ring a pixel in front and behind
-VINE_Z = (5.9, 10.1)
+RING_Z = (7, 9)                      # the ring's depth
+GEM_BOX = ([7, 13, 6], [9, 16, 10])  # the gem stands out of the ring a pixel in front and behind
+VINE_Z = (6.9, 9.1)
 
 
 def runs():

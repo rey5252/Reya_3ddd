@@ -95,12 +95,14 @@ def rim():
 
 
 def inner():
-    """The ring's inner edge: stone, a little shaded, with a faint green glow from the portal."""
+    """The ring's inner edge: warm cream stone with flecks of gold, lit a little green by the portal."""
     cv = Canvas(16, 16)
     for y in range(16):
         for x in range(16):
-            c = LR2 if rnd2(x, y, 3) < 0.7 else LR3
-            cv.set(x, y, mix(c, G2, 0.12))
+            c = LR1 if rnd2(x, y, 3) < 0.6 else LR2
+            if rnd2(x, y, 4) < 0.12:
+                c = Y2
+            cv.set(x, y, mix(c, G1, 0.08))
     return cv
 
 
@@ -140,8 +142,8 @@ def vines():
 # ---------------------------------------------------------------- the gem and the pedestal
 
 GEM_LAYOUT = {
-    # (u, v) regions the model's gem element uses: front 2x3, sides 6x3, top 2x6
-    "front": (0, 0, 2, 3), "side": (4, 0, 10, 3), "top": (4, 4, 6, 10)}
+    # (u, v) regions the model's gem element uses: front 2x3, sides 4x3, top 2x4
+    "front": (0, 0, 2, 3), "side": (4, 0, 8, 3), "top": (4, 4, 6, 8)}
 
 
 def gem(lit):
