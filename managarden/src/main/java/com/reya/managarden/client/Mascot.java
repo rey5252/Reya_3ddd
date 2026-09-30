@@ -13,16 +13,17 @@ import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 
 /**
- * The garden keeper: a little elf girl with silver twin tails and green eyes, in a dress of white, gold
- * and leaves (textures/gui/mascot.png, drawn by tools/gen_mascot.py), standing at the greenhouse GUI's
- * left edge with the Heart of the Greenhouse in her arms. She hops in when the GUI opens and waves,
- * breathes, blinks, the heart twinkles; she lifts it a little whenever a cycle's mana comes in, beams
- * when a cycle is lucky, and when poked she says what the greenhouse needs or gives a tip in a speech
- * bubble.
+ * The garden keeper: a little elf mage with long white twin tails, calm green eyes and red drop
+ * earrings, in a white coat and capelet trimmed with gold (textures/gui/mascot.png, drawn by
+ * tools/gen_mascot.py), standing at the greenhouse GUI's left edge with her staff in one hand while the
+ * Heart of the Greenhouse floats over her other palm. She hops in when the GUI opens and waves,
+ * breathes, blinks, the heart bobs and the staff's orb twinkles; the heart glows whenever a cycle's mana
+ * comes in, she raises it when a cycle is lucky, and when poked she says what the greenhouse needs or
+ * gives a tip in a speech bubble.
  * <p>
- * Sheet: two body frames (breathing out and in, without her arms), then the face parts drawn over the
- * body: eyes (open, half, shut, happy, starry) and mouths (smile, open, happy), then her arms with the
- * heart: holding it, lifting it, and two waving frames (three to a row).
+ * Sheet: two body frames (breathing out and in, without her free arm), then the face parts drawn over
+ * the body: eyes (open, half, shut, happy, starry) and mouths (smile, open, happy), then her free arm
+ * (palm up, raised, two waving frames) and the heart (and the heart glowing).
  */
 final class Mascot {
     static final ResourceLocation TEX = new ResourceLocation(ManaGarden.MODID, "textures/gui/mascot.png");
@@ -35,18 +36,21 @@ final class Mascot {
     /** The face parts: where they go on the body, and where they are on the sheet. */
     static final int EYES_X = 28, EYES_Y = 36, EYES_W = 40, EYES_H = 18, EYES_U = 192, EYES_V = 0;
     static final int MOUTH_X = 43, MOUTH_Y = 55, MOUTH_W = 10, MOUTH_H = 6, MOUTH_U = 232, MOUTH_V = 0;
-    /** Her arms and the heart: drawn over the body at ARM_X, ARM_Y; the poses three to a row on the sheet. */
-    static final int ARM_X = 8, ARM_Y = 44, ARM_W = 80, ARM_H = 52, ARM_U = 0, ARM_V = 136;
-    private static final int POSE_HOLD = 0, POSE_LIFT = 1, POSE_WAVE = 2;
-    /** The heart's shine (for its twinkle) and its middle, on the body. */
-    static final int SHINE_X = 38, SHINE_Y = 72, HEART_X = 48, HEART_Y = 81;
+    /** Her free arm: drawn over the body at ARM_X, ARM_Y; the poses side by side on the sheet. */
+    static final int ARM_X = 56, ARM_Y = 48, ARM_W = 36, ARM_H = 48, ARM_U = 0, ARM_V = 136;
+    private static final int POSE_REST = 0, POSE_RAISE = 1, POSE_WAVE = 2;
+    /** The floating heart on the sheet (the glowing one beside it), and where its middle is in each pose. */
+    static final int HEART_U = 144, HEART_V = 136, HEART_W = 20, HEART_H = 18;
+    static final int[][] HEART_AT = {{70, 74}, {73, 67}, {73, 82}, {73, 82}};
+    /** The staff's orb, for its twinkle. */
+    static final int ORB_X = 22, ORB_Y = 14;
 
     private static final int EYES_OPEN = 0, EYES_HALF = 1, EYES_SHUT = 2, EYES_HAPPY = 3, EYES_STARS = 4;
     private static final int MOUTH_SMILE = 0, MOUTH_OPEN = 1, MOUTH_HAPPY = 2;
     private static final long ENTER_FROM = 380L, ENTER_MS = 520L;
 
     private long nextBlink = Util.getMillis() + 2600L, blinkUntil;
-    private long happyUntil, waveUntil, speakUntil, liftUntil;
+    private long happyUntil, waveUntil, speakUntil, raiseUntil, glowUntil;
     private Component speech;
     private long speechAt;
     /** Where her bubble was last drawn (screen coordinates; 0 wide while she is quiet). */
@@ -56,9 +60,9 @@ final class Mascot {
         return mx >= X + 14 && mx < X + WIDTH - 14 && my >= Y + 4 && my < Y + HEIGHT;
     }
 
-    /** A cycle's mana came in: she lifts the heart a little. */
+    /** A cycle's mana came in: the heart glows for a moment. */
     void pulse() {
-        liftUntil = Math.max(liftUntil, Util.getMillis() + 360L);
+        glowUntil = Math.max(glowUntil, Util.getMillis() + 380L);
     }
 
     /** Poked: she waves and says something. */
@@ -73,7 +77,8 @@ final class Mascot {
     void cheer(Component text) {
         long now = Util.getMillis();
         happyUntil = now + 2200L;
-        liftUntil = now + 1300L;
+        raiseUntil = now + 1300L;
+        glowUntil = now + 1300L;
         if (speakUntil < now) say(text, now, 2200L);
     }
 
@@ -129,27 +134,31 @@ final class Mascot {
                 : happy ? MOUTH_HAPPY : MOUTH_SMILE;
         g.blit(TEX, x + MOUTH_X, y + MOUTH_Y - lift, MOUTH_U, MOUTH_V + mouth * MOUTH_H, MOUTH_W, MOUTH_H, TEX_W, TEX_H);
 
-        // her arms with the heart: holding it, lifting it when mana comes in, or waving one hand
-        // (two frames swinging) when she greets or is poked
+        // her free arm: palm up, raised when a cycle is lucky, or waving (two frames swinging) when she
+        // greets or is poked
         long since = t - (ENTER_FROM + ENTER_MS);
         boolean waving = now < waveUntil || since < 1100L;
-        int pose = waving ? POSE_WAVE + (int) ((now / 170L) % 2L) : now < liftUntil ? POSE_LIFT : POSE_HOLD;
-        g.blit(TEX, x + ARM_X, y + ARM_Y - lift, ARM_U + pose % 3 * ARM_W, ARM_V + pose / 3 * ARM_H, ARM_W, ARM_H, TEX_W, TEX_H);
+        int pose = waving ? POSE_WAVE + (int) ((now / 170L) % 2L) : now < raiseUntil ? POSE_RAISE : POSE_REST;
+        g.blit(TEX, x + ARM_X, y + ARM_Y - lift, ARM_U + pose * ARM_W, ARM_V, ARM_W, ARM_H, TEX_W, TEX_H);
+
+        // the heart floats over her palm, bobbing, and glows when mana comes in
+        int bob = Math.round(Mth.sin(now / 420.0F) * 1.5F);
+        boolean glow = now < glowUntil;
+        int hx = x + HEART_AT[pose][0] - HEART_W / 2, hy = y + HEART_AT[pose][1] - HEART_H / 2 - lift + bob;
+        g.blit(TEX, hx, hy, HEART_U + (glow ? HEART_W : 0), HEART_V, HEART_W, HEART_H, TEX_W, TEX_H);
         g.setColor(1.0F, 1.0F, 1.0F, 1.0F);
 
-        // the heart's shine twinkles now and then, and a mote of mana drifts up from it
-        int raise = pose == POSE_LIFT ? 2 : 0;
+        // the staff's orb twinkles now and then, and a mote of mana drifts up from the heart
         long p = now % 1900L;
         if (p < 420L && enter >= 1.0F) {
             float a = Mth.sin(p / 420.0F * Mth.PI);
-            GreenhouseScreen.sparkle(g, x + SHINE_X, y + SHINE_Y - lift - raise, 0xFFFFFF, a);
+            GreenhouseScreen.sparkle(g, x + ORB_X - 2, y + ORB_Y - 2, 0xFFB0A8, a);
         }
-        // (it floats up and out from the heart's right lobe, clear of her face)
         long q = (now + 950L) % 2300L;
         if (q < 520L && enter >= 1.0F) {
             float a = Mth.sin(q / 520.0F * Mth.PI) * 0.8F;
             int d = (int) (q / 65L);
-            GreenhouseScreen.sparkle(g, x + HEART_X + 14 + d, y + HEART_Y - 9 - lift - raise - d, 0x7FF4FF, a);
+            GreenhouseScreen.sparkle(g, hx + HEART_W / 2 + 6 + d / 2, hy - 2 - d, 0x7FF4FF, a);
         }
     }
 

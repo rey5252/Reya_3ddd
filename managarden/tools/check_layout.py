@@ -98,6 +98,9 @@ def main():
          tuple(keeper["MOUTH_BOX"]) + tuple(keeper["MOUTH_UV"]))
     same("keeper arms", tuple(mascot[k] for k in ("ARM_X", "ARM_Y", "ARM_W", "ARM_H", "ARM_U", "ARM_V")),
          tuple(keeper["ARMS_BOX"]) + tuple(keeper["ARMS_UV"]))
+    same("keeper's heart", tuple(mascot[k] for k in ("HEART_U", "HEART_V", "HEART_W", "HEART_H")),
+         tuple(keeper["HEART_UV"]) + tuple(keeper["HEART_SIZE"]))
+    same("keeper's heart places", mascot["HEART_AT"], [tuple(keeper["HEART_AT"][p]) for p in keeper["ARM_POSES"]])
 
     if errors:
         print("The GUI code and its textures disagree:")
