@@ -142,7 +142,7 @@ def preview_screen(lang="en", scale=3, width=640, height=360, name=None):
 
     # layout, as GreenhouseScreen.init()
     M = G.M
-    px_mascot_x, px_mascot_w, px_mascot_h = -100, 88, 74
+    px_mascot_x, px_mascot_w, px_mascot_h = -104, 88, 74
     left = px_mascot_w - (px_mascot_x + px_mascot_w)
     scroll_up = 12
     leftPos = max(left + 2, (width - G.W - left) // 2 + left)

@@ -6,7 +6,7 @@ Sheet layout (the screen, client/GreenhouseScreen.java, reads it at these places
   (0,16)   icons 12x12: redstone ignore, high, low, output on, output off, output bound
   (64,0)   the heart's glass shine, 38x38
   (104,0)  the red close button 16x16: normal, hover (120), pressed (136)
-  (104,16) a soft glow 9x9 (white, fading to nothing), tinted gold by the screen for the lights' twinkle
+  (104,16) a soft halo 9x9 (white, fading to nothing, a hole in its middle), tinted gold by the screen for the lights' twinkle
   (0,56)   the title scroll: left roller 16x20, (16,56) right roller 16x20, (32,56) and (40,56) tiles of paper 8x20
   (0,80)   growth bar fill 152x6 (growing); (0,88) the same, paused
 """
@@ -220,14 +220,16 @@ def close_button(cv, x0, y0, state):
 
 
 def glow(cv, x0, y0):
-    """A soft round glow, white fading out to nothing (9x9): the screen tints it gold and pulses it."""
-    c = 4.0
+    """A soft round halo, white fading out to nothing (9x9), with a hole where the light's own cross is
+    (that stays as painted in the panel): the screen tints it gold and pulses it."""
     for y in range(9):
         for x in range(9):
-            d = math.hypot(x + 0.5 - c - 0.5, y + 0.5 - c - 0.5)
-            a = max(0.0, 1.0 - d / 4.4) ** 1.6
+            d = math.hypot(x - 4, y - 4)
+            if d < 1.05:
+                continue
+            a = max(0.0, 1.0 - (d - 1.0) / 3.4) ** 1.8
             if a > 0.02:
-                cv.set(x0 + x, y0 + y, (255, 255, 255), int(a * 255))
+                cv.set(x0 + x, y0 + y, (255, 255, 255), int(a * 190))
 
 
 # ---------------------------------------------------------------- the title scroll

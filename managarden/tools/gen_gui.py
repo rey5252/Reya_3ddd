@@ -17,7 +17,7 @@ from style import *
 from sprites import PAL
 import vines as V
 
-M = 10
+M = 12
 W, H = 256, 236
 MACHINE_H = 146
 FRAME = 5                            # the edge: outline, two rows of green, the mana vein, a navy bevel
@@ -37,8 +37,8 @@ INV_Y, HOTBAR_Y, INV_SLOT_X = 154, 212, 48
 
 # the little gold lights on the vines (their middle pixel); the screen makes them twinkle
 LIGHTS = [
-    (12, -6), (40, -8), (58, -6), (-6, 20), (-7, 52), (8, 149), (-4, 100),
-    (243, -8), (218, -8), (198, -6), (262, 22), (262, 60), (248, 149), (262, 104)]
+    (21, -7), (-6, 21), (-7, 63), (-9, -9), (238, -8), (263, 17), (264, 48), (265, -9),
+    (20, 155), (-9, 126), (-8, 101), (-9, 153), (234, 153), (264, 124), (266, 98), (265, 153)]
 
 VEIN_COL = hexc("1B4A80")
 LIGHT_DIR = (-0.62, -0.78)
@@ -207,8 +207,11 @@ def charge_slot(cv, x, y):
         cv.set(x + 8 + d, y + 10 - d, ghost)
 
 
+DIM_SAGE = (S2, S3, S4)              # the inventory's slots: calmer than the machine's, so those stand out
+
+
 def inventory_slot(cv, x, y):
-    slot_frame(cv, x, y, SAGE, hexc("0F1738"), hexc("0A1129"))
+    slot_frame(cv, x, y, DIM_SAGE, hexc("0F1738"), hexc("0A1129"))
 
 
 # ---------------------------------------------------------------- vines to the heart
@@ -315,37 +318,46 @@ def gauge_track(cv):
 
 # ---------------------------------------------------------------- vines and lights round the frame
 
-def arm(x, y, theta, length, sway, period, phase, hooks, tail, seed, tail_len=24, r=2.1):
-    """A vine along an edge: a chain of blades swaying along a walk from (x, y) heading theta, little
-    curling tendrils (`hooks` = [(distance, side, length, turn)]) and a curl at its end (`tail` = turn)."""
-    path = V.walk(x, y, theta, length + tail_len, V.wave(sway, period, phase))
+def edge_arm(x, y, theta, length, side, seed, sway=0.26, period=30.0):
+    """A vine along an edge, from (x, y) heading theta for `length` px: a chain of blades swaying along
+    the walk, little tendrils curling out to `side` (+1 clockwise, -1 anticlockwise on the screen: the
+    edge's outer side) and a curl at its end."""
+    phase = 0.13 * seed
+    # the heading swings evenly about theta: start at its swing's phase
+    path = V.walk(x, y, theta + sway * math.sin(math.tau * phase), length + 26, V.wave(sway, period, phase))
     specs = []
-    for (s, side, ln, turn) in hooks:
-        specs.append(V.hook_spec(path, s, side, ln, turn, TONES))
-    specs += V.chain_specs(path, 0, length - 2, TONES, r=r, seed=seed)
+    for i in range(int(length // 14)):
+        s = 8 + i * 14 + 2 * ((seed + i) % 3)
+        if s > length - 4:
+            break
+        specs.append(V.hook_spec(path, s, side, 8 + ((seed + 2 * i) % 3), 4.3 + 0.4 * ((seed + i) % 2), TONES, r0=1.1))
+    specs += V.chain_specs(path, 0, length - 2, TONES, length=14, pitch=8, r=1.9, seed=seed)
     ex, ey, eth = V.at(path, length - 3)
-    specs.append(V.curl_spec(ex, ey, eth, tail_len, tail, 1.6, 0.6, TONES))
+    specs.append(V.curl_spec(ex, ey, eth, 22, side * 7.0, 1.6, 0.6, TONES))
     return specs
 
 
-def corner_top_left():
-    """The top-left corner's vines (the other corners are mirrors of these): an arm along the top edge,
-    an arm down the left edge and a big curl outside the corner. Returns (top, left, curl) specs."""
-    top = arm(-2, -3.4, 0.0, 52, 0.20, 34, 0.0,
-              hooks=[(9, -1, 12, 4.0), (24, -1, 13, 4.5), (39, -1, 12, 4.0)], tail=-6.0, seed=1)
-    left = arm(-3.4, -2, math.pi / 2, 50, 0.20, 34, 0.25,
-               hooks=[(10, 1, 12, 4.0), (25, 1, 13, 4.5), (40, 1, 12, 4.0)], tail=6.0, seed=2)
-    flourish = [V.curl_spec(-1.5, -1.5, -2.4, 20, -7.5, 1.9, 0.6, TONES, power=1.5)]
-    return top, left, flourish
+def corner_cluster():
+    """Leaves and a bud where the two arms meet, pointing out of the corner."""
+    return [V.spec(V.blade((-3.0, -3.0), ang, ln, 4.4, bend=bend), TONES)
+            for ang, ln, bend in ((-2.95, 8, 0.5), (-1.75, 8, -0.5), (-2.35, 7, 0.0))]
+
+
+def corner_specs(h_len, v_len, seed):
+    """A panel corner's vines, drawn for the top-left corner (the others are mirrors): an arm along the
+    top edge, an arm down the left edge, a cluster of leaves on the corner."""
+    return (edge_arm(-3, -3.4, 0.0, h_len, -1, seed) + edge_arm(-3.4, -3, math.pi / 2, v_len, 1, seed + 3)
+            + corner_cluster())
+
+
+# the arms' lengths at the corners: the top ones stop short of the title scroll, the bottom ones of the inventory
+CORNERS = [(False, False, 58, 62, 1), (True, False, 58, 62, 2), (False, True, 30, 62, 3), (True, True, 30, 62, 4)]
 
 
 def decorations(cv):
-    top, left, flourish = corner_top_left()
-    cx = W / 2.0 - 0.0
-    cy = MACHINE_H / 2.0
-    for (fx, fy) in ((False, False), (True, False), (False, True), (True, True)):
-        for group in (top, left, flourish):
-            V.paint_specs(cv, group, VOUT, fx=fx, fy=fy, cx=cx, cy=cy)
+    cx, cy = W / 2.0, MACHINE_H / 2.0
+    for (fx, fy, h_len, v_len, seed) in CORNERS:
+        V.paint_specs(cv, corner_specs(h_len, v_len, seed), VOUT, fx=fx, fy=fy, cx=cx, cy=cy)
     for (x, y) in LIGHTS:
         light(cv, x, y)
 

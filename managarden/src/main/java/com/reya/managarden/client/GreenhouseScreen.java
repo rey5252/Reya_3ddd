@@ -46,7 +46,7 @@ public class GreenhouseScreen extends AbstractContainerScreen<GreenhouseMenu> {
     static final ResourceLocation WIDGETS = new ResourceLocation(ManaGarden.MODID, "textures/gui/greenhouse_widgets.png");
     static final ResourceLocation BLOOM = new ResourceLocation(ManaGarden.MODID, "textures/gui/greenhouse_bloom.png");
     /** The panel texture has a margin round the GUI for the vines sticking out. */
-    private static final int M = 10, TEX_W = GreenhouseMenu.WIDTH + 2 * M, TEX_H = GreenhouseMenu.HEIGHT + 2 * M;
+    private static final int M = 12, TEX_W = GreenhouseMenu.WIDTH + 2 * M, TEX_H = GreenhouseMenu.HEIGHT + 2 * M;
     private static final int WIDGETS_W = 256, WIDGETS_H = 128;
     private static final int BLOOM_SIZE = 64, BLOOM_FRAMES = 8;
 
@@ -71,8 +71,8 @@ public class GreenhouseScreen extends AbstractContainerScreen<GreenhouseMenu> {
     private static final int VEIN = 3;
     /** The gold lights on the vines: their middles, as in tools/gen_gui.py. */
     private static final int[][] LIGHTS = {
-            {12, -6}, {40, -8}, {58, -6}, {-6, 20}, {-7, 52}, {8, 149}, {-4, 100},
-            {243, -8}, {218, -8}, {198, -6}, {262, 22}, {262, 60}, {248, 149}, {262, 104}};
+            {21, -7}, {-6, 21}, {-7, 63}, {-9, -9}, {238, -8}, {263, 17}, {264, 48}, {265, -9},
+            {20, 155}, {-9, 126}, {-8, 101}, {-9, 153}, {234, 153}, {264, 124}, {266, 98}, {265, 153}};
 
     /**
      * The opening: the bud blooms in BLOOM_MS, the machine panel grows from PANEL_FROM for PANEL_MS, the
@@ -651,7 +651,7 @@ public class GreenhouseScreen extends AbstractContainerScreen<GreenhouseMenu> {
     }
 
     /**
-     * The gold lights on the vines twinkle: a soft glow round each, every one on its own beat, calm while
+     * The gold lights on the vines twinkle: a soft halo round each, every one on its own beat, calm while
      * the greenhouse rests and livelier while its flowers grow; now and then one flashes a sparkle.
      */
     private void drawLights(GuiGraphics g, long t) {
@@ -660,7 +660,7 @@ public class GreenhouseScreen extends AbstractContainerScreen<GreenhouseMenu> {
         RenderSystem.defaultBlendFunc();
         for (int i = 0; i < LIGHTS.length; i++) {
             float beat = 0.5F + 0.5F * Mth.sin(t / (busy ? 330.0F : 560.0F) + i * 1.9F);
-            float a = (busy ? 0.35F : 0.22F) + beat * beat * (busy ? 0.65F : 0.45F);
+            float a = (busy ? 0.4F : 0.25F) + beat * beat * (busy ? 0.6F : 0.5F);
             int x = leftPos + LIGHTS[i][0], y = topPos + LIGHTS[i][1];
             g.setColor(1.0F, 0.86F, 0.42F, a);
             g.blit(WIDGETS, x - GLOW_SIZE / 2, y - GLOW_SIZE / 2, GLOW_U, GLOW_V, GLOW_SIZE, GLOW_SIZE, WIDGETS_W, WIDGETS_H);

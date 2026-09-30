@@ -28,7 +28,7 @@ final class Mascot {
     static final int TEX_W = 256, TEX_H = 128;
     static final int WIDTH = 88, HEIGHT = 74;
     /** Where the portrait hangs, from the GUI's corner: beside the panel's top-left corner. */
-    static final int X = -100, Y = 4;
+    static final int X = -104, Y = 4;
     /** How far it reaches over the panel's frame (less than nothing: it keeps clear of the frame's vines). */
     static final int OVERLAP = X + WIDTH;
     /** The face parts: where they go on the portrait, and where they are on the sheet. */
