@@ -326,7 +326,7 @@ def draw_bangs(g, lift=0):
             bx = crown[0] + (tx - crown[0]) * t + (tx - crown[0]) * 0.18 * math.sin(t * math.pi)
             by = crown[1] + (ty - crown[1]) * t
             x, y = int(round(bx)), int(round(by))
-            if t > 0.35 and (x, y) in pix:
+            if t > 0.16 and (x, y) in pix:
                 g.set(x, y, "G")
     # the lock between her eyes, and the part above it
     for y in range(26, 41):
