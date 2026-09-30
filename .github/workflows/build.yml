@@ -32,10 +32,8 @@ jobs:
             dir: multibrewer
           - mod: chaosspawner
             dir: chaosspawner
-          - mod: managarden
-            dir: managarden
-          - mod: elvenportal
-            dir: elvenportal
+          - mod: alfheimheart
+            dir: alfheimheart
     defaults:
       run:
         working-directory: ${{ matrix.dir }}
@@ -47,8 +45,8 @@ jobs:
           java-version: 17
       - uses: gradle/actions/setup-gradle@v4
       - name: Check that the GUI code and its textures agree
-        if: matrix.mod == 'managarden' || matrix.mod == 'elvenportal'
-        run: python3 tools/check_layout.py
+        if: matrix.mod == 'alfheimheart'
+        run: for f in tools/*/check_layout.py; do python3 "$f" || exit 1; done
       - name: Build mod
         run: |
           chmod +x ./gradlew

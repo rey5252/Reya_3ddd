@@ -1,0 +1,33 @@
+{
+  "type": "botania:runic_altar",
+  "ingredients": [
+    {
+      "item": "alfheimheart:upgrade_base"
+    },
+    {
+      "item": "botania:rune_earth"
+    },
+    {
+      "item": "botania:rune_spring"
+    },
+    {
+      "item": "botania:rune_greed"
+    },
+    {
+      "item": "minecraft:rabbit_foot"
+    },
+    {
+      "item": "minecraft:gold_ingot"
+    },
+    {
+      "item": "minecraft:gold_ingot"
+    },
+    {
+      "item": "botania:pixie_dust"
+    }
+  ],
+  "mana": 20000,
+  "output": {
+    "item": "alfheimheart:luck_upgrade"
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "type": "botania:runic_altar",
+  "ingredients": [
+    {
+      "item": "alfheimheart:upgrade_base"
+    },
+    {
+      "item": "botania:rune_air"
+    },
+    {
+      "item": "botania:rune_spring"
+    },
+    {
+      "item": "botania:rune_summer"
+    },
+    {
+      "item": "botania:mana_powder"
+    },
+    {
+      "item": "botania:mana_powder"
+    },
+    {
+      "item": "minecraft:sugar"
+    },
+    {
+      "item": "minecraft:sugar"
+    },
+    {
+      "item": "minecraft:glowstone_dust"
+    }
+  ],
+  "mana": 16000,
+  "output": {
+    "item": "alfheimheart:speed_upgrade"
+  }
+}

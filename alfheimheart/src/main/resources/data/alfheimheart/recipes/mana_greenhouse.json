@@ -1,0 +1,32 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "GSG",
+    "WHW",
+    "RPR"
+  ],
+  "key": {
+    "G": {
+      "item": "botania:mana_glass"
+    },
+    "S": {
+      "item": "botania:mana_spreader"
+    },
+    "W": {
+      "item": "botania:glimmering_livingwood"
+    },
+    "H": {
+      "item": "alfheimheart:greenhouse_heart"
+    },
+    "R": {
+      "item": "botania:livingrock_bricks"
+    },
+    "P": {
+      "item": "botania:mana_pool"
+    }
+  },
+  "result": {
+    "item": "alfheimheart:mana_greenhouse"
+  }
+}

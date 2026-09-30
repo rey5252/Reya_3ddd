@@ -1,6 +1,0 @@
-{
-  "parent": "elvenportal:block/elven_portal",
-  "textures": {
-    "gem": "elvenportal:block/gate_gem_lit"
-  }
-}

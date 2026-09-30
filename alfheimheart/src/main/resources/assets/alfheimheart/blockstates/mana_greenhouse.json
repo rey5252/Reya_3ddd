@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "active=false": {
+      "model": "alfheimheart:block/mana_greenhouse"
+    },
+    "active=true": {
+      "model": "alfheimheart:block/mana_greenhouse"
+    }
+  }
+}
