@@ -144,10 +144,12 @@ final class Mascot {
             float a = Mth.sin(p / 420.0F * Mth.PI);
             GreenhouseScreen.sparkle(g, x + SHINE_X, y + SHINE_Y - lift - raise, 0xFFFFFF, a);
         }
+        // (it floats up and out from the heart's right lobe, clear of her face)
         long q = (now + 950L) % 2300L;
         if (q < 520L && enter >= 1.0F) {
             float a = Mth.sin(q / 520.0F * Mth.PI) * 0.8F;
-            GreenhouseScreen.sparkle(g, x + HEART_X + 9, y + HEART_Y - 16 - lift - (int) (q / 45L), 0x7FF4FF, a);
+            int d = (int) (q / 65L);
+            GreenhouseScreen.sparkle(g, x + HEART_X + 14 + d, y + HEART_Y - 9 - lift - raise - d, 0x7FF4FF, a);
         }
     }
 
