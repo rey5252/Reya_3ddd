@@ -58,7 +58,7 @@
   "gui.managarden.keeper.redstone": "Redstone told us to rest. Check the lever!",
   "gui.managarden.keeper.tip0": "Different kinds of flowers grow better together: that's harmony!",
   "gui.managarden.keeper.tip1": "Fortune Upgrades make some cycles bloom with extra mana.",
-  "gui.managarden.keeper.tip2": "Bind me to a mana pool with the Wand of the Forest and I'll fill it.",
+  "gui.managarden.keeper.tip2": "Bind the greenhouse to a mana pool with the Wand of the Forest, and I'll keep it filled.",
   "gui.managarden.keeper.tip3": "Put a mana tablet in the blue slot and I'll charge it for you.",
   "gui.managarden.keeper.tip4": "Growth Upgrades make the flowers grow faster. Zoom!",
   "gui.managarden.keeper.tip5": "No fuel, no water, no fuss: just love and mana~",
@@ -76,5 +76,9 @@
   "managarden.lexicon.upgrades2": "$(item)Growth$(): each one makes the cycles a quarter faster.",
   "managarden.lexicon.upgrades3": "$(item)Reservoir$(): each one makes room for 350 000 more mana.",
   "managarden.lexicon.upgrades4": "$(item)Fortune$(): each one gives a cycle one more chance in ten to be lucky and bring half as much mana again.",
-  "managarden.lexicon.upgrades5": "$(item)Abundance$(): each one makes every cycle bring 15 percent more mana."
+  "managarden.lexicon.upgrades5": "$(item)Abundance$(): each one makes every cycle bring 15 percent more mana.",
+
+  "jei.managarden.info.greenhouse": "Grows up to eight generating flowers inside, with no fuel, water or care, and gathers their mana. Every cycle the flowers make as much mana as they would at their best; different kinds together grow better (harmony). The mana goes into mana pools, spreaders and other receivers next to it or bound to it with the Wand of the Forest, and charges the mana item in its blue slot.",
+  "jei.managarden.info.heart": "The living core of the Mana Greenhouse, made on the Terrestrial Agglomeration Plate.",
+  "jei.managarden.info.upgrades": "Mana Greenhouse upgrades, carved from a Blank Floral Tablet on the Runic Altar. Growth: faster cycles. Reservoir: more room for mana. Fortune: a chance for a cycle to bring extra mana. Abundance: more mana every cycle. Upgrades of a kind stack in its four upgrade slots."
 }

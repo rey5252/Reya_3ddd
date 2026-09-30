@@ -111,6 +111,17 @@ public final class AutoShot {
         STEPS.add(new Step(30, () -> shot("lexicon_recipes.png")));
         STEPS.add(new Step(5, () -> openLexicon("generating_flowers/managarden_upgrades", 2)));
         STEPS.add(new Step(30, () -> shot("lexicon_upgrades.png")));
+        // the Wand of the Forest's HUD over the greenhouse
+        STEPS.add(new Step(5, () -> Minecraft.getInstance().setScreen(null)));
+        STEPS.add(new Step(5, () -> eye(2.3D, 1.45D, 2.0D, 0.5D, 0.55D, 0.5D)));
+        STEPS.add(new Step(30, () -> shot("wand_hud.png")));
+        // and all of it in Ukrainian: the plate, the keeper's words, the lexicon
+        STEPS.add(new Step(5, () -> language("uk_ua")));
+        STEPS.add(new Step(40, AutoShot::open));
+        STEPS.add(new Step(40, () -> clickGui(-26, 70)));
+        STEPS.add(new Step(12, () -> shot("gui_uk.png")));
+        STEPS.add(new Step(5, () -> openLexicon("generating_flowers/managarden_greenhouse", 0)));
+        STEPS.add(new Step(30, () -> shot("lexicon_uk.png")));
         STEPS.add(new Step(10, () -> Minecraft.getInstance().stop()));
     }
 
@@ -126,7 +137,8 @@ public final class AutoShot {
             }
             return;
         }
-        if (mc.player == null || mc.getSingleplayerServer() == null) {
+        // wait while the world loads or resources reload
+        if (mc.player == null || mc.getSingleplayerServer() == null || mc.getOverlay() != null) {
             since = ticks;
             return;
         }
@@ -219,6 +231,8 @@ public final class AutoShot {
                     new ItemStack(ManaGarden.LUCK_UPGRADE.get(), 3), new ItemStack(ManaGarden.YIELD_UPGRADE.get()),
                     new ItemStack(item("botania", "endoflame"), 4), new ItemStack(item("botania", "mana_tablet"))};
             for (int i = 0; i < kit.length; i++) p.getInventory().setItem(9 + i, kit[i]);
+            p.getInventory().setItem(0, new ItemStack(item("botania", "twig_wand")));
+            p.getInventory().selected = 0;
         });
         mc.getTutorial().setStep(TutorialSteps.NONE);
         mc.options.hideGui = true;
@@ -240,6 +254,8 @@ public final class AutoShot {
 
     private static void open() {
         Minecraft.getInstance().options.hideGui = false;
+        // the advancement and recipe toasts of the items given at the start would cover the view
+        Minecraft.getInstance().getToasts().clear();
         MinecraftServer server = server();
         server.execute(() -> {
             ServerPlayer p = server.getPlayerList().getPlayers().get(0);
@@ -272,6 +288,14 @@ public final class AutoShot {
         } catch (ReflectiveOperationException e) {
             ManaGarden.LOGGER.warn("AutoShot: can't open the lexicon", e);
         }
+    }
+
+    private static void language(String code) {
+        Minecraft mc = Minecraft.getInstance();
+        mc.setScreen(null);
+        mc.getLanguageManager().setSelected(code);
+        mc.options.languageCode = code;
+        mc.reloadResourcePacks();
     }
 
     private static void guiScale(int scale) {
