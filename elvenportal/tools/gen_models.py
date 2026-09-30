@@ -1,88 +1,113 @@
-"""The block's models and blockstate, as JSON (the arch is small enough to write out by hand, but its parts
-are easier to keep straight here):
+"""The block's models and blockstate: the elven moon gate, facing north.
 
     python3 tools/gen_models.py
 
-The arch faces north in the models: a livingrock plinth, two glimmering dreamwood pillars, a dreamwood
-lintel in two halves with the Elven Gateway Core between them as its keystone (glowing while the portal is
-open), four natura crystals at the pillars' feet. The portal itself is drawn by the block's renderer; the
-item's model has it as a pane between the pillars.
+The ring is built pixel for pixel from gen_block.RING: one element per run of ring pixels in each row, its
+front and back showing gate_ring.png where the pixels are, its outer edges gold (gate_rim.png) and its
+inner edges stone (gate_inner.png). A gem sits in the ring's top (lit while the portal is open: the
+"_open" model), the vine is a cut-out pane just in front of the ring and another just behind it, and the
+gate stands on a two-step pedestal. The portal inside the ring, the runes, the lights and the crystals
+move, so the block's renderer draws them; the item's model has a still swirl in the ring.
 """
 import json
 import os
 
 from pix import ASSETS
+import gen_block as B
 
 TEXTURES = {
-    "particle": "botania:block/glimmering_dreamwood_log",
-    "base_top": "botania:block/livingrock_bricks",
-    "base_side": "botania:block/polished_livingrock",
-    "pillar": "botania:block/glimmering_dreamwood_log",
-    "beam": "botania:block/dreamwood_log",
-    "beam_end": "botania:block/dreamwood_log_top",
-    "keystone": "botania:block/alfheim_portal",
-    "crystal": "elvenportal:block/natura_crystal",
+    "particle": "elvenportal:block/gate_rim",
+    "ring": "elvenportal:block/gate_ring",
+    "rim": "elvenportal:block/gate_rim",
+    "inner": "elvenportal:block/gate_inner",
+    "vines": "elvenportal:block/gate_vines",
+    "gem": "elvenportal:block/gate_gem",
+    "base": "elvenportal:block/gate_base",
+    "base_side": "elvenportal:block/gate_base_side",
 }
+RING_Z = (6, 10)                     # the ring's depth
+GEM_BOX = ([7, 13, 5], [9, 16, 11])  # the gem stands out of the ring a pixel in front and behind
+VINE_Z = (5.9, 10.1)
 
 
-def face(uv, tex, cull=None, rotation=None):
-    f = {"uv": uv, "texture": "#" + tex}
-    if cull:
-        f["cullface"] = cull
-    if rotation:
-        f["rotation"] = rotation
-    return f
+def runs():
+    """(row, first column, end column) of every run of ring pixels (texture pixels)."""
+    out = []
+    for y, row in enumerate(B.RING):
+        x = 0
+        while x < 16:
+            if row[x]:
+                x0 = x
+                while x < 16 and row[x]:
+                    x += 1
+                out.append((y, x0, x))
+            else:
+                x += 1
+    return out
 
 
-def elements():
+def ring_elements():
     els = []
-    # the plinth
-    els.append({"from": [0, 0, 1], "to": [16, 2, 15], "faces": {
-        "down": face([0, 1, 16, 15], "base_top", "down"),
-        "up": face([0, 1, 16, 15], "base_top"),
-        "north": face([0, 14, 16, 16], "base_side"),
-        "south": face([0, 14, 16, 16], "base_side"),
-        "west": face([1, 14, 15, 16], "base_side", "west"),
-        "east": face([1, 14, 15, 16], "base_side", "east")}})
-    # the pillars
-    for x1 in (1, 13):
-        els.append({"from": [x1, 2, 4], "to": [x1 + 2, 13, 12], "faces": {
-            "north": face([x1, 3, x1 + 2, 14], "pillar"),
-            "south": face([16 - x1 - 2, 3, 16 - x1, 14], "pillar"),
-            "west": face([4, 3, 12, 14], "pillar"),
-            "east": face([4, 3, 12, 14], "pillar")}})
-    # the lintel, in two halves either side of the keystone
-    for (x1, x2) in ((0, 5), (11, 16)):
-        els.append({"from": [x1, 13, 3], "to": [x2, 16, 13], "faces": {
-            "down": face([x1, 3, x2, 13], "beam"),
-            "up": face([x1, 3, x2, 13], "beam", "up"),
-            "north": face([x1, 0, x2, 3], "beam"),
-            "south": face([16 - x2, 0, 16 - x1, 3], "beam"),
-            **({"west": face([3, 6, 13, 9], "beam_end", "west")} if x1 == 0 else {}),
-            **({"east": face([3, 6, 13, 9], "beam_end", "east")} if x2 == 16 else {})}})
-    # the keystone: the Elven Gateway Core, a little deeper than the lintel and hanging below it
-    els.append({"from": [5, 11, 2], "to": [11, 16, 14], "faces": {
-        "down": face([5, 2, 11, 14], "keystone"),
-        "up": face([5, 2, 11, 14], "keystone", "up"),
-        "north": face([5, 0, 11, 5], "keystone"),
-        "south": face([5, 0, 11, 5], "keystone"),
-        "west": face([2, 0, 14, 5], "keystone"),
-        "east": face([2, 0, 14, 5], "keystone")}})
-    # natura crystals at the pillars' feet, in front and behind
-    for x1 in (1, 13):
-        for z1 in (1.5, 12.5):
-            els.append({"from": [x1, 2, z1], "to": [x1 + 2, 5, z1 + 2], "faces": {
-                "up": face([6, 0, 8, 2], "crystal"),
-                "north": face([6, 2, 8, 5], "crystal"),
-                "south": face([7, 2, 9, 5], "crystal"),
-                "west": face([5, 3, 7, 6], "crystal"),
-                "east": face([8, 3, 10, 6], "crystal")}})
+    z1, z2 = RING_Z
+    for (row, c1, c2) in runs():
+        # texture column c is at model x = 16 - c (the front faces north: its left is +x)
+        x1, x2 = 16 - c2, 16 - c1
+        y1, y2 = 15 - row, 16 - row
+        top_half = row + 0.5 < B.CY
+        left, right = c2 <= B.CX, c1 >= B.CX          # which side of the ring the run is on, as drawn
+        faces = {
+            "north": {"texture": "#ring"},
+            "south": {"texture": "#ring"},
+            "up": {"texture": "#rim" if top_half else "#inner"},
+            "down": {"texture": "#inner" if top_half else "#rim"},
+            # east is +x, the drawing's left
+            "east": {"texture": "#inner" if right else "#rim"},
+            "west": {"texture": "#inner" if left else "#rim"},
+        }
+        if y2 == 16:
+            faces["up"]["cullface"] = "up"
+        els.append({"from": [x1, y1, z1], "to": [x2, y2, z2], "faces": faces})
     return els
 
 
-SWIRL_PANE = {"from": [3, 2, 7.75], "to": [13, 13, 8.25], "faces": {
-    "north": {"uv": [3, 3, 13, 14], "texture": "#swirl"},
-    "south": {"uv": [3, 3, 13, 14], "texture": "#swirl"}}}
+def gem_element():
+    (x1, y1, z1), (x2, y2, z2) = GEM_BOX
+    f, s, t = B.GEM_LAYOUT["front"], B.GEM_LAYOUT["side"], B.GEM_LAYOUT["top"]
+    return {"from": [x1, y1, z1], "to": [x2, y2, z2], "faces": {
+        "north": {"uv": list(f), "texture": "#gem"},
+        "south": {"uv": list(f), "texture": "#gem"},
+        "east": {"uv": list(s), "texture": "#gem"},
+        "west": {"uv": list(s), "texture": "#gem"},
+        "up": {"uv": list(t), "texture": "#gem", "cullface": "up"},
+        "down": {"uv": list(t), "texture": "#gem"}}}
+
+
+def vine_elements():
+    front, back = VINE_Z
+    return [
+        {"from": [0, 0, front], "to": [16, 16, front], "faces": {"north": {"uv": [0, 0, 16, 16], "texture": "#vines"}}},
+        {"from": [0, 0, back], "to": [16, 16, back], "faces": {"south": {"uv": [0, 0, 16, 16], "texture": "#vines"}}},
+    ]
+
+
+def pedestal_elements():
+    def step(frm, to, cull_down):
+        faces = {side: {"texture": "#base_side"} for side in ("north", "south", "east", "west")}
+        faces["up"] = {"texture": "#base"}
+        faces["down"] = {"texture": "#base"}
+        if cull_down:
+            faces["down"]["cullface"] = "down"
+        return {"from": frm, "to": to, "faces": faces}
+    return [step([1, 0, 2], [15, 1, 14], True), step([3, 1, 4], [13, 2, 12], False)]
+
+
+def elements():
+    return pedestal_elements() + ring_elements() + [gem_element()] + vine_elements()
+
+
+SWIRL_PANE = {"from": [3, 4, 8], "to": [13, 14, 8], "faces": {
+    "north": {"uv": [3, 3, 13, 13], "texture": "#swirl"},
+    "south": {"uv": [3, 3, 13, 13], "texture": "#swirl"}}}
 
 
 def write(path, data):
@@ -94,21 +119,26 @@ def write(path, data):
 
 def main():
     models = os.path.join(ASSETS, "models")
-    write(os.path.join(models, "block", "elven_portal.json"), {"textures": TEXTURES, "elements": elements()})
+    write(os.path.join(models, "block", "elven_portal.json"), {
+        "render_type": "minecraft:cutout", "ambientocclusion": False, "textures": TEXTURES, "elements": elements()})
     write(os.path.join(models, "block", "elven_portal_open.json"), {
         "parent": "elvenportal:block/elven_portal",
-        "textures": {"keystone": "botania:block/alfheim_portal_activated"}})
+        "textures": {"gem": "elvenportal:block/gate_gem_lit"}})
     item_textures = dict(TEXTURES)
-    item_textures["keystone"] = "botania:block/alfheim_portal_activated"
-    item_textures["swirl"] = "elvenportal:block/portal_swirl"
+    item_textures["gem"] = "elvenportal:block/gate_gem_lit"
+    item_textures["swirl"] = "elvenportal:block/gate_swirl_still"
     write(os.path.join(models, "item", "elven_portal.json"), {
         "parent": "minecraft:block/block",
         "render_type": "minecraft:translucent",
+        "ambientocclusion": False,
         "textures": item_textures,
         "elements": elements() + [SWIRL_PANE],
         "display": {
-            "gui": {"rotation": [25, 205, 0], "translation": [0, 0, 0], "scale": [0.66, 0.66, 0.66]},
-            "fixed": {"rotation": [0, 180, 0], "translation": [0, 0, 0], "scale": [0.6, 0.6, 0.6]}}})
+            "gui": {"rotation": [20, 205, 0], "translation": [0, 0.5, 0], "scale": [0.7, 0.7, 0.7]},
+            "ground": {"rotation": [0, 0, 0], "translation": [0, 3, 0], "scale": [0.3, 0.3, 0.3]},
+            "fixed": {"rotation": [0, 180, 0], "translation": [0, 0, 0], "scale": [0.7, 0.7, 0.7]},
+            "thirdperson_righthand": {"rotation": [75, 45, 0], "translation": [0, 2.5, 0], "scale": [0.375, 0.375, 0.375]},
+            "firstperson_righthand": {"rotation": [0, 45, 0], "translation": [0, 0, 0], "scale": [0.4, 0.4, 0.4]}}})
     variants = {}
     for facing, y in (("north", 0), ("east", 90), ("south", 180), ("west", 270)):
         for is_open in (False, True):
@@ -117,6 +147,7 @@ def main():
                 v["y"] = y
             variants[f"facing={facing},open={'true' if is_open else 'false'}"] = v
     write(os.path.join(ASSETS, "blockstates", "elven_portal.json"), {"variants": variants})
+    print(len(elements()), "elements")
 
 
 if __name__ == "__main__":

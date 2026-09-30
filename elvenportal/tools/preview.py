@@ -114,12 +114,17 @@ def preview_screen(lang="en", scale=3, width=640, height=360):
     plate_draw(scr, glyphs, title, mid - text_w // 2, y0 + 8, (78, 52, 23, 255))
     # the close button
     scr.alpha_composite(sheet(W.CLOSE_UV[0], W.CLOSE_UV[1], 16, 16), (left + 229, top - 8))
-    # the swirl, the gem (trading), the lit arrows, the mana, the button, the pool
+    # the swirl, the gem (trading), a few lit runes, the crystals afloat, the lit arrow, the mana, the button, the pool
     sx, sy, sw, sh = G.SWIRL
     frame = swirl.crop((3 * sw, 0, 4 * sw, sh))
-    frame.putalpha(frame.getchannel("A").point(lambda a: int(a * 0.95)))
     scr.alpha_composite(frame, (left + sx, top + sy))
     scr.alpha_composite(sheet(W.GEM_UV[0], W.GEM_UV[1], 7, 7), (left + G.GEM[0] - 3, top + G.GEM[1] - 3))
+    for k in (0, 1, 2):
+        rune = sheet(W.RUNE_UV[0] + k * W.RUNE_SIZE, W.RUNE_UV[1], W.RUNE_SIZE, W.RUNE_SIZE)
+        rune.putalpha(rune.getchannel("A").point(lambda a: int(a * (1.0 - 0.3 * k))))
+        scr.alpha_composite(rune, (left + G.RUNES[k][0], top + G.RUNES[k][1]))
+    for (cx, cy) in G.CRYSTALS:
+        scr.alpha_composite(sheet(W.CRYSTAL_UV[0] + W.CRYSTAL_W, W.CRYSTAL_UV[1], W.CRYSTAL_W, W.CRYSTAL_H), (left + cx, top + cy - 3))
     arrow = sheet(W.ARROW_UV[0] + W.ARROW_W, W.ARROW_UV[1], W.ARROW_W, W.ARROW_H)
     scr.alpha_composite(arrow, (left + G.ARROWS[0][0], top + G.ARROWS[0][1]))
     bx1, by1, bx2, by2 = G.BAR

@@ -35,29 +35,28 @@ import net.minecraftforge.network.NetworkHooks;
 import vazkii.botania.api.BotaniaAPI;
 
 /**
- * A little gateway: a dreamwood arch on a livingrock plinth with the Elven Gateway Core as its keystone and
- * four natura crystals at its feet. While it has mana for a trade the portal inside the arch is open (the
- * swirl is drawn by {@link com.reya.elvenportal.client.PortalRenderer}); it faces whoever placed it.
+ * A little elven moon gate: a ring of cream stone rimmed in gold, a vine with gold lights winding round it
+ * and a green gem in its top, on a two-step pedestal. While it has mana for a trade the portal inside the
+ * ring is open (the swirl, the runes, the lights and the floating crystals are drawn by
+ * {@link com.reya.elvenportal.client.PortalRenderer}); it faces whoever placed it.
  */
 public class PortalBlock extends BaseEntityBlock {
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
     /** The portal is open: it has mana for a trade and its redstone setting lets it work. */
     public static final BooleanProperty OPEN = BooleanProperty.create("open");
 
-    // the arch as the model has it facing north (across x), and turned a quarter (across z); the thin pane in
-    // the middle is the portal itself, so mana bursts aimed at the arch land in it instead of flying through
+    // the gate as the model has it facing north (the ring across x), and turned a quarter (across z): the
+    // pedestal's two steps, the ring's square (solid, so mana bursts aimed at the portal land in it) and the gem
     private static final VoxelShape SHAPE_X = Shapes.or(
-            Block.box(0.0D, 0.0D, 1.0D, 16.0D, 2.0D, 15.0D),
-            Block.box(1.0D, 2.0D, 4.0D, 3.0D, 13.0D, 12.0D),
-            Block.box(13.0D, 2.0D, 4.0D, 15.0D, 13.0D, 12.0D),
-            Block.box(0.0D, 13.0D, 3.0D, 16.0D, 16.0D, 13.0D),
-            Block.box(3.0D, 2.0D, 7.5D, 13.0D, 13.0D, 8.5D));
+            Block.box(1.0D, 0.0D, 2.0D, 15.0D, 1.0D, 14.0D),
+            Block.box(3.0D, 1.0D, 4.0D, 13.0D, 2.0D, 12.0D),
+            Block.box(1.0D, 2.0D, 6.0D, 15.0D, 16.0D, 10.0D),
+            Block.box(7.0D, 13.0D, 5.0D, 9.0D, 16.0D, 11.0D));
     private static final VoxelShape SHAPE_Z = Shapes.or(
-            Block.box(1.0D, 0.0D, 0.0D, 15.0D, 2.0D, 16.0D),
-            Block.box(4.0D, 2.0D, 1.0D, 12.0D, 13.0D, 3.0D),
-            Block.box(4.0D, 2.0D, 13.0D, 12.0D, 13.0D, 15.0D),
-            Block.box(3.0D, 13.0D, 0.0D, 13.0D, 16.0D, 16.0D),
-            Block.box(7.5D, 2.0D, 3.0D, 8.5D, 13.0D, 13.0D));
+            Block.box(2.0D, 0.0D, 1.0D, 14.0D, 1.0D, 15.0D),
+            Block.box(4.0D, 1.0D, 3.0D, 12.0D, 2.0D, 13.0D),
+            Block.box(6.0D, 2.0D, 1.0D, 10.0D, 16.0D, 15.0D),
+            Block.box(5.0D, 13.0D, 7.0D, 11.0D, 16.0D, 9.0D));
 
     public PortalBlock(Properties properties) {
         super(properties);
@@ -147,13 +146,13 @@ public class PortalBlock extends BaseEntityBlock {
         return level.getBlockEntity(pos) instanceof PortalBlockEntity be ? be.comparatorSignal() : 0;
     }
 
-    /** While open, little green and golden sparkles drift out of the portal inside the arch. */
+    /** While open, little green and golden sparkles drift out of the portal inside the ring. */
     @Override
     public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
         if (!state.getValue(OPEN)) return;
         Direction facing = state.getValue(FACING);
         for (int i = 0; i < 2; i++) {
-            double across = (random.nextDouble() - 0.5D) * 0.55D, up = 0.18D + random.nextDouble() * 0.6D;
+            double across = (random.nextDouble() - 0.5D) * 0.55D, up = 9.0D / 16.0D + (random.nextDouble() - 0.5D) * 0.55D;
             double out = (random.nextDouble() - 0.5D) * 0.15D;
             double x = pos.getX() + 0.5D + facing.getStepZ() * across + facing.getStepX() * out;
             double z = pos.getZ() + 0.5D + facing.getStepX() * across + facing.getStepZ() * out;

@@ -15,7 +15,7 @@ ARMS = 3
 TWIST = 2.3
 
 
-def swirl_frame(w, h, t, cx=None, cy=None, rx=None, ry=None, motes=6, seed=0, soft_edge=True):
+def swirl_frame(w, h, t, cx=None, cy=None, rx=None, ry=None, motes=6, seed=0, soft_edge=True, dither=True):
     """One frame (t in [0, 1)) as a w x h grid of RGBA tuples (alpha 0 outside the ellipse (rx, ry) round
     (cx, cy)). The arms turn a third of the way round per loop, so the frames loop seamlessly."""
     cx = w / 2.0 if cx is None else cx
@@ -36,7 +36,8 @@ def swirl_frame(w, h, t, cx=None, cy=None, rx=None, ry=None, motes=6, seed=0, so
             if r < 0.18:
                 level = max(level, 0.95 - r)
             # a little ordered dither between two tones keeps it pixel-like
-            level += ((x * 7 + y * 13) % 4 - 1.5) * 0.035
+            if dither:
+                level += ((x * 7 + y * 13) % 4 - 1.5) * 0.035
             i = max(0, min(len(RAMP) - 1, int(level * (len(RAMP) - 0.001))))
             alpha = 255
             if soft_edge and r > 0.9:

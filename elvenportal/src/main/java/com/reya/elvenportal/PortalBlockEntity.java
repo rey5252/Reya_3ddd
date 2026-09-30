@@ -34,6 +34,7 @@ import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.items.ItemStackHandler;
+import vazkii.botania.api.BotaniaAPI;
 import vazkii.botania.api.BotaniaForgeCapabilities;
 import vazkii.botania.api.mana.ManaPool;
 import vazkii.botania.api.mana.ManaReceiver;
@@ -311,7 +312,7 @@ public class PortalBlockEntity extends BlockEntity implements MenuProvider, Mana
         offeredTrades = Math.min(n, 0x7FFF);
     }
 
-    /** Items thrown on the portal (or dropped into its arch) go in, if the elves take them. */
+    /** Items thrown on the portal (or dropped into its ring) go in, if the elves take them. */
     private void takeThrownItems(Level level, BlockPos pos) {
         AABB box = new AABB(pos).expandTowards(0.0D, 0.4D, 0.0D);
         List<ItemEntity> entities = level.getEntitiesOfClass(ItemEntity.class, box, e -> e.isAlive() && !e.getItem().isEmpty());
@@ -407,6 +408,23 @@ public class PortalBlockEntity extends BlockEntity implements MenuProvider, Mana
         be.prevOpenness = be.openness;
         boolean open = state.getValue(PortalBlock.OPEN);
         be.openness = open ? Math.min(1.0F, be.openness + 0.06F) : Math.max(0.0F, be.openness - 0.08F);
+        // sparkles burst round the ring as the portal opens, and from its middle when a traded item reaches it
+        if (be.prevOpenness < 0.5F && be.openness >= 0.5F) be.sparkle(level, pos, state, 14, 0.42D);
+        if (be.clientAge == be.flyInAge + FLY_IN_TICKS) be.sparkle(level, pos, state, 8, 0.2D);
+    }
+
+    private void sparkle(Level level, BlockPos pos, BlockState state, int n, double radius) {
+        Direction facing = state.getValue(PortalBlock.FACING);
+        double ax = Math.abs(facing.getStepZ()), az = Math.abs(facing.getStepX());      // across the ring
+        for (int i = 0; i < n; i++) {
+            double a = level.random.nextDouble() * Math.PI * 2.0D;
+            double r = radius * (0.7D + level.random.nextDouble() * 0.3D);
+            double across = Math.cos(a) * r, up = 9.0D / 16.0D + Math.sin(a) * r;
+            boolean gold = level.random.nextInt(3) == 0;
+            BotaniaAPI.instance().sparkleFX(level, pos.getX() + 0.5D + ax * across, pos.getY() + up, pos.getZ() + 0.5D + az * across,
+                    gold ? 1.0F : 0.4F, gold ? 0.85F : 1.0F, gold ? 0.35F : 0.5F, 0.6F + level.random.nextFloat() * 0.5F,
+                    5 + level.random.nextInt(4));
+        }
     }
 
     public float openness(float partialTick) {
@@ -515,7 +533,7 @@ public class PortalBlockEntity extends BlockEntity implements MenuProvider, Mana
         clientCapacity = Math.max(1, tag.getInt("Capacity"));
     }
 
-    /** The traded items float a little in front of and behind the arch. */
+    /** The traded items fly a little in front of the gate, and the motes circle just outside it. */
     @Override
     public AABB getRenderBoundingBox() {
         return new AABB(worldPosition).inflate(0.5D);

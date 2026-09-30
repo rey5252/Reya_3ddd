@@ -1,14 +1,15 @@
 """Elven Portal GUI panel texture, in the style of Mana Garden's: a deep navy panel with rounded corners
 and a bright green edge, wound with curly leaf vines and hung with little gold lights. In the middle stands
-a dreamwood arch, the Elven Gateway Core for its keystone, with the portal inside it (the screen draws the
-swirl); the input slots are on its left, the output slots on its right, the mana bar under it.
+the elven moon gate, as the block is: a ring of cream stone rimmed in gold with eight runes carved round
+it, vines winding round it, a gem in its top, on a two-step pedestal, with the portal inside it (the screen
+draws the swirl); the input slots are on its left, the output slots on its right, the mana bar under it.
 
     python3 tools/gen_gui.py            writes textures/gui/elven_portal.png
 
 Coordinates are the menu's (PortalMenu): the panel is W x H, the texture has a margin M round it for the
-vines that stick out of the frame. The moving parts (the swirl, the gem, the lit arrows, the mana, the
-gold lights' twinkle) are drawn over it by client/PortalScreen.java; tools/check_layout.py keeps the two in
-step.
+vines that stick out of the frame. The moving parts (the swirl, the gem, the lit runes, the floating
+crystals, the lit arrows, the mana, the gold lights' twinkle) are drawn over it by client/PortalScreen.java;
+tools/check_layout.py keeps the two in step.
 """
 import math
 import os
@@ -29,9 +30,15 @@ INV_X1, INV_X2 = 28, 212
 INPUT = (18, 30)                     # the first input slot's item corner; three rows of three, 18 apart
 OUTPUT = (168, 30)                   # the first output slot's item corner
 INV_Y, HOTBAR_Y, INV_SLOT_X = 132, 190, 40
-ARCH = (84, 8, 156, 102)             # x1, y1, x2, y2 round the whole arch
-SWIRL = (98, 24, 44, 72)             # x, y, w, h of the portal inside the arch: the screen draws the swirl there
-GEM = (120, 17)                      # the middle of the keystone's gem, which the screen lights
+GATE = (120, 56)                     # the middle of the moon gate (the ring round the portal)
+GATE_RO, GATE_RI = 34, 23            # the ring's outer radius, and the portal's inside it
+GATE_BOX = (84, 20, 156, 100)        # x1, y1, x2, y2 round the whole gate and its pedestal (for its tooltip)
+SWIRL = (97, 33, 46, 46)             # x, y, w, h of the portal's square: the screen draws the swirl there
+GEM = (120, 28)                      # the middle of the gem in the ring's top, which the screen lights
+# the eight runes carved round the ring (their 5x5 glyphs' top-left corners): the screen lights them
+RUNES = [(144, 65), (129, 80), (107, 80), (92, 65), (92, 43), (107, 28), (129, 28), (144, 43)]
+RUNE_R = 28.0                        # the runes' distance from the middle
+CRYSTALS = [(94, 85), (142, 85)]     # the natura crystals' sprites (5x8) at rest on the lower step: the screen floats them
 ARROWS = [(74, 53), (155, 53)]       # the arrows' top-left corners (12 x 9); the screen lights them on a trade
 ARROW_W, ARROW_H = 12, 9
 BAR = (64, 108, 176, 114)            # the mana bar's inside
@@ -41,7 +48,8 @@ POOL = (206, 102)                    # the pool light (16 x 16): lit while a man
 # the little gold lights on the vines (their middle pixel); the screen makes them twinkle
 LIGHTS = [
     (21, -8), (-6, 21), (-6, 47), (-8, -8), (222, -9), (247, 16), (247, 47), (247, -8),
-    (21, 134), (-9, 103), (-10, 76), (-8, 131), (218, 132), (248, 101), (250, 75), (247, 131)]
+    (21, 134), (-9, 103), (-10, 76), (-8, 131), (218, 132), (248, 101), (250, 75), (247, 131),
+    (85, 72), (153, 39)]
 
 VEIN_COL = hexc("1B4A80")
 LIGHT_DIR = (-0.62, -0.78)
@@ -92,7 +100,7 @@ def inventory_fill(x, y):
     return mix(N3, N4, t)
 
 
-# ---------------------------------------------------------------- behind the arch
+# ---------------------------------------------------------------- behind the gate
 
 PATTERN = hexc("2A4487")
 
@@ -104,22 +112,22 @@ def ring(cv, cx, cy, r, col):
         cv.set(int(math.floor(cx + math.cos(a) * r)), int(math.floor(cy + math.sin(a) * r)), col)
 
 
-RUNES = [
+CIRCLE_GLYPHS = [
     [".#.", "###", ".#."], ["#.#", ".#.", "#.#"], ["##.", "#.#", ".##"], [".##", "#..", ".##"],
     ["#.#", "###", "#.#"], ["###", ".#.", "#.#"], [".#.", "#.#", "###"], ["#..", "###", "..#"]]
 
 
 def runes(cv):
-    """A faint rune circle behind the arch, like the one behind Mana Garden's heart."""
-    cx, cy = 120, 57
-    for r, col in ((49.5, PATTERN), (47.5, mix(PATTERN, N3, 0.55))):
+    """A faint rune circle behind the gate, like the one behind Mana Garden's heart."""
+    cx, cy = GATE
+    for r, col in ((47.5, PATTERN), (45.5, mix(PATTERN, N3, 0.55))):
         ring(cv, cx, cy, r, col)
     for k in range(10):
         a = (k + 0.5) / 10 * math.tau
-        x, y = int(round(cx + math.cos(a) * 53.5)), int(round(cy + math.sin(a) * 53.5))
-        if ARCH[0] - 3 <= x <= ARCH[2] + 3 and y < ARCH[3]:
-            continue
-        for j, row in enumerate(RUNES[k % len(RUNES)]):
+        x, y = int(round(cx + math.cos(a) * 51.5)), int(round(cy + math.sin(a) * 51.5))
+        if y > GATE_BOX[3] - 8 or y < 8 or not (INPUT[0] + 56 < x < OUTPUT[0] - 3):
+            continue                 # not over the slots or the frame
+        for j, row in enumerate(CIRCLE_GLYPHS[k % len(CIRCLE_GLYPHS)]):
             for i, ch in enumerate(row):
                 if ch == "#":
                     cv.set(x - 1 + i, y - 1 + j, mix(PATTERN, M2, 0.3))
@@ -163,158 +171,140 @@ def inventory_slot(cv, x, y):
     slot_frame(cv, x, y, DIM_SAGE, hexc("14204A"), hexc("0E1838"))
 
 
-# ---------------------------------------------------------------- the arch
+# ---------------------------------------------------------------- the moon gate
 
-def dreamwood(x, y, vertical, lit, seed):
-    """A pixel of dreamwood: pale grey-green, lit by `lit` (-1..1), with grooves along the grain every three
-    pixels that wander by a pixel now and then."""
-    along, across = (y, x) if vertical else (x, y)
-    base = mix(DW3, DW1, (lit + 1) / 2)
-    wander = 1 if rnd(along // 5 + seed * 31, across // 3 + 7) < 0.28 else 0
-    if (across + wander) % 3 == 0:
-        base = mix(base, DW4, 0.5)
-    elif rnd2(across, along // 2, 17 + seed) < 0.06:
-        base = mix(base, DW0, 0.6)
-    return base
+# the gate's runes, 5x5 (the widget sheet has them lit, in the same order)
+GATE_GLYPHS = [
+    ["..#..", ".###.", "#.#.#", "..#..", "..#.."],
+    ["#.#.#", "#.#.#", ".###.", "..#..", "..#.."],
+    [".###.", "#...#", "#.#.#", "#...#", ".###."],
+    ["#...#", "##.##", "#.#.#", "#...#", "#...#"],
+    ["..#..", ".#.#.", "#.#.#", ".#.#.", "..#.."],
+    ["#.#..", "#.#..", "#.###", "#....", "#####"],
+    [".#.#.", "#####", ".#.#.", "#####", ".#.#."],
+    ["..#..", "..#..", "#####", ".#.#.", "#...#"]]
+GATE_OUT = hexc("3A2408")
 
 
-def box(cv, x1, y1, x2, y2, fill, outline=DWOUT):
-    """A block of the arch: an outline and an inside painted by fill(x, y, lit) with lit = -1 (right/bottom
-    edge) .. 1 (left/top edge)."""
-    for y in range(y1, y2):
-        for x in range(x1, x2):
-            if x in (x1, x2 - 1) or y in (y1, y2 - 1):
-                cv.set(x, y, outline)
+def gate_ring(cv, cx, cy, ro, ri, glyphs=None, spots=(), carve=None):
+    """The moon gate's ring round (cx, cy): a dark outline, a gold rim (2 px), a band of cream stone, a thin
+    gold inner rim and a dark inner edge, all lit from the top-left; runes carved in the stone at `spots`."""
+    for y in range(int(cy - ro) - 1, int(cy + ro) + 2):
+        for x in range(int(cx - ro) - 1, int(cx + ro) + 2):
+            px, py = x + 0.5 - cx, y + 0.5 - cy
+            d = math.hypot(px, py)
+            if d > ro or d <= ri:
                 continue
-            fx = (x - x1 - 1) / max(1.0, x2 - x1 - 3.0)
-            fy = (y - y1 - 1) / max(1.0, y2 - y1 - 3.0)
-            lit = 1.0 if x == x1 + 1 or y == y1 + 1 else (-1.0 if x == x2 - 2 or y == y2 - 2 else 0.3 - 0.6 * (fx + fy) / 2)
-            cv.set(x, y, fill(x, y, lit))
-
-
-def pillar(cv, x1, x2, seed):
-    y1, y2 = SWIRL[1] - 2, ARCH[3] - 5
-    box(cv, x1, y1, x2, y2, lambda x, y, lit: dreamwood(x, y, True, lit, seed))
-    # a spiral of glimmer carved in the middle of the pillar, like on glimmering dreamwood
-    cx, cy = (x1 + x2) / 2.0 - 0.5, (y1 + y2) / 2.0
-    for k in range(26):
-        a = k * 0.55
-        r = 0.6 + k * 0.17
-        x, y = int(round(cx + math.cos(a) * r)), int(round(cy + math.sin(a) * r * 1.3))
-        if x1 + 2 <= x < x2 - 2 and y1 + 2 <= y < y2 - 2:
-            cv.set(x, y, PK1 if k % 5 else PK0)
-
-
-def lintel(cv):
-    x1, y1, x2, y2 = ARCH[0], SWIRL[1] - 14, ARCH[2], SWIRL[1]
-    box(cv, x1, y1, x2, y2, lambda x, y, lit: dreamwood(x, y, False, lit, 5))
-    # a thin groove along it
-    for x in range(x1 + 3, x2 - 3):
-        if not (GEM[0] - 9 <= x <= GEM[0] + 8):
-            cv.set(x, y1 + 8, mix(DW4, DW5, 0.4))
-
-
-def keystone(cv):
-    """The Elven Gateway Core as the keystone: dark livingwood with green glyphs and a gem socket."""
-    x1, y1, x2, y2 = GEM[0] - 8, ARCH[1], GEM[0] + 8, SWIRL[1] + 3
-    for y in range(y1, y2):
-        for x in range(x1, x2):
-            if x in (x1, x2 - 1) or y in (y1, y2 - 1):
-                cv.set(x, y, CW4)
-                continue
-            lit = 1 if x == x1 + 1 or y == y1 + 1 else (-1 if x == x2 - 2 or y == y2 - 2 else 0)
-            c = CW1 if lit > 0 else (CW3 if lit < 0 else CW2)
-            if rnd2(x, y, 41) < 0.15:
-                c = mix(c, CW3, 0.5)
+            lit = (px * LIGHT_DIR[0] + py * LIGHT_DIR[1]) / max(d, 0.001)
+            hi, lo = lit > 0.35, lit < -0.35
+            if d > ro - 1:
+                c = GATE_OUT
+            elif d > ro - 3:
+                c = Y1 if hi else (Y3 if lo else Y2)
+            elif d > ri + 2:
+                t = (d - (ri + 2)) / float(ro - 3 - (ri + 2))
+                base = LR0 if hi else (LR2 if lo else LR1)
+                c = mix(base, LR3, 0.25 * (1.0 - t)) if not hi else base
+                if rnd2(x, y, 23) < 0.08:
+                    c = mix(c, LR3, 0.4)
+            elif d > ri + 1:
+                c = Y2 if lo else Y3                    # the inner rim faces the other way
+            else:
+                c = GATE_OUT
             cv.set(x, y, c)
-    glyphs = ["G..G.GG.G..G",
-              "G.GG....GG.G",
-              "............",
-              "............",
-              "............",
-              "............",
-              "............",
-              "............",
-              "............",
-              "............",
-              "............",
-              "............",
-              "GG.G....G.GG",
-              "G..GG..GG..G",
-              "............",
-              "..G.GGGG.G..",
-              "............"]
-    for j, row in enumerate(glyphs):
-        for i, ch in enumerate(row):
-            if ch == "G":
-                cv.set(x1 + 2 + i, y1 + 2 + j, GLYPH1 if (i + j) % 3 else GLYPH0)
-    # the gem's socket, round the pixel GEM: a gold ring round a dark hole (the screen sets the 7x7 gem in it)
-    gx, gy = GEM
+    if glyphs:
+        for (gx, gy), g in zip(spots, glyphs):
+            for j, row in enumerate(g):
+                for i, ch in enumerate(row):
+                    if ch == "#":
+                        cv.set(gx + i, gy + j, carve or LR3)
+
+
+def gate_void(cv, cx, cy, r):
+    """The inside of the ring while the portal is shut: a dark green deep with a few faint stars."""
+    for y in range(int(cy - r) - 1, int(cy + r) + 2):
+        for x in range(int(cx - r) - 1, int(cx + r) + 2):
+            d = math.hypot(x + 0.5 - cx, y + 0.5 - cy)
+            if d > r:
+                continue
+            c = mix(VOID0, VOID1, min(1.0, d / r))
+            if rnd2(x, y, 51) < 0.02:
+                c = mix(c, G1, 0.35)
+            cv.set(x, y, c)
+
+
+def gate_gem_socket(cv, gx, gy):
+    """A gold setting round the pixel (gx, gy) with a dark hole (the screen sets the 7x7 gem in it)."""
     for dy in range(-5, 6):
         for dx in range(-5, 6):
             d = math.hypot(dx, dy)
             if d <= 4.6:
-                cv.set(gx + dx, gy + dy, (Y2 if dx + dy < 0 else Y3) if d > 3.6 else hexc("0A1A12"))
+                cv.set(gx + dx, gy + dy, (Y1 if dx + dy < 0 else Y3) if d > 3.6 else hexc("0A1A12"))
+    for (dx, dy) in ((-5, 0), (5, 0), (0, -5)):
+        cv.set(gx + dx, gy + dy, GATE_OUT)
 
 
-def base(cv):
-    """The livingrock step the arch stands on, with a natura crystal at each end."""
-    x1, y1, x2, y2 = ARCH[0] - 2, ARCH[3] - 6, ARCH[2] + 2, ARCH[3]
-    for y in range(y1, y2):
-        for x in range(x1, x2):
-            if x in (x1, x2 - 1) or y in (y1, y2 - 1):
-                cv.set(x, y, hexc("2C2820"))
-                continue
-            c = LR0 if y == y1 + 1 else (LR3 if y == y2 - 2 else LR1)
-            if (x - x1) % 12 == 0 and y > y1 + 1:
-                c = LR3
-            elif rnd2(x, y, 7) < 0.12:
-                c = LR2
-            cv.set(x, y, c)
-    for cx in (ARCH[0] + 1, ARCH[2] - 2):
-        crystal(cv, cx, y1 - 1)
+def pedestal(cv, cx, bottom, upper_w, lower_w, step_h=5):
+    """Two steps of cream stone under the gate, the upper one banded in gold."""
+    y2 = bottom
+    for (w, y1, gold) in ((lower_w, bottom - step_h, False), (upper_w, bottom - 2 * step_h, True)):
+        x1, x2 = cx - w // 2, cx + w // 2
+        for y in range(y1, y2):
+            for x in range(x1, x2):
+                if x in (x1, x2 - 1) or y in (y1, y2 - 1):
+                    cv.set(x, y, GATE_OUT)
+                    continue
+                if gold:
+                    c = Y1 if y == y1 + 1 else (Y3 if y == y2 - 2 else Y2)
+                    if (x - x1) % 6 == 3 and y1 + 1 < y < y2 - 2:
+                        c = Y1
+                else:
+                    c = LR0 if y == y1 + 1 else (LR3 if y == y2 - 2 else LR1)
+                    if (x - x1) % 12 == 0 and y > y1 + 1:
+                        c = LR3
+                    elif rnd2(x, y, 7) < 0.1:
+                        c = LR2
+                cv.set(x, y, c)
+        y2 = y1
 
 
-def crystal(cv, cx, bottom):
-    """A little natura crystal: a green diamond with a white glint, standing on the step."""
-    rows = ["..o..",
-            ".oho.",
-            ".olm.",
-            "olmmo",
-            "olmdo",
-            ".omd.",
-            ".odd.",
-            "..o.."]
-    pal = {"o": hexc("0E3B22"), "h": hexc("F4FFE8"), "l": G0, "m": G1, "d": G3}
-    for j, row in enumerate(rows):
-        for i, ch in enumerate(row):
-            if ch != ".":
-                cv.set(cx - 2 + i, bottom - len(rows) + 1 + j, pal[ch])
+def arc_arm(cx, cy, radius, a0, length, seed, sway=0.12, period=26.0):
+    """A vine along the outside of the ring, clockwise from the angle a0 for `length` px: blades swaying
+    along it, tendrils curling outwards and a curl at its end."""
+    phase = 0.13 * seed
+    x, y = cx + math.cos(a0) * radius, cy + math.sin(a0) * radius
+    path = V.walk(x, y, a0 + math.pi / 2, length + 26, V.both(lambda s: 1.0 / radius, V.wave(sway, period, phase)))
+    specs = []
+    for i in range(int(length // 13)):
+        s = 7 + i * 13 + 2 * ((seed + i) % 3)
+        if s > length - 4:
+            break
+        specs.append(V.hook_spec(path, s, -1, 7 + ((seed + 2 * i) % 3), 4.0 + 0.4 * ((seed + i) % 2), TONES, r0=1.0))
+    specs += V.chain_specs(path, 0, length - 2, TONES, length=12, pitch=7.5, r=1.8, seed=seed)
+    ex, ey, eth = V.at(path, length - 3)
+    specs.append(V.curl_spec(ex, ey, eth, 16, -4.6, 1.5, 0.6, TONES, power=1.3))
+    return specs
 
 
-def opening(cv):
-    """The portal inside the arch: a dark void with a faint glow in the middle (the swirl goes over it)."""
-    x, y, w, h = SWIRL
-    for j in range(h):
-        for i in range(w):
-            u, v = (i + 0.5 - w / 2) / (w / 2), (j + 0.5 - h / 2) / (h / 2)
-            r = math.hypot(u, v)
-            c = mix(VOID0, VOID1, min(1.0, r))
-            if rnd2(i, j, 51) < 0.012:
-                c = mix(c, G1, 0.35)
-            cv.set(x + i, y + j, c)
-    # a shadow under the lintel
-    cv.hline(x, x + w, y, VOID1)
-    cv.hline(x, x + w, y + 1, mix(VOID1, VOID0, 0.4))
+# the vines round the gate: (start angle, length) clockwise along a circle just outside the ring
+GATE_VINES = [(math.radians(108), 27, 5), (math.radians(288), 27, 6)]
 
 
-def arch(cv):
-    opening(cv)
-    pillar(cv, ARCH[0] + 2, SWIRL[0], 1)
-    pillar(cv, SWIRL[0] + SWIRL[2], ARCH[2] - 2, 2)
-    lintel(cv)
-    base(cv)
-    keystone(cv)
+def gate_vine_specs():
+    cx, cy = GATE
+    specs = []
+    for (a0, length, seed) in GATE_VINES:
+        specs += arc_arm(cx, cy, GATE_RO + 1.5, a0, length, seed)
+    return specs
+
+
+def gate(cv):
+    cx, cy = GATE
+    gate_void(cv, cx, cy, GATE_RI + 0.5)
+    V.paint_specs(cv, gate_vine_specs(), VOUT)
+    gate_ring(cv, cx, cy, GATE_RO, GATE_RI, GATE_GLYPHS, RUNES)
+    pedestal(cv, cx, GATE_BOX[3] - 2, 44, 58)
+    gate_gem_socket(cv, *GEM)
 
 
 # ---------------------------------------------------------------- arrows, the mana bar
@@ -441,7 +431,7 @@ def machine(cv):
     grid(cv, INPUT, SAGE, hexc("10193A"), hexc("0B1129"))
     grid(cv, OUTPUT, GOLD_RIM, hexc("1A1830"), hexc("100E22"))
     arrows(cv)
-    arch(cv)
+    gate(cv)
     mana_bar_track(cv)
 
 

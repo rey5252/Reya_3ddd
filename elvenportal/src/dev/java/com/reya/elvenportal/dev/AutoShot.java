@@ -39,8 +39,8 @@ import org.lwjgl.glfw.GLFW;
 
 /**
  * Dev-only: with ELVENPORTAL_AUTOSHOT=true the client makes a flat world, sets an Elven Portal on a
- * livingrock step with a creative mana pool behind it and things for the elves in its slots, photographs it
- * trading, opens its GUI and photographs the opening, the settled GUI, its tooltips, an item sent through the
+ * livingrock step with things for the elves in its slots, photographs it shut, puts a creative mana pool
+ * behind it and photographs it opening and trading, opens its GUI and photographs the opening, the settled GUI, its tooltips, an item sent through the
  * portal, the redstone setting, the closing, the lexicon pages and the Wand of the Forest's HUD, then the
  * GUI and the lexicon in Ukrainian, and quits.
  */
@@ -59,10 +59,15 @@ public final class AutoShot {
 
     static {
         STEPS.add(new Step(80, AutoShot::setUp));
-        // the portal in the world: opening as the mana comes in, then trading
-        STEPS.add(new Step(40, () -> eye(2.0D, 1.35D, 2.6D, 0.5D, 0.5D, 0.5D)));
+        // the gate in the world: shut (no mana yet), opening as the mana pool comes, then open and trading
+        STEPS.add(new Step(40, () -> eye(1.9D, 1.3D, 2.3D, 0.5D, 0.55D, 0.5D)));
+        STEPS.add(new Step(40, () -> shot("block_closed.png")));
+        STEPS.add(new Step(2, AutoShot::placePool));
+        STEPS.add(new Step(6, () -> shot("block_opening_1.png")));
+        STEPS.add(new Step(5, () -> shot("block_opening_2.png")));
+        STEPS.add(new Step(5, () -> shot("block_opening_3.png")));
         STEPS.add(new Step(40, () -> shot("block.png")));
-        STEPS.add(new Step(5, () -> eye(0.5D, 0.95D, 2.1D, 0.5D, 0.5D, 0.5D)));
+        STEPS.add(new Step(5, () -> eye(0.5D, 0.75D, 1.75D, 0.5D, 0.56D, 0.5D)));
         STEPS.add(new Step(21, () -> shot("block_front.png")));
         STEPS.add(new Step(7, () -> shot("block_trading.png")));
         STEPS.add(new Step(5, () -> eye(-1.9D, 1.6D, -1.4D, 0.5D, 0.45D, 0.5D)));
@@ -213,7 +218,6 @@ public final class AutoShot {
                 }
             }
             level.setBlock(POS, ElvenPortal.PORTAL.get().defaultBlockState().setValue(PortalBlock.FACING, Direction.SOUTH), 3);
-            level.setBlock(POS.north(), block("botania", "creative_pool").defaultBlockState(), 3);
             String[] colours = {"white", "pink", "light_blue", "magenta", "yellow", "lime", "cyan", "purple"};
             int k = 0;
             for (int x = -4; x <= 4; x++) {
@@ -249,6 +253,12 @@ public final class AutoShot {
         mc.options.hideGui = true;
         mc.options.bobView().set(false);
         mc.options.fov().set(70);
+    }
+
+    /** A creative mana pool behind the gate: the portal draws mana from it and opens. */
+    private static void placePool() {
+        MinecraftServer server = server();
+        server.execute(() -> server.overworld().setBlock(POS.north(), block("botania", "creative_pool").defaultBlockState(), 3));
     }
 
     /** Refills the portal's input slots (the trades eat them) and puts a few earlier trades in its output slots. */

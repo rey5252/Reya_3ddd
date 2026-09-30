@@ -1,4 +1,4 @@
-"""The mod's logo for the Mods list (META-INF/mods.toml logoFile): a little dreamwood arch with the portal
+"""The mod's logo for the Mods list (META-INF/mods.toml logoFile): the elven moon gate with the portal
 swirling inside it, standing at the edge of a navy panel in the GUI's style (the green edge, curly vines,
 gold lights) that reads ELVEN PORTAL, with an elementium ingot and a dragonstone floating out of the swirl.
 
@@ -21,8 +21,9 @@ import gen_gui as G
 
 W, H = 200, 50
 PANEL = (30, 5, 193, 50)            # x1, y1, x2, y2 of the panel (its bottom edge is the logo's; vines round the rest)
-OPENING = (12, 12, 22, 31)          # the portal inside the arch: x, y, w, h
-GEM = (23, 6)
+GATE_MIDDLE = (24, 23)              # the moon gate's middle, and its ring's outer radius and the portal's inside it
+GATE_R = (21, 13)
+GEM = (24, 6)
 LIGHTS = [(167, 1), (196, 27), (182, 1), (198, 12)]
 
 # the plate letters (as client/PlateFont.java), 5 rows each
@@ -96,63 +97,21 @@ def vines(cv):
     V.paint_specs(cv, specs, VOUT, fx=True, cx=pw / 2.0, dx=x1, dy=y1)
 
 
-# ---------------------------------------------------------------- the arch
+# ---------------------------------------------------------------- the gate
 
-def dreamwood_box(cv, x1, y1, x2, y2, vertical, seed):
-    G.box(cv, x1, y1, x2, y2, lambda x, y, lit: G.dreamwood(x, y, vertical, lit, seed))
-
-
-def arch(cv):
-    ox, oy, ow, oh = OPENING
-    # the portal: a dark void with the swirl in it
-    for j in range(oh):
-        for i in range(ow):
-            u, v = (i + 0.5 - ow / 2) / (ow / 2), (j + 0.5 - oh / 2) / (oh / 2)
-            cv.set(ox + i, oy + j, mix(VOID0, VOID1, min(1.0, math.hypot(u, v))))
-    S.put(cv, S.swirl_frame(ow, oh, 0.35, rx=ow / 2.0 - 0.3, ry=oh / 2.0 - 0.3, motes=6, seed=3), ox, oy)
-    # the pillars, the lintel and the step
-    dreamwood_box(cv, 4, oy - 2, ox, oy + oh, True, 1)
-    dreamwood_box(cv, ox + ow, oy - 2, ox + ow + 8, oy + oh, True, 2)
-    dreamwood_box(cv, 1, 1, 46, oy, False, 5)
-    x1, x2 = 0, 47
-    for y in range(oy + oh, H):
-        for x in range(x1, x2):
-            if x in (x1, x2 - 1) or y in (oy + oh, H - 1):
-                cv.set(x, y, hexc("2C2820"))
-                continue
-            c = LR0 if y == oy + oh + 1 else (LR3 if y == H - 2 else LR1)
-            if (x - x1) % 12 == 0 and y > oy + oh + 1:
-                c = LR3
-            elif rnd2(x, y, 7) < 0.12:
-                c = LR2
-            cv.set(x, y, c)
-    for cx in (2, 44):
-        G.crystal(cv, cx, oy + oh - 1)
-    keystone(cv)
-
-
-def keystone(cv):
-    """The Elven Gateway Core with its gem lit green: the portal is open."""
+def gate(cv):
+    """The moon gate, as in the GUI: the portal swirling in a gold-rimmed stone ring, its gem lit, on a
+    two-step pedestal, a vine climbing its lower left."""
+    cx, cy = GATE_MIDDLE
+    ro, ri = GATE_R
+    G.gate_void(cv, cx, cy, ri + 0.5)
+    n = 2 * ri
+    S.put(cv, S.swirl_frame(n, n, 0.35, rx=ri - 0.3, ry=ri - 0.3, motes=5, seed=3), cx - ri, cy - ri)
+    V.paint_specs(cv, G.arc_arm(cx, cy, ro + 1.5, math.radians(100), 22, 3), VOUT)
+    G.gate_ring(cv, cx, cy, ro, ri)
+    G.pedestal(cv, cx, H, 28, 38, step_h=4)
     gx, gy = GEM
-    x1, y1, x2, y2 = gx - 7, 0, gx + 8, 14
-    for y in range(y1, y2):
-        for x in range(x1, x2):
-            if x in (x1, x2 - 1) or y in (y1, y2 - 1):
-                cv.set(x, y, CW4)
-                continue
-            lit = 1 if x == x1 + 1 or y == y1 + 1 else (-1 if x == x2 - 2 or y == y2 - 2 else 0)
-            c = CW1 if lit > 0 else (CW3 if lit < 0 else CW2)
-            if rnd2(x, y, 41) < 0.15:
-                c = mix(c, CW3, 0.5)
-            cv.set(x, y, c)
-    for i in range(x1 + 2, x2 - 2, 2):
-        cv.set(i, y2 - 3, GLYPH1 if i % 4 else GLYPH0)
-    for dy in range(-5, 6):
-        for dx in range(-5, 6):
-            d = math.hypot(dx, dy)
-            if d <= 4.6:
-                cv.set(gx + dx, gy + dy, (Y2 if dx + dy < 0 else Y3) if d > 3.6 else hexc("0A1A12"))
-    # the gem, lit
+    G.gate_gem_socket(cv, gx, gy)
     for dy in range(-3, 4):
         for dx in range(-3, 4):
             d = math.hypot(dx, dy)
@@ -208,7 +167,7 @@ def build():
     draw_title(cv, "ELVEN", 60, 11, 3, [G0, G1, G1, G2, G3], VOUT)
     draw_title(cv, "PORTAL", 60, 28, 3, [Y0, Y1, Y1, Y2, Y3], Y4)
     gifts(cv)
-    arch(cv)
+    gate(cv)
     for (x, y) in LIGHTS:
         G.light(cv, x, y)
     return cv

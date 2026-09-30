@@ -11,6 +11,8 @@ Sheet layout (the screen, client/PortalScreen.java, reads it at these places):
   (192,0)  the pool light 16x16: no pool beside the portal, (208,0) a pool beside it
   (0,56)   the title scroll: left roller 16x20, (16,56) right roller 16x20, (32,56) and (40,56) tiles of paper 8x20
   (0,80)   the mana bar's fill 112x6
+  (0,96)   the gate's eight runes lit, 5x5 each (in gen_gui.GATE_GLYPHS' order)
+  (48,96)  a natura crystal 5x8: resting (dim), (53,96) afloat (lit)
 """
 import math
 import os
@@ -41,14 +43,18 @@ SCROLL_TILE_W = 8                    # two tiles side by side, the screen altern
 SCROLL_PAPER = (3, 16)               # the paper's first and last row on the scroll pieces (the rollers reach further)
 FILL_V = 80
 FILL_W, FILL_H = 112, 6
+RUNE_UV = (0, 96)
+RUNE_SIZE = 5
+CRYSTAL_UV = (48, 96)
+CRYSTAL_W, CRYSTAL_H = 5, 8
 # every piece of the sheet as (name, x, y, w, h): tools/check_layout.py makes sure none overlaps another
 # (a piece reaching into its neighbour's pixels shows up in the game as stray dots)
 SHEET_REGIONS = [
     ("buttons", 0, 0, 64, 16), ("icons", 0, 16, 36, 12), ("close", 104, 0, 48, 16), ("glow", 104, 16, 9, 9),
     ("arrows", 160, 0, 24, 9), ("gems", 160, 16, 28, 7), ("pool", 192, 0, 32, 16), ("scroll", 0, 56, 48, 20),
-    ("fill", 0, 80, 112, 6)]
-# the GUI's swirl: frames of the portal's inside (as the panel's SWIRL), side by side
-SWIRL_W, SWIRL_H, SWIRL_FRAMES = 44, 72, 16
+    ("fill", 0, 80, 112, 6), ("runes", 0, 96, 40, 5), ("crystals", 48, 96, 10, 8)]
+# the GUI's swirl: frames of the portal inside the gate (as the panel's SWIRL), side by side
+SWIRL_W, SWIRL_H, SWIRL_FRAMES = 46, 46, 16
 
 # Botania's blues for the mana icons, the pinks of the bloom
 LW0, LW1 = hexc("A2512A"), hexc("7A3314")
@@ -341,6 +347,38 @@ def mana_fill(cv, x0, y0):
             cv.set(x0 + x, y0 + y, c)
 
 
+def lit_runes(cv):
+    """The gate's runes, glowing: pale green strokes with a white heart where they cross."""
+    from gen_gui import GATE_GLYPHS
+    for k, g in enumerate(GATE_GLYPHS):
+        x0 = RUNE_UV[0] + k * RUNE_SIZE
+        for j, row in enumerate(g):
+            for i, ch in enumerate(row):
+                if ch != "#":
+                    continue
+                n = sum(1 for (di, dj) in ((1, 0), (-1, 0), (0, 1), (0, -1))
+                        if 0 <= j + dj < 5 and 0 <= i + di < 5 and g[j + dj][i + di] == "#")
+                cv.set(x0 + i, RUNE_UV[1] + j, hexc("F4FFE8") if n >= 3 else G0)
+
+
+CRYSTAL = ["..o..",
+           ".oho.",
+           "olhmo",
+           "olmdo",
+           "olmdo",
+           "omddo",
+           ".odo.",
+           "..o.."]
+
+
+def crystals(cv):
+    """A natura crystal, resting (dim) and afloat (lit)."""
+    for i, lit in enumerate((False, True)):
+        pal = {"o": hexc("0E3B22"), "h": hexc("F4FFE8") if lit else G1, "l": G0 if lit else G2, "m": G1 if lit else G3,
+               "d": G2 if lit else G4}
+        cv.sprite(CRYSTAL, CRYSTAL_UV[0] + i * CRYSTAL_W, CRYSTAL_UV[1], pal)
+
+
 def widgets():
     cv = Canvas(SHEET_W, SHEET_H)
     for i, s in enumerate(("normal", "hover", "pressed", "off")):
@@ -361,15 +399,17 @@ def widgets():
     scroll_tile(cv, SCROLL_TILE_U, SCROLL_V, 0)
     scroll_tile(cv, SCROLL_TILE_U + SCROLL_TILE_W, SCROLL_V, 7)
     mana_fill(cv, 0, FILL_V)
+    lit_runes(cv)
+    crystals(cv)
     cv.save(os.path.join(ASSETS, "textures", "gui", "elven_portal_widgets.png"))
     return cv
 
 
 def swirl_sheet():
-    """The GUI's swirl, frame after frame: the portal's oval fills the opening in the arch."""
+    """The GUI's swirl, frame after frame: a round portal filling the ring of the gate."""
     cv = Canvas(SWIRL_W * SWIRL_FRAMES, SWIRL_H)
     for f in range(SWIRL_FRAMES):
-        grid = S.swirl_frame(SWIRL_W, SWIRL_H, f / SWIRL_FRAMES, rx=SWIRL_W / 2.0 - 0.5, ry=SWIRL_H / 2.0 - 0.5, motes=9)
+        grid = S.swirl_frame(SWIRL_W, SWIRL_H, f / SWIRL_FRAMES, rx=SWIRL_W / 2.0 - 0.4, ry=SWIRL_H / 2.0 - 0.4, motes=8)
         S.put(cv, grid, f * SWIRL_W, 0)
     cv.save(os.path.join(ASSETS, "textures", "gui", "portal_swirl.png"))
     return cv

@@ -30,12 +30,15 @@ import net.minecraft.world.item.ItemStack;
 /**
  * The Elven Portal's GUI, in the style of Mana Garden's: a deep navy panel with rounded corners and a bright
  * green edge, wound with curly leaf vines and hung with little gold lights (textures/gui/elven_portal.png,
- * made by tools/gen_gui.py). In the middle stands a dreamwood arch with the Elven Gateway Core for its
- * keystone; the slots for the elves are on its left, the slots for what they send back (rimmed in gold) on
- * its right, the mana bar under it. This draws what moves: the portal's swirl inside the arch (open while
- * the portal has mana for a trade), the keystone's gem (its colour is the portal's state), the arrows
- * lighting up on each trade, the traded item flying into the portal and its trade flying out, the mana, the
- * buttons, the title on its parchment scroll, the red close button and the twinkling lights.
+ * made by tools/gen_gui.py). In the middle stands the elven moon gate, as the block is: a ring of cream
+ * stone rimmed in gold with eight runes carved round it, vines and a gem, on a pedestal; the slots for the
+ * elves are on its left, the slots for what they send back (rimmed in gold) on its right, the mana bar under
+ * it. This draws what moves: the portal's swirl inside the ring (it opens, a little past its size, while the
+ * portal has mana for a trade, and closes when it hasn't), the runes lighting up (one after another while
+ * the elves trade), the gem (its colour is the portal's state), the natura crystals floating up while the
+ * portal is open, the arrows lighting up on each trade, the traded item flying into the portal and its trade
+ * flying out, the mana, the buttons, the title on its parchment scroll, the red close button and the
+ * twinkling lights.
  * <p>
  * It opens like a portal: a swirl opens in the middle and the panel grows out of it, a little past its size
  * and back. Closing, the panel folds back into the swirl, which closes.
@@ -51,12 +54,18 @@ public class PortalScreen extends AbstractContainerScreen<PortalMenu> {
     // layout (menu coordinates), the same as tools/gen_gui.py and tools/gen_widgets.py
     /** The machine panel's height, and the inventory panel hanging under it (x from, to). */
     private static final int MACHINE_H = 124, INV_PANEL_X1 = 28, INV_PANEL_X2 = 212;
-    /** The portal inside the arch, and the swirl's frames (side by side on their sheet). */
-    private static final int SWIRL_X = 98, SWIRL_Y = 24, SWIRL_W = 44, SWIRL_H = 72, SWIRL_FRAMES = 16, SWIRL_FRAME_MS = 90;
-    /** The whole arch, for its tooltip. */
-    private static final int ARCH_X1 = 84, ARCH_Y1 = 8, ARCH_X2 = 156, ARCH_Y2 = 102;
-    /** The keystone's gem: its middle pixel, and the four gems on the sheet (trading, idle, stuck, stopped). */
-    private static final int GEM_X = 120, GEM_Y = 17, GEM_SIZE = 7, GEM_U = 160, GEM_V = 16;
+    /** The portal inside the gate's ring, and the swirl's frames (side by side on their sheet). */
+    private static final int SWIRL_X = 97, SWIRL_Y = 33, SWIRL_W = 46, SWIRL_H = 46, SWIRL_FRAMES = 16, SWIRL_FRAME_MS = 90;
+    /** The whole gate with its pedestal, for its tooltip. */
+    private static final int GATE_X1 = 84, GATE_Y1 = 20, GATE_X2 = 156, GATE_Y2 = 100;
+    /** The gem in the ring's top: its middle pixel, and the four gems on the sheet (trading, idle, stuck, stopped). */
+    private static final int GEM_X = 120, GEM_Y = 28, GEM_SIZE = 7, GEM_U = 160, GEM_V = 16;
+    /** The runes carved round the ring (their glyphs' top-left corners), and their lit glyphs on the sheet. */
+    private static final int[][] RUNES = {{144, 65}, {129, 80}, {107, 80}, {92, 65}, {92, 43}, {107, 28}, {129, 28}, {144, 43}};
+    private static final int RUNE_U = 0, RUNE_V = 96, RUNE_SIZE = 5;
+    /** The natura crystals resting on the pedestal's lower step (sprites' top-left), and their sprites (dim, lit). */
+    private static final int[][] CRYSTALS = {{94, 85}, {142, 85}};
+    private static final int CRYSTAL_U = 48, CRYSTAL_V = 96, CRYSTAL_W = 5, CRYSTAL_H = 8;
     /** The arrows into and out of the portal, and their lit forms on the sheet (lit, then brighter). */
     private static final int ARROW_IN_X = 74, ARROW_OUT_X = 155, ARROW_Y = 53, ARROW_W = 12, ARROW_H = 9, ARROW_U = 160, ARROW_V = 0;
     private static final int BAR_X1 = 64, BAR_Y1 = 108, BAR_X2 = 176, BAR_Y2 = 114, FILL_V = 80;
@@ -78,9 +87,10 @@ public class PortalScreen extends AbstractContainerScreen<PortalMenu> {
     /** The gold lights on the vines: their middles, as in tools/gen_gui.py. */
     private static final int[][] LIGHTS = {
             {21, -8}, {-6, 21}, {-6, 47}, {-8, -8}, {222, -9}, {247, 16}, {247, 47}, {247, -8},
-            {21, 134}, {-9, 103}, {-10, 76}, {-8, 131}, {218, 132}, {248, 101}, {250, 75}, {247, 131}};
+            {21, 134}, {-9, 103}, {-10, 76}, {-8, 131}, {218, 132}, {248, 101}, {250, 75}, {247, 131},
+            {85, 72}, {153, 39}};
     /** Where traded items fly from and to: the middle of the input slots, the portal, the middle of the output slots. */
-    private static final int INPUT_MID_X = 44, OUTPUT_MID_X = 194, GRID_MID_Y = 56, PORTAL_X = 120, PORTAL_Y = 60;
+    private static final int INPUT_MID_X = 44, OUTPUT_MID_X = 194, GRID_MID_Y = 56, PORTAL_X = 120, PORTAL_Y = 56;
 
     /** The opening: the swirl opens in SWIRL_MS, the panel grows from PANEL_FROM for PANEL_MS; input waits for READY_MS. */
     private static final long SWIRL_MS = 260L, PANEL_FROM = 90L, PANEL_MS = 380L, READY_MS = PANEL_FROM + PANEL_MS;
@@ -169,7 +179,7 @@ public class PortalScreen extends AbstractContainerScreen<PortalMenu> {
         lastTrades = trades;
     }
 
-    /** The opening: a swirl opens in the middle, the panel grows out of it and the swirl settles into the arch. */
+    /** The opening: a swirl opens in the middle, the panel grows out of it and the swirl settles into the gate. */
     private void renderOpening(GuiGraphics g, long t, float partialTick) {
         if (t >= PANEL_FROM) {
             float p = Math.min(1.0F, (t - PANEL_FROM) / (float) PANEL_MS);
@@ -270,6 +280,8 @@ public class PortalScreen extends AbstractContainerScreen<PortalMenu> {
         drawTitle(g);
         drawClose(g, mouseX, mouseY);
         drawSwirl(g, t, dt);
+        drawRunes(g, t);
+        drawCrystals(g, t);
         g.drawManaged(() -> {
             drawMotes(g, false);
             drawGemGlow(g, t);
@@ -289,29 +301,29 @@ public class PortalScreen extends AbstractContainerScreen<PortalMenu> {
     // ------------------------------------------------------------------ the portal
 
     /**
-     * The swirl inside the arch: it opens from the middle while the portal has mana for a trade and closes
-     * when it hasn't; it breathes, and each trade flashes it brighter.
+     * The swirl inside the ring: it opens from the middle, a little past its size and back, while the portal
+     * has mana for a trade, and closes when it hasn't; it breathes, and each trade flashes it brighter.
      */
     private void drawSwirl(GuiGraphics g, long t, float dt) {
         float target = menu.open() ? 1.0F : 0.0F;
         if (shownOpen < 0.0F) shownOpen = menu.capacity() <= 1 ? 0.0F : target;
         shownOpen = target > shownOpen ? Math.min(target, shownOpen + dt * 2.2F) : Math.max(target, shownOpen - dt * 2.8F);
-        float open = easeOut(shownOpen);
+        float open = target > 0.0F ? popOut(shownOpen) : easeOut(shownOpen);
         if (open < 0.02F) return;
         int frame = (int) (t / SWIRL_FRAME_MS % SWIRL_FRAMES);
         float breathe = 0.9F + 0.1F * Mth.sin(t / 420.0F);
         g.pose().pushPose();
         g.pose().translate(leftPos + SWIRL_X + SWIRL_W / 2, topPos + SWIRL_Y + SWIRL_H / 2, 0.0F);
-        g.pose().scale(0.2F + 0.8F * open, 0.08F + 0.92F * open, 1.0F);
+        g.pose().scale(open, open, 1.0F);
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
-        g.setColor(1.0F, 1.0F, 1.0F, open * breathe);
+        g.setColor(1.0F, 1.0F, 1.0F, Math.min(1.0F, shownOpen * 2.0F) * breathe);
         g.blit(SWIRL, -SWIRL_W / 2, -SWIRL_H / 2, frame * SWIRL_W, 0, SWIRL_W, SWIRL_H, SWIRL_W * SWIRL_FRAMES, SWIRL_H);
         long since = t - tradeAt;
         if (since >= 0L && since < FLASH_MS) {
             // a trade: the same frame again, added on, fading
             RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
-            g.setColor(1.0F, 1.0F, 1.0F, 0.6F * open * (1.0F - since / (float) FLASH_MS));
+            g.setColor(1.0F, 1.0F, 1.0F, 0.6F * Math.min(1.0F, open) * (1.0F - since / (float) FLASH_MS));
             g.blit(SWIRL, -SWIRL_W / 2, -SWIRL_H / 2, frame * SWIRL_W, 0, SWIRL_W, SWIRL_H, SWIRL_W * SWIRL_FRAMES, SWIRL_H);
             RenderSystem.defaultBlendFunc();
         }
@@ -319,7 +331,56 @@ public class PortalScreen extends AbstractContainerScreen<PortalMenu> {
         g.pose().popPose();
     }
 
-    /** The keystone's gem: green while trading, gold while waiting, red when stuck, grey when stopped by redstone. */
+    /**
+     * The runes round the ring: dark while the portal is shut, glowing softly while it is open, lit one after
+     * another round the ring while the elves trade, and all at once when a trade goes through.
+     */
+    private void drawRunes(GuiGraphics g, long t) {
+        float open = Math.max(0.0F, shownOpen);
+        if (open <= 0.02F) return;
+        boolean trading = menu.status() == PortalBlockEntity.Status.TRADING;
+        long since = t - tradeAt;
+        float flash = since >= 0L && since < FLASH_MS ? 1.0F - since / (float) FLASH_MS : 0.0F;
+        float lead = (t / 110.0F) % RUNES.length;               // the rune the light has reached, going clockwise
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        for (int k = 0; k < RUNES.length; k++) {
+            float a = 0.3F + 0.12F * Mth.sin(t / 500.0F + k * 0.8F);
+            if (trading) {
+                float behind = (lead - k + RUNES.length) % RUNES.length;     // how far the light has passed it
+                a = Math.max(a, 1.0F - behind / 3.0F);
+            }
+            a = Math.min(1.0F, Math.max(a, flash)) * open;
+            if (a <= 0.02F) continue;
+            g.setColor(1.0F, 1.0F, 1.0F, a);
+            g.blit(WIDGETS, leftPos + RUNES[k][0], topPos + RUNES[k][1], RUNE_U + k * RUNE_SIZE, RUNE_V, RUNE_SIZE, RUNE_SIZE,
+                    WIDGETS_W, WIDGETS_H);
+        }
+        g.setColor(1.0F, 1.0F, 1.0F, 1.0F);
+    }
+
+    /** The natura crystals on the pedestal: resting while the portal is shut, floating up and bobbing, lit, while it is open. */
+    private void drawCrystals(GuiGraphics g, long t) {
+        float open = easeOut(Math.max(0.0F, shownOpen));
+        RenderSystem.enableBlend();
+        for (int i = 0; i < CRYSTALS.length; i++) {
+            int lift = Math.round(open * (3.0F + 1.5F * Mth.sin(t / 420.0F + i * 2.1F)));
+            int x = leftPos + CRYSTALS[i][0], y = topPos + CRYSTALS[i][1] - lift;
+            g.blit(WIDGETS, x, y, CRYSTAL_U + (open > 0.5F ? CRYSTAL_W : 0), CRYSTAL_V, CRYSTAL_W, CRYSTAL_H, WIDGETS_W, WIDGETS_H);
+            if (open > 0.5F) {
+                float beat = 0.5F + 0.5F * Mth.sin(t / 300.0F + i * 1.3F);
+                if (beat > 0.93F) sparkle(g, x + 2, y + 2, GREEN_LIGHT, (beat - 0.93F) / 0.07F);
+            }
+        }
+    }
+
+    /** Opens past 1 and back: the portal swells a little past its size and settles. */
+    private static float popOut(float p) {
+        float c1 = 1.9F, c3 = c1 + 1.0F, q = Mth.clamp(p, 0.0F, 1.0F) - 1.0F;
+        return Math.max(0.0F, 1.0F + c3 * q * q * q + c1 * q * q);
+    }
+
+    /** The gem in the ring's top: green while trading, gold while waiting, red when stuck, grey when stopped by redstone. */
     private int gemKind() {
         return switch (menu.status()) {
             case TRADING -> 0;
@@ -335,7 +396,7 @@ public class PortalScreen extends AbstractContainerScreen<PortalMenu> {
                 GEM_SIZE, GEM_SIZE, WIDGETS_W, WIDGETS_H);
     }
 
-    /** Light spilling from the gem over the keystone: a quick pulse while trading, a slow one when stuck. */
+    /** Light spilling from the gem over the ring: a quick pulse while trading, a slow one when stuck. */
     private void drawGemGlow(GuiGraphics g, long t) {
         int kind = gemKind();
         if (kind == 1 || kind == 3) return;
@@ -573,7 +634,7 @@ public class PortalScreen extends AbstractContainerScreen<PortalMenu> {
         return mx >= x && mx < x + w && my >= y && my < y + h;
     }
 
-    /** Over the portal inside the arch (an oval). */
+    /** Over the portal inside the ring. */
     private boolean overPortal(double mouseX, double mouseY) {
         double u = (mouseX - leftPos - PORTAL_X) / (SWIRL_W / 2.0D), v = (mouseY - topPos - PORTAL_Y) / (SWIRL_H / 2.0D);
         return u * u + v * v <= 1.0D;
@@ -639,7 +700,7 @@ public class PortalScreen extends AbstractContainerScreen<PortalMenu> {
                     .withStyle(ChatFormatting.AQUA));
             tip.add(Component.translatable(menu.hasPool() ? "gui.elvenportal.pool" : "gui.elvenportal.no_pool").withStyle(ChatFormatting.GRAY));
             if (menu.status() == PortalBlockEntity.Status.NO_MANA) tip.add(status());
-        } else if (inside(ARCH_X1, ARCH_Y1, ARCH_X2 - ARCH_X1, ARCH_Y2 - ARCH_Y1, mouseX, mouseY)) {
+        } else if (inside(GATE_X1, GATE_Y1, GATE_X2 - GATE_X1, GATE_Y2 - GATE_Y1, mouseX, mouseY)) {
             tip.add(Component.translatable("gui.elvenportal.portal").withStyle(ChatFormatting.GREEN));
             tip.add(status());
             tip.add(Component.translatable("gui.elvenportal.cost", Format.mana(menu.cost())).withStyle(ChatFormatting.AQUA));

@@ -83,8 +83,11 @@ def main():
     same("machine panel height", screen["MACHINE_H"], gui["MACHINE_H"])
     same("inventory panel", (screen["INV_PANEL_X1"], screen["INV_PANEL_X2"]), (gui["INV_X1"], gui["INV_X2"]))
     same("portal (swirl)", (screen["SWIRL_X"], screen["SWIRL_Y"], screen["SWIRL_W"], screen["SWIRL_H"]), gui["SWIRL"])
-    same("arch", (screen["ARCH_X1"], screen["ARCH_Y1"], screen["ARCH_X2"], screen["ARCH_Y2"]), gui["ARCH"])
-    same("keystone gem", (screen["GEM_X"], screen["GEM_Y"]), gui["GEM"])
+    same("gate", (screen["GATE_X1"], screen["GATE_Y1"], screen["GATE_X2"], screen["GATE_Y2"]), gui["GATE_BOX"])
+    same("gate's middle is the portal's", gui["GATE"], (gui["SWIRL"][0] + gui["SWIRL"][2] // 2, gui["SWIRL"][1] + gui["SWIRL"][3] // 2))
+    same("the gem", (screen["GEM_X"], screen["GEM_Y"]), gui["GEM"])
+    same("runes", screen["RUNES"], [tuple(p) for p in gui["RUNES"]])
+    same("crystals", screen["CRYSTALS"], [tuple(p) for p in gui["CRYSTALS"]])
     same("arrows", [(screen["ARROW_IN_X"], screen["ARROW_Y"]), (screen["ARROW_OUT_X"], screen["ARROW_Y"])],
          [tuple(a) for a in gui["ARROWS"]])
     same("arrow size", (screen["ARROW_W"], screen["ARROW_H"]), (gui["ARROW_W"], gui["ARROW_H"]))
@@ -102,6 +105,9 @@ def main():
     # the screen's pieces on the widget sheet
     same("widget sheet size (generator)", (screen["WIDGETS_W"], screen["WIDGETS_H"]), (sheet["SHEET_W"], sheet["SHEET_H"]))
     same("button icons", screen["ICON_V"], sheet["ICON_V"])
+    same("lit runes", (screen["RUNE_U"], screen["RUNE_V"], screen["RUNE_SIZE"]), (sheet["RUNE_UV"][0], sheet["RUNE_UV"][1], sheet["RUNE_SIZE"]))
+    same("crystal sprites", (screen["CRYSTAL_U"], screen["CRYSTAL_V"], screen["CRYSTAL_W"], screen["CRYSTAL_H"]),
+         (sheet["CRYSTAL_UV"][0], sheet["CRYSTAL_UV"][1], sheet["CRYSTAL_W"], sheet["CRYSTAL_H"]))
     same("gems", (screen["GEM_SIZE"], screen["GEM_U"], screen["GEM_V"]), (sheet["GEM_SIZE"], sheet["GEM_UV"][0], sheet["GEM_UV"][1]))
     same("lit arrows", (screen["ARROW_W"], screen["ARROW_H"], screen["ARROW_U"], screen["ARROW_V"]),
          (sheet["ARROW_W"], sheet["ARROW_H"], sheet["ARROW_UV"][0], sheet["ARROW_UV"][1]))
@@ -135,6 +141,16 @@ def main():
     # the close button sits on the panel's top-right corner, inside the texture's margin
     if not (-gui["M"] <= screen["CLOSE_Y"] and screen["CLOSE_X"] + screen["CLOSE_SIZE"] <= gui["W"] + gui["M"]):
         errors.append("the close button sticks out of the panel texture's margin")
+
+    # the block's renderer and the block's textures (tools/gen_block.py)
+    block = python_constants(os.path.join(ROOT, "tools", "gen_block.py"))
+    renderer = java_constants(os.path.join(JAVA, "client", "PortalRenderer.java"))
+    vine_lights = [(x, y) for y, row in enumerate(block["VINE"]) for x, ch in enumerate(row) if ch == "y"]
+    same("the vine's gold lights (renderer)", renderer["LIGHTS"], vine_lights)
+    same("the swirl's frames (renderer)", renderer["FRAMES"], block["FRAMES"])
+    entity = os.path.join(ROOT, "src", "main", "resources", "assets", "elvenportal", "textures", "entity", "elven_gate")
+    same("the swirl's frames (texture)", png_size(os.path.join(entity, "swirl.png")),
+         (block["SWIRL_SIZE"], block["SWIRL_SIZE"] * block["FRAMES"]))
 
     # JEI's click areas are the arrows
     jei = java_source(os.path.join(JAVA, "client", "JeiCompat.java"))
