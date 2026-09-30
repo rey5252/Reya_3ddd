@@ -1,0 +1,19 @@
+{
+  "type": "botania:elven_trade",
+  "ingredients": [
+    [
+      {
+        "item": "minecraft:gold_ore"
+      },
+      {
+        "item": "minecraft:deepslate_gold_ore"
+      }
+    ]
+  ],
+  "output": [
+    {
+      "item": "minecraft:raw_gold",
+      "count": 2
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "type": "botania:elven_trade",
+  "ingredients": [
+    {
+      "item": "minecraft:nether_gold_ore"
+    }
+  ],
+  "output": [
+    {
+      "item": "minecraft:raw_gold"
+    }
+  ]
+}

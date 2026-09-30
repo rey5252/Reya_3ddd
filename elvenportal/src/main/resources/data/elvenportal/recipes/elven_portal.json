@@ -1,0 +1,32 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PAP",
+    "GCG",
+    "EYE"
+  ],
+  "key": {
+    "P": {
+      "item": "botania:pixie_dust"
+    },
+    "A": {
+      "item": "botania:elf_glass"
+    },
+    "G": {
+      "item": "botania:glimmering_dreamwood"
+    },
+    "C": {
+      "item": "botania:alfheim_portal"
+    },
+    "E": {
+      "item": "botania:elementium_ingot"
+    },
+    "Y": {
+      "item": "botania:natura_pylon"
+    }
+  },
+  "result": {
+    "item": "elvenportal:elven_portal"
+  }
+}

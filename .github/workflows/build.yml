@@ -34,6 +34,8 @@ jobs:
             dir: chaosspawner
           - mod: managarden
             dir: managarden
+          - mod: elvenportal
+            dir: elvenportal
     defaults:
       run:
         working-directory: ${{ matrix.dir }}
@@ -45,7 +47,7 @@ jobs:
           java-version: 17
       - uses: gradle/actions/setup-gradle@v4
       - name: Check that the GUI code and its textures agree
-        if: matrix.mod == 'managarden'
+        if: matrix.mod == 'managarden' || matrix.mod == 'elvenportal'
         run: python3 tools/check_layout.py
       - name: Build mod
         run: |

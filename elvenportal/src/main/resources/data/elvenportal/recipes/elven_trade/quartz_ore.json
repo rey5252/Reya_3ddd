@@ -1,0 +1,14 @@
+{
+  "type": "botania:elven_trade",
+  "ingredients": [
+    {
+      "tag": "forge:ores/quartz"
+    }
+  ],
+  "output": [
+    {
+      "item": "minecraft:quartz",
+      "count": 2
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "parent": "elvenportal:block/elven_portal",
+  "textures": {
+    "keystone": "botania:block/alfheim_portal_activated"
+  }
+}

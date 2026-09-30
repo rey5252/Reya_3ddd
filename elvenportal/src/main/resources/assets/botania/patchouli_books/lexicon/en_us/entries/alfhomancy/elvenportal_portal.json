@@ -1,0 +1,47 @@
+{
+  "name": "elvenportal.lexicon.portal",
+  "category": "botania:alfhomancy",
+  "icon": "elvenportal:elven_portal",
+  "advancement": "botania:main/elf_portal_open",
+  "pages": [
+    {
+      "type": "text",
+      "text": "elvenportal.lexicon.portal0"
+    },
+    {
+      "type": "text",
+      "text": "elvenportal.lexicon.portal1"
+    },
+    {
+      "type": "text",
+      "text": "elvenportal.lexicon.portal2"
+    },
+    {
+      "type": "crafting",
+      "recipe": "elvenportal:elven_portal",
+      "text": "elvenportal.lexicon.portal3"
+    },
+    {
+      "type": "botania:elven_trade",
+      "text": "elvenportal.lexicon.portal4",
+      "recipes": [
+        "elvenportal:elven_trade/iron_ore",
+        "elvenportal:elven_trade/gold_ore",
+        "elvenportal:elven_trade/nether_gold_ore",
+        "elvenportal:elven_trade/copper_ore"
+      ]
+    },
+    {
+      "type": "botania:elven_trade",
+      "text": "elvenportal.lexicon.portal5",
+      "recipes": [
+        "elvenportal:elven_trade/diamond_ore",
+        "elvenportal:elven_trade/emerald_ore",
+        "elvenportal:elven_trade/lapis_ore",
+        "elvenportal:elven_trade/redstone_ore",
+        "elvenportal:elven_trade/coal_ore",
+        "elvenportal:elven_trade/quartz_ore"
+      ]
+    }
+  ]
+}
