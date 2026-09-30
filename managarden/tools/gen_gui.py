@@ -79,29 +79,14 @@ def panel_shape(cv, x1, y1, x2, y2, fill, r=CORNER_R):
 
 
 def machine_fill(x, y):
+    """The machine panel's navy: clean, a smooth gradient from the lit top to a deeper bottom."""
     t = y / float(MACHINE_H)
-    base = mix(N2, N4, t ** 0.9)
-    n = rnd2(x, y, 3)
-    if n < 0.05:
-        return shade(base, 0.05)
-    if n > 0.965:
-        return shade(base, -0.07)
-    if rnd2(x, y, 17) < 0.011:
-        return NSTAR
-    return base
+    return mix(N2, N4, t ** 0.9)
 
 
 def inventory_fill(x, y):
     t = (y - MACHINE_H) / float(H - MACHINE_H)
-    base = mix(N3, N4, t)
-    n = rnd2(x, y, 4)
-    if n < 0.05:
-        return shade(base, 0.05)
-    if n > 0.965:
-        return shade(base, -0.07)
-    if rnd2(x, y, 19) < 0.010:
-        return NSTAR
-    return base
+    return mix(N3, N4, t)
 
 
 # ---------------------------------------------------------------- panel decoration behind the slots
@@ -211,7 +196,7 @@ DIM_SAGE = (S2, S3, S4)              # the inventory's slots: calmer than the ma
 
 
 def inventory_slot(cv, x, y):
-    slot_frame(cv, x, y, DIM_SAGE, hexc("0F1738"), hexc("0A1129"))
+    slot_frame(cv, x, y, DIM_SAGE, hexc("14204A"), hexc("0E1838"))
 
 
 # ---------------------------------------------------------------- vines to the heart
@@ -333,7 +318,7 @@ def edge_arm(x, y, theta, length, side, seed, sway=0.26, period=30.0):
         specs.append(V.hook_spec(path, s, side, 8 + ((seed + 2 * i) % 3), 4.3 + 0.4 * ((seed + i) % 2), TONES, r0=1.1))
     specs += V.chain_specs(path, 0, length - 2, TONES, length=14, pitch=8, r=1.9, seed=seed)
     ex, ey, eth = V.at(path, length - 3)
-    specs.append(V.curl_spec(ex, ey, eth, 22, side * 7.0, 1.6, 0.6, TONES))
+    specs.append(V.curl_spec(ex, ey, eth, 20, side * 5.4, 1.6, 0.6, TONES, power=1.3))
     return specs
 
 
