@@ -68,7 +68,7 @@ public class GreenhouseScreen extends AbstractContainerScreen<GreenhouseMenu> {
     /** How far the machine panel's leaves and daisies hang below it. */
     private static final int MACHINE_SKIRT = 6;
 
-    private static final int MANA_DEEP = 0xFF1B64B8, MANA_MID = 0xFF2A9FE2, MANA_TOP = 0xFF55D9F7, MANA_FOAM = 0xFFA6F6FF;
+    private static final int MANA_DEEP = 0xFF1B64B8, MANA_TOP = 0xFF55D9F7, MANA_FOAM = 0xFFA6F6FF;
 
     private final long openedAt = Util.getMillis();
     private final Mascot mascot = new Mascot();
@@ -637,6 +637,10 @@ public class GreenhouseScreen extends AbstractContainerScreen<GreenhouseMenu> {
                 minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
                 return true;
             }
+            if (mascot.bubbleContains(mouseX, mouseY)) {
+                mascot.hush();
+                return true;
+            }
             if (mascot.contains((int) mouseX - leftPos, (int) mouseY - topPos)) {
                 mascot.poke(tip());
                 minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.AMETHYST_BLOCK_CHIME, 1.6F, 0.6F));
@@ -649,8 +653,8 @@ public class GreenhouseScreen extends AbstractContainerScreen<GreenhouseMenu> {
 
     @Override
     protected boolean hasClickedOutside(double mouseX, double mouseY, int left, int top, int button) {
-        // the plates and the keeper are part of the GUI: clicking them doesn't throw items out
-        if (mascot.contains((int) mouseX - leftPos, (int) mouseY - topPos)) return false;
+        // the plates, the keeper and her bubble are part of the GUI: clicking them doesn't throw items out
+        if (mascot.contains((int) mouseX - leftPos, (int) mouseY - topPos) || mascot.bubbleContains(mouseX, mouseY)) return false;
         if (mouseY >= top - PLATES_H && mouseY < top && Math.abs(mouseX - (left + imageWidth / 2.0D)) < 70) return false;
         double mx = mouseX - left, my = mouseY - top;
         boolean inMachine = mx >= 0 && mx < imageWidth && my >= 0 && my < MACHINE_H;

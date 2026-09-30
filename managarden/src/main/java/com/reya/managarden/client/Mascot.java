@@ -47,6 +47,8 @@ final class Mascot {
     private long happyUntil, waveUntil, speakUntil;
     private Component speech;
     private long speechAt;
+    /** Where her bubble was last drawn (screen coordinates; 0 wide while she is quiet). */
+    private int bubbleX, bubbleY, bubbleW, bubbleH;
 
     boolean contains(int mx, int my) {
         return mx >= X + 8 && mx < X + WIDTH - 10 && my >= Y + 4 && my < Y + HEIGHT;
@@ -65,6 +67,18 @@ final class Mascot {
         long now = Util.getMillis();
         happyUntil = now + 2200L;
         if (speakUntil < now) say(text, now, 2200L);
+    }
+
+    /** Whether the point is on her speech bubble. */
+    boolean bubbleContains(double mx, double my) {
+        return bubbleW > 0 && Util.getMillis() < speakUntil
+                && mx >= bubbleX && mx < bubbleX + bubbleW && my >= bubbleY && my < bubbleY + bubbleH;
+    }
+
+    /** Clicked away: the bubble fades at once. */
+    void hush() {
+        long now = Util.getMillis();
+        if (speakUntil > now + 250L) speakUntil = now + 250L;
     }
 
     private void say(Component text, long now, long ms) {
@@ -133,6 +147,7 @@ final class Mascot {
      */
     void drawSpeech(GuiGraphics g, Font font, int left, int top, int screenW) {
         long now = Util.getMillis();
+        bubbleW = 0;
         if (speech == null || now >= speakUntil) return;
         float a = Math.min(1.0F, Math.min((now - speechAt) / 120.0F, (speakUntil - now) / 250.0F));
         if (a <= 0.0F) return;
@@ -150,6 +165,10 @@ final class Mascot {
             bx = left + X + WIDTH - 12;
             by = Math.max(2, headY + 2);
         }
+        bubbleX = bx - 1;
+        bubbleY = by - 2;
+        bubbleW = bw + 2;
+        bubbleH = bh + 5;
         g.pose().pushPose();
         g.pose().translate(0.0F, 0.0F, 300.0F);
         int alpha = (int) (a * 255.0F) << 24;
