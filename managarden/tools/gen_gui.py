@@ -34,6 +34,12 @@ GAUGE = (223, 42, 235, 104)          # x1, y1, x2, y2 of the charge gauge's insi
 BAR = (52, 115, 204, 121)            # growth bar inside
 BUTTONS = [(18, 111), (222, 111)]    # redstone, output (16x16 incl. outline)
 INV_Y, HOTBAR_Y, INV_SLOT_X = 154, 212, 48
+SLOT_HALF = 9                        # a slot's rim is this far from the middle of its item (an 18x18 slot)
+# the connectors from the flower slots to the heart, in the flowers' order: the pixel just outside the slot's
+# rim, then the pixel just outside the heart's ring (x, y, x, y); the screen sends mana drops along them.
+# machine() checks the table against channel_geometry(), and tools/check_layout.py against the screen's.
+CHANNELS = [(128, 32, 128, 38), (144, 43, 143, 44), (155, 60, 149, 60), (144, 76, 143, 75),
+            (128, 87, 128, 81), (111, 76, 112, 75), (100, 60, 106, 60), (111, 43, 112, 44)]
 
 # the little gold lights on the vines (their middle pixel); the screen makes them twinkle
 LIGHTS = [
@@ -229,6 +235,20 @@ def channel(cv, x1, y1, x2, y2):
         cv.set(x, y, M4)
 
 
+def channel_geometry(flower):
+    """Where a flower's connector runs: (slot end, heart end, direction from the heart to the slot). The
+    ends are the first pixels outside the slot's rim and outside the heart's ring (floor, not round: Python
+    rounds halves to even, Java up, and the screen's drops must start where the bar starts)."""
+    sx, sy = flower[0] + 8, flower[1] + 8
+    dx, dy = sx - HEART[0], sy - HEART[1]
+    d = math.hypot(dx, dy)
+    ux, uy = dx / d, dy / d
+    reach = SLOT_HALF / max(abs(ux), abs(uy)) + 0.5
+    slot_end = (math.floor(sx - ux * reach), math.floor(sy - uy * reach))
+    heart_end = (math.floor(HEART[0] + ux * (ORB_R + 2.5)), math.floor(HEART[1] + uy * (ORB_R + 2.5)))
+    return slot_end, heart_end, (ux, uy)
+
+
 def orb(cv):
     """The mana heart: a glass sphere in a green ring with a thin gold line (the mana inside is drawn by
     the screen)."""
@@ -361,15 +381,14 @@ def light(cv, x, y):
 def machine(cv):
     panel_shape(cv, 0, 0, W, MACHINE_H, machine_fill)
     runes(cv)
-    cx, cy = HEART
-    for (x, y) in FLOWERS:
-        sx, sy = x + 8, y + 8
-        dx, dy = sx - cx, sy - cy
-        d = math.hypot(dx, dy)
-        ux, uy = dx / d, dy / d
-        start = (round(cx + ux * (ORB_R + 1)), round(cy + uy * (ORB_R + 1)))
-        end = (round(sx - ux * 10.5), round(sy - uy * 10.5))
-        channel(cv, end[0], end[1], start[0], start[1])
+    for i, flower in enumerate(FLOWERS):
+        slot_end, heart_end, (ux, uy) = channel_geometry(flower)
+        if tuple(slot_end + heart_end) != tuple(CHANNELS[i]):
+            raise SystemExit(f"CHANNELS[{i}] is {CHANNELS[i]}, but the flowers and the heart give {slot_end + heart_end}: "
+                             "update the table here and the screen's (GreenhouseScreen.CHANNELS)")
+        # drawn two pixels longer at both ends, under the slot's rim and the heart's ring, which come after
+        channel(cv, math.floor(slot_end[0] + ux * 2 + 0.5), math.floor(slot_end[1] + uy * 2 + 0.5),
+                math.floor(heart_end[0] - ux * 2 + 0.5), math.floor(heart_end[1] - uy * 2 + 0.5))
     orb(cv)
     for (x, y) in FLOWERS:
         flower_slot(cv, x, y)

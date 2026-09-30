@@ -71,6 +71,13 @@ public class GreenhouseScreen extends AbstractContainerScreen<GreenhouseMenu> {
     private static final int GLOW_U = 104, GLOW_V = 16, GLOW_SIZE = 9;
     /** The row of the frame the mana runs along (tools/gen_gui.py draws it). */
     private static final int VEIN = 3;
+    /**
+     * The mana connectors, in the flowers' order: the first pixel outside the flower slot's rim, then the first
+     * pixel outside the heart's ring (x, y, x, y), as in tools/gen_gui.py. The drops run along them.
+     */
+    private static final int[][] CHANNELS = {
+            {128, 32, 128, 38}, {144, 43, 143, 44}, {155, 60, 149, 60}, {144, 76, 143, 75},
+            {128, 87, 128, 81}, {111, 76, 112, 75}, {100, 60, 106, 60}, {111, 43, 112, 44}};
     /** The gold lights on the vines: their middles, as in tools/gen_gui.py. */
     private static final int[][] LIGHTS = {
             {21, -7}, {-6, 21}, {-7, 63}, {-9, -9}, {238, -8}, {263, 17}, {264, 48}, {265, -9},
@@ -459,44 +466,45 @@ public class GreenhouseScreen extends AbstractContainerScreen<GreenhouseMenu> {
 
     /**
      * While it grows, each planted flower sends drops of mana along its vine into the heart: they
-     * leave in the flower's own colour and turn mana blue on the way.
+     * leave in the flower's own colour, fading in at the slot's rim, and turn mana blue on the way. A
+     * drop and its faint trail stay on the connector (CHANNELS), never beside it.
      */
     private void drawFlows(GuiGraphics g, long t) {
+        if (!menu.running()) return;                        // the veins lie still
         IItemHandler items = menu.items();
-        boolean running = menu.running();
         for (int i = 0; i < GreenhouseBlockEntity.FLOWERS; i++) {
             ItemStack stack = items.getStackInSlot(GreenhouseBlockEntity.FLOWER_START + i);
             if (stack.isEmpty()) continue;
-            int[] pos = GreenhouseMenu.FLOWER_POS[i];
-            double sx = pos[0] + 8, sy = pos[1] + 8;
-            double dx = sx - HEART_X, dy = sy - HEART_Y, d = Math.sqrt(dx * dx + dy * dy);
-            double ux = dx / d, uy = dy / d;
-            double x0 = Math.round(sx - ux * 10.5D), y0 = Math.round(sy - uy * 10.5D);
-            double x1 = Math.round(HEART_X + ux * (ORB_R + 1)), y1 = Math.round(HEART_Y + uy * (ORB_R + 1));
+            int[] ch = CHANNELS[i];
+            int x0 = ch[0], y0 = ch[1], x1 = ch[2], y1 = ch[3];
             int flower = Flowers.color(stack) | 0xFF000000;
-            if (!running) {
-                // a dim, still vein
-                continue;
-            }
+            int dx = x1 - x0, dy = y1 - y0;
             for (int k = 0; k < 2; k++) {
                 double p = ((t + i * 173L + k * 600L) % 1200L) / 1200.0D;
-                int x = leftPos + (int) Math.round(x0 + (x1 - x0) * p);
-                int y = topPos + (int) Math.round(y0 + (y1 - y0) * p);
-                int c = lerpColor(brighten(flower), 0xFFA6F6FF, (float) p);
-                g.fill(x, y, x + 1, y + 1, c);
-                int glow = 0x70000000 | (c & 0xFFFFFF);
-                if (Math.abs(ux) > Math.abs(uy) * 2) {
-                    g.fill(x - 1, y, x, y + 1, glow);
-                    g.fill(x + 1, y, x + 2, y + 1, glow);
-                } else if (Math.abs(uy) > Math.abs(ux) * 2) {
-                    g.fill(x, y - 1, x + 1, y, glow);
-                    g.fill(x, y + 1, x + 1, y + 2, glow);
+                int x = (int) Math.round(x0 + dx * p), y = (int) Math.round(y0 + dy * p);
+                int fade = (int) (255.0D * Math.min(1.0D, p / 0.2D));
+                int rgb = lerpColor(brighten(flower), 0xFFA6F6FF, (float) p) & 0xFFFFFF;
+                fillInside(g, x, y, fade << 24 | rgb, ch);
+                int glow = fade * 0x70 / 255 << 24 | rgb;
+                if (Math.abs(dx) > Math.abs(dy) * 2) {
+                    fillInside(g, x - 1, y, glow, ch);
+                    fillInside(g, x + 1, y, glow, ch);
+                } else if (Math.abs(dy) > Math.abs(dx) * 2) {
+                    fillInside(g, x, y - 1, glow, ch);
+                    fillInside(g, x, y + 1, glow, ch);
                 } else {
-                    g.fill(x - 1, y - 1, x, y, glow);
-                    g.fill(x + 1, y + 1, x + 2, y + 2, glow);
+                    fillInside(g, x - 1, y - 1, glow, ch);
+                    fillInside(g, x + 1, y + 1, glow, ch);
                 }
             }
         }
+    }
+
+    /** A pixel of a drop (menu coordinates), only where the connector is: between its two ends. */
+    private void fillInside(GuiGraphics g, int x, int y, int argb, int[] channel) {
+        if (x < Math.min(channel[0], channel[2]) || x > Math.max(channel[0], channel[2])
+                || y < Math.min(channel[1], channel[3]) || y > Math.max(channel[1], channel[3])) return;
+        g.fill(leftPos + x, topPos + y, leftPos + x + 1, topPos + y + 1, argb);
     }
 
     /** Planted flowers glow softly in their own colour; the glow breathes. */

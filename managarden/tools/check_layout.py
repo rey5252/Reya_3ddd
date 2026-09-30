@@ -88,6 +88,7 @@ def main():
          (screen["BLOOM_SIZE"] * screen["BLOOM_FRAMES"], screen["BLOOM_SIZE"]))
     same("frame vein row", screen["VEIN"], gui["VEIN"])
     same("gold lights", screen["LIGHTS"], [tuple(p) for p in gui["LIGHTS"]])
+    same("mana connectors", screen["CHANNELS"], [tuple(p) for p in gui["CHANNELS"]])
 
     sheet = python_constants(os.path.join(ROOT, "tools", "gen_widgets.py"))
     same("widget sheet size (generator)", (screen["WIDGETS_W"], screen["WIDGETS_H"]), (sheet["SHEET_W"], sheet["SHEET_H"]))
