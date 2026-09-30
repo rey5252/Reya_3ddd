@@ -113,10 +113,9 @@ SPARK = ["..w..", ".wWw.", "wWWWw", ".wWw.", "..w.."]
 
 
 def keeper(cv, x0, y0):
-    """The keeper's head and shoulders, beaming (put together from the GUI sheet)."""
+    """The keeper's face, beaming."""
     import gen_mascot
-    sheet = Image.open(os.path.join(ASSETS, "textures", "gui", "mascot.png")).convert("RGBA")
-    frame = gen_mascot.compose(sheet, body=0, eyes=3, mouth=2, pose=0)
+    frame = gen_mascot.figure_image(eyes="happy", mouth="happy")
     part = frame.crop((12, 16, 84, 16 + H - y0))      # her face whole, the top of her hair cut off
     cv.img.alpha_composite(part, (x0, y0))
 

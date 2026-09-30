@@ -13,72 +13,62 @@ import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 
 /**
- * The garden keeper: a little elf mage with long white twin tails, calm green eyes and red drop
- * earrings, in a white coat and capelet trimmed with gold (textures/gui/mascot.png, drawn by
- * tools/gen_mascot.py), standing at the greenhouse GUI's left edge with her staff in one hand while the
- * Heart of the Greenhouse floats over her other palm. She hops in when the GUI opens and waves,
- * breathes, blinks, the heart bobs and the staff's orb twinkles; the heart glows whenever a cycle's mana
- * comes in, she raises it when a cycle is lucky, and when poked she says what the greenhouse needs or
- * gives a tip in a speech bubble.
+ * The garden keeper's portrait: the face of a little elf mage with white twin tails, calm green eyes
+ * and red drop earrings, in a small livingwood frame (textures/gui/mascot.png, drawn by
+ * tools/gen_mascot.py) hanging beside the greenhouse GUI's top-left corner. It slides in when the GUI
+ * opens and she smiles hello; she breathes and blinks, smiles while the mouse is over her, beams when a
+ * cycle is lucky, the gem on the frame twinkles whenever a cycle's mana comes in, and when clicked she
+ * says what the greenhouse needs or gives a tip in a speech bubble under the portrait.
  * <p>
- * Sheet: two body frames (breathing out and in, without her free arm), then the face parts drawn over
- * the body: eyes (open, half, shut, happy, starry) and mouths (smile, open, happy), then her free arm
- * (palm up, raised, two waving frames) and the heart (and the heart glowing).
+ * Sheet: the portrait twice (breathing out and in, her head a pixel up), then the face parts drawn over
+ * it: eyes (open, half, shut, happy, starry) and mouths (smile, open, happy).
  */
 final class Mascot {
     static final ResourceLocation TEX = new ResourceLocation(ManaGarden.MODID, "textures/gui/mascot.png");
-    static final int TEX_W = 256, TEX_H = 256;
-    static final int WIDTH = 96, HEIGHT = 136;
-    /** Where she stands, from the GUI's corner: her feet on the machine panel's bottom line. */
-    static final int X = -92, Y = 146 - HEIGHT;
-    /** How far her twin tail reaches over the panel's frame. */
+    static final int TEX_W = 256, TEX_H = 128;
+    static final int WIDTH = 88, HEIGHT = 74;
+    /** Where the portrait hangs, from the GUI's corner: beside the panel's top-left corner. */
+    static final int X = -92, Y = 4;
+    /** How far it reaches over the panel's frame (less than nothing: it keeps clear of the frame's leaves). */
     static final int OVERLAP = X + WIDTH;
-    /** The face parts: where they go on the body, and where they are on the sheet. */
-    static final int EYES_X = 28, EYES_Y = 36, EYES_W = 40, EYES_H = 18, EYES_U = 192, EYES_V = 0;
-    static final int MOUTH_X = 43, MOUTH_Y = 55, MOUTH_W = 10, MOUTH_H = 6, MOUTH_U = 232, MOUTH_V = 0;
-    /** Her free arm: drawn over the body at ARM_X, ARM_Y; the poses side by side on the sheet. */
-    static final int ARM_X = 56, ARM_Y = 48, ARM_W = 36, ARM_H = 48, ARM_U = 0, ARM_V = 136;
-    private static final int POSE_REST = 0, POSE_RAISE = 1, POSE_WAVE = 2;
-    /** The floating heart on the sheet (the glowing one beside it), and where its middle is in each pose. */
-    static final int HEART_U = 144, HEART_V = 136, HEART_W = 20, HEART_H = 18;
-    static final int[][] HEART_AT = {{70, 74}, {73, 67}, {73, 82}, {73, 82}};
-    /** The staff's orb, for its twinkle. */
-    static final int ORB_X = 22, ORB_Y = 14;
+    /** The face parts: where they go on the portrait, and where they are on the sheet. */
+    static final int EYES_X = 24, EYES_Y = 38, EYES_W = 40, EYES_H = 18, EYES_U = 176, EYES_V = 0;
+    static final int MOUTH_X = 39, MOUTH_Y = 57, MOUTH_W = 10, MOUTH_H = 6, MOUTH_U = 216, MOUTH_V = 0;
+    /** The mana gem on the frame's bottom, the flower on its corner and her earring, for their twinkles. */
+    static final int GEM_X = 43, GEM_Y = 71, FLOWER_X = 74, FLOWER_Y = 1, EARRING_X = 18, EARRING_Y = 56;
 
     private static final int EYES_OPEN = 0, EYES_HALF = 1, EYES_SHUT = 2, EYES_HAPPY = 3, EYES_STARS = 4;
     private static final int MOUTH_SMILE = 0, MOUTH_OPEN = 1, MOUTH_HAPPY = 2;
-    private static final long ENTER_FROM = 380L, ENTER_MS = 520L;
+    private static final long ENTER_FROM = 380L, ENTER_MS = 420L;
 
     private long nextBlink = Util.getMillis() + 2600L, blinkUntil;
-    private long happyUntil, waveUntil, speakUntil, raiseUntil, glowUntil;
+    private long happyUntil, speakUntil, gemUntil;
     private Component speech;
     private long speechAt;
     /** Where her bubble was last drawn (screen coordinates; 0 wide while she is quiet). */
     private int bubbleX, bubbleY, bubbleW, bubbleH;
 
     boolean contains(int mx, int my) {
-        return mx >= X + 14 && mx < X + WIDTH - 14 && my >= Y + 4 && my < Y + HEIGHT;
+        return mx >= X && mx < X + WIDTH && my >= Y && my < Y + HEIGHT;
     }
 
-    /** A cycle's mana came in: the heart glows for a moment. */
+    /** A cycle's mana came in: the gem on the frame twinkles. */
     void pulse() {
-        glowUntil = Math.max(glowUntil, Util.getMillis() + 380L);
+        gemUntil = Math.max(gemUntil, Util.getMillis() + 420L);
     }
 
-    /** Poked: she waves and says something. */
+    /** Clicked: she smiles and says something. */
     void poke(Component text) {
         long now = Util.getMillis();
         say(text, now, 4200L);
         happyUntil = now + 1500L;
-        waveUntil = now + 1400L;
     }
 
     /** A lucky cycle: she beams and cheers. */
     void cheer(Component text) {
         long now = Util.getMillis();
         happyUntil = now + 2200L;
-        raiseUntil = now + 1300L;
-        glowUntil = now + 1300L;
+        gemUntil = now + 900L;
         if (speakUntil < now) say(text, now, 2200L);
     }
 
@@ -104,67 +94,49 @@ final class Mascot {
         long now = Util.getMillis();
         if (t < ENTER_FROM) return;
         float enter = Math.min(1.0F, (t - ENTER_FROM) / (float) ENTER_MS);
-        // hops in from the left: slides with a little overshoot and a hop
-        float slide = 1.0F - backOut(enter);
-        int ox = Math.round(-36.0F * slide);
-        int hop = enter < 1.0F ? Math.round(-Math.abs(Mth.sin(enter * Mth.PI * 2.0F)) * 6.0F * (1.0F - enter)) : 0;
-        int x = left + X + ox, y = top + Y + hop;
+        // slides in from the left with a little overshoot, fading in
+        int x = left + X + Math.round(-24.0F * (1.0F - backOut(enter))), y = top + Y;
 
-        // breathing: the second body frame (shoulders and hair a pixel up) for a moment every 1.8 s
-        int body = (t / 900L) % 2L == 1L ? 1 : 0;
+        // breathing: the second portrait (her head a pixel up) for a moment every 1.8 s
+        int frame = (t / 900L) % 2L == 1L ? 1 : 0;
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         if (enter < 1.0F) g.setColor(1.0F, 1.0F, 1.0F, Math.min(1.0F, enter * 2.5F));
-        g.blit(TEX, x, y, body * WIDTH, 0, WIDTH, HEIGHT, TEX_W, TEX_H);
+        g.blit(TEX, x, y, frame * WIDTH, 0, WIDTH, HEIGHT, TEX_W, TEX_H);
 
-        // face
+        // her face: blinking now and then; smiling hello, while the mouse is over her, and when happy
         if (now >= nextBlink) {
             blinkUntil = now + 150L;
             nextBlink = now + 2200L + (now * 7919L % 2600L);
         }
-        boolean happy = now < happyUntil || hover;
+        boolean greeting = t - (ENTER_FROM + ENTER_MS) < 1100L;
+        boolean happy = now < happyUntil || hover || greeting;
         int eyes;
         if (now < blinkUntil) eyes = now > blinkUntil - 50L || now < blinkUntil - 100L ? EYES_HALF : EYES_SHUT;
         else if (now < happyUntil && (now / 260L) % 4L == 0L) eyes = EYES_STARS;
         else eyes = happy ? EYES_HAPPY : EYES_OPEN;
-        // on the breathing frame her head is a pixel higher, and her face with it
-        int lift = body == 1 ? 1 : 0;
+        int lift = frame;
         g.blit(TEX, x + EYES_X, y + EYES_Y - lift, EYES_U, EYES_V + eyes * EYES_H, EYES_W, EYES_H, TEX_W, TEX_H);
         int mouth = now < speakUntil && (now - speechAt) < 1600L ? ((now / 140L) % 2L == 0L ? MOUTH_OPEN : MOUTH_SMILE)
                 : happy ? MOUTH_HAPPY : MOUTH_SMILE;
         g.blit(TEX, x + MOUTH_X, y + MOUTH_Y - lift, MOUTH_U, MOUTH_V + mouth * MOUTH_H, MOUTH_W, MOUTH_H, TEX_W, TEX_H);
-
-        // her free arm: palm up, raised when a cycle is lucky, or waving (two frames swinging) when she
-        // greets or is poked
-        long since = t - (ENTER_FROM + ENTER_MS);
-        boolean waving = now < waveUntil || since < 1100L;
-        int pose = waving ? POSE_WAVE + (int) ((now / 170L) % 2L) : now < raiseUntil ? POSE_RAISE : POSE_REST;
-        g.blit(TEX, x + ARM_X, y + ARM_Y - lift, ARM_U + pose * ARM_W, ARM_V, ARM_W, ARM_H, TEX_W, TEX_H);
-
-        // the heart floats over her palm, bobbing, and glows when mana comes in
-        int bob = Math.round(Mth.sin(now / 420.0F) * 1.5F);
-        boolean glow = now < glowUntil;
-        int hx = x + HEART_AT[pose][0] - HEART_W / 2, hy = y + HEART_AT[pose][1] - HEART_H / 2 - lift + bob;
-        g.blit(TEX, hx, hy, HEART_U + (glow ? HEART_W : 0), HEART_V, HEART_W, HEART_H, TEX_W, TEX_H);
         g.setColor(1.0F, 1.0F, 1.0F, 1.0F);
+        if (enter < 1.0F) return;
 
-        // the staff's orb twinkles now and then, and a mote of mana drifts up from the heart
-        long p = now % 1900L;
-        if (p < 420L && enter >= 1.0F) {
-            float a = Mth.sin(p / 420.0F * Mth.PI);
-            GreenhouseScreen.sparkle(g, x + ORB_X - 2, y + ORB_Y - 2, 0xFFB0A8, a);
+        // twinkles: the gem when mana comes in, the flower on the corner and her earring now and then
+        if (now < gemUntil) {
+            float a = Mth.sin((gemUntil - now) / 420.0F * Mth.PI);
+            GreenhouseScreen.sparkle(g, x + GEM_X, y + GEM_Y, 0x7FF4FF, Math.abs(a));
         }
-        long q = (now + 950L) % 2300L;
-        if (q < 520L && enter >= 1.0F) {
-            float a = Mth.sin(q / 520.0F * Mth.PI) * 0.8F;
-            int d = (int) (q / 65L);
-            GreenhouseScreen.sparkle(g, hx + HEART_W / 2 + 6 + d / 2, hy - 2 - d, 0x7FF4FF, a);
-        }
+        long p = now % 2300L;
+        if (p < 420L) GreenhouseScreen.sparkle(g, x + FLOWER_X, y + FLOWER_Y, 0xFFC4E2, Mth.sin(p / 420.0F * Mth.PI));
+        long q = (now + 1150L) % 3100L;
+        if (q < 360L) GreenhouseScreen.sparkle(g, x + EARRING_X, y + EARRING_Y - lift, 0xFFB0A8, Mth.sin(q / 360.0F * Mth.PI) * 0.8F);
     }
 
     /**
-     * Her speech bubble: a rounded cream box with a dark outline and a tail pointing at her head,
-     * above her and left of the panel if there is room, else beside her head over the panel.
+     * Her speech bubble: a rounded cream box with a dark outline under the portrait, its tail pointing
+     * up at her, kept left of the panel.
      */
     void drawSpeech(GuiGraphics g, Font font, int left, int top, int screenW) {
         long now = Util.getMillis();
@@ -176,18 +148,13 @@ final class Mascot {
         int w = 0;
         for (FormattedCharSequence l : lines) w = Math.max(w, font.width(l));
         int bw = w + 10, bh = lines.size() * 10 + 7;
-        int headX = left + X + WIDTH / 2 - 2, headY = top + Y + 4;
-        // centred over her head, but kept off the panel and the leaves on its frame
-        int bx = Math.min(headX - bw / 2, left - 9 - bw);
+        int anchorX = left + X + WIDTH / 2, anchorY = top + Y + HEIGHT;
+        // centred under the portrait, but kept off the panel and the leaves on its frame
+        int bx = Math.min(anchorX - bw / 2, left - 9 - bw);
         bx = Mth.clamp(bx, 2, Math.max(2, screenW - bw - 2));
-        int by = headY - bh - 5;
-        boolean above = by >= 1;
-        if (!above) {
-            bx = left + X + WIDTH - 12;
-            by = Math.max(2, headY + 2);
-        }
+        int by = anchorY + 6;
         bubbleX = bx - 1;
-        bubbleY = by - 2;
+        bubbleY = by - 4;
         bubbleW = bw + 2;
         bubbleH = bh + 5;
         g.pose().pushPose();
@@ -199,22 +166,16 @@ final class Mascot {
         g.fill(bx, by + 1, bx + bw, by + bh - 1, outline);
         g.fill(bx + 1, by + 1, bx + bw - 1, by + bh - 1, fill);
         g.fill(bx + 1, by + bh - 2, bx + bw - 1, by + bh - 1, shadow);
-        if (above) {
-            int tx = Mth.clamp(headX, bx + 4, bx + bw - 6);
-            g.fill(tx, by + bh - 1, tx + 4, by + bh, fill);
-            g.fill(tx + 1, by + bh, tx + 3, by + bh + 1, fill);
-            g.fill(tx + 1, by + bh + 1, tx + 2, by + bh + 3, outline);
-            g.fill(tx - 1, by + bh - 1, tx, by + bh, outline);
-            g.fill(tx + 4, by + bh - 1, tx + 5, by + bh, outline);
-            g.fill(tx, by + bh, tx + 1, by + bh + 1, outline);
-            g.fill(tx + 3, by + bh, tx + 4, by + bh + 1, outline);
-            g.fill(tx + 2, by + bh + 1, tx + 3, by + bh + 2, outline);
-        } else {
-            g.fill(bx - 2, by + 5, bx + 1, by + 7, fill);
-            g.fill(bx - 3, by + 4, bx - 1, by + 5, outline);
-            g.fill(bx - 3, by + 7, bx - 1, by + 8, outline);
-            g.fill(bx - 4, by + 5, bx - 3, by + 7, outline);
-        }
+        // the tail, pointing up at the portrait
+        int tx = Mth.clamp(anchorX - 2, bx + 4, bx + bw - 6);
+        g.fill(tx, by, tx + 4, by + 1, fill);
+        g.fill(tx + 1, by - 1, tx + 3, by, fill);
+        g.fill(tx - 1, by, tx, by + 1, outline);
+        g.fill(tx + 4, by, tx + 5, by + 1, outline);
+        g.fill(tx, by - 1, tx + 1, by, outline);
+        g.fill(tx + 3, by - 1, tx + 4, by, outline);
+        g.fill(tx + 1, by - 2, tx + 3, by - 1, outline);
+        g.fill(tx + 2, by - 3, tx + 3, by - 2, outline);
         // a tiny leaf on the bubble's corner
         g.fill(bx + bw - 5, by - 1, bx + bw - 2, by, alpha | 0x4E9C35);
         g.fill(bx + bw - 4, by - 2, bx + bw - 2, by - 1, alpha | 0x7CCB47);

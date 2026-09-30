@@ -91,16 +91,12 @@ def main():
     keeper = python_constants(os.path.join(ROOT, "tools", "gen_mascot.py"))
     same("keeper sheet size", png_size(os.path.join(TEXTURES, "mascot.png")), (mascot["TEX_W"], mascot["TEX_H"]))
     same("keeper sheet", (mascot["TEX_W"], mascot["TEX_H"]), (keeper["SHEET_W"], keeper["SHEET_H"]))
-    same("keeper size", (mascot["WIDTH"], mascot["HEIGHT"]), (keeper["W"], keeper["H"]))
+    same("keeper's portrait size", (mascot["WIDTH"], mascot["HEIGHT"]), (keeper["PW"], keeper["PH"]))
     same("keeper eyes", tuple(mascot[k] for k in ("EYES_X", "EYES_Y", "EYES_W", "EYES_H", "EYES_U", "EYES_V")),
          tuple(keeper["EYES_BOX"]) + tuple(keeper["EYES_UV"]))
     same("keeper mouth", tuple(mascot[k] for k in ("MOUTH_X", "MOUTH_Y", "MOUTH_W", "MOUTH_H", "MOUTH_U", "MOUTH_V")),
          tuple(keeper["MOUTH_BOX"]) + tuple(keeper["MOUTH_UV"]))
-    same("keeper arms", tuple(mascot[k] for k in ("ARM_X", "ARM_Y", "ARM_W", "ARM_H", "ARM_U", "ARM_V")),
-         tuple(keeper["ARMS_BOX"]) + tuple(keeper["ARMS_UV"]))
-    same("keeper's heart", tuple(mascot[k] for k in ("HEART_U", "HEART_V", "HEART_W", "HEART_H")),
-         tuple(keeper["HEART_UV"]) + tuple(keeper["HEART_SIZE"]))
-    same("keeper's heart places", mascot["HEART_AT"], [tuple(keeper["HEART_AT"][p]) for p in keeper["ARM_POSES"]])
+
 
     if errors:
         print("The GUI code and its textures disagree:")
