@@ -12,7 +12,6 @@ VOUT = hexc("0B2A1A")
 
 # navy: the panel's inside, from its lit bevel to its darkest slot
 N0, N1, N2, N3, N4, N5 = (hexc(h) for h in ("3A509A", "2A3D78", "1F2F62", "182653", "111C40", "0A1129"))
-NSTAR = hexc("34488A")            # faint specks in the panel
 
 # green: the frame's edge and the vines
 G0, G1, G2, G3, G4, G5 = (hexc(h) for h in ("DDF9A6", "A4EC5C", "62CC42", "37993C", "1E6534", "0F3D22"))

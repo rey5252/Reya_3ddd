@@ -115,4 +115,6 @@
 а також папка `jars/` у гілці) і знімає скриншоти з гри в `screenshots/`.
 
 Текстури намальовані скриптами в `tools/` (Python + Pillow): `gen_gui.py`, `gen_widgets.py`, `gen_mascot.py`,
-`gen_block.py`, `gen_items.py`. `tools/check_layout.py` перевіряє, що код меню і текстури збігаються.
+`gen_block.py`, `gen_items.py`. Кольори меню лежать у `tools/style.py`, лози (листові «леза» й завитки) малює
+`tools/vines.py`, а `python3 tools/preview.py` збирає весь екран меню для перегляду без гри. `tools/check_layout.py`
+перевіряє, що код меню і текстури збігаються.

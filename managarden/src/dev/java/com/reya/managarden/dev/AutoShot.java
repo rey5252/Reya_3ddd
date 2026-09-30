@@ -101,11 +101,8 @@ public final class AutoShot {
         STEPS.add(new Step(30, () -> guiScale(4)));
         STEPS.add(new Step(5, AutoShot::open));
         STEPS.add(new Step(40, () -> shot("gui_scale4.png")));
-        // and closing (Esc): the panel folds back into the heart
-        STEPS.add(new Step(2, () -> {
-            Minecraft mc = Minecraft.getInstance();
-            if (mc.screen != null) mc.screen.onClose();
-        }));
+        // and closing, by a click on the red X in the corner: the panel folds back into the heart
+        STEPS.add(new Step(2, () -> clickGui(253, 0)));
         STEPS.add(new Step(2, () -> shot("gui_closing.png")));
         // the greenhouse's pages in the Lexica Botania
         STEPS.add(new Step(10, AutoShot::unlockLexicon));
