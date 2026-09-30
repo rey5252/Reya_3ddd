@@ -48,6 +48,8 @@ public class GreenhouseScreen extends AbstractContainerScreen<GreenhouseMenu> {
     /** The panel texture has a margin round the GUI for the vines sticking out. */
     private static final int M = 12, TEX_W = GreenhouseMenu.WIDTH + 2 * M, TEX_H = GreenhouseMenu.HEIGHT + 2 * M;
     private static final int WIDGETS_W = 256, WIDGETS_H = 128;
+    /** Where the buttons' icons, the heart's glass shine and the growth bar's fills are on the widget sheet. */
+    private static final int ICON_V = 16, SHINE_U = 160, SHINE_V = 0, FILL_V = 80, FILL_PAUSED_V = 88;
     private static final int BLOOM_SIZE = 64, BLOOM_FRAMES = 8;
 
     // layout (menu coordinates), the same as tools/gen_gui.py
@@ -433,7 +435,7 @@ public class GreenhouseScreen extends AbstractContainerScreen<GreenhouseMenu> {
     /** The glass's shine over the mana (a bright curved streak and a glint), from the widget sheet. */
     private void drawHeartGlass(GuiGraphics g, long t) {
         RenderSystem.enableBlend();
-        g.blit(WIDGETS, leftPos + HEART_X - ORB_R, topPos + HEART_Y - ORB_R, 64, 0, 2 * ORB_R, 2 * ORB_R, WIDGETS_W, WIDGETS_H);
+        g.blit(WIDGETS, leftPos + HEART_X - ORB_R, topPos + HEART_Y - ORB_R, SHINE_U, SHINE_V, 2 * ORB_R, 2 * ORB_R, WIDGETS_W, WIDGETS_H);
         // a glint that runs round the rim now and then
         long period = 5200L;
         long p = t % period;
@@ -524,7 +526,7 @@ public class GreenhouseScreen extends AbstractContainerScreen<GreenhouseMenu> {
         int w = Math.round((BAR_X2 - BAR_X1) * Mth.clamp(shownProgress, 0.0F, 1.0F));
         if (w <= 0) return;
         boolean running = menu.running();
-        g.blit(WIDGETS, x1, y1, 0, running ? 80 : 88, w, BAR_Y2 - BAR_Y1, WIDGETS_W, WIDGETS_H);
+        g.blit(WIDGETS, x1, y1, 0, running ? FILL_V : FILL_PAUSED_V, w, BAR_Y2 - BAR_Y1, WIDGETS_W, WIDGETS_H);
         if (running) {
             // a shine sweeping along the filled part
             int sx = x1 + (int) ((t / 6L) % (w + 30)) - 15;
@@ -617,7 +619,7 @@ public class GreenhouseScreen extends AbstractContainerScreen<GreenhouseMenu> {
         boolean hot = ready() && inside(bx, BUTTON_Y, BUTTON_SIZE, BUTTON_SIZE, mouseX, mouseY);
         int u = off ? 48 : hot ? 16 : 0;
         g.blit(WIDGETS, x, y, u, 0, BUTTON_SIZE, BUTTON_SIZE, WIDGETS_W, WIDGETS_H);
-        g.blit(WIDGETS, x + 2, y + 2, icon * 12, 16, 12, 12, WIDGETS_W, WIDGETS_H);
+        g.blit(WIDGETS, x + 2, y + 2, icon * 12, ICON_V, 12, 12, WIDGETS_W, WIDGETS_H);
     }
 
     /**

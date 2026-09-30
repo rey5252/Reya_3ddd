@@ -204,7 +204,7 @@ def preview_screen(lang="en", scale=3, width=640, height=360, name=None):
             if yy == max(top_y, s):
                 col = st.M1
             scr.putpixel((cx + xx, yy), col + (255,))
-    scr.alpha_composite(sheet(64, 0, 38, 38), (cx - G.ORB_R, cy - G.ORB_R))
+    scr.alpha_composite(sheet(*W.SHINE_UV, W.SHINE_SIZE, W.SHINE_SIZE), (cx - G.ORB_R, cy - G.ORB_R))
 
     # growth bar and charge gauge
     bx1, by1, bx2, by2 = G.BAR

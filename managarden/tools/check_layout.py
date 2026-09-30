@@ -96,6 +96,18 @@ def main():
     same("glow", (screen["GLOW_SIZE"], screen["GLOW_U"], screen["GLOW_V"]), (sheet["GLOW_SIZE"], sheet["GLOW_UV"][0], sheet["GLOW_UV"][1]))
     same("title scroll", (screen["SCROLL_H"], screen["SCROLL_CAP"], screen["SCROLL_V"], screen["SCROLL_TILE_U"], screen["SCROLL_TILE_W"]),
          (sheet["SCROLL_H"], sheet["SCROLL_CAP"], sheet["SCROLL_V"], sheet["SCROLL_TILE_U"], sheet["SCROLL_TILE_W"]))
+    same("sheet rows the screen reads (icons, shine, fills)",
+         (screen["ICON_V"], screen["SHINE_U"], screen["SHINE_V"], screen["FILL_V"], screen["FILL_PAUSED_V"]),
+         (sheet["ICON_V"], sheet["SHINE_UV"][0], sheet["SHINE_UV"][1], sheet["FILL_V"], sheet["FILL_V"] + 8))
+    same("shine size", 2 * screen["ORB_R"], sheet["SHINE_SIZE"])
+    # no piece of the widget sheet may reach into another's pixels (that showed up as stray dots on the heart)
+    regions = sheet["SHEET_REGIONS"]
+    for i, (n1, x1, y1, w1, h1) in enumerate(regions):
+        if x1 < 0 or y1 < 0 or x1 + w1 > sheet["SHEET_W"] or y1 + h1 > sheet["SHEET_H"]:
+            errors.append(f"widget sheet: {n1} is outside the sheet")
+        for (n2, x2, y2, w2, h2) in regions[i + 1:]:
+            if x1 < x2 + w2 and x2 < x1 + w1 and y1 < y2 + h2 and y2 < y1 + h1:
+                errors.append(f"widget sheet: {n1} and {n2} overlap")
     # the close button sits on the panel's top-right corner, inside the texture's margin
     if not (-gui["M"] <= screen["CLOSE_Y"] and screen["CLOSE_X"] + screen["CLOSE_SIZE"] <= gui["W"] + gui["M"]):
         errors.append("the close button sticks out of the panel texture's margin")

@@ -4,7 +4,7 @@
 Sheet layout (the screen, client/GreenhouseScreen.java, reads it at these places):
   (0,0)    buttons 16x16: normal, hover, (32) pressed, (48) off
   (0,16)   icons 12x12: redstone ignore, high, low, output on, output off, output bound
-  (64,0)   the heart's glass shine, 38x38
+  (160,0)  the heart's glass shine, 38x38
   (104,0)  the red close button 16x16: normal, hover (120), pressed (136)
   (104,16) a soft halo 9x9 (white, fading to nothing, a hole in its middle), tinted gold by the screen for the lights' twinkle
   (0,56)   the title scroll: left roller 16x20, (16,56) right roller 16x20, (32,56) and (40,56) tiles of paper 8x20
@@ -20,7 +20,8 @@ from style import OUT, N0, N1, N2, N3, N4, N5, G0, G1, G2, G3, G4, S2, Y3, P0, P
 SHEET_W, SHEET_H = 256, 128
 BUTTON_UV = (0, 0)
 ICON_V = 16
-SHINE_UV = (64, 0)
+SHINE_UV = (160, 0)
+SHINE_SIZE = 38
 CLOSE_UV = (104, 0)
 CLOSE_SIZE = 16
 GLOW_UV = (104, 16)
@@ -32,6 +33,11 @@ SCROLL_TILE_U = 32
 SCROLL_TILE_W = 8                    # two tiles side by side, the screen alternates them
 SCROLL_PAPER = (3, 16)               # the paper's first and last row on the scroll pieces (the rollers reach further)
 FILL_V = 80
+# every piece of the sheet as (name, x, y, w, h): tools/check_layout.py makes sure none overlaps another
+# (a piece reaching into its neighbour's pixels shows up in the game as stray dots)
+SHEET_REGIONS = [
+    ("buttons", 0, 0, 64, 16), ("icons", 0, 16, 72, 12), ("close", 104, 0, 48, 16), ("glow", 104, 16, 9, 9),
+    ("shine", 160, 0, 38, 38), ("scroll", 0, 56, 48, 20), ("fill", 0, 80, 152, 6), ("fill paused", 0, 88, 152, 6)]
 
 # Botania's blues for the mana icons, the pinks of the bloom
 LW0, LW1 = hexc("A2512A"), hexc("7A3314")
