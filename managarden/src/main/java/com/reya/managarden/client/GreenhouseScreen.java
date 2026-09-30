@@ -37,7 +37,8 @@ import vazkii.botania.api.mana.ManaItem;
  * name plates, sparkles, and the garden keeper (see {@link Mascot}) at the left.
  * <p>
  * It opens like a flower: a bud swells in the middle and blooms, the panel grows out of it, a little
- * past its size and back, petals scatter, and the keeper hops in and waves.
+ * past its size and back, the inventory unrolls under it like a scroll, petals scatter, and the keeper
+ * hops in and waves. Closing, the scroll rolls up and the panel folds back into the heart.
  */
 public class GreenhouseScreen extends AbstractContainerScreen<GreenhouseMenu> {
     static final ResourceLocation PANEL = new ResourceLocation(ManaGarden.MODID, "textures/gui/greenhouse.png");
@@ -58,8 +59,14 @@ public class GreenhouseScreen extends AbstractContainerScreen<GreenhouseMenu> {
     /** Name plates over the panel: the mod's badge and the block's plate. */
     private static final int PLATE_H = 15, BADGE_W = 88, BADGE_H = 13, PLATES_H = PLATE_H + BADGE_H - 2;
 
-    /** The opening: the bud blooms in BLOOM_MS, the panel grows from PANEL_FROM for PANEL_MS; input waits for READY_MS. */
-    private static final long BLOOM_MS = 420L, PANEL_FROM = 200L, PANEL_MS = 480L, READY_MS = 690L;
+    /**
+     * The opening: the bud blooms in BLOOM_MS, the machine panel grows from PANEL_FROM for PANEL_MS, the
+     * inventory unrolls under it from ROLL_FROM for ROLL_MS; input waits for READY_MS.
+     */
+    private static final long BLOOM_MS = 420L, PANEL_FROM = 200L, PANEL_MS = 480L, ROLL_FROM = 430L, ROLL_MS = 260L,
+            READY_MS = ROLL_FROM + ROLL_MS;
+    /** How far the machine panel's leaves and daisies hang below it. */
+    private static final int MACHINE_SKIRT = 6;
 
     private static final int MANA_DEEP = 0xFF1B64B8, MANA_MID = 0xFF2A9FE2, MANA_TOP = 0xFF55D9F7, MANA_FOAM = 0xFFA6F6FF;
 
@@ -150,19 +157,15 @@ public class GreenhouseScreen extends AbstractContainerScreen<GreenhouseMenu> {
 
     /**
      * The opening: the bud in the middle swells and blooms (its frames), the panel grows out of it
-     * with a little overshoot, the bloom fades and its petals scatter.
+     * with a little overshoot, its inventory rolled up under it, which then unrolls; the bloom fades
+     * and its petals scatter.
      */
     private void renderOpening(GuiGraphics g, long t, float partialTick) {
         int cx = leftPos + HEART_X, cy = topPos + HEART_Y;
         if (t >= PANEL_FROM) {
             float p = Math.min(1.0F, (t - PANEL_FROM) / (float) PANEL_MS);
-            float s = backOut(p);
-            g.pose().pushPose();
-            g.pose().translate(cx, cy, 0.0F);
-            g.pose().scale(s, s, 1.0F);
-            g.pose().translate(-cx, -cy, 0.0F);
-            super.render(g, -1000, -1000, partialTick);           // nothing hovered while it opens
-            g.pose().popPose();
+            float roll = t < ROLL_FROM ? 0.0F : easeOut((t - ROLL_FROM) / (float) ROLL_MS);
+            renderPanel(g, backOut(p), roll, partialTick);
         }
         if (t < BLOOM_MS + 260L) {
             float grow = Math.min(1.0F, t / (float) BLOOM_MS);
@@ -194,22 +197,46 @@ public class GreenhouseScreen extends AbstractContainerScreen<GreenhouseMenu> {
 
     private boolean petalsOut;
 
-    /** Closing: the panel folds back into the heart and the bloom closes into a bud as it goes. */
-    private static final long CLOSE_MS = 230L;
+    /** Closing: the inventory rolls up, then the panel folds back into the heart and the bloom closes into a bud. */
+    private static final long ROLL_UP_MS = 120L, FOLD_FROM = 90L, CLOSE_MS = 320L;
     private long closingAt = -1L;
 
+    /**
+     * The GUI at a scale round the heart, the inventory unrolled so far (0 to 1) under the machine
+     * panel, its rolled-up rest drawn as a livingrock roll at the bottom.
+     */
+    private void renderPanel(GuiGraphics g, float scale, float roll, float partialTick) {
+        int cx = leftPos + HEART_X, cy = topPos + HEART_Y;
+        boolean clipped = roll < 1.0F;
+        int shown = Math.round((imageHeight - MACHINE_H - MACHINE_SKIRT) * roll);
+        int bottom = Math.round(cy + (MACHINE_H + MACHINE_SKIRT + shown - HEART_Y) * scale);
+        if (clipped) g.enableScissor(0, 0, width, Math.max(0, bottom));
+        g.pose().pushPose();
+        g.pose().translate(cx, cy, 0.0F);
+        g.pose().scale(scale, scale, 1.0F);
+        g.pose().translate(-cx, -cy, 0.0F);
+        super.render(g, -1000, -1000, partialTick);           // nothing hovered while it moves
+        g.pose().popPose();
+        if (!clipped) return;
+        g.disableScissor();
+        // the roll: a livingrock cylinder across the inventory panel, lit from above
+        int x1 = Math.round(cx + (INV_PANEL_X1 - 1 - HEART_X) * scale), x2 = Math.round(cx + (INV_PANEL_X2 + 1 - HEART_X) * scale);
+        int y = bottom - 1;
+        g.fill(x1, y - 1, x2, y, 0x50000000);
+        g.fill(x1, y, x2, y + 5, 0xFF1A0703);
+        g.fill(x1 + 1, y + 1, x2 - 1, y + 2, 0xFFFBF8EE);
+        g.fill(x1 + 1, y + 2, x2 - 1, y + 3, 0xFFE2DCCB);
+        g.fill(x1 + 1, y + 3, x2 - 1, y + 4, 0xFFA89F8B);
+    }
+
     private void renderClosing(GuiGraphics g, long t, float partialTick) {
-        float p = Math.min(1.0F, t / (float) CLOSE_MS);
+        // the inventory rolls up first, then the panel folds into the heart as the bloom closes
+        float roll = 1.0F - Math.min(1.0F, t / (float) ROLL_UP_MS);
+        float p = Mth.clamp((t - FOLD_FROM) / (float) (CLOSE_MS - FOLD_FROM), 0.0F, 1.0F);
         int cx = leftPos + HEART_X, cy = topPos + HEART_Y;
         float s = 1.0F - p * p * (2.2F - 1.2F * p);
-        if (s > 0.02F) {
-            g.pose().pushPose();
-            g.pose().translate(cx, cy, 0.0F);
-            g.pose().scale(s, s, 1.0F);
-            g.pose().translate(-cx, -cy, 0.0F);
-            super.render(g, -1000, -1000, partialTick);
-            g.pose().popPose();
-        }
+        if (s > 0.02F) renderPanel(g, s, roll * roll * (3.0F - 2.0F * roll), partialTick);
+        if (t < FOLD_FROM) return;
         int frame = Math.max(0, Math.min(BLOOM_FRAMES - 1, (int) ((1.0F - p) * BLOOM_FRAMES)));
         float fade = p < 0.6F ? p / 0.6F : Math.max(0.0F, 1.0F - (p - 0.6F) / 0.4F);
         g.pose().pushPose();

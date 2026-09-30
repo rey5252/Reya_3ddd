@@ -73,7 +73,8 @@ public final class AutoShot {
         STEPS.add(new Step(3, () -> shot("gui_open_2.png")));
         STEPS.add(new Step(3, () -> shot("gui_open_3.png")));
         STEPS.add(new Step(4, () -> shot("gui_open_4.png")));
-        STEPS.add(new Step(6, () -> shot("gui_open_5.png")));
+        STEPS.add(new Step(3, () -> shot("gui_open_5.png")));
+        STEPS.add(new Step(3, () -> shot("gui_open_6.png")));
         STEPS.add(new Step(50, () -> shot("gui.png")));
         STEPS.add(new Step(37, () -> shot("gui_later.png")));
         STEPS.add(new Step(5, () -> mouseAtGui(128, 60)));
@@ -113,7 +114,8 @@ public final class AutoShot {
         STEPS.add(new Step(30, () -> shot("lexicon_upgrades.png")));
         // the Wand of the Forest's HUD over the greenhouse
         STEPS.add(new Step(5, () -> Minecraft.getInstance().setScreen(null)));
-        STEPS.add(new Step(5, () -> eye(2.3D, 1.45D, 2.0D, 0.5D, 0.55D, 0.5D)));
+        // (a camera this high keeps the player's feet off the ground, so the crosshair stays on the block)
+        STEPS.add(new Step(5, () -> eye(2.3D, 1.8D, 2.0D, 0.5D, 0.45D, 0.5D)));
         STEPS.add(new Step(30, () -> shot("wand_hud.png")));
         // and all of it in Ukrainian: the plate, the keeper's words, the lexicon
         STEPS.add(new Step(5, () -> language("uk_ua")));
