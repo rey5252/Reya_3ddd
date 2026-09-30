@@ -33,6 +33,7 @@
   "gui.managarden.status.redstone": "Стоит из-за сигнала редстоуна",
   "gui.managarden.growth": "Рост: %s%%",
   "gui.managarden.cycle": "Один цикл: %s с",
+  "gui.managarden.close": "Закрыть",
   "gui.managarden.charge": "Зарядка",
   "gui.managarden.mana_of": "%s / %s маны",
   "gui.managarden.redstone": "Управление редстоуном",

@@ -159,3 +159,21 @@ def rnd(i, salt=0):
 
 def rnd2(x, y, salt=0):
     return rnd(x * 7919 + y * 104729, salt)
+
+
+def rrect(x, y, x1, y1, x2, y2, r):
+    """(depth, nx, ny) of the pixel (x, y) for the rounded rectangle [x1, x2) x [y1, y2) with corner
+    radius r: how far in from its edge the pixel's middle is (0 or less = outside it) and the unit
+    direction that points out of the rectangle there."""
+    px, py = x + 0.5, y + 0.5
+    cx, cy = (x1 + x2) / 2.0, (y1 + y2) / 2.0
+    hx, hy = (x2 - x1) / 2.0, (y2 - y1) / 2.0
+    dx, dy = px - cx, py - cy
+    qx, qy = abs(dx) - (hx - r), abs(dy) - (hy - r)
+    sx, sy = (1 if dx >= 0 else -1), (1 if dy >= 0 else -1)
+    if qx > 0 and qy > 0:
+        d = math.hypot(qx, qy)
+        return r - d, sx * qx / d, sy * qy / d
+    if qx > qy:
+        return r - qx, sx, 0.0
+    return r - qy, 0.0, sy

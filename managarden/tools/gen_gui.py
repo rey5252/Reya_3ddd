@@ -1,44 +1,29 @@
-"""Mana Greenhouse GUI: panel texture and widget sheet, in mana (cyan) and plant (green) colours on
-Botania's livingwood and livingrock.
+"""Mana Greenhouse GUI panel texture: a deep navy panel with rounded corners and a bright green edge,
+wound with curly leaf vines and hung with little gold lights, dark slots outlined in sage green.
 
-    python3 tools/gen_gui.py            writes textures/gui/greenhouse.png and greenhouse_widgets.png
+    python3 tools/gen_gui.py            writes textures/gui/greenhouse.png
     python3 tools/gen_gui.py --preview  also writes build/preview/gui.png (3x, with sample items)
 
 Coordinates are the menu's (GreenhouseMenu): the panel is W x H, the texture has a margin M round
-it for the vines and flowers that stick out of the frame.
+it for the vines that stick out of the frame. The moving parts (mana, bars, glints, the gold lights'
+twinkle) are drawn over it by client/GreenhouseScreen.java; tools/check_layout.py keeps the two in step.
 """
 import math
 import os
 import sys
 
-from pix import Canvas, ASSETS, mix, shade, hexc, rnd, rnd2
-from sprites import PAL, LEAF_DIAG, LEAF_DIAG_S, LEAF_BIG, LEAF_RIGHT, LEAF_TINY, BLOSSOM, BLOSSOM_S, DAISY, BUD, \
-    flip_h, flip_v, rot90
-from shapes import gem, PEARL, MANA
+from pix import Canvas, ASSETS, mix, shade, hexc, rnd, rnd2, rrect
+from style import *
+from sprites import PAL
+import vines as V
 
 M = 10
 W, H = 256, 236
 MACHINE_H = 146
-FRAME = 9
+FRAME = 5                            # the edge: outline, two rows of green, the mana vein, a navy bevel
+VEIN = 3                             # the frame row the mana runs along (2 px in from the outline)
+CORNER_R = 5
 INV_X1, INV_X2 = 36, 220
-
-# ---------------------------------------------------------------- palette
-OUT = hexc("1A0703")
-# livingwood (Botania's red-brown planks)
-LW0, LW1, LW2, LW3, LW4 = hexc("A2512A"), hexc("7A3314"), hexc("5E240B"), hexc("4A1A08"), hexc("310B04")
-# livingrock (warm pale stone)
-LR0, LR1, LR2, LR3, LR4 = hexc("FBF8EE"), hexc("E2DCCB"), hexc("C9C2B1"), hexc("A89F8B"), hexc("7A715F")
-# mana
-M0, M1, M2, M3, M4, M5 = hexc("F2FFFF"), hexc("A6F6FF"), hexc("55D9F7"), hexc("2A9FE2"), hexc("1B64B8"), hexc("123C7C")
-# leaves
-L0, L1, L2, L3, L4, L5 = hexc("E4FAA8"), hexc("A8E563"), hexc("6DC043"), hexc("45922F"), hexc("2A6428"), hexc("173D1C")
-# panel (deep greenhouse teal)
-P0, P1, P2, P3 = hexc("235A5B"), hexc("1D4C4F"), hexc("173F43"), hexc("113236")
-PATTERN = hexc("2C6C69")
-SOIL0, SOIL1, SOIL2 = hexc("5A3E28"), hexc("3F2B1C"), hexc("2A1C12")
-Y0, Y1, Y2, Y3 = hexc("FFF6B0"), hexc("F4C842"), hexc("C98B1A"), hexc("7A4E0C")
-# player inventory
-SLOT_IN, SLOT_HI, SLOT_LO = hexc("8B8B8B"), hexc("FFFFFF"), hexc("373737")
 
 HEART = (128, 60)
 ORB_R = 19
@@ -50,39 +35,76 @@ BAR = (52, 115, 204, 121)            # growth bar inside
 BUTTONS = [(18, 111), (222, 111)]    # redstone, output (16x16 incl. outline)
 INV_Y, HOTBAR_Y, INV_SLOT_X = 154, 212, 48
 
+# the little gold lights on the vines (their middle pixel); the screen makes them twinkle
+LIGHTS = [
+    (12, -6), (40, -8), (58, -6), (-6, 20), (-7, 52), (8, 149), (-4, 100),
+    (243, -8), (218, -8), (198, -6), (262, 22), (262, 60), (248, 149), (262, 104)]
 
-# ---------------------------------------------------------------- panel inside
+VEIN_COL = hexc("1B4A80")
+LIGHT_DIR = (-0.62, -0.78)
 
-def panel_bg(cv):
-    """Machine panel inside: a soft vertical gradient with faint speckles, a rune circle behind the
-    ring of flowers and a shadow under the frame."""
-    x1, y1, x2, y2 = FRAME, FRAME, W - FRAME, MACHINE_H - FRAME
+TONES = (G1, G2, G3)                 # vine greens: highlight, light, dark
+
+
+# ---------------------------------------------------------------- rounded panels
+
+def frame_color(ring, light):
+    """The edge's colour at a ring (0 = outermost) where the surface faces the light by `light` (-1..1):
+    a raised green rim lit from the top-left, then the mana vein, then a navy bevel that is sunk (lit
+    from the other side)."""
+    hi, lo = light > 0.35, light < -0.35
+    if ring == 0:
+        return OUT
+    if ring == 1:
+        return G1 if hi else (G3 if lo else G2)
+    if ring == 2:
+        return G2 if hi else (G4 if lo else G3)
+    if ring == VEIN:
+        return VEIN_COL
+    return N5 if hi else (N0 if lo else N3)
+
+
+def panel_shape(cv, x1, y1, x2, y2, fill, r=CORNER_R):
+    """A rounded panel with the green edge; `fill(x, y)` gives the colour of its inside."""
     for y in range(y1, y2):
-        t = (y - y1) / (y2 - y1 - 1)
-        base = mix(P0, P2, t)
         for x in range(x1, x2):
-            n = rnd2(x, y, 3)
-            c = base
-            if n < 0.045:
-                c = shade(base, 0.05)
-            elif n > 0.965:
-                c = shade(base, -0.06)
-            cv.set(x, y, c)
-    # shadow of the frame on the panel (top and left darker, 2 px)
-    for i, a in enumerate((110, 50)):
-        cv.hline(x1, x2, y1 + i, (4, 16, 18), a)
-        cv.vline(x1 + i, y1 + i + 1, y2, (4, 16, 18), a)
-    cx, cy = HEART
-    for r, col in ((48.5, PATTERN), (46.5, mix(PATTERN, P1, 0.55)), (55.5, mix(PATTERN, P1, 0.4))):
-        ring(cv, cx, cy, r, col)
-    for k in range(64):
-        if k % 2 == 0:
-            a = k / 64 * math.tau
-            cv.set(int(math.floor(cx + math.cos(a) * 52)), int(math.floor(cy + math.sin(a) * 52)), PATTERN)
-    for k in range(8):
-        a = (k + 0.5) / 8 * math.tau
-        rune(cv, int(round(cx + math.cos(a) * 52)), int(round(cy + math.sin(a) * 52)), k)
+            depth, nx, ny = rrect(x, y, x1, y1, x2, y2, r)
+            if depth <= 0:
+                continue
+            ring = int(depth)
+            if ring < FRAME:
+                cv.set(x, y, frame_color(ring, nx * LIGHT_DIR[0] + ny * LIGHT_DIR[1]))
+            else:
+                cv.set(x, y, fill(x, y))
 
+
+def machine_fill(x, y):
+    t = y / float(MACHINE_H)
+    base = mix(N2, N4, t ** 0.9)
+    n = rnd2(x, y, 3)
+    if n < 0.05:
+        return shade(base, 0.05)
+    if n > 0.965:
+        return shade(base, -0.07)
+    if rnd2(x, y, 17) < 0.011:
+        return NSTAR
+    return base
+
+
+def inventory_fill(x, y):
+    t = (y - MACHINE_H) / float(H - MACHINE_H)
+    base = mix(N3, N4, t)
+    n = rnd2(x, y, 4)
+    if n < 0.05:
+        return shade(base, 0.05)
+    if n > 0.965:
+        return shade(base, -0.07)
+    if rnd2(x, y, 19) < 0.010:
+        return NSTAR
+    return base
+
+
+# ---------------------------------------------------------------- panel decoration behind the slots
 
 def ring(cv, cx, cy, r, col):
     steps = int(r * 8)
@@ -94,6 +116,7 @@ def ring(cv, cx, cy, r, col):
 RUNES = [
     [".#.", "###", ".#."], ["#.#", ".#.", "#.#"], ["##.", "#.#", ".##"], [".##", "#..", ".##"],
     ["#.#", "###", "#.#"], ["###", ".#.", "#.#"], [".#.", "#.#", "###"], ["#..", "###", "..#"]]
+PATTERN = hexc("2A4487")
 
 
 def rune(cv, x, y, k):
@@ -103,32 +126,51 @@ def rune(cv, x, y, k):
                 cv.set(x - 1 + i, y - 1 + j, mix(PATTERN, M2, 0.3))
 
 
+def runes(cv):
+    """A rune circle behind the ring of flowers."""
+    cx, cy = HEART
+    for r, col in ((48.5, PATTERN), (46.5, mix(PATTERN, N3, 0.55)), (55.5, mix(PATTERN, N3, 0.4))):
+        ring(cv, cx, cy, r, col)
+    for k in range(64):
+        if k % 2 == 0:
+            a = k / 64 * math.tau
+            cv.set(int(math.floor(cx + math.cos(a) * 52)), int(math.floor(cy + math.sin(a) * 52)), PATTERN)
+    for k in range(8):
+        a = (k + 0.5) / 8 * math.tau
+        rune(cv, int(round(cx + math.cos(a) * 52)), int(round(cy + math.sin(a) * 52)), k)
+
+
 # ---------------------------------------------------------------- slots
 
-def slot_frame(cv, x, y, ramp, inside):
-    """An 18x18 slot sunk into the panel (x, y = the item's corner): outline, a rim lit from the
-    bottom-right (sunk), a darker inside with a shadow under the top-left rim."""
-    hi, mid, lo = ramp
+SAGE = (S1, S2, S3)                  # a slot's rim: lit side, sides, shaded side
+MANA_RIM = (M1, M3, M5)
+
+
+def slot_frame(cv, x, y, rim, inside_top, inside_bottom):
+    """An 18x18 slot (x, y = the item's corner): a bevelled rim in green, a dark inside with a shadow
+    under the top-left rim and a faint light at the bottom-right, the rim's four corners rounded."""
+    hi, mid, lo = rim
     x1, y1 = x - 1, y - 1
-    cv.outline(x1 - 1, y1 - 1, x1 + 19, y1 + 19, OUT)
     cv.rect(x1, y1, x1 + 18, y1 + 18, mid)
-    cv.hline(x1, x1 + 18, y1, lo)
-    cv.vline(x1, y1, y1 + 18, lo)
-    cv.hline(x1, x1 + 18, y1 + 17, hi)
-    cv.vline(x1 + 17, y1, y1 + 18, hi)
+    cv.hline(x1, x1 + 18, y1, hi)
+    cv.vline(x1, y1, y1 + 18, hi)
+    cv.hline(x1, x1 + 18, y1 + 17, lo)
+    cv.vline(x1 + 17, y1, y1 + 18, lo)
     cv.set(x1, y1 + 17, mid)
     cv.set(x1 + 17, y1, mid)
-    cv.rect(x, y, x + 16, y + 16, inside)
-    cv.hline(x, x + 16, y, shade(inside, -0.4))
-    cv.vline(x, y, y + 16, shade(inside, -0.4))
+    for yy in range(y, y + 16):
+        cv.hline(x, x + 16, yy, mix(inside_top, inside_bottom, (yy - y) / 15.0))
+    cv.hline(x, x + 16, y, shade(inside_top, -0.55))
+    cv.vline(x, y, y + 16, shade(inside_top, -0.55))
+    cv.hline(x + 1, x + 16, y + 15, mix(inside_bottom, hi, 0.12))
+    cv.vline(x + 15, y + 1, y + 16, mix(inside_bottom, hi, 0.12))
+    for (cx, cy) in ((x1, y1), (x1 + 17, y1), (x1, y1 + 17), (x1 + 17, y1 + 17)):
+        cv.set(cx, cy, shade(mid, -0.55))
 
 
 def flower_slot(cv, x, y):
-    """A little livingwood planter: soil at the bottom with blades of grass, the flower stands in it."""
-    slot_frame(cv, x, y, (LW0, LW2, LW4), P3)
-    for yy in range(y + 1, y + 16):
-        t = (yy - y) / 15
-        cv.hline(x + 1, x + 16, yy, mix(hexc("17393E"), hexc("0E282C"), t))
+    """A little planter: soil at the bottom with blades of grass, the flower stands in it."""
+    slot_frame(cv, x, y, SAGE, hexc("10193A"), hexc("0B1129"))
     for xx in range(x + 1, x + 16):
         top = y + 12 + (1 if rnd(xx * 3 + y, 5) < 0.35 else 0)
         for yy in range(top, y + 16):
@@ -137,13 +179,14 @@ def flower_slot(cv, x, y):
         cv.set(xx, top, SOIL0)
     for gx, h in ((x + 2, 2), (x + 3, 3), (x + 13, 3), (x + 14, 2)):
         for k in range(h):
-            cv.set(gx, y + 12 - k - 1 + (1 if h == 2 else 0), L3 if k == 0 else (L2 if k < h - 1 else L1))
+            cv.set(gx, y + 12 - k - 1 + (1 if h == 2 else 0), G3 if k == 0 else (G2 if k < h - 1 else G1))
 
 
 def upgrade_slot(cv, x, y):
-    """Upgrade slot: a livingrock rim with a faint tablet in it."""
-    slot_frame(cv, x, y, (LR0, LR2, LR4), hexc("183E42"))
-    ghost = mix(hexc("183E42"), LR1, 0.16)
+    """Upgrade slot: a faint tablet in it."""
+    inside = hexc("10193A")
+    slot_frame(cv, x, y, SAGE, inside, hexc("0B1129"))
+    ghost = mix(inside, S1, 0.16)
     cv.outline(x + 4, y + 2, x + 12, y + 14, ghost)
     for yy in (y + 5, y + 8, y + 11):
         cv.hline(x + 6, x + 10, yy, ghost)
@@ -151,8 +194,8 @@ def upgrade_slot(cv, x, y):
 
 def charge_slot(cv, x, y):
     """Charge slot: a mana-blue rim with a faint mana tablet in it."""
-    inside = hexc("143848")
-    slot_frame(cv, x, y, (M1, M3, M5), inside)
+    inside = hexc("0E2440")
+    slot_frame(cv, x, y, MANA_RIM, inside, hexc("091529"))
     ghost = mix(inside, M1, 0.2)
     cv.outline(x + 3, y + 3, x + 13, y + 13, ghost)
     for (cx, cy) in ((x + 3, y + 3), (x + 12, y + 3), (x + 3, y + 12), (x + 12, y + 12)):
@@ -162,6 +205,10 @@ def charge_slot(cv, x, y):
         cv.set(x + 8 + d, y + 5 + d, ghost)
         cv.set(x + 7 - d, y + 10 - d, ghost)
         cv.set(x + 8 + d, y + 10 - d, ghost)
+
+
+def inventory_slot(cv, x, y):
+    slot_frame(cv, x, y, SAGE, hexc("0F1738"), hexc("0A1129"))
 
 
 # ---------------------------------------------------------------- vines to the heart
@@ -176,26 +223,27 @@ def channel(cv, x1, y1, x2, y2):
     for (x, y) in pts:
         if not diag:
             if dx == 0:
-                cv.hline(x - 2, x + 3, y, L5)
-                cv.hline(x - 1, x + 2, y, L3)
-                cv.set(x - 1, y, L2)
+                cv.hline(x - 2, x + 3, y, VOUT)
+                cv.hline(x - 1, x + 2, y, G3)
+                cv.set(x - 1, y, G2)
             else:
-                cv.vline(x, y - 2, y + 3, L5)
-                cv.vline(x, y - 1, y + 2, L3)
-                cv.set(x, y - 1, L2)
+                cv.vline(x, y - 2, y + 3, VOUT)
+                cv.vline(x, y - 1, y + 2, G3)
+                cv.set(x, y - 1, G2)
         else:
-            cv.rect(x - 1, y - 1, x + 2, y + 2, L5)
+            cv.rect(x - 1, y - 1, x + 2, y + 2, VOUT)
     if diag:
         for (x, y) in pts:
-            cv.set(x, y, L3)
-            cv.set(x + (1 if dx * dy < 0 else -1), y, L3)
-            cv.set(x, y - 1, L2)
+            cv.set(x, y, G3)
+            cv.set(x + (1 if dx * dy < 0 else -1), y, G3)
+            cv.set(x, y - 1, G2)
     for (x, y) in pts:
         cv.set(x, y, M4)
 
 
 def orb(cv):
-    """The mana heart: a glass sphere in a livingwood ring (the mana inside is drawn by the screen)."""
+    """The mana heart: a glass sphere in a green ring with a thin gold line (the mana inside is drawn by
+    the screen)."""
     cx, cy = HEART
     r = ORB_R
     for y in range(cy - r - 3, cy + r + 3):
@@ -204,24 +252,18 @@ def orb(cv):
             d = math.hypot(px, py)
             if d <= r - 2:
                 t = (y - (cy - r)) / (2 * r)
-                cv.set(x, y, mix(hexc("14404A"), hexc("0A232B"), t))
+                cv.set(x, y, mix(hexc("10305A"), hexc("081A36"), t))
             elif d <= r + 2:
-                light = (-px - py) / (d * 1.4142 + 1e-6)
+                light = (px * LIGHT_DIR[0] + py * LIGHT_DIR[1]) / (d + 1e-6)     # facing the light: > 0
+                k = (light + 1) / 2
                 if d > r + 1:
                     cv.set(x, y, OUT)
                 elif d > r:
-                    cv.set(x, y, mix(LW3, LW0, (light + 1) / 2))
+                    cv.set(x, y, mix(G3, G1, k))
                 elif d > r - 1:
-                    cv.set(x, y, mix(LW4, LW1, (light + 1) / 2))
+                    cv.set(x, y, mix(Y3, Y1, k))
                 else:
-                    cv.set(x, y, mix(LR3, LR0, (light + 1) / 2))
-    # a few leaves on the ring
-    for (sx, sy, rows) in ((cx - 22, cy - 25, LEAF_DIAG_S), (cx + 15, cy + 18, flip_h(flip_v(LEAF_DIAG_S)))):
-        pass
-
-
-def glass_shine(cv):
-    """Glass highlights drawn over the mana: a curved streak and a glint (in the widget sheet)."""
+                    cv.set(x, y, mix(N5, N3, k))
 
 
 # ---------------------------------------------------------------- bars
@@ -229,16 +271,16 @@ def glass_shine(cv):
 def growth_bar_track(cv):
     x1, y1, x2, y2 = BAR
     cv.outline(x1 - 2, y1 - 2, x2 + 2, y2 + 2, OUT)
-    cv.hline(x1 - 1, x2 + 1, y1 - 1, LW3)
-    cv.vline(x1 - 1, y1 - 1, y2 + 1, LW3)
-    cv.hline(x1 - 1, x2 + 1, y2, LW0)
-    cv.vline(x2, y1 - 1, y2 + 1, LW0)
-    cv.set(x1 - 1, y2, LW2)
-    cv.set(x2, y1 - 1, LW2)
-    cv.rect(x1, y1, x2, y2, hexc("0A1F22"))
-    cv.hline(x1, x2, y1, hexc("051214"))
+    cv.hline(x1 - 1, x2 + 1, y1 - 1, S1)
+    cv.vline(x1 - 1, y1 - 1, y2 + 1, S1)
+    cv.hline(x1 - 1, x2 + 1, y2, S3)
+    cv.vline(x2, y1 - 1, y2 + 1, S3)
+    cv.set(x1 - 1, y2, S2)
+    cv.set(x2, y1 - 1, S2)
+    cv.rect(x1, y1, x2, y2, hexc("081026"))
+    cv.hline(x1, x2, y1, hexc("040817"))
     for x in range(x1 + 19, x2, 19):
-        cv.vline(x, y1 + 1, y2, hexc("12302F"))
+        cv.vline(x, y1 + 1, y2, hexc("14204A"))
     sprout(cv, x1 - 13, y1 - 3)
 
 
@@ -259,133 +301,69 @@ def sprout(cv, x, y):
 def gauge_track(cv):
     x1, y1, x2, y2 = GAUGE
     cv.outline(x1 - 2, y1 - 2, x2 + 2, y2 + 2, OUT)
-    cv.hline(x1 - 1, x2 + 1, y1 - 1, M5)
-    cv.vline(x1 - 1, y1 - 1, y2 + 1, M5)
-    cv.hline(x1 - 1, x2 + 1, y2, M2)
-    cv.vline(x2, y1 - 1, y2 + 1, M2)
+    cv.hline(x1 - 1, x2 + 1, y1 - 1, M2)
+    cv.vline(x1 - 1, y1 - 1, y2 + 1, M2)
+    cv.hline(x1 - 1, x2 + 1, y2, M5)
+    cv.vline(x2, y1 - 1, y2 + 1, M5)
     cv.set(x1 - 1, y2, M4)
     cv.set(x2, y1 - 1, M4)
-    cv.rect(x1, y1, x2, y2, hexc("081C24"))
+    cv.rect(x1, y1, x2, y2, hexc("07152C"))
     for y in range(y1 + 6, y2 - 2, 8):
-        cv.hline(x1, x1 + 3, y, hexc("1D4C5A"))
-        cv.hline(x2 - 3, x2, y, hexc("1D4C5A"))
+        cv.hline(x1, x1 + 3, y, hexc("1D4C7A"))
+        cv.hline(x2 - 3, x2, y, hexc("1D4C7A"))
 
 
-# ---------------------------------------------------------------- frame
+# ---------------------------------------------------------------- vines and lights round the frame
 
-TOP_RAMP = [OUT, LW0, LW1, LW2, LW2, LW3, LR0, LR1, M2]
-BOTTOM_RAMP = [OUT, LW3, LW2, LW2, LW3, LW4, LR2, LR1, M3]
-
-
-def frame(cv, x1, y1, x2, y2, open_bottom=None):
-    """The frame: livingwood planks outside, a livingrock lip, a mana vein inside; mitred corners,
-    lit from the top-left. open_bottom = (xa, xb) leaves the bottom edge's inner rows out there (where
-    the inventory panel joins)."""
-    for y in range(y1, y2):
-        for x in range(x1, x2):
-            dt, dl, db, dr = y - y1, x - x1, y2 - 1 - y, x2 - 1 - x
-            d = min(dt, dl, db, dr)
-            if d >= FRAME:
-                continue
-            if d == dt or d == dl:
-                ramp, along, edge = TOP_RAMP, (x if d == dt else y), ("h" if d == dt else "v")
-                lit = True
-            else:
-                ramp, along, edge = BOTTOM_RAMP, (x if d == db else y), ("h" if d == db else "v")
-                lit = False
-            c = ramp[d]
-            # planks: grain streaks and a seam every 23 pixels in the wood rows
-            if 1 <= d <= 5:
-                seam = (along + (7 if edge == "v" else 0)) % 23
-                if seam == 0 and 1 <= d <= 4:
-                    c = LW4 if d > 1 else LW3
-                elif seam == 1 and 1 <= d <= 4:
-                    c = shade(c, 0.12)
-                elif 2 <= d <= 4 and rnd(along * 5 + d, 40 + (1 if lit else 2)) < 0.16:
-                    c = shade(c, -0.18)
-            cv.set(x, y, c)
+def arm(x, y, theta, length, sway, period, phase, hooks, tail, seed, tail_len=24, r=2.1):
+    """A vine along an edge: a chain of blades swaying along a walk from (x, y) heading theta, little
+    curling tendrils (`hooks` = [(distance, side, length, turn)]) and a curl at its end (`tail` = turn)."""
+    path = V.walk(x, y, theta, length + tail_len, V.wave(sway, period, phase))
+    specs = []
+    for (s, side, ln, turn) in hooks:
+        specs.append(V.hook_spec(path, s, side, ln, turn, TONES))
+    specs += V.chain_specs(path, 0, length - 2, TONES, r=r, seed=seed)
+    ex, ey, eth = V.at(path, length - 3)
+    specs.append(V.curl_spec(ex, ey, eth, tail_len, tail, 1.6, 0.6, TONES))
+    return specs
 
 
-def frame_corner(cv, cx, cy):
-    """A livingrock rosette with a mana pearl, pinned on a frame corner, leaves peeking out."""
-    r = 6.2
-    pix = set()
-    for yy in range(int(cy - r) - 1, int(cy + r) + 2):
-        for xx in range(int(cx - r) - 1, int(cx + r) + 2):
-            if (xx + 0.5 - cx) ** 2 + (yy + 0.5 - cy) ** 2 <= r * r:
-                pix.add((xx, yy))
-    for (x, y) in pix:
-        d = math.hypot(x + 0.5 - cx, y + 0.5 - cy)
-        edge = any((x + a, y + b) not in pix for a, b in ((1, 0), (-1, 0), (0, 1), (0, -1)))
-        if edge:
-            cv.set(x, y, OUT)
-        else:
-            light = (-(x + 0.5 - cx) - (y + 0.5 - cy)) / (d * 1.4142 + 1e-6) if d > 0 else 0
-            cv.set(x, y, mix(LR3, LR0, (light + 1) / 2) if d > 3.6 else LR2)
-    # petal notches: four little grooves make it a flower of stone
-    for a in range(4):
-        ang = math.pi / 4 + a * math.pi / 2
-        cv.set(int(math.floor(cx + math.cos(ang) * 4.6)), int(math.floor(cy + math.sin(ang) * 4.6)), LR4)
-    gem(cv, cx, cy, 2.9, PEARL)
-
-
-def vine(cv, pts, leaves=(), flowers=()):
-    """A stem through the points (2 px: dark under, green over), with sprites hung on it."""
-    for (x1, y1), (x2, y2) in zip(pts, pts[1:]):
-        n = max(abs(x2 - x1), abs(y2 - y1), 1)
-        for i in range(n + 1):
-            x = x1 + round((x2 - x1) * i / n)
-            y = y1 + round((y2 - y1) * i / n)
-            cv.set(x, y + 1, L5)
-            cv.set(x + 1, y + 1, L5)
-            cv.set(x, y, L3)
-            cv.set(x, y - 1, L5) if cv.get(x, y - 1)[:3] in (OUT,) else None
-    for (x, y, rows) in leaves:
-        cv.sprite(rows, x, y, PAL)
-    for (x, y, rows) in flowers:
-        cv.sprite(rows, x, y, PAL)
-
-
-def wave(x1, x2, y, amp=1.5, period=17.0, phase=0.0):
-    return [(x, y + round(math.sin((x + phase) / period * math.tau) * amp)) for x in range(x1, x2 + 1, 2)]
+def corner_top_left():
+    """The top-left corner's vines (the other corners are mirrors of these): an arm along the top edge,
+    an arm down the left edge and a big curl outside the corner. Returns (top, left, curl) specs."""
+    top = arm(-2, -3.4, 0.0, 52, 0.20, 34, 0.0,
+              hooks=[(9, -1, 12, 4.0), (24, -1, 13, 4.5), (39, -1, 12, 4.0)], tail=-6.0, seed=1)
+    left = arm(-3.4, -2, math.pi / 2, 50, 0.20, 34, 0.25,
+               hooks=[(10, 1, 12, 4.0), (25, 1, 13, 4.5), (40, 1, 12, 4.0)], tail=6.0, seed=2)
+    flourish = [V.curl_spec(-1.5, -1.5, -2.4, 20, -7.5, 1.9, 0.6, TONES, power=1.5)]
+    return top, left, flourish
 
 
 def decorations(cv):
-    # vines along the top edge, left and right of where the name plate sits
-    for (xa, xb, ph) in ((14, 88, 0.0), (168, 242, 8.0)):
-        pts = wave(xa, xb, 1, 1.6, 19.0, ph)
-        vine(cv, pts)
-    top_leaves = [
-        (16, -6, LEAF_DIAG), (30, 2, flip_v(LEAF_DIAG_S)), (44, -7, LEAF_BIG), (60, 1, flip_v(LEAF_DIAG)),
-        (74, -6, LEAF_DIAG_S), (175, -6, flip_h(LEAF_DIAG_S)), (190, 1, flip_h(flip_v(LEAF_DIAG))),
-        (203, -7, flip_h(LEAF_BIG)), (220, 2, flip_h(flip_v(LEAF_DIAG_S))), (232, -6, flip_h(LEAF_DIAG))]
-    for (x, y, rows) in top_leaves:
-        cv.sprite(rows, x, y, PAL)
-    for (x, y, rows) in ((37, -4, BLOSSOM), (84, -3, BLOSSOM_S), (212, -4, BLOSSOM), (166, -3, DAISY[1:6] and BLOSSOM_S)):
-        cv.sprite(rows, x, y, PAL)
-    # vines hanging down the sides from the top corners
-    for side in (0, 1):
-        x = 1 if side == 0 else W - 3
-        pts = [(x + (round(math.sin(y / 9.0) * 1.2)), y) for y in range(10, 62, 2)]
-        vine(cv, pts)
-        for (yy, rows) in ((16, LEAF_DIAG_S), (30, flip_v(LEAF_DIAG)), (44, LEAF_TINY), (56, flip_v(LEAF_DIAG_S))):
-            if side == 0:
-                cv.sprite(flip_h(rows) if yy in (16, 44) else rows, x - 7, yy, PAL)
-            else:
-                cv.sprite(rows if yy in (16, 44) else flip_h(rows), x + 3, yy, PAL)
-        cv.sprite(BUD, x - 1, 62, PAL)
-    # the bottom corners: a tuft of leaves and a daisy
-    for (x, y, rows) in ((6, MACHINE_H - 4, LEAF_DIAG), (-3, MACHINE_H - 10, flip_h(LEAF_DIAG_S)),
-                         (W - 13, MACHINE_H - 4, flip_h(LEAF_DIAG)), (W - 3, MACHINE_H - 10, LEAF_DIAG_S)):
-        cv.sprite(rows, x, y, PAL)
-    cv.sprite(DAISY, 12, MACHINE_H - 3, PAL)
-    cv.sprite(DAISY, W - 19, MACHINE_H - 3, PAL)
-    for (x, y) in ((4, 4), (W - 5, 4), (4, MACHINE_H - 5), (W - 5, MACHINE_H - 5)):
-        frame_corner(cv, x + 0.5, y + 0.5)
+    top, left, flourish = corner_top_left()
+    cx = W / 2.0 - 0.0
+    cy = MACHINE_H / 2.0
+    for (fx, fy) in ((False, False), (True, False), (False, True), (True, True)):
+        for group in (top, left, flourish):
+            V.paint_specs(cv, group, VOUT, fx=fx, fy=fy, cx=cx, cy=cy)
+    for (x, y) in LIGHTS:
+        light(cv, x, y)
 
+
+def light(cv, x, y):
+    """A little gold light: a bright middle, a warm cross round it, a faint halo."""
+    for dx, dy in ((-1, -1), (1, -1), (-1, 1), (1, 1), (-2, 0), (2, 0), (0, -2), (0, 2)):
+        cv.set(x + dx, y + dy, Y2, 70)
+    for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1)):
+        cv.set(x + dx, y + dy, Y1)
+    cv.set(x, y, Y0)
+
+
+# ---------------------------------------------------------------- the panels
 
 def machine(cv):
-    panel_bg(cv)
+    panel_shape(cv, 0, 0, W, MACHINE_H, machine_fill)
+    runes(cv)
     cx, cy = HEART
     for (x, y) in FLOWERS:
         sx, sy = x + 8, y + 8
@@ -403,45 +381,16 @@ def machine(cv):
     charge_slot(cv, *CHARGE)
     gauge_track(cv)
     growth_bar_track(cv)
-    frame(cv, 0, 0, W, MACHINE_H)
 
 
 def inventory(cv):
-    """The player's inventory on a pale livingrock panel hanging under the machine panel."""
-    x1, x2, y1, y2 = INV_X1, INV_X2, MACHINE_H - FRAME, H
-    ramp_l = [OUT, LR0, LR1, LR2, LR2, LR3]
-    ramp_r = [OUT, LR3, LR2, LR2, LR2, LR4]
-    for y in range(y1, y2):
-        for x in range(x1, x2):
-            dl, dr, db = x - x1, x2 - 1 - x, y2 - 1 - y
-            d = min(dl, dr, db)
-            if d >= 6:
-                c = LR2 if rnd2(x, y, 7) > 0.08 else LR1
-            elif d == dl:
-                c = ramp_l[d]
-            else:
-                c = ramp_r[d]
-            cv.set(x, y, c)
+    """The player's inventory on a navy panel hanging under the machine panel."""
+    panel_shape(cv, INV_X1, MACHINE_H - 14, INV_X2, H, inventory_fill)
     for r in range(3):
         for c in range(9):
-            vanilla_slot(cv, INV_SLOT_X + c * 18, INV_Y + r * 18)
+            inventory_slot(cv, INV_SLOT_X + c * 18, INV_Y + r * 18)
     for c in range(9):
-        vanilla_slot(cv, INV_SLOT_X + c * 18, HOTBAR_Y)
-    # the joins under the machine panel: little livingwood brackets
-    for bx in (x1 - 4, x2 - 2):
-        cv.rect(bx, MACHINE_H, bx + 6, MACHINE_H + 3, OUT)
-        cv.hline(bx + 1, bx + 5, MACHINE_H, LW1)
-        cv.hline(bx + 1, bx + 5, MACHINE_H + 1, LW3)
-
-
-def vanilla_slot(cv, x, y):
-    cv.rect(x - 1, y - 1, x + 17, y + 17, SLOT_IN)
-    cv.hline(x - 1, x + 17, y - 1, SLOT_LO)
-    cv.vline(x - 1, y - 1, y + 17, SLOT_LO)
-    cv.hline(x - 1, x + 17, y + 16, SLOT_HI)
-    cv.vline(x + 16, y - 1, y + 17, SLOT_HI)
-    cv.set(x - 1, y + 16, SLOT_IN)
-    cv.set(x + 16, y - 1, SLOT_IN)
+        inventory_slot(cv, INV_SLOT_X + c * 18, HOTBAR_Y)
 
 
 def build():

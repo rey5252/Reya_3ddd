@@ -79,6 +79,9 @@ public final class AutoShot {
         STEPS.add(new Step(37, () -> shot("gui_later.png")));
         STEPS.add(new Step(5, () -> mouseAtGui(128, 60)));
         STEPS.add(new Step(10, () -> shot("gui_heart.png")));
+        // the red close button under the mouse, with its tooltip
+        STEPS.add(new Step(5, () -> mouseAtGui(253, 0)));
+        STEPS.add(new Step(10, () -> shot("gui_close.png")));
         STEPS.add(new Step(5, () -> clickGui(-26, 70)));
         STEPS.add(new Step(12, () -> shot("gui_keeper.png")));
         STEPS.add(new Step(5, AutoShot::mouseAway));

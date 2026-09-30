@@ -33,6 +33,7 @@
   "gui.managarden.status.redstone": "Stopped by redstone",
   "gui.managarden.growth": "Growth: %s%%",
   "gui.managarden.cycle": "One cycle: %s s",
+  "gui.managarden.close": "Close",
   "gui.managarden.charge": "Charging",
   "gui.managarden.mana_of": "%s / %s mana",
   "gui.managarden.redstone": "Redstone control",

@@ -20,7 +20,9 @@ import sys
 
 from PIL import Image
 
-from pix import Canvas, ASSETS, hexc, upscale, ROOT
+from pix import Canvas, ASSETS, hexc, upscale, ROOT, rrect
+import style as st
+import vines as V
 
 W, H = 96, 136                       # the figure's grid, which the portrait crops
 PW, PH = 88, 74                      # the portrait
@@ -54,10 +56,11 @@ PAL = {
     # grass and little flowers under her feet
     "L": hexc("A8E563"), "l": hexc("6DC043"), "P": hexc("45922F"), "q": hexc("173D1C"),
     "c": hexc("FFF0F8"), "C": hexc("FFC4E2"), "i": hexc("FFD84A"),
-    # the frame: livingwood, a mana vein, the teal of the GUI's panel
-    "&": hexc("1A0703"), "(": hexc("A2512A"), ")": hexc("7A3314"), "[": hexc("5E240B"), "]": hexc("4A1A08"),
-    "{": hexc("55D9F7"), "}": hexc("2A9FE2"), "<": hexc("235A5B"), ">": hexc("173F43"), "^": hexc("2C6C69"),
-    "+": hexc("FBF8EE"), "*": hexc("E2DCCB"), "%": hexc("A89F8B"), "=": hexc("7A715F"),
+    # the frame and background: the GUI panel's edge in miniature (dark outline, greens, sunk navy bevel),
+    # its navy inside
+    "-": st.OUT, "'": st.G0, ":": st.G1, ";": st.G2, ",": st.G3, '"': st.G4, "`": st.VOUT,
+    "~": st.N0, "@": st.N1, "#": st.N2, "$": st.N3, "|": st.N4, "\\": st.N5,
+    "I": st.Y0, "J": st.Y1, "d": st.Y2, "/": st.Y3,
     # the Heart of the Greenhouse (mana)
     "8": hexc("0B2F5C"), "9": hexc("1B64B8"), "0": hexc("2A9FE2"), "6": hexc("55D9F7"), "!": hexc("A6F6FF"),
     "?": hexc("E6FDFF"),
@@ -546,59 +549,81 @@ def inside(x, y):
     return FRAME <= x < PW - FRAME and FRAME <= y < PH - FRAME
 
 
+LIGHT_DIR = (-0.62, -0.78)
+CORNER_R = 3
+
+
 def frame(g):
-    """The frame: a dark outline, livingwood lit from the top-left, a mana vein inside; a vine with
-    leaves over the top-left corner, a pink flower on the top-right one, a mana gem at the bottom."""
+    """The frame: the GUI panel's edge in miniature, with rounded corners and light from the top-left:
+    a dark outline, two rows of green, a navy bevel that is sunk (lit from the other side)."""
     for y in range(PH):
         for x in range(PW):
             if inside(x, y):
                 continue
-            dt, dl, db, dr = y, x, PH - 1 - y, PW - 1 - x
-            d = min(dt, dl, db, dr)
-            corner = min(dl, dr) + min(dt, db)
-            if corner < 3:
+            depth, nx, ny = rrect(x, y, 0, 0, PW, PH, CORNER_R)
+            if depth <= 0:
                 continue
-            # lit from the top-left: the top and left sides light, the others dark, mitred at the corners
-            lit = d == dt or d == dl
-            if d == 0 or corner == 3:
-                k = "&"
-            elif d == FRAME - 1:
-                k = "{" if lit else "}"
+            ring = int(depth)
+            light = nx * LIGHT_DIR[0] + ny * LIGHT_DIR[1]
+            hi, lo = light > 0.35, light < -0.35
+            if ring == 0:
+                k = "-"
+            elif ring == 1:
+                k = ":" if hi else ("," if lo else ";")
+            elif ring == 2:
+                k = ";" if hi else ('"' if lo else ",")
             else:
-                k = ("(" if d == 1 else ")") if lit else ("[" if d == 1 else "]")
+                k = "\\" if hi else ("~" if lo else "$")
             g.set(x, y, k)
-    # livingrock rosettes with a mana pearl on the corners, like the GUI panel's
-    for (cx, cy) in ((3, 3), (PW - 4, 3), (3, PH - 4), (PW - 4, PH - 4)):
-        g.draw([
-            ".&&&.",
-            "&+*%&",
-            "&*{}&",
-            "&%}=&",
-            ".&&&.",
-        ], cx - 2, cy - 2)
-    # the vine over the top-left corner, leaves hanging from it
-    for x in range(7, 32):
-        y = 1 + round(math.sin(x / 4.0) * 0.8)
-        g.set(x, y, "l")
-        g.set(x, y + 1, "q" if g.get(x, y + 1) == "&" else g.get(x, y + 1))
-    for (x, y, rows) in ((10, -2, ["..LL", ".LlP", "LlP.", "P..."]), (18, 1, ["P...", "lL..", ".lLL", "..LL"]),
-                         (26, -2, ["..LL", ".LlP", "LlP."])):
-        g.draw(rows, x, y)
-    g.draw([".c.c.", "cCcCc", ".CiC.", "cCcCc", ".c.c."], PW - 16, -1)
-    g.draw([".y.", "y!y", "!6}", ".9."], PW // 2 - 2, PH - 4)
 
 
 def background(g):
-    """The inside: the GUI panel's teal, darker at the bottom, a faint ring of runes behind her head."""
+    """The inside: the GUI panel's navy, darker at the bottom, a faint ring of runes behind her head."""
     for y in range(PH):
         for x in range(PW):
             if inside(x, y):
                 t = y / PH
-                c = "<" if t < 0.55 else ">"
+                c = "#" if t < 0.4 else ("$" if t < 0.75 else "|")
                 r = math.hypot(x + 0.5 - PW / 2, (y + 0.5 - 34) * 1.05)
                 if abs(r - 31.5) < 0.55 or (abs(r - 34.5) < 0.5 and (x + y) % 2 == 0):
-                    c = "^"
+                    c = "@"
                 g.set(x, y, c)
+
+
+def light_at(cv, x, y):
+    """A little gold light, as on the GUI's vines."""
+    for dx, dy in ((-1, -1), (1, -1), (-1, 1), (1, 1), (-2, 0), (2, 0), (0, -2), (0, 2)):
+        cv.set(x + dx, y + dy, st.Y2, 70)
+    for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1)):
+        cv.set(x + dx, y + dy, st.Y1)
+    cv.set(x, y, st.Y0)
+
+
+# the lights and the mana gem on the frame (the screen twinkles them; kept in step with client/Mascot.java)
+LIGHT_SPOTS = [(81, 4), (7, 69)]
+GEM_SPOT = (44, 71)
+
+
+def decorate(cv, ox, oy):
+    """Vines curl over the frame's top-left and bottom-right corners, gold lights sit in the other two,
+    and a mana gem hangs on the bottom edge in a little gold clasp. (ox, oy) is the portrait's place on the sheet."""
+    tones = (st.G1, st.G2, st.G3)
+    top = V.walk(3.0, 2.2, 0.05, 26, V.wave(0.16, 24))
+    specs = V.chain_specs(top, 0, 20, tones, length=11, pitch=6.5, r=1.6, seed=5)
+    ex, ey, eth = V.at(top, 19)
+    specs.append(V.curl_spec(ex, ey, eth, 20, 6.5, 1.4, 0.55, tones))
+    left = V.walk(2.2, 3.0, math.pi / 2 - 0.05, 20, V.wave(0.16, 20, 0.25))
+    specs.append(V.hook_spec(left, 8, 1, 10, 4.0, tones, r0=0.95, r1=0.5))
+    specs += V.chain_specs(left, 0, 14, tones, length=10, pitch=6.5, r=1.5, seed=6)
+    V.paint_specs(cv, specs, st.VOUT, dx=ox, dy=oy)
+    V.paint_specs(cv, specs, st.VOUT, fx=True, fy=True, cx=PW / 2.0, cy=PH / 2.0, dx=ox, dy=oy)
+    for (x, y) in LIGHT_SPOTS:
+        light_at(cv, ox + x, oy + y)
+    gx, gy = ox + GEM_SPOT[0], oy + GEM_SPOT[1]
+    for (dx, dy, c) in ((-2, -1, st.Y3), (-1, -2, st.Y2), (0, -2, st.Y1), (1, -2, st.Y2), (2, -1, st.Y3),
+                        (-2, 0, st.Y3), (2, 0, st.Y3), (-1, 0, st.M4), (0, 0, st.M2), (1, 0, st.M4),
+                        (-1, -1, st.M3), (0, -1, st.M1), (1, -1, st.M3), (-1, 1, st.Y3), (0, 1, st.Y2), (1, 1, st.Y3)):
+        cv.set(gx + dx, gy + dy, c)
 
 
 def portrait(lift=0, eyes="open", mouth="smile"):
@@ -631,6 +656,7 @@ def sheet():
     cv = Canvas(SHEET_W, SHEET_H)
     for f in (0, 1):
         portrait(lift=f).to_canvas(cv, PW * f, 0)
+        decorate(cv, PW * f, 0)
     ex, ey, ew, eh = EYES_BOX
     for i, v in enumerate(EYE_VARIANTS):
         portrait(eyes=v).crop(ex, ey, ew, eh).to_canvas(cv, EYES_UV[0], EYES_UV[1] + i * eh)

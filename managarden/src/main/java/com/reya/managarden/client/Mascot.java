@@ -14,11 +14,11 @@ import net.minecraft.util.Mth;
 
 /**
  * The garden keeper's portrait: the face of a little elf mage with white twin tails, calm green eyes
- * and red drop earrings, in a small livingwood frame (textures/gui/mascot.png, drawn by
- * tools/gen_mascot.py) hanging beside the greenhouse GUI's top-left corner. It slides in when the GUI
- * opens and she smiles hello; she breathes and blinks, smiles while the mouse is over her, beams when a
- * cycle is lucky, the gem on the frame twinkles whenever a cycle's mana comes in, and when clicked she
- * says what the greenhouse needs or gives a tip in a speech bubble under the portrait.
+ * and red drop earrings, in a small navy frame with a green edge and curling vines (textures/gui/mascot.png,
+ * drawn by tools/gen_mascot.py) hanging beside the greenhouse GUI's top-left corner. It slides in when
+ * the GUI opens and she smiles hello; she breathes and blinks, smiles while the mouse is over her, beams
+ * when a cycle is lucky, the gem on the frame twinkles whenever a cycle's mana comes in, and when clicked
+ * she says what the greenhouse needs or gives a tip in a speech bubble under the portrait.
  * <p>
  * Sheet: the portrait twice (breathing out and in, her head a pixel up), then the face parts drawn over
  * it: eyes (open, half, shut, happy, starry) and mouths (smile, open, happy).
@@ -28,14 +28,14 @@ final class Mascot {
     static final int TEX_W = 256, TEX_H = 128;
     static final int WIDTH = 88, HEIGHT = 74;
     /** Where the portrait hangs, from the GUI's corner: beside the panel's top-left corner. */
-    static final int X = -92, Y = 4;
-    /** How far it reaches over the panel's frame (less than nothing: it keeps clear of the frame's leaves). */
+    static final int X = -100, Y = 4;
+    /** How far it reaches over the panel's frame (less than nothing: it keeps clear of the frame's vines). */
     static final int OVERLAP = X + WIDTH;
     /** The face parts: where they go on the portrait, and where they are on the sheet. */
     static final int EYES_X = 24, EYES_Y = 38, EYES_W = 40, EYES_H = 18, EYES_U = 176, EYES_V = 0;
     static final int MOUTH_X = 39, MOUTH_Y = 57, MOUTH_W = 10, MOUTH_H = 6, MOUTH_U = 216, MOUTH_V = 0;
-    /** The mana gem on the frame's bottom, the flower on its corner and her earring, for their twinkles. */
-    static final int GEM_X = 43, GEM_Y = 71, FLOWER_X = 74, FLOWER_Y = 1, EARRING_X = 18, EARRING_Y = 56;
+    /** The mana gem on the frame's bottom, the gold lights on two of its corners and her earring, for their twinkles. */
+    static final int GEM_X = 44, GEM_Y = 71, LIGHT_A_X = 81, LIGHT_A_Y = 4, LIGHT_B_X = 7, LIGHT_B_Y = 69, EARRING_X = 18, EARRING_Y = 56;
 
     private static final int EYES_OPEN = 0, EYES_HALF = 1, EYES_SHUT = 2, EYES_HAPPY = 3, EYES_STARS = 4;
     private static final int MOUTH_SMILE = 0, MOUTH_OPEN = 1, MOUTH_HAPPY = 2;
@@ -123,19 +123,21 @@ final class Mascot {
         g.setColor(1.0F, 1.0F, 1.0F, 1.0F);
         if (enter < 1.0F) return;
 
-        // twinkles: the gem when mana comes in, the flower on the corner and her earring now and then
+        // twinkles: the gem when mana comes in, the gold lights on the corners and her earring now and then
         if (now < gemUntil) {
             float a = Mth.sin((gemUntil - now) / 420.0F * Mth.PI);
             GreenhouseScreen.sparkle(g, x + GEM_X, y + GEM_Y, 0x7FF4FF, Math.abs(a));
         }
         long p = now % 2300L;
-        if (p < 420L) GreenhouseScreen.sparkle(g, x + FLOWER_X, y + FLOWER_Y, 0xFFC4E2, Mth.sin(p / 420.0F * Mth.PI));
+        if (p < 420L) GreenhouseScreen.sparkle(g, x + LIGHT_A_X, y + LIGHT_A_Y, 0xFFE47D, Mth.sin(p / 420.0F * Mth.PI));
+        long r = (now + 1500L) % 2900L;
+        if (r < 420L) GreenhouseScreen.sparkle(g, x + LIGHT_B_X, y + LIGHT_B_Y, 0xFFE47D, Mth.sin(r / 420.0F * Mth.PI));
         long q = (now + 1150L) % 3100L;
         if (q < 360L) GreenhouseScreen.sparkle(g, x + EARRING_X, y + EARRING_Y - lift, 0xFFB0A8, Mth.sin(q / 360.0F * Mth.PI) * 0.8F);
     }
 
     /**
-     * Her speech bubble: a rounded cream box with a dark outline under the portrait, its tail pointing
+     * Her speech bubble: a rounded parchment box with a dark outline under the portrait, its tail pointing
      * up at her, kept left of the panel.
      */
     void drawSpeech(GuiGraphics g, Font font, int left, int top, int screenW) {
@@ -150,7 +152,7 @@ final class Mascot {
         int bw = w + 10, bh = lines.size() * 10 + 7;
         int anchorX = left + X + WIDTH / 2, anchorY = top + Y + HEIGHT;
         // centred under the portrait, but kept off the panel and the leaves on its frame
-        int bx = Math.min(anchorX - bw / 2, left - 9 - bw);
+        int bx = Math.min(anchorX - bw / 2, left - 12 - bw);
         bx = Mth.clamp(bx, 2, Math.max(2, screenW - bw - 2));
         int by = anchorY + 6;
         bubbleX = bx - 1;
@@ -160,7 +162,7 @@ final class Mascot {
         g.pose().pushPose();
         g.pose().translate(0.0F, 0.0F, 300.0F);
         int alpha = (int) (a * 255.0F) << 24;
-        int outline = alpha | 0x2A1A12, fill = alpha | 0xFFF9EC, shadow = alpha | 0xE4D8BE;
+        int outline = alpha | 0x4E3417, fill = alpha | 0xFFF9E0, shadow = alpha | 0xEAD092;
         // rounded box
         g.fill(bx + 1, by, bx + bw - 1, by + bh, outline);
         g.fill(bx, by + 1, bx + bw, by + bh - 1, outline);
@@ -182,7 +184,7 @@ final class Mascot {
         int ty = by + 4;
         int textAlpha = Math.max(8, (int) (a * 255.0F)) << 24;
         for (FormattedCharSequence l : lines) {
-            g.drawString(font, l, bx + 5, ty, textAlpha | 0x3A2A22, false);
+            g.drawString(font, l, bx + 5, ty, textAlpha | 0x3A2612, false);
             ty += 10;
         }
         g.pose().popPose();

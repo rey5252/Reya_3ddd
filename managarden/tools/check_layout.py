@@ -86,6 +86,19 @@ def main():
     same("widget sheet size", png_size(os.path.join(TEXTURES, "greenhouse_widgets.png")), (screen["WIDGETS_W"], screen["WIDGETS_H"]))
     same("bloom sheet size", png_size(os.path.join(TEXTURES, "greenhouse_bloom.png")),
          (screen["BLOOM_SIZE"] * screen["BLOOM_FRAMES"], screen["BLOOM_SIZE"]))
+    same("frame vein row", screen["VEIN"], gui["VEIN"])
+    same("gold lights", screen["LIGHTS"], [tuple(p) for p in gui["LIGHTS"]])
+
+    sheet = python_constants(os.path.join(ROOT, "tools", "gen_widgets.py"))
+    same("widget sheet size (generator)", (screen["WIDGETS_W"], screen["WIDGETS_H"]), (sheet["SHEET_W"], sheet["SHEET_H"]))
+    same("close button", (screen["CLOSE_SIZE"], screen["CLOSE_U"], screen["CLOSE_V"]),
+         (sheet["CLOSE_SIZE"], sheet["CLOSE_UV"][0], sheet["CLOSE_UV"][1]))
+    same("glow", (screen["GLOW_SIZE"], screen["GLOW_U"], screen["GLOW_V"]), (sheet["GLOW_SIZE"], sheet["GLOW_UV"][0], sheet["GLOW_UV"][1]))
+    same("title scroll", (screen["SCROLL_H"], screen["SCROLL_CAP"], screen["SCROLL_V"], screen["SCROLL_TILE_U"], screen["SCROLL_TILE_W"]),
+         (sheet["SCROLL_H"], sheet["SCROLL_CAP"], sheet["SCROLL_V"], sheet["SCROLL_TILE_U"], sheet["SCROLL_TILE_W"]))
+    # the close button sits on the panel's top-right corner, inside the texture's margin
+    if not (-gui["M"] <= screen["CLOSE_Y"] and screen["CLOSE_X"] + screen["CLOSE_SIZE"] <= gui["W"] + gui["M"]):
+        errors.append("the close button sticks out of the panel texture's margin")
 
     mascot = java_constants(os.path.join(JAVA, "client", "Mascot.java"))
     keeper = python_constants(os.path.join(ROOT, "tools", "gen_mascot.py"))
@@ -96,8 +109,12 @@ def main():
          tuple(keeper["EYES_BOX"]) + tuple(keeper["EYES_UV"]))
     same("keeper mouth", tuple(mascot[k] for k in ("MOUTH_X", "MOUTH_Y", "MOUTH_W", "MOUTH_H", "MOUTH_U", "MOUTH_V")),
          tuple(keeper["MOUTH_BOX"]) + tuple(keeper["MOUTH_UV"]))
-
-
+    same("keeper's gem", (mascot["GEM_X"], mascot["GEM_Y"]), keeper["GEM_SPOT"])
+    same("keeper's gold lights", [(mascot["LIGHT_A_X"], mascot["LIGHT_A_Y"]), (mascot["LIGHT_B_X"], mascot["LIGHT_B_Y"])],
+         [tuple(p) for p in keeper["LIGHT_SPOTS"]])
+    # her portrait keeps clear of the panel's vines (the texture's margin)
+    if mascot["X"] + mascot["WIDTH"] > -gui["M"]:
+        errors.append("the keeper's portrait reaches over the panel's vines")
     if errors:
         print("The GUI code and its textures disagree:")
         for e in errors:

@@ -30,11 +30,12 @@ import vazkii.botania.api.BotaniaForgeCapabilities;
 import vazkii.botania.api.mana.ManaItem;
 
 /**
- * The Mana Greenhouse's GUI: a livingwood frame wound with vines round a deep teal panel, eight
- * little planters ringing the mana heart (textures/gui/greenhouse.png, made by tools/gen_gui.py).
- * This draws what moves: the mana in the heart with its waves and bubbles, mana running along the
- * vines from each growing flower to the heart, the growth bar, the charge gauge, the buttons, the
- * name plates, sparkles, and the garden keeper (see {@link Mascot}) at the left.
+ * The Mana Greenhouse's GUI: a deep navy panel with rounded corners and a bright green edge, wound with
+ * curly leaf vines and hung with little gold lights, eight dark slots outlined in green ringing the mana
+ * heart (textures/gui/greenhouse.png, made by tools/gen_gui.py). This draws what moves: the mana in the
+ * heart with its waves and bubbles, mana running along the vines from each growing flower to the heart,
+ * the growth bar, the charge gauge, the buttons, the twinkling lights, the title on its parchment
+ * scroll, the red close button, sparkles, and the garden keeper (see {@link Mascot}) at the left.
  * <p>
  * It opens like a flower: a bud swells in the middle and blooms, the panel grows out of it, a little
  * past its size and back, the inventory unrolls under it like a scroll, petals scatter, and the keeper
@@ -56,8 +57,22 @@ public class GreenhouseScreen extends AbstractContainerScreen<GreenhouseMenu> {
     private static final int BUTTON_REDSTONE_X = 18, BUTTON_OUTPUT_X = 222, BUTTON_Y = 111, BUTTON_SIZE = 16;
     /** The machine panel's height, and the inventory panel hanging under it (x from, to). */
     private static final int MACHINE_H = 146, INV_PANEL_X1 = 36, INV_PANEL_X2 = 220;
-    /** Name plates over the panel: the mod's badge and the block's plate. */
-    private static final int PLATE_H = 15, BADGE_W = 88, BADGE_H = 13, PLATES_H = PLATE_H + BADGE_H - 2;
+    /**
+     * The title scroll over the panel's top edge: its pieces on the widget sheet (rollers 16 wide, tiles of
+     * paper 8 wide, two kinds), how far above the panel it hangs, and the paper's room beside the name.
+     */
+    private static final int SCROLL_H = 20, SCROLL_CAP = 16, SCROLL_V = 56, SCROLL_TILE_U = 32, SCROLL_TILE_W = 8,
+            SCROLL_UP = 12, SCROLL_PAD = 6;
+    /** The red close button on the panel's top-right corner, and its place on the sheet. */
+    private static final int CLOSE_X = 245, CLOSE_Y = -8, CLOSE_SIZE = 16, CLOSE_U = 104, CLOSE_V = 0;
+    /** The soft glow under the gold lights' twinkle, on the sheet. */
+    private static final int GLOW_U = 104, GLOW_V = 16, GLOW_SIZE = 9;
+    /** The row of the frame the mana runs along (tools/gen_gui.py draws it). */
+    private static final int VEIN = 3;
+    /** The gold lights on the vines: their middles, as in tools/gen_gui.py. */
+    private static final int[][] LIGHTS = {
+            {12, -6}, {40, -8}, {58, -6}, {-6, 20}, {-7, 52}, {8, 149}, {-4, 100},
+            {243, -8}, {218, -8}, {198, -6}, {262, 22}, {262, 60}, {248, 149}, {262, 104}};
 
     /**
      * The opening: the bud blooms in BLOOM_MS, the machine panel grows from PANEL_FROM for PANEL_MS, the
@@ -79,6 +94,8 @@ public class GreenhouseScreen extends AbstractContainerScreen<GreenhouseMenu> {
     private long cycleAt = -100000L, luckyAt = -100000L, lastFrame;
     private int lastGainShown;
     private boolean opened;
+    /** Half the width of the title scroll with its rollers, as last drawn (to keep clicks on it from dropping items). */
+    private int scrollHalf = 70;
 
     public GreenhouseScreen(GreenhouseMenu menu, Inventory inv, Component title) {
         super(menu, inv, title);
@@ -89,11 +106,11 @@ public class GreenhouseScreen extends AbstractContainerScreen<GreenhouseMenu> {
     @Override
     protected void init() {
         super.init();
-        // centre the keeper and the panel together, and the plates with the panel
+        // centre the keeper and the panel together, and the scroll with the panel
         int left = Mascot.WIDTH - Mascot.OVERLAP;
         leftPos = Math.max(left + 2, (width - imageWidth - left) / 2 + left);
         if (leftPos + imageWidth > width) leftPos = (width - imageWidth) / 2;
-        topPos = Math.max(PLATES_H + 2, (height - imageHeight - PLATES_H) / 2 + PLATES_H);
+        topPos = Math.max(SCROLL_UP + 2, (height - imageHeight - SCROLL_UP) / 2 + SCROLL_UP);
         if (topPos + imageHeight > height) topPos = Math.max(0, height - imageHeight);
     }
 
@@ -101,11 +118,11 @@ public class GreenhouseScreen extends AbstractContainerScreen<GreenhouseMenu> {
         return Util.getMillis() - openedAt;
     }
 
-    /** Where the GUI draws outside its panel: the keeper, the plates, the vines round the frame. */
+    /** Where the GUI draws outside its panel: the keeper, the title scroll, the vines round the frame. */
     public List<net.minecraft.client.renderer.Rect2i> extraAreas() {
         List<net.minecraft.client.renderer.Rect2i> areas = new ArrayList<>();
         areas.add(new net.minecraft.client.renderer.Rect2i(leftPos + Mascot.X, topPos + Mascot.Y, Mascot.WIDTH, Mascot.HEIGHT));
-        areas.add(new net.minecraft.client.renderer.Rect2i(leftPos - M, topPos - PLATES_H - 2, imageWidth + 2 * M, PLATES_H + 2));
+        areas.add(new net.minecraft.client.renderer.Rect2i(leftPos - M, topPos - SCROLL_UP - 2, imageWidth + 2 * M, SCROLL_UP + 2));
         areas.add(new net.minecraft.client.renderer.Rect2i(leftPos - M, topPos - M, imageWidth + 2 * M, MACHINE_H + 2 * M));
         return areas;
     }
@@ -220,14 +237,14 @@ public class GreenhouseScreen extends AbstractContainerScreen<GreenhouseMenu> {
         g.pose().popPose();
         if (!clipped) return;
         g.disableScissor();
-        // the roll: a livingrock cylinder across the inventory panel, lit from above
+        // the roll: a parchment cylinder across the inventory panel, lit from above
         int x1 = Math.round(cx + (INV_PANEL_X1 - 1 - HEART_X) * scale), x2 = Math.round(cx + (INV_PANEL_X2 + 1 - HEART_X) * scale);
         int y = bottom - 1;
         g.fill(x1, y - 1, x2, y, 0x50000000);
-        g.fill(x1, y, x2, y + 5, 0xFF1A0703);
-        g.fill(x1 + 1, y + 1, x2 - 1, y + 2, 0xFFFBF8EE);
-        g.fill(x1 + 1, y + 2, x2 - 1, y + 3, 0xFFE2DCCB);
-        g.fill(x1 + 1, y + 3, x2 - 1, y + 4, 0xFFA89F8B);
+        g.fill(x1, y, x2, y + 5, 0xFF4E3417);
+        g.fill(x1 + 1, y + 1, x2 - 1, y + 2, 0xFFFFF9E0);
+        g.fill(x1 + 1, y + 2, x2 - 1, y + 3, 0xFFF8E8B8);
+        g.fill(x1 + 1, y + 3, x2 - 1, y + 4, 0xFFCBAA68);
     }
 
     private void renderClosing(GuiGraphics g, long t, float partialTick) {
@@ -300,7 +317,9 @@ public class GreenhouseScreen extends AbstractContainerScreen<GreenhouseMenu> {
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         g.blit(PANEL, leftPos - M, topPos - M, 0, 0, TEX_W, TEX_H, TEX_W, TEX_H);
-        drawPlates(g);
+        drawLights(g, t);
+        drawTitle(g);
+        drawClose(g, mouseX, mouseY);
         boolean hoverKeeper = ready() && mascot.contains(mouseX - leftPos, mouseY - topPos);
         mascot.draw(g, leftPos, topPos, t, hoverKeeper);
         RenderSystem.enableBlend();
@@ -550,7 +569,7 @@ public class GreenhouseScreen extends AbstractContainerScreen<GreenhouseMenu> {
      */
     private void drawVeinPulse(GuiGraphics g, long t) {
         if (!menu.running()) return;
-        int x1 = 8, y1 = 8, x2 = GreenhouseMenu.WIDTH - 9, y2 = MACHINE_H - 9;
+        int x1 = VEIN, y1 = VEIN, x2 = GreenhouseMenu.WIDTH - 1 - VEIN, y2 = MACHINE_H - 1 - VEIN;
         int perimeter = 2 * (x2 - x1) + 2 * (y2 - y1);
         for (int k = 0; k < 2; k++) {
             int head = (int) ((t / 22L + k * perimeter / 2) % perimeter);
@@ -558,7 +577,7 @@ public class GreenhouseScreen extends AbstractContainerScreen<GreenhouseMenu> {
                 int d = head - j;
                 if (d < 0) d += perimeter;
                 int[] p = veinPoint(d, x1, y1, x2, y2);
-                if ((p[0] == x1 || p[0] == x2) && (p[1] == y1 || p[1] == y2)) continue;   // under a corner rosette
+                if ((p[0] == x1 || p[0] == x2) && (p[1] == y1 || p[1] == y2)) continue;   // the rounded corner turns inwards here
                 float f = j / 18.0F;
                 int a = (int) (230 * (1.0F - f) * (1.0F - f)) + 10;
                 int c = j == 0 ? 0xF2FFFF : j < 3 ? 0xA6F6FF : 0x55D9F7;
@@ -601,19 +620,53 @@ public class GreenhouseScreen extends AbstractContainerScreen<GreenhouseMenu> {
         g.blit(WIDGETS, x + 2, y + 2, icon * 12, 16, 12, 12, WIDGETS_W, WIDGETS_H);
     }
 
-    /** The mod's badge over the block's name plate, both centred over the panel. */
-    private void drawPlates(GuiGraphics g) {
+    /**
+     * The block's name on a parchment scroll over the panel's top edge, centred: the paper is tiled to
+     * the name's width (two kinds of tile alternate, so it doesn't repeat), a roller at each end.
+     */
+    private void drawTitle(GuiGraphics g) {
         int mid = leftPos + imageWidth / 2;
         String title = getTitle().getString();
         int textW = PlateFont.width(title);
-        int half = textW / 2 + 12;
-        int y = topPos - PLATE_H + 2;
-        // plate: caps from the sheet, the middle stretched
-        g.blit(WIDGETS, mid - half - 9, y, 0, 56, 9, PLATE_H, WIDGETS_W, WIDGETS_H);
-        g.blit(WIDGETS, mid - half, y, 2 * half, PLATE_H, 18, 56, 1, PLATE_H, WIDGETS_W, WIDGETS_H);
-        g.blit(WIDGETS, mid + half, y, 9, 56, 9, PLATE_H, WIDGETS_W, WIDGETS_H);
-        PlateFont.draw(g, title, mid - textW / 2, y + 5, 0xFF2E5A2A);
-        g.blit(WIDGETS, mid - BADGE_W / 2, y - BADGE_H + 2, 0, 40, BADGE_W, BADGE_H, WIDGETS_W, WIDGETS_H);
+        int paper = textW + 2 * SCROLL_PAD, x0 = mid - paper / 2, x1 = x0 + paper;
+        int top = topPos - SCROLL_UP;
+        scrollHalf = paper / 2 + SCROLL_CAP;
+        for (int x = x0, k = 0; x < x1; x += SCROLL_TILE_W, k++) {
+            g.blit(WIDGETS, x, top, SCROLL_TILE_U + (k & 1) * SCROLL_TILE_W, SCROLL_V, Math.min(SCROLL_TILE_W, x1 - x), SCROLL_H,
+                    WIDGETS_W, WIDGETS_H);
+        }
+        g.blit(WIDGETS, x0 - SCROLL_CAP, top, 0, SCROLL_V, SCROLL_CAP, SCROLL_H, WIDGETS_W, WIDGETS_H);
+        g.blit(WIDGETS, x1, top, SCROLL_CAP, SCROLL_V, SCROLL_CAP, SCROLL_H, WIDGETS_W, WIDGETS_H);
+        // pressed into the paper: a pale edge under the dark ink
+        PlateFont.draw(g, title, mid - textW / 2 + 1, top + 9, 0xFFFFF9E0);
+        PlateFont.draw(g, title, mid - textW / 2, top + 8, 0xFF4E3417);
+    }
+
+    /** The red close button on the panel's top-right corner: brighter under the mouse, pressed while the GUI folds up. */
+    private void drawClose(GuiGraphics g, int mouseX, int mouseY) {
+        boolean hot = ready() && inside(CLOSE_X, CLOSE_Y, CLOSE_SIZE, CLOSE_SIZE, mouseX, mouseY);
+        int state = closingAt >= 0L ? 2 : hot ? 1 : 0;
+        g.blit(WIDGETS, leftPos + CLOSE_X, topPos + CLOSE_Y, CLOSE_U + state * CLOSE_SIZE, CLOSE_V, CLOSE_SIZE, CLOSE_SIZE,
+                WIDGETS_W, WIDGETS_H);
+    }
+
+    /**
+     * The gold lights on the vines twinkle: a soft glow round each, every one on its own beat, calm while
+     * the greenhouse rests and livelier while its flowers grow; now and then one flashes a sparkle.
+     */
+    private void drawLights(GuiGraphics g, long t) {
+        boolean busy = menu.running();
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        for (int i = 0; i < LIGHTS.length; i++) {
+            float beat = 0.5F + 0.5F * Mth.sin(t / (busy ? 330.0F : 560.0F) + i * 1.9F);
+            float a = (busy ? 0.35F : 0.22F) + beat * beat * (busy ? 0.65F : 0.45F);
+            int x = leftPos + LIGHTS[i][0], y = topPos + LIGHTS[i][1];
+            g.setColor(1.0F, 0.86F, 0.42F, a);
+            g.blit(WIDGETS, x - GLOW_SIZE / 2, y - GLOW_SIZE / 2, GLOW_U, GLOW_V, GLOW_SIZE, GLOW_SIZE, WIDGETS_W, WIDGETS_H);
+            g.setColor(1.0F, 1.0F, 1.0F, 1.0F);
+            if (beat > 0.94F && ready()) sparkle(g, x, y, 0xFFE47D, (beat - 0.94F) / 0.06F);
+        }
     }
 
     // ------------------------------------------------------------------ input
@@ -627,6 +680,11 @@ public class GreenhouseScreen extends AbstractContainerScreen<GreenhouseMenu> {
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (!ready() || closingAt >= 0L) return true;
         if (button == 0 && minecraft != null && minecraft.gameMode != null) {
+            if (inside(CLOSE_X, CLOSE_Y, CLOSE_SIZE, CLOSE_SIZE, mouseX, mouseY)) {
+                minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+                onClose();
+                return true;
+            }
             int id = -1;
             if (inside(BUTTON_REDSTONE_X, BUTTON_Y, BUTTON_SIZE, BUTTON_SIZE, mouseX, mouseY)) {
                 id = GreenhouseMenu.BUTTON_REDSTONE;
@@ -654,9 +712,10 @@ public class GreenhouseScreen extends AbstractContainerScreen<GreenhouseMenu> {
 
     @Override
     protected boolean hasClickedOutside(double mouseX, double mouseY, int left, int top, int button) {
-        // the plates, the keeper and her bubble are part of the GUI: clicking them doesn't throw items out
+        // the scroll, the close button, the keeper and her bubble are part of the GUI: clicking them doesn't throw items out
         if (mascot.contains((int) mouseX - leftPos, (int) mouseY - topPos) || mascot.bubbleContains(mouseX, mouseY)) return false;
-        if (mouseY >= top - PLATES_H && mouseY < top && Math.abs(mouseX - (left + imageWidth / 2.0D)) < 70) return false;
+        if (mouseY >= top - SCROLL_UP && mouseY < top && Math.abs(mouseX - (left + imageWidth / 2.0D)) < scrollHalf) return false;
+        if (inside(CLOSE_X, CLOSE_Y, CLOSE_SIZE, CLOSE_SIZE, mouseX, mouseY)) return false;
         double mx = mouseX - left, my = mouseY - top;
         boolean inMachine = mx >= 0 && mx < imageWidth && my >= 0 && my < MACHINE_H;
         boolean inInventory = mx >= INV_PANEL_X1 && mx < INV_PANEL_X2 && my >= MACHINE_H && my < imageHeight;
@@ -695,6 +754,8 @@ public class GreenhouseScreen extends AbstractContainerScreen<GreenhouseMenu> {
             } else {
                 tip.add(Component.translatable("gui.managarden.slot.charge").withStyle(ChatFormatting.GRAY));
             }
+        } else if (inside(CLOSE_X, CLOSE_Y, CLOSE_SIZE, CLOSE_SIZE, mouseX, mouseY)) {
+            tip.add(Component.translatable("gui.managarden.close"));
         } else if (inside(BUTTON_REDSTONE_X, BUTTON_Y, BUTTON_SIZE, BUTTON_SIZE, mouseX, mouseY)) {
             tip.add(Component.translatable("gui.managarden.redstone"));
             tip.add(Component.translatable("gui.managarden.redstone." + menu.redstone().name().toLowerCase(java.util.Locale.ROOT))
