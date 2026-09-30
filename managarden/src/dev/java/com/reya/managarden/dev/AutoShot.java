@@ -209,6 +209,16 @@ public final class AutoShot {
             ServerPlayer p = server.getPlayerList().getPlayers().get(0);
             p.getAbilities().flying = true;
             p.onUpdateAbilities();
+            // the mod's items in the inventory, to see their icons in the GUI
+            ItemStack stored = new ItemStack(ManaGarden.GREENHOUSE_ITEM.get());
+            CompoundTag entity = new CompoundTag();
+            entity.putInt(GreenhouseBlockEntity.TAG_MANA, 125_000);
+            net.minecraft.world.item.BlockItem.setBlockEntityData(stored, ManaGarden.GREENHOUSE_BE.get(), entity);
+            ItemStack[] kit = {stored, new ItemStack(ManaGarden.GREENHOUSE_HEART.get()), new ItemStack(ManaGarden.UPGRADE_BASE.get(), 12),
+                    new ItemStack(ManaGarden.SPEED_UPGRADE.get(), 2), new ItemStack(ManaGarden.CAPACITY_UPGRADE.get()),
+                    new ItemStack(ManaGarden.LUCK_UPGRADE.get(), 3), new ItemStack(ManaGarden.YIELD_UPGRADE.get()),
+                    new ItemStack(item("botania", "endoflame"), 4), new ItemStack(item("botania", "mana_tablet"))};
+            for (int i = 0; i < kit.length; i++) p.getInventory().setItem(9 + i, kit[i]);
         });
         mc.getTutorial().setStep(TutorialSteps.NONE);
         mc.options.hideGui = true;

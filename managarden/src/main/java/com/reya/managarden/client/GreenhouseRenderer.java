@@ -34,8 +34,8 @@ public class GreenhouseRenderer implements BlockEntityRenderer<GreenhouseBlockEn
     private static final float HINGE_Y = 14.0F / 16.0F, HINGE_IN = 1.0F / 16.0F;
     /** Closed the petals lean in 22.5 degrees and meet over the middle; open they lean out like a lotus. */
     private static final float CLOSED = 22.5F, OPEN = 148.0F;
-    /** Where the flowers stand: a ring round the middle, on the soil (4 pixels up). */
-    private static final float RING = 0.285F, SOIL_Y = 4.0F / 16.0F, FLOWER_SCALE = 0.36F;
+    /** The flowers stand on the soil (4 pixels up), on the block entity's ring. */
+    private static final float SOIL_Y = 4.0F / 16.0F, FLOWER_SCALE = 0.36F;
 
     public GreenhouseRenderer(BlockEntityRendererProvider.Context context) {
     }
@@ -64,11 +64,10 @@ public class GreenhouseRenderer implements BlockEntityRenderer<GreenhouseBlockEn
             Block block = Flowers.plantBlock(stack);
             if (block == Blocks.AIR) continue;
             BlockState state = block.defaultBlockState();
-            // clockwise from the north like the GUI's ring, starting at the top
-            double a = i * Math.PI / 4.0D - Math.PI / 2.0D;
+            double a = GreenhouseBlockEntity.flowerAngle(i), ring = GreenhouseBlockEntity.FLOWER_RING;
             float sway = Mth.sin(time * 0.06F + i * 1.7F) * 4.0F;
             pose.pushPose();
-            pose.translate(0.5D + Math.cos(a) * RING, SOIL_Y, 0.5D + Math.sin(a) * RING);
+            pose.translate(0.5D + Math.cos(a) * ring, SOIL_Y, 0.5D + Math.sin(a) * ring);
             pose.mulPose(Axis.YP.rotationDegrees(i * 37.0F));
             pose.mulPose(Axis.ZP.rotationDegrees(sway));
             pose.scale(FLOWER_SCALE, FLOWER_SCALE, FLOWER_SCALE);

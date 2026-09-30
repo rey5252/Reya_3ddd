@@ -469,6 +469,13 @@ def legs(g):
         g.set(x1 - 2, FEET_Y - 1, "R")
         g.set(x2 + 1, FEET_Y - 1, "R")
         g.draw(["Ll", ".lN"], x2 - 1, 96)
+        # a garter of leaves round the top of each stocking, just under the frills
+        for x in range(x1 - 1, x2 + 1):
+            g.set(x, 86, "N" if x in (x1 - 1, x2) else ("L" if x < x1 + 2 else "l"))
+            g.set(x, 87, "N" if x in (x1 - 1, x2) else "M")
+        # the stockings' knees catch the light
+        g.set(x1 + 1, 91, "W")
+        g.set(x1 + 2, 91, "W")
 
 
 def skirt(g):

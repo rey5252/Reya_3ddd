@@ -68,6 +68,13 @@ public class GreenhouseBlockEntity extends BlockEntity implements MenuProvider, 
     /** Mana a tick for receivers that don't tell how much they still take (altars, plates...). */
     private static final int SMALL_GIFT = 250;
 
+    /** Where the flowers stand inside: a ring round the middle (blocks), clockwise from the north like the GUI's. */
+    public static final double FLOWER_RING = 0.285D;
+
+    public static double flowerAngle(int i) {
+        return i * Math.PI / 4.0D - Math.PI / 2.0D;
+    }
+
     public enum Status { RUNNING, NO_FLOWERS, FULL, REDSTONE }
 
     public enum RedstoneMode {
@@ -248,7 +255,8 @@ public class GreenhouseBlockEntity extends BlockEntity implements MenuProvider, 
     // ------------------------------------------------------------------ server
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, GreenhouseBlockEntity be) {
-        if (be.dirty) be.recompute();
+        // now and then too, so a changed config takes hold without touching the greenhouse
+        if (be.dirty || level.getGameTime() % 100L == 0L) be.recompute();
         boolean powered = level.hasNeighborSignal(pos);
         if (be.manaPerCycle <= 0) be.status = Status.NO_FLOWERS;
         else if (!be.redstone.allows(powered)) be.status = Status.REDSTONE;
@@ -467,11 +475,11 @@ public class GreenhouseBlockEntity extends BlockEntity implements MenuProvider, 
         if (level == null) return;
         RandomSource random = level.random;
         double cx = worldPosition.getX() + 0.5D, cy = worldPosition.getY(), cz = worldPosition.getZ() + 0.5D;
-        for (int i = 0; i < 8; i++) {
-            double a = i * Math.PI / 4.0D;
-            int color = Flowers.color(clientFlower(i));
+        for (int i = 0; i < FLOWERS; i++) {
             if (clientFlower(i).isEmpty()) continue;
-            BotaniaAPI.instance().sparkleFX(level, cx + Math.cos(a) * 0.3D, cy + 0.45D, cz + Math.sin(a) * 0.3D,
+            double a = flowerAngle(i);
+            int color = Flowers.color(clientFlower(i));
+            BotaniaAPI.instance().sparkleFX(level, cx + Math.cos(a) * FLOWER_RING, cy + 0.45D, cz + Math.sin(a) * FLOWER_RING,
                     (color >> 16 & 0xFF) / 255.0F, (color >> 8 & 0xFF) / 255.0F, (color & 0xFF) / 255.0F, 1.0F, 5);
         }
         BotaniaAPI.instance().sparkleFX(level, cx, cy + 0.75D, cz, 0.4F, 0.9F, 1.0F, 2.0F, 6);
