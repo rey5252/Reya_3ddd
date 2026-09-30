@@ -115,9 +115,10 @@ public class GreenhouseScreen extends AbstractContainerScreen<GreenhouseMenu> {
     @Override
     protected void init() {
         super.init();
-        // centre the keeper and the panel together, and the scroll with the panel
+        // the panel in the middle of the screen, the keeper beside it (moved right only if she wouldn't fit),
+        // and room for the scroll over the panel
         int left = Mascot.WIDTH - Mascot.OVERLAP;
-        leftPos = Math.max(left + 2, (width - imageWidth - left) / 2 + left);
+        leftPos = Math.max(left + 2, (width - imageWidth) / 2);
         if (leftPos + imageWidth > width) leftPos = (width - imageWidth) / 2;
         topPos = Math.max(SCROLL_UP + 2, (height - imageHeight - SCROLL_UP) / 2 + SCROLL_UP);
         if (topPos + imageHeight > height) topPos = Math.max(0, height - imageHeight);

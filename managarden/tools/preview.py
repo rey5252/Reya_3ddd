@@ -140,12 +140,12 @@ def preview_screen(lang="en", scale=3, width=640, height=360, name=None):
             if rnd2(x // 16, y // 16, 3) < 0.5:
                 scr.putpixel((x, y), (24, 32, 27, 255))
 
-    # layout, as GreenhouseScreen.init()
+    # layout, as GreenhouseScreen.init(): the panel in the middle, the keeper beside it
     M = G.M
     px_mascot_x, px_mascot_w = -104, 88
     left = px_mascot_w - (px_mascot_x + px_mascot_w)
     scroll_up = 12
-    leftPos = max(left + 2, (width - G.W - left) // 2 + left)
+    leftPos = max(left + 2, (width - G.W) // 2)
     topPos = max(scroll_up + 2, (height - G.H - scroll_up) // 2 + scroll_up)
 
     scr.alpha_composite(panel, (leftPos - M, topPos - M))
