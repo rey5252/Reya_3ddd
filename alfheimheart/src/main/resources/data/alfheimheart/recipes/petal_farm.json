@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "FFF",
+    "LCL",
+    "WWW"
+  ],
+  "key": {
+    "F": {"tag": "botania:mystical_flowers"},
+    "C": {"item": "minecraft:composter"},
+    "L": {"item": "botania:livingrock_bricks"},
+    "W": {"item": "botania:livingwood_planks"}
+  },
+  "result": {"item": "alfheimheart:petal_farm"}
+}

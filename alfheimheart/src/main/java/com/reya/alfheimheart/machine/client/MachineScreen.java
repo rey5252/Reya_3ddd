@@ -442,6 +442,65 @@ public abstract class MachineScreen<M extends MachineMenu> extends AbstractConta
         }
     }
 
+    private int itemsHash = 1;
+    private long itemsCheckedAt = -10000L;
+
+    /** Whether the machine's slots changed since the last call (or a second went by): time to work out the craft again. */
+    protected boolean itemsChanged(long t) {
+        int hash = 1;
+        for (int i = 0; i < menu.machineSlots(); i++) {
+            ItemStack s = menu.items().getStackInSlot(i);
+            hash = hash * 31 + (s.isEmpty() ? 0 : s.getItem().hashCode() * 7 + s.getCount());
+        }
+        if (hash == itemsHash && t - itemsCheckedAt < 1000L) return false;
+        itemsHash = hash;
+        itemsCheckedAt = t;
+        return true;
+    }
+
+    /**
+     * A ghost of what goes into an empty special slot (its item corner x, y): the item under a dark veil, and a red
+     * rim pulsing round it when `missing` (a craft waits for it).
+     */
+    protected void ghostSlot(GuiGraphics g, int x, int y, ItemStack ghost, boolean missing, long t) {
+        floatingItem(g, ghost, x + 8, y + 8, 1.0F);
+        g.pose().pushPose();
+        g.pose().translate(0.0F, 0.0F, 300.0F);
+        g.fill(leftPos + x, topPos + y, leftPos + x + 16, topPos + y + 16, 0xA0200F08);
+        if (missing) {
+            int pulse = (int) (40 + 40 * (0.5F + 0.5F * Mth.sin(t / 160.0F)));
+            g.renderOutline(leftPos + x - 1, topPos + y - 1, 18, 18, pulse * 2 << 24 | 0xFF5A4A);
+        }
+        g.pose().popPose();
+    }
+
+    /** A dark veil over a round part of the GUI (over the items there): a ghost of what isn't ready. */
+    protected void dim(GuiGraphics g, float cx, float cy, float r, int argb) {
+        g.pose().pushPose();
+        g.pose().translate(0.0F, 0.0F, 300.0F);
+        for (int y = (int) Math.floor(-r); y < r; y++) {
+            float w = Mth.sqrt(Math.max(0.0F, r * r - (y + 0.5F) * (y + 0.5F)));
+            int x1 = Math.round(cx - w), x2 = Math.round(cx + w);
+            g.fill(leftPos + x1, topPos + Math.round(cy) + y, leftPos + x2, topPos + Math.round(cy) + y + 1, argb);
+        }
+        g.pose().popPose();
+    }
+
+    /** The colour of a petal or flower, by the dye colour its name starts with (Botania's red_petal...), else white. */
+    public static int dyeColour(ItemStack stack) {
+        ResourceLocation id = net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(stack.getItem());
+        if (id != null) {
+            String path = id.getPath();
+            for (net.minecraft.world.item.DyeColor dye : net.minecraft.world.item.DyeColor.values()) {
+                if (path.startsWith(dye.getName() + "_")) {
+                    int c = dye.getTextColor();
+                    return c == 0 ? 0x3A3A3A : c;
+                }
+            }
+        }
+        return 0xFFFFFF;
+    }
+
     /** An item drawn at a point of the GUI (menu coordinates, its middle), scaled, over the slots. */
     protected void floatingItem(GuiGraphics g, ItemStack stack, float x, float y, float scale) {
         if (stack.isEmpty() || scale <= 0.02F) return;
@@ -552,6 +611,9 @@ public abstract class MachineScreen<M extends MachineMenu> extends AbstractConta
 
     /** The craft under way: "Crafting: 42% (1 200 / 5 200 mana)". */
     protected Component progressLine() {
+        if (menu.jobCost() <= 0) {
+            return Component.translatable("gui.alfheimheart.progress.time", Math.round(menu.progress() * 100.0F)).withStyle(ChatFormatting.AQUA);
+        }
         return Component.translatable("gui.alfheimheart.progress", Math.round(menu.progress() * 100.0F),
                 Format.mana(menu.jobCharged()), Format.mana(menu.jobCost())).withStyle(ChatFormatting.AQUA);
     }

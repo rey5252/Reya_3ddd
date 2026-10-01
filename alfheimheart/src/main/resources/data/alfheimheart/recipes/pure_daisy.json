@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " M ",
+    "LDL",
+    "WWW"
+  ],
+  "key": {
+    "M": {"item": "botania:mana_powder"},
+    "D": {"item": "botania:pure_daisy"},
+    "L": {"item": "botania:livingrock_bricks"},
+    "W": {"item": "botania:livingwood_planks"}
+  },
+  "result": {"item": "alfheimheart:pure_daisy"}
+}

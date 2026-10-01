@@ -37,6 +37,44 @@ public final class MachineConfig {
         B.pop();
     }
 
+    public static final Numbers APOTHECARY = new Numbers("petalApothecary", "Petal Apothecary", 50_000, 250, 1_000, 40);
+    public static final ForgeConfigSpec.IntValue APOTHECARY_MANA;
+
+    static {
+        B.push("petalApothecary");
+        APOTHECARY_MANA = B.comment("Mana one flower takes (Botania's apothecary takes none, but water).")
+                .defineInRange("manaPerCraft", 1_000, 0, 1_000_000);
+        B.pop();
+    }
+
+    public static final Numbers FARM = new Numbers("petalFarm", "Petal Farm", 100_000, 500, 2_000, 100);
+    public static final ForgeConfigSpec.IntValue FARM_MANA, FARM_PER_FLOWERS, FARM_MOST;
+
+    static {
+        B.push("petalFarm");
+        FARM_MANA = B.comment("Mana one petal takes.").defineInRange("manaPerPetal", 100, 0, 1_000_000);
+        FARM_PER_FLOWERS = B.comment("A kind of flower gives one petal a cycle, and one more for every this many flowers of it.")
+                .defineInRange("flowersPerPetal", 16, 1, 64);
+        FARM_MOST = B.comment("Most petals a kind of flower gives a cycle (before bone meal doubles them).")
+                .defineInRange("mostPerKind", 4, 1, 64);
+        B.pop();
+    }
+
+    public static final ForgeConfigSpec.IntValue DAISY_CAPACITY, DAISY_DRAW, DAISY_BOOST, DAISY_BATCH;
+
+    static {
+        B.comment("Pure Daisy").push("pureDaisy");
+        DAISY_CAPACITY = B.comment("Mana it holds (it needs none, but mana makes it work twice as fast).")
+                .defineInRange("capacity", 50_000, 1_000, 1_000_000_000);
+        DAISY_DRAW = B.comment("Most mana a tick it takes from the mana pools beside it (0: none).")
+                .defineInRange("drawPerTick", 1_000, 0, 1_000_000_000);
+        DAISY_BOOST = B.comment("Mana a tick that makes it work twice as fast (0: never hurried).")
+                .defineInRange("boostPerTick", 10, 0, 1_000_000);
+        DAISY_BATCH = B.comment("Blocks it purifies at once (the Pure Daisy has eight round it).")
+                .defineInRange("batch", 8, 1, 64);
+        B.pop();
+    }
+
     public static final ForgeConfigSpec SPEC = B.build();
 
     private MachineConfig() {

@@ -5,6 +5,12 @@ import com.reya.alfheimheart.greenhouse.client.GreenhouseRenderer;
 import com.reya.alfheimheart.greenhouse.client.GreenhouseScreen;
 import com.reya.alfheimheart.machine.altar.client.RuneAltarRenderer;
 import com.reya.alfheimheart.machine.altar.client.RuneAltarScreen;
+import com.reya.alfheimheart.machine.apothecary.client.PetalApothecaryRenderer;
+import com.reya.alfheimheart.machine.apothecary.client.PetalApothecaryScreen;
+import com.reya.alfheimheart.machine.daisy.client.PureDaisyRenderer;
+import com.reya.alfheimheart.machine.daisy.client.PureDaisyScreen;
+import com.reya.alfheimheart.machine.farm.client.PetalFarmRenderer;
+import com.reya.alfheimheart.machine.farm.client.PetalFarmScreen;
 import com.reya.alfheimheart.machine.infuser.client.ManaInfuserRenderer;
 import com.reya.alfheimheart.machine.infuser.client.ManaInfuserScreen;
 import com.reya.alfheimheart.machine.plate.client.TerraPlateRenderer;
@@ -29,6 +35,9 @@ public final class ClientSetup {
             MenuScreens.register(AlfheimHeart.RUNE_ALTAR_MENU.get(), RuneAltarScreen::new);
             MenuScreens.register(AlfheimHeart.TERRA_PLATE_MENU.get(), TerraPlateScreen::new);
             MenuScreens.register(AlfheimHeart.MANA_INFUSER_MENU.get(), ManaInfuserScreen::new);
+            MenuScreens.register(AlfheimHeart.PURE_DAISY_MENU.get(), PureDaisyScreen::new);
+            MenuScreens.register(AlfheimHeart.PETAL_APOTHECARY_MENU.get(), PetalApothecaryScreen::new);
+            MenuScreens.register(AlfheimHeart.PETAL_FARM_MENU.get(), PetalFarmScreen::new);
         });
     }
 
@@ -39,6 +48,9 @@ public final class ClientSetup {
         event.registerBlockEntityRenderer(AlfheimHeart.RUNE_ALTAR_BE.get(), RuneAltarRenderer::new);
         event.registerBlockEntityRenderer(AlfheimHeart.TERRA_PLATE_BE.get(), TerraPlateRenderer::new);
         event.registerBlockEntityRenderer(AlfheimHeart.MANA_INFUSER_BE.get(), ManaInfuserRenderer::new);
+        event.registerBlockEntityRenderer(AlfheimHeart.PURE_DAISY_BE.get(), PureDaisyRenderer::new);
+        event.registerBlockEntityRenderer(AlfheimHeart.PETAL_APOTHECARY_BE.get(), PetalApothecaryRenderer::new);
+        event.registerBlockEntityRenderer(AlfheimHeart.PETAL_FARM_BE.get(), PetalFarmRenderer::new);
     }
 
     /** The greenhouse's petals and crystal move, so they are models of their own, not part of the block's. */

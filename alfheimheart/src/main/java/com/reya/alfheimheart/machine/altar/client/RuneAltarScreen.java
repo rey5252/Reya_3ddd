@@ -43,8 +43,6 @@ public class RuneAltarScreen extends MachineScreen<RuneAltarMenu> {
     /** The craft the inputs would make with livingrock, while there is none. */
     @Nullable
     private MachineBlockEntity.Job needsReagent;
-    private int itemsHash = 1;
-    private long checkedAt = -10000L;
     private float orbit;
     private List<ItemStack> falling = List.of();
     private long moteAt;
@@ -60,15 +58,7 @@ public class RuneAltarScreen extends MachineScreen<RuneAltarMenu> {
 
     /** Works out again what the slots make, when they change (and now and then). */
     private void refresh(long t) {
-        int hash = 1;
-        for (int i = 0; i < RuneAltarBlockEntity.SLOTS; i++) {
-            ItemStack s = menu.items().getStackInSlot(i);
-            hash = hash * 31 + (s.isEmpty() ? 0 : s.getItem().hashCode() * 7 + s.getCount());
-        }
-        if (hash == itemsHash && t - checkedAt < 1000L) return;
-        itemsHash = hash;
-        checkedAt = t;
-        if (minecraft == null || minecraft.level == null) return;
+        if (!itemsChanged(t) || minecraft == null || minecraft.level == null) return;
         job = RuneAltarBlockEntity.find(minecraft.level, menu.items(), true);
         needsReagent = job == null ? RuneAltarBlockEntity.find(minecraft.level, menu.items(), false) : null;
     }
@@ -187,29 +177,8 @@ public class RuneAltarScreen extends MachineScreen<RuneAltarMenu> {
         }
         // a ghost of livingrock in the empty reagent slot
         if (menu.items().getStackInSlot(RuneAltarBlockEntity.REAGENT).isEmpty()) {
-            floatingItem(g, new ItemStack(BotaniaBlocks.livingrock), RuneAltarMenu.REAGENT_X + 8, RuneAltarMenu.REAGENT_Y + 8, 1.0F);
-            g.pose().pushPose();
-            g.pose().translate(0.0F, 0.0F, 300.0F);
-            int pulse = needsReagent != null ? (int) (40 + 40 * (0.5F + 0.5F * Mth.sin(t / 160.0F))) : 0;
-            g.fill(leftPos + RuneAltarMenu.REAGENT_X, topPos + RuneAltarMenu.REAGENT_Y, leftPos + RuneAltarMenu.REAGENT_X + 16,
-                    topPos + RuneAltarMenu.REAGENT_Y + 16, 0xA0200F08);
-            if (pulse > 0) {
-                g.renderOutline(leftPos + RuneAltarMenu.REAGENT_X - 1, topPos + RuneAltarMenu.REAGENT_Y - 1, 18, 18, pulse * 2 << 24 | 0xFF5A4A);
-            }
-            g.pose().popPose();
+            ghostSlot(g, RuneAltarMenu.REAGENT_X, RuneAltarMenu.REAGENT_Y, new ItemStack(BotaniaBlocks.livingrock), needsReagent != null, t);
         }
-    }
-
-    /** A dark veil over a round part of the GUI (over the items there): a ghost of what isn't ready. */
-    private void dim(GuiGraphics g, int cx, int cy, float r, int argb) {
-        g.pose().pushPose();
-        g.pose().translate(0.0F, 0.0F, 300.0F);
-        for (int y = (int) -r; y < r; y++) {
-            float w = Mth.sqrt(Math.max(0.0F, r * r - (y + 0.5F) * (y + 0.5F)));
-            int x1 = Math.round(cx - w), x2 = Math.round(cx + w);
-            g.fill(leftPos + x1, topPos + cy + y, leftPos + x2, topPos + cy + y + 1, argb);
-        }
-        g.pose().popPose();
     }
 
     @Override

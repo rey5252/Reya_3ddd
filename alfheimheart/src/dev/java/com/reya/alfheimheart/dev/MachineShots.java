@@ -8,6 +8,8 @@ import com.reya.alfheimheart.AlfheimHeart;
 import com.reya.alfheimheart.machine.MachineBlock;
 import com.reya.alfheimheart.machine.MachineBlockEntity;
 import com.reya.alfheimheart.machine.altar.RuneAltarBlockEntity;
+import com.reya.alfheimheart.machine.apothecary.PetalApothecaryBlockEntity;
+import com.reya.alfheimheart.machine.farm.PetalFarmBlockEntity;
 import com.reya.alfheimheart.machine.infuser.ManaInfuserBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -19,12 +21,13 @@ import net.minecraftforge.network.NetworkHooks;
 
 /**
  * The machines' scene: the Runic Altar, the Terrestrial Plate and the Mana Infuser side by side on livingrock,
- * a creative mana pool behind each, their slots full of what they make runes, terrasteel and manasteel from;
- * each in the world, its GUI opening, at work, with its heart's tooltip; the infuser with a catalyst; the
- * lexicon page.
+ * the Pure Daisy, the Petal Apothecary and the Petal Farm in a row before them, a creative mana pool behind
+ * each, their slots full of what they work on; each in the world, its GUI opening, at work, with its heart's
+ * tooltip; the infuser with a catalyst; the lexicon page.
  */
 final class MachineShots {
     static final BlockPos ALTAR = new BlockPos(70, -60, 0), PLATE = ALTAR.east(3), INFUSER = ALTAR.east(6);
+    static final BlockPos DAISY = ALTAR.south(4), APOTHECARY = DAISY.east(3), FARM = DAISY.east(6);
     private static final String ENTRY = "basics/alfheimheart_machines";
 
     static void steps(List<Step> s) {
@@ -72,6 +75,39 @@ final class MachineShots {
         s.add(new Step(30, () -> shot("mana_infuser_gui_alchemy.png")));
         s.add(new Step(5, () -> catalyst(ItemStack.EMPTY)));
         s.add(new Step(5, AutoShot::closeScreen));
+        // the second row: the Pure Daisy, the Petal Apothecary, the Petal Farm
+        s.add(new Step(5, () -> eye(DAISY, 3.5D, 2.6D, 4.4D, 3.5D, 0.3D, 0.5D)));
+        s.add(new Step(40, () -> shot("garden_scene.png")));
+        s.add(new Step(5, () -> eye(DAISY, 1.4D, 1.6D, 1.8D, 0.5D, 0.6D, 0.5D)));
+        s.add(new Step(30, () -> shot("pure_daisy_block.png")));
+        s.add(new Step(5, () -> eye(APOTHECARY, 1.3D, 1.7D, 1.7D, 0.5D, 0.75D, 0.5D)));
+        s.add(new Step(30, () -> shot("petal_apothecary_block.png")));
+        s.add(new Step(5, () -> eye(FARM, 1.4D, 1.6D, 1.8D, 0.5D, 0.5D, 0.5D)));
+        s.add(new Step(30, () -> shot("petal_farm_block.png")));
+        s.add(new Step(5, () -> eye(DAISY, 0.5D, 1.9D, 2.6D, 0.5D, 0.6D, 0.5D)));
+        s.add(new Step(10, () -> open(DAISY)));
+        s.add(new Step(40, () -> shot("pure_daisy_gui.png")));
+        s.add(new Step(20, () -> shot("pure_daisy_gui_2.png")));
+        s.add(new Step(5, () -> mouseAtGui(120, 52)));
+        s.add(new Step(10, () -> shot("pure_daisy_gui_tip.png")));
+        s.add(new Step(5, AutoShot::mouseAway));
+        s.add(new Step(5, AutoShot::closeScreen));
+        s.add(new Step(5, () -> eye(APOTHECARY, 0.5D, 1.9D, 2.6D, 0.5D, 0.6D, 0.5D)));
+        s.add(new Step(10, () -> open(APOTHECARY)));
+        s.add(new Step(25, () -> shot("petal_apothecary_gui.png")));
+        s.add(new Step(15, () -> shot("petal_apothecary_gui_2.png")));
+        s.add(new Step(5, () -> mouseAtGui(120, 40)));
+        s.add(new Step(10, () -> shot("petal_apothecary_gui_tip.png")));
+        s.add(new Step(5, AutoShot::mouseAway));
+        s.add(new Step(5, AutoShot::closeScreen));
+        s.add(new Step(5, () -> eye(FARM, 0.5D, 1.9D, 2.6D, 0.5D, 0.6D, 0.5D)));
+        s.add(new Step(10, () -> open(FARM)));
+        s.add(new Step(40, () -> shot("petal_farm_gui.png")));
+        s.add(new Step(30, () -> shot("petal_farm_gui_2.png")));
+        s.add(new Step(5, () -> mouseAtGui(120, 40)));
+        s.add(new Step(10, () -> shot("petal_farm_gui_tip.png")));
+        s.add(new Step(5, AutoShot::mouseAway));
+        s.add(new Step(5, AutoShot::closeScreen));
         // the lexicon
         s.add(new Step(10, () -> grant("botania:main/runic_altar_pickup")));
         s.add(new Step(30, () -> openLexicon(ENTRY, 0)));
@@ -92,6 +128,11 @@ final class MachineShots {
         s.add(new Step(40, () -> mouseAtGui(120, 40)));
         s.add(new Step(10, () -> shot("mana_infuser_gui_uk.png")));
         s.add(new Step(5, AutoShot::closeScreen));
+        s.add(new Step(5, () -> eye(FARM, 0.5D, 1.9D, 2.6D, 0.5D, 0.6D, 0.5D)));
+        s.add(new Step(20, () -> open(FARM)));
+        s.add(new Step(40, () -> mouseAtGui(120, 40)));
+        s.add(new Step(10, () -> shot("petal_farm_gui_uk.png")));
+        s.add(new Step(5, AutoShot::closeScreen));
     }
 
     /** The three machines facing south on livingrock bricks, a creative mana pool behind each, a few flowers round. */
@@ -100,20 +141,23 @@ final class MachineShots {
         server.execute(() -> {
             ServerLevel level = server.overworld();
             for (int x = -2; x <= 8; x++) {
-                for (int z = -2; z <= 2; z++) {
+                for (int z = -2; z <= 6; z++) {
                     level.setBlock(ALTAR.offset(x, -1, z), block("botania", "livingrock_bricks").defaultBlockState(), 3);
                 }
             }
             place(level, ALTAR, AlfheimHeart.RUNE_ALTAR.get());
             place(level, PLATE, AlfheimHeart.TERRA_PLATE.get());
             place(level, INFUSER, AlfheimHeart.MANA_INFUSER.get());
-            for (BlockPos pos : new BlockPos[]{ALTAR, PLATE, INFUSER}) {
+            place(level, DAISY, AlfheimHeart.PURE_DAISY.get());
+            place(level, APOTHECARY, AlfheimHeart.PETAL_APOTHECARY.get());
+            place(level, FARM, AlfheimHeart.PETAL_FARM.get());
+            for (BlockPos pos : new BlockPos[]{ALTAR, PLATE, INFUSER, DAISY, APOTHECARY, FARM}) {
                 level.setBlock(pos.north(), block("botania", "creative_pool").defaultBlockState(), 3);
             }
             String[] colours = {"white", "pink", "light_blue", "magenta", "yellow", "lime", "cyan", "purple"};
             int k = 0;
             for (int x = -2; x <= 8; x++) {
-                for (int z = -2; z <= 2; z += 4) {
+                for (int z = -2; z <= 6; z += 4) {
                     if (Math.floorMod(x * 7 + z, 3) == 0) {
                         level.setBlock(ALTAR.offset(x, 0, z), block("botania", colours[k++ % colours.length] + "_mystical_flower").defaultBlockState(), 3);
                     }
@@ -146,6 +190,25 @@ final class MachineShots {
             set(infuser, MachineBlockEntity.INPUT_START, stack("minecraft", "iron_ingot", 64), stack("minecraft", "diamond", 32),
                     stack("minecraft", "ender_pearl", 16), stack("minecraft", "glass", 64));
             set(infuser, MachineBlockEntity.OUTPUT_START, stack("botania", "manasteel_ingot", 24));
+        }
+        if (level.getBlockEntity(DAISY) instanceof MachineBlockEntity daisy) {
+            set(daisy, MachineBlockEntity.INPUT_START, stack("minecraft", "stone", 64), stack("minecraft", "oak_log", 32),
+                    stack("minecraft", "netherrack", 16));
+            set(daisy, MachineBlockEntity.OUTPUT_START, stack("botania", "livingrock", 24));
+        }
+        if (level.getBlockEntity(APOTHECARY) instanceof PetalApothecaryBlockEntity apothecary) {
+            set(apothecary, MachineBlockEntity.INPUT_START, stack("botania", "brown_petal", 16), stack("botania", "red_petal", 16),
+                    stack("botania", "light_gray_petal", 16));
+            set(apothecary, MachineBlockEntity.OUTPUT_START, stack("botania", "endoflame", 2));
+            apothecary.items().setStackInSlot(PetalApothecaryBlockEntity.REAGENT, stack("minecraft", "wheat_seeds", 16));
+        }
+        if (level.getBlockEntity(FARM) instanceof PetalFarmBlockEntity farm) {
+            set(farm, MachineBlockEntity.INPUT_START, stack("botania", "pink_mystical_flower", 16), stack("botania", "light_blue_mystical_flower", 32),
+                    stack("botania", "yellow_mystical_flower", 8), stack("botania", "magenta_mystical_flower", 12),
+                    stack("botania", "white_mystical_flower", 4), stack("botania", "lime_mystical_flower", 20));
+            set(farm, MachineBlockEntity.OUTPUT_START, stack("botania", "pink_petal", 9), stack("botania", "light_blue_petal", 12),
+                    stack("botania", "yellow_petal", 5));
+            farm.items().setStackInSlot(PetalFarmBlockEntity.FERTILIZER, stack("minecraft", "bone_meal", 16));
         }
     }
 

@@ -167,6 +167,36 @@ def main():
     same("infuser: halo (sheet)", (infuser["HALO_U"], infuser["HALO_V"], infuser["HALO_SIZE"]),
          (sheet["HALO_UV"][0], sheet["HALO_UV"][1], sheet["HALO_SIZE"]))
 
+    for name in ("pure_daisy", "petal_apothecary", "petal_farm"):
+        same(f"{name} panel texture size", png_size(os.path.join(TEXTURES, name + ".png")), (L.W + 2 * L.M, L.H + 2 * L.M))
+
+    daisy = java_constants(os.path.join(MACHINE, "daisy", "client", "PureDaisyScreen.java"))
+    same("daisy: its middle, ring, heart", (daisy["DAISY_X"], daisy["DAISY_Y"], daisy["RING_R"], daisy["HEART_R"]),
+         (L.DAISY.CENTER[0], L.DAISY.CENTER[1], L.DAISY.RING_R, L.DAISY.HEART_R))
+    same("daisy: gem", (daisy["GEM_X"], daisy["GEM_Y"]), L.DAISY.GEM)
+    same("daisy: stones", daisy["CELLS"], [tuple(p) for p in L.DAISY.CELLS])
+    same("daisy: halo (sheet)", (daisy["HALO_U"], daisy["HALO_V"], daisy["HALO_SIZE"]), (sheet["HALO_UV"][0], sheet["HALO_UV"][1], sheet["HALO_SIZE"]))
+
+    bowl_menu = java_constants(os.path.join(MACHINE, "apothecary", "PetalApothecaryMenu.java"))
+    bowl = java_constants(os.path.join(MACHINE, "apothecary", "client", "PetalApothecaryScreen.java"))
+    same("apothecary: seeds slot", (bowl_menu["REAGENT_X"], bowl_menu["REAGENT_Y"]), L.BOWL.SLOT)
+    same("apothecary: the water", (bowl["BOWL_X"], bowl["BOWL_Y"], bowl["WATER_RX"], bowl["WATER_RY"]),
+         (L.BOWL.CENTER[0], L.BOWL.CENTER[1], L.BOWL.WATER_RX, L.BOWL.WATER_RY))
+    same("apothecary: the flower", (bowl["ITEM_X"], bowl["ITEM_Y"], bowl["ITEM_RING_R"]), (L.BOWL.ITEM[0], L.BOWL.ITEM[1], L.BOWL.ITEM_RING_R))
+    same("apothecary: gem", (bowl["GEM_X"], bowl["GEM_Y"]), L.BOWL.GEM)
+    same("apothecary: heart's box", bowl["HEART_BOX"], L.BOWL.HEART_BOX)
+    same("apothecary: halo (sheet)", (bowl["HALO_U"], bowl["HALO_V"], bowl["HALO_SIZE"]), (sheet["HALO_UV"][0], sheet["HALO_UV"][1], sheet["HALO_SIZE"]))
+
+    farm_menu = java_constants(os.path.join(MACHINE, "farm", "PetalFarmMenu.java"))
+    farm = java_constants(os.path.join(MACHINE, "farm", "client", "PetalFarmScreen.java"))
+    same("farm: bone meal slot", (farm_menu["FERTILIZER_X"], farm_menu["FERTILIZER_Y"]), L.FARM.SLOT)
+    same("farm: the planter", (farm["BED_X1"], farm["SOIL_Y"], farm["BED_X2"], farm["BED_Y2"]), L.FARM.BED)
+    same("farm: the soil's top", farm["SOIL_TOP"], L.FARM.SOIL_TOP)
+    same("farm: the sun's arc", (farm["SUN_X"], farm["SUN_Y"], farm["SUN_R"]), (L.FARM.SUN[0], L.FARM.SUN[1], L.FARM.SUN_R))
+    same("farm: gem", (farm["GEM_X"], farm["GEM_Y"]), L.FARM.GEM)
+    same("farm: heart's box", farm["HEART_BOX"], L.FARM.HEART_BOX)
+    same("farm: halo (sheet)", (farm["HALO_U"], farm["HALO_V"], farm["HALO_SIZE"]), (sheet["HALO_UV"][0], sheet["HALO_UV"][1], sheet["HALO_SIZE"]))
+
     # JEI's click areas are the arrows
     jei = java_source(os.path.join(JAVA, "client", "JeiCompat.java"))
     m = re.search(r"void arrows\(.*?\{(.*?)\n    \}", jei, re.S)

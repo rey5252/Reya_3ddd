@@ -317,6 +317,120 @@ def infuser_column():
     cv.save(os.path.join(BLOCK, "mana_infuser_column.png"))
 
 
+# ---------------------------------------------------------------- the Pure Daisy, the Petal Apothecary, the Petal Farm
+
+GRASS = [hexc(h) for h in ("9BE36A", "6FC24A", "4E9E38", "37782C", "245420")]
+SOIL = [hexc(h) for h in ("5A3B22", "43291A", "2E1C12", "1C110B")]
+PETALS = [hexc(h) for h in ("FFFFFF", "FFB3DE", "FFE066", "B9A3FF", "8FD8FF", "FF8A80")]
+
+
+def daisy_top():
+    """The planter's top (columns and rows 1 to 14 show): a livingrock rim round a bed of grass with tiny flowers."""
+    cv = tex()
+    for y in range(16):
+        for x in range(16):
+            if x in (0, 15) or y in (0, 15):
+                c = LR[2]
+            elif x in (1, 14) or y in (1, 14):
+                c = LR[0] if (x == 1 or y == 1) else LR[3]
+            else:
+                c = GRASS[1] if rnd2(x, y, 31) > 0.3 else GRASS[2]
+                if rnd2(x, y, 32) > 0.9:
+                    c = GRASS[0]
+                if rnd2(x, y, 33) < 0.05:
+                    c = PETALS[int(rnd2(x, y, 34) * len(PETALS))]
+            cv.set(x, y, c)
+    cv.save(os.path.join(BLOCK, "pure_daisy_top.png"))
+
+
+def daisy_side():
+    """The planter's sides: its livingrock rim (rows 7 and 8) with a gold band, planks under it (rows 9 to 14),
+    its foot (row 15)."""
+    cv = tex()
+    for y in range(16):
+        for x in range(16):
+            if y <= 7:
+                c = LR[0] if y == 7 else LR[1]
+            elif y == 8:
+                c = GOLD[1] if x % 4 else GOLD[0]
+            elif y == 15:
+                c = bricks_px(x, y)
+            else:
+                c = planks_px(x, y, 9)
+                if x in (2, 13):
+                    c = LR[1] if x == 2 else LR[3]
+            cv.set(x, y, c)
+    cv.save(os.path.join(BLOCK, "pure_daisy_side.png"))
+
+
+def apothecary_side():
+    """The bowl's outer walls (rows 3 to 8 show): a lit lip, a band of petals in relief, a gold band, the floor's edge."""
+    cv = tex()
+    for y in range(16):
+        for x in range(16):
+            if y <= 3:
+                c = LR[0]
+            elif y == 4:
+                c = LR[1]
+            elif y in (5, 6):
+                c = LR[1]
+                k = x % 4
+                if (y == 5 and k in (1, 2)) or (y == 6 and k in (0, 1, 2, 3) and k != 3):
+                    c = mix(PETALS[1 + (x // 4) % 4], LR[1], 0.35 if y == 6 else 0.1)
+            elif y == 7:
+                c = GOLD[1] if x % 3 else GOLD[0]
+            elif y == 8:
+                c = GOLD[3]
+            else:
+                c = LR[3] if y == 9 else bricks_px(x, y)
+            cv.set(x, y, c)
+    cv.save(os.path.join(BLOCK, "petal_apothecary_side.png"))
+
+
+def apothecary_inner():
+    cv = tex()
+    for y in range(16):
+        for x in range(16):
+            c = LR[3] if rnd2(x, y, 37) > 0.15 else LR[4]
+            if y >= 6:
+                c = mix(c, hexc("2E86A8"), 0.3)
+            cv.set(x, y, c)
+    cv.save(os.path.join(BLOCK, "petal_apothecary_inner.png"))
+
+
+def farm_side():
+    """The planter's sides (rows 9 to 15 show): a livingrock edge, planks with a gold band, a dark foot."""
+    cv = tex()
+    for y in range(16):
+        for x in range(16):
+            if y <= 9:
+                c = LR[0] if y == 9 else LR[1]
+            elif y == 13:
+                c = GOLD[1] if x % 4 else GOLD[0]
+            elif y == 15:
+                c = WOOD[5]
+            else:
+                c = planks_px(x, y, 11)
+            cv.set(x, y, c)
+    cv.save(os.path.join(BLOCK, "petal_farm_side.png"))
+
+
+def farm_soil():
+    """The planter's soil, rich and dark, a few sprouts in it."""
+    cv = tex()
+    for y in range(16):
+        for x in range(16):
+            c = SOIL[1] if rnd2(x, y, 41) > 0.3 else SOIL[2]
+            if rnd2(x, y, 42) > 0.88:
+                c = SOIL[0]
+            if rnd2(x, y, 43) < 0.04:
+                c = GRASS[2]
+            if x in (0, 15) or y in (0, 15):
+                c = LR[1]
+            cv.set(x, y, c)
+    cv.save(os.path.join(BLOCK, "petal_farm_soil.png"))
+
+
 # ---------------------------------------------------------------- the renderers' textures
 
 def glow():
@@ -378,6 +492,12 @@ def main():
     infuser_inner()
     infuser_rim()
     infuser_column()
+    daisy_top()
+    daisy_side()
+    apothecary_side()
+    apothecary_inner()
+    farm_side()
+    farm_soil()
     glow()
     beam()
     mana()

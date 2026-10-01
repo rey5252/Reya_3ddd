@@ -37,8 +37,6 @@ public class ManaInfuserScreen extends MachineScreen<ManaInfuserMenu> {
 
     @Nullable
     private MachineBlockEntity.Job job;
-    private int itemsHash = 1;
-    private long checkedAt = -10000L;
     private long moteAt, twinkleAt;
     private float twinkleX, twinkleY;
 
@@ -52,15 +50,7 @@ public class ManaInfuserScreen extends MachineScreen<ManaInfuserMenu> {
     }
 
     private void refresh(long t) {
-        int hash = 1;
-        for (int i = 0; i < ManaInfuserBlockEntity.SLOTS; i++) {
-            ItemStack s = menu.items().getStackInSlot(i);
-            hash = hash * 31 + (s.isEmpty() ? 0 : s.getItem().hashCode() * 7 + s.getCount());
-        }
-        if (hash == itemsHash && t - checkedAt < 1000L) return;
-        itemsHash = hash;
-        checkedAt = t;
-        if (minecraft != null && minecraft.level != null) job = ManaInfuserBlockEntity.find(minecraft.level, menu.items());
+        if (itemsChanged(t) && minecraft != null && minecraft.level != null) job = ManaInfuserBlockEntity.find(minecraft.level, menu.items());
     }
 
     private float[] tint() {

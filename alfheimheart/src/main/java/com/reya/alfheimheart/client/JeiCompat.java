@@ -5,6 +5,9 @@ import java.util.List;
 import com.reya.alfheimheart.AlfheimHeart;
 import com.reya.alfheimheart.greenhouse.client.GreenhouseScreen;
 import com.reya.alfheimheart.machine.altar.client.RuneAltarScreen;
+import com.reya.alfheimheart.machine.apothecary.client.PetalApothecaryScreen;
+import com.reya.alfheimheart.machine.daisy.client.PureDaisyScreen;
+import com.reya.alfheimheart.machine.farm.client.PetalFarmScreen;
 import com.reya.alfheimheart.machine.client.MachineScreen;
 import com.reya.alfheimheart.machine.infuser.client.ManaInfuserScreen;
 import com.reya.alfheimheart.machine.plate.client.TerraPlateScreen;
@@ -24,6 +27,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
 import vazkii.botania.api.recipe.ElvenTradeRecipe;
 import vazkii.botania.api.recipe.ManaInfusionRecipe;
+import vazkii.botania.api.recipe.PetalApothecaryRecipe;
+import vazkii.botania.api.recipe.PureDaisyRecipe;
 import vazkii.botania.api.recipe.RunicAltarRecipe;
 import vazkii.botania.api.recipe.TerrestrialAgglomerationRecipe;
 
@@ -40,6 +45,8 @@ public class JeiCompat implements IModPlugin {
     private static final RecipeType<TerrestrialAgglomerationRecipe> TERRA_PLATE = RecipeType.create("botania", "terra_plate",
             TerrestrialAgglomerationRecipe.class);
     private static final RecipeType<ManaInfusionRecipe> MANA_POOL = RecipeType.create("botania", "mana_pool", ManaInfusionRecipe.class);
+    private static final RecipeType<PureDaisyRecipe> PURE_DAISY = RecipeType.create("botania", "pure_daisy", PureDaisyRecipe.class);
+    private static final RecipeType<PetalApothecaryRecipe> PETALS = RecipeType.create("botania", "petals", PetalApothecaryRecipe.class);
 
     @Override
     public ResourceLocation getPluginUid() {
@@ -59,6 +66,9 @@ public class JeiCompat implements IModPlugin {
         info(registration, AlfheimHeart.RUNE_ALTAR_ITEM.get(), "rune_altar");
         info(registration, AlfheimHeart.TERRA_PLATE_ITEM.get(), "terra_plate");
         info(registration, AlfheimHeart.MANA_INFUSER_ITEM.get(), "mana_infuser");
+        info(registration, AlfheimHeart.PURE_DAISY_ITEM.get(), "pure_daisy");
+        info(registration, AlfheimHeart.PETAL_APOTHECARY_ITEM.get(), "petal_apothecary");
+        info(registration, AlfheimHeart.PETAL_FARM_ITEM.get(), "petal_farm");
     }
 
     private static void info(IRecipeRegistration registration, ItemLike item, String key) {
@@ -71,6 +81,8 @@ public class JeiCompat implements IModPlugin {
         registration.addRecipeCatalyst(new ItemStack(AlfheimHeart.RUNE_ALTAR_ITEM.get()), RUNIC_ALTAR);
         registration.addRecipeCatalyst(new ItemStack(AlfheimHeart.TERRA_PLATE_ITEM.get()), TERRA_PLATE);
         registration.addRecipeCatalyst(new ItemStack(AlfheimHeart.MANA_INFUSER_ITEM.get()), MANA_POOL);
+        registration.addRecipeCatalyst(new ItemStack(AlfheimHeart.PURE_DAISY_ITEM.get()), PURE_DAISY);
+        registration.addRecipeCatalyst(new ItemStack(AlfheimHeart.PETAL_APOTHECARY_ITEM.get()), PETALS);
     }
 
     @Override
@@ -90,12 +102,17 @@ public class JeiCompat implements IModPlugin {
         machine(registration, RuneAltarScreen.class);
         machine(registration, TerraPlateScreen.class);
         machine(registration, ManaInfuserScreen.class);
+        machine(registration, PureDaisyScreen.class);
+        machine(registration, PetalApothecaryScreen.class);
+        machine(registration, PetalFarmScreen.class);
         // the arrows into and out of the portal and the machines show their recipes
         registration.addRecipeClickArea(PortalScreen.class, 74, 53, 12, 9, ELVEN_TRADE);
         registration.addRecipeClickArea(PortalScreen.class, 155, 53, 12, 9, ELVEN_TRADE);
         arrows(registration, RuneAltarScreen.class, RUNIC_ALTAR);
         arrows(registration, TerraPlateScreen.class, TERRA_PLATE);
         arrows(registration, ManaInfuserScreen.class, MANA_POOL);
+        arrows(registration, PureDaisyScreen.class, PURE_DAISY);
+        arrows(registration, PetalApothecaryScreen.class, PETALS);
     }
 
     private static <T extends MachineScreen<?>> void machine(IGuiHandlerRegistration registration, Class<T> screen) {

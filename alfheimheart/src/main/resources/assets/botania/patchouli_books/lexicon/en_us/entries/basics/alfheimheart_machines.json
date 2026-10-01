@@ -26,6 +26,21 @@
       "type": "crafting",
       "recipe": "alfheimheart:mana_infuser",
       "text": "alfheimheart.lexicon.machines4"
+    },
+    {
+      "type": "crafting",
+      "recipe": "alfheimheart:pure_daisy",
+      "text": "alfheimheart.lexicon.machines5"
+    },
+    {
+      "type": "crafting",
+      "recipe": "alfheimheart:petal_apothecary",
+      "text": "alfheimheart.lexicon.machines6"
+    },
+    {
+      "type": "crafting",
+      "recipe": "alfheimheart:petal_farm",
+      "text": "alfheimheart.lexicon.machines7"
     }
   ]
 }

@@ -83,7 +83,50 @@ def mana_infuser():
     return textures, elements
 
 
-MACHINES = {"rune_altar": rune_altar, "terra_plate": terra_plate, "mana_infuser": mana_infuser}
+def pure_daisy():
+    textures = {"particle": "alfheimheart:block/pure_daisy_top", "bricks": "alfheimheart:block/machine_bricks",
+                "side": "alfheimheart:block/pure_daisy_side", "top": "alfheimheart:block/pure_daisy_top",
+                "planks": "alfheimheart:block/machine_planks"}
+    elements = [
+        box((1, 0, 1), (15, 1, 15), all_faces("#bricks", "#bricks", "#bricks", cull_down=True)),
+        box((2, 1, 2), (14, 7, 14), all_faces("#side", "#planks", "#planks", skip=("up", "down"))),
+        box((1, 7, 1), (15, 9, 15), all_faces("#side", "#top", "#bricks")),
+    ]
+    return textures, elements
+
+
+def petal_apothecary():
+    textures = {"particle": "alfheimheart:block/mana_infuser_rim", "bricks": "alfheimheart:block/machine_bricks",
+                "planks": "alfheimheart:block/machine_planks", "column": "alfheimheart:block/mana_infuser_column",
+                "side": "alfheimheart:block/petal_apothecary_side", "inner": "alfheimheart:block/petal_apothecary_inner",
+                "rim": "alfheimheart:block/mana_infuser_rim"}
+    elements = [
+        box((3, 0, 3), (13, 2, 13), all_faces("#bricks", "#bricks", "#bricks", cull_down=True)),
+        box((5, 2, 5), (11, 7, 11), all_faces("#column", "#planks", "#planks", skip=("up", "down"))),
+        box((1, 7, 1), (15, 8, 15), all_faces("#side", "#inner", "#bricks")),
+        box((1, 8, 1), (15, 13, 2), {"north": {"texture": "#side"}, "south": {"texture": "#inner"}, "up": {"texture": "#rim"},
+                                    "east": {"texture": "#side"}, "west": {"texture": "#side"}}),
+        box((1, 8, 14), (15, 13, 15), {"south": {"texture": "#side"}, "north": {"texture": "#inner"}, "up": {"texture": "#rim"},
+                                      "east": {"texture": "#side"}, "west": {"texture": "#side"}}),
+        box((1, 8, 2), (2, 13, 14), {"west": {"texture": "#side"}, "east": {"texture": "#inner"}, "up": {"texture": "#rim"}}),
+        box((14, 8, 2), (15, 13, 14), {"east": {"texture": "#side"}, "west": {"texture": "#inner"}, "up": {"texture": "#rim"}}),
+    ]
+    return textures, elements
+
+
+def petal_farm():
+    textures = {"particle": "alfheimheart:block/petal_farm_side", "bricks": "alfheimheart:block/machine_bricks",
+                "planks": "alfheimheart:block/machine_planks", "side": "alfheimheart:block/petal_farm_side",
+                "soil": "alfheimheart:block/petal_farm_soil", "crystal": "alfheimheart:block/machine_crystal"}
+    elements = [box((0, 0, 0), (16, 7, 16), all_faces("#side", "#soil", "#planks", cull_down=True))]
+    for (x, z) in ((0, 0), (14, 0), (0, 14), (14, 14)):
+        elements.append(box((x, 7, z), (x + 2, 8, z + 2), all_faces("#bricks", "#bricks", "#bricks", skip=("down",))))
+        elements.append(crystal(x + 0.5, 8, z + 0.5, 1.0, 1.5))
+    return textures, elements
+
+
+MACHINES = {"rune_altar": rune_altar, "terra_plate": terra_plate, "mana_infuser": mana_infuser, "pure_daisy": pure_daisy,
+            "petal_apothecary": petal_apothecary, "petal_farm": petal_farm}
 
 
 def write(path, data):

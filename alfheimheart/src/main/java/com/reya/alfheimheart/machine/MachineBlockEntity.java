@@ -176,6 +176,11 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
     protected void onCrafted(Level level, BlockPos pos, Job job) {
     }
 
+    /** Ticks a craft gains this tick on top of its own (a machine that mana hurries along takes the mana here). */
+    protected int extraTicks() {
+        return 0;
+    }
+
     /** A craft started (server side): a sound, say. */
     protected void onJobStarted(Level level, BlockPos pos, Job job) {
     }
@@ -256,7 +261,7 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
             onJobStarted(level, pos, job);
         }
         // now and then: are the inputs still there?
-        if (jobTicks % 10 == 9) {
+        if (time % 10L == 9L) {
             if (!same(findJob(level))) {
                 cancel();
                 return;
@@ -273,7 +278,7 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
             return;
         }
         status = MachineStatus.WORKING;
-        jobTicks++;
+        jobTicks += 1 + Math.max(0, extraTicks());
         if (jobCharged >= jobCost && jobTicks >= jobMinTicks) finish(level, pos, state);
     }
 

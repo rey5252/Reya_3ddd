@@ -112,7 +112,7 @@ def render(name, size=256):
 
 
 def main():
-    names = ["rune_altar", "terra_plate", "mana_infuser"]
+    names = ["rune_altar", "terra_plate", "mana_infuser", "pure_daisy", "petal_apothecary", "petal_farm"]
     out = Image.new("RGBA", (256 * len(names), 256))
     for i, n in enumerate(names):
         out.paste(render(n), (i * 256, 0))

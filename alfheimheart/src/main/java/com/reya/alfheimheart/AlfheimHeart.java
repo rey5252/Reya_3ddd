@@ -14,6 +14,15 @@ import com.reya.alfheimheart.machine.MachineConfig;
 import com.reya.alfheimheart.machine.altar.RuneAltarBlock;
 import com.reya.alfheimheart.machine.altar.RuneAltarBlockEntity;
 import com.reya.alfheimheart.machine.altar.RuneAltarMenu;
+import com.reya.alfheimheart.machine.apothecary.PetalApothecaryBlock;
+import com.reya.alfheimheart.machine.apothecary.PetalApothecaryBlockEntity;
+import com.reya.alfheimheart.machine.apothecary.PetalApothecaryMenu;
+import com.reya.alfheimheart.machine.daisy.PureDaisyBlock;
+import com.reya.alfheimheart.machine.daisy.PureDaisyBlockEntity;
+import com.reya.alfheimheart.machine.daisy.PureDaisyMenu;
+import com.reya.alfheimheart.machine.farm.PetalFarmBlock;
+import com.reya.alfheimheart.machine.farm.PetalFarmBlockEntity;
+import com.reya.alfheimheart.machine.farm.PetalFarmMenu;
 import com.reya.alfheimheart.machine.infuser.ManaInfuserBlock;
 import com.reya.alfheimheart.machine.infuser.ManaInfuserBlockEntity;
 import com.reya.alfheimheart.machine.infuser.ManaInfuserMenu;
@@ -51,8 +60,8 @@ import org.slf4j.Logger;
  * Heart of Alfheim, a Botania addon: Botania's work folded into single blocks, each with its own GUI and
  * animations. The Mana Greenhouse grows generating flowers that make mana on their own; the Elven Portal
  * is a whole Alfheim gateway in one block that trades by every elven trade recipe and refines ores; the
- * machines (the Runic Altar, the Terrestrial Plate, the Mana Infuser) craft by Botania's recipes from their
- * slots, with mana from pools and spreaders.
+ * machines (the Runic Altar, the Terrestrial Plate, the Mana Infuser, the Pure Daisy, the Petal Apothecary)
+ * craft by Botania's recipes from their slots, with mana from pools and spreaders, and the Petal Farm grows petals.
  */
 @Mod(AlfheimHeart.MODID)
 public class AlfheimHeart {
@@ -142,6 +151,33 @@ public class AlfheimHeart {
     public static final RegistryObject<MenuType<ManaInfuserMenu>> MANA_INFUSER_MENU = MENUS.register("mana_infuser",
             () -> IForgeMenuType.create(ManaInfuserMenu::new));
 
+    public static final RegistryObject<Block> PURE_DAISY = BLOCKS.register("pure_daisy",
+            () -> new PureDaisyBlock(machine(MapColor.SNOW)));
+    public static final RegistryObject<Item> PURE_DAISY_ITEM = ITEMS.register("pure_daisy",
+            () -> new MachineBlockItem(PURE_DAISY.get(), new Item.Properties().rarity(Rarity.UNCOMMON)));
+    public static final RegistryObject<BlockEntityType<PureDaisyBlockEntity>> PURE_DAISY_BE = BLOCK_ENTITIES.register("pure_daisy",
+            () -> BlockEntityType.Builder.of(PureDaisyBlockEntity::new, PURE_DAISY.get()).build(null));
+    public static final RegistryObject<MenuType<PureDaisyMenu>> PURE_DAISY_MENU = MENUS.register("pure_daisy",
+            () -> IForgeMenuType.create(PureDaisyMenu::new));
+
+    public static final RegistryObject<Block> PETAL_APOTHECARY = BLOCKS.register("petal_apothecary",
+            () -> new PetalApothecaryBlock(machine(MapColor.QUARTZ)));
+    public static final RegistryObject<Item> PETAL_APOTHECARY_ITEM = ITEMS.register("petal_apothecary",
+            () -> new MachineBlockItem(PETAL_APOTHECARY.get(), new Item.Properties().rarity(Rarity.UNCOMMON)));
+    public static final RegistryObject<BlockEntityType<PetalApothecaryBlockEntity>> PETAL_APOTHECARY_BE = BLOCK_ENTITIES.register(
+            "petal_apothecary", () -> BlockEntityType.Builder.of(PetalApothecaryBlockEntity::new, PETAL_APOTHECARY.get()).build(null));
+    public static final RegistryObject<MenuType<PetalApothecaryMenu>> PETAL_APOTHECARY_MENU = MENUS.register("petal_apothecary",
+            () -> IForgeMenuType.create(PetalApothecaryMenu::new));
+
+    public static final RegistryObject<Block> PETAL_FARM = BLOCKS.register("petal_farm",
+            () -> new PetalFarmBlock(machine(MapColor.COLOR_PINK)));
+    public static final RegistryObject<Item> PETAL_FARM_ITEM = ITEMS.register("petal_farm",
+            () -> new MachineBlockItem(PETAL_FARM.get(), new Item.Properties().rarity(Rarity.UNCOMMON)));
+    public static final RegistryObject<BlockEntityType<PetalFarmBlockEntity>> PETAL_FARM_BE = BLOCK_ENTITIES.register("petal_farm",
+            () -> BlockEntityType.Builder.of(PetalFarmBlockEntity::new, PETAL_FARM.get()).build(null));
+    public static final RegistryObject<MenuType<PetalFarmMenu>> PETAL_FARM_MENU = MENUS.register("petal_farm",
+            () -> IForgeMenuType.create(PetalFarmMenu::new));
+
     private static BlockBehaviour.Properties machine(MapColor color) {
         return BlockBehaviour.Properties.of()
                 .mapColor(color)
@@ -162,6 +198,9 @@ public class AlfheimHeart {
                 output.accept(RUNE_ALTAR_ITEM.get());
                 output.accept(TERRA_PLATE_ITEM.get());
                 output.accept(MANA_INFUSER_ITEM.get());
+                output.accept(PURE_DAISY_ITEM.get());
+                output.accept(PETAL_APOTHECARY_ITEM.get());
+                output.accept(PETAL_FARM_ITEM.get());
                 output.accept(GREENHOUSE_HEART.get());
                 output.accept(UPGRADE_BASE.get());
                 output.accept(SPEED_UPGRADE.get());
