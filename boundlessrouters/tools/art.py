@@ -249,3 +249,123 @@ def lcd(cv, x1, y1, x2, y2):
         for x in range(x1, x2):
             cv.set(x, y, mix(LCD, (0, 0, 0), 0.25))
     cv.bevel(x1 - 1, y1 - 1, x2 + 1, y2 + 1, OUTLINE, BASE_HI)
+
+
+# ------------------------------------------------------------------ the machine casing
+
+SCREW_HI = (216, 222, 232)
+SCREW = (150, 158, 172)
+SCREW_LO = (84, 90, 104)
+SPECULAR = (255, 224, 188)
+MESH_DK = OUTLINE
+
+
+def shape(cv, pixels, fill, hi, lo, edge=OUTLINE):
+    """A flat piece covering the given pixels, lit from the top left: its edges with nothing above or left of them
+    light, with nothing below or right of them dark; outlined round its outside unless edge is None."""
+    ps = set(pixels)
+    if edge is not None:
+        for (x, y) in ps:
+            for (dx, dy) in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                if (x + dx, y + dy) not in ps:
+                    cv.set(x + dx, y + dy, edge)
+    for (x, y) in ps:
+        if (x, y - 1) not in ps or (x - 1, y) not in ps:
+            c = hi
+        elif (x, y + 1) not in ps or (x + 1, y) not in ps:
+            c = lo
+        else:
+            c = fill(x, y) if callable(fill) else fill
+        cv.set(x, y, c)
+
+
+def screw(cv, x, y, turn=0):
+    """A steel screw head, 4 x 4 with its top left at (x, y), its slot leaning one way or the other."""
+    cv.draw(x, y, [".hh.", "hmms", "hmms", ".ss."], {"h": SCREW_HI, "m": SCREW, "s": SCREW_LO})
+    if turn % 2 == 0:
+        cv.set(x + 2, y + 1, OUTLINE)
+        cv.set(x + 1, y + 2, OUTLINE)
+    else:
+        cv.set(x + 1, y + 1, OUTLINE)
+        cv.set(x + 2, y + 2, OUTLINE)
+
+
+def bolt(cv, x, y):
+    """A domed copper bolt head, 4 x 4 with its top left at (x, y)."""
+    cv.draw(x, y, [".hh.", "hwcl", "hccl", ".ll."], {"h": COPPER_HI, "w": SPECULAR, "c": COPPER, "l": COPPER_LO})
+
+
+def seam(cv, x, y, vertical_side):
+    """An engraved joint across a frame's four pixel band, at (x, y) the band's first pixel: dark, a light edge after."""
+    for k in range(4):
+        if vertical_side:
+            cv.set(x + k, y, STEEL_DK)
+            cv.set(x + k, y + 1, mix(STEEL, STEEL_HI, 0.55))
+        else:
+            cv.set(x, y + k, STEEL_DK)
+            cv.set(x + 1, y + k, mix(STEEL, STEEL_HI, 0.55))
+
+
+def louvres(cv, x, y, length, vertical_side):
+    """Vent slats let into a frame's band (x, y its first pixel, along the side for length): dark slots and lit lips."""
+    for t in range(length):
+        dark = t % 2 == 0
+        for k in (1, 2):
+            px, py = (x + k, y + t) if vertical_side else (x + t, y + k)
+            cv.set(px, py, OUTLINE if dark else (mix(STEEL_HI, STEEL, 0.4) if k == 1 else STEEL_MID))
+
+
+def bracket(cv, cx, cy, dx, dy, arm=14, arm_bolts=True):
+    """A copper corner bracket over a frame's corner: (cx, cy) the frame's outer corner pixel, (dx, dy) inwards."""
+    pixels = []
+    for t in range(1, arm):
+        for k in range(1, 5):
+            pixels.append((cx + dx * t, cy + dy * k))
+            pixels.append((cx + dx * k, cy + dy * t))
+    shape(cv, pixels, COPPER, COPPER_HI, COPPER_LO)
+    # the arms' ends cut square, the outer edge kept as the frame's outline
+    sx, sy = min(cx + dx, cx + dx * 4), min(cy + dy, cy + dy * 4)
+    bolt(cv, sx, sy)
+    if arm_bolts:
+        ax = cx + dx * (arm - 5) if dx > 0 else cx + dx * (arm - 2)
+        ay = cy + dy * (arm - 5) if dy > 0 else cy + dy * (arm - 2)
+        bolt(cv, ax, sy)
+        bolt(cv, sx, ay)
+
+
+def mesh(cv, x1, y1, x2, y2):
+    """A grille like the router's top: a dark checked mesh in a copper rim."""
+    cv.outline(x1 - 1, y1 - 1, x2 + 1, y2 + 1, OUTLINE)
+    cv.outline(x1, y1, x2, y2, COPPER_LO)
+    for x in range(x1, x2):
+        cv.set(x, y1, COPPER if x < x2 - 1 else COPPER_LO)
+    for y in range(y1, y2):
+        cv.set(x1, y, COPPER if y < y2 - 1 else COPPER_LO)
+    cv.set(x1, y1, COPPER_HI)
+    for y in range(y1 + 1, y2 - 1):
+        for x in range(x1 + 1, x2 - 1):
+            cv.set(x, y, MESH_DK if (x + y) % 2 == 0 else STEEL_DK)
+
+
+def gusset(cv, cx, cy, dx, size=18):
+    """A steel brace in the corner under a panel: (cx, cy) its corner pixel, against both panels; it runs dx (-1 left,
+    1 right) and down from cy. A lightening hole through it (you see what is behind) and two screws."""
+    pixels = [(cx + dx * i, cy + j) for j in range(size) for i in range(size) if i + j <= size - 1]
+    shape(cv, pixels, lambda x, y: mix(STEEL, STEEL_MID, (y - cy) / size), STEEL_HI, STEEL_LO)
+    rnd = random.Random(cx * 31 + cy)
+    for (x, y) in pixels:
+        r, g, b, a = cv.get(x, y)
+        d = rnd.uniform(-4, 4)
+        cv.set(x, y, (max(0, min(255, int(r + d))), max(0, min(255, int(g + d))), max(0, min(255, int(b + d)))), a)
+    # the hole, its inner wall lit on the far side
+    hx, hy = cx + dx * 6 + 0.5, cy + 6.5
+    for y in range(int(hy) - 4, int(hy) + 5):
+        for x in range(int(hx) - 4, int(hx) + 5):
+            ox, oy = x + 0.5 - hx, y + 0.5 - hy
+            d = math.hypot(ox, oy)
+            if d <= 2.5:
+                cv.set(x, y, (0, 0, 0), 0)
+            elif d <= 3.4:
+                cv.set(x, y, STEEL_HI if ox + oy > 0.5 else OUTLINE if ox + oy < -0.5 else STEEL_DK)
+    screw(cv, cx + 9 if dx > 0 else cx - 12, cy + 1, 0)
+    screw(cv, cx + 1 if dx > 0 else cx - 4, cy + size - 8, 1)

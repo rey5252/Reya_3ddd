@@ -147,6 +147,16 @@ public class RouterScreen extends AbstractContainerScreen<RouterMenu> {
             if (k > 0.0F) Gfx.radial(g, lx + Router.LED / 2.0F, ly + Router.LED / 2.0F, 6.0F, Gfx.argb(c, 0.6F * k), Gfx.argb(c, 0.0F), true);
         }
 
+        // the gauge's needle: how fast the router runs (from twenty ticks a run to every tick), quivering while it works
+        float speed = running() ? 0.06F + 0.94F * Mth.clamp((20 - menu.interval()) / 19.0F, 0.0F, 1.0F) + 0.012F * Mth.sin(now / 31.0F) : 0.0F;
+        double angle = Math.toRadians(135.0D + 270.0D * Mth.clamp(speed, 0.0F, 1.0F));
+        float dialX = x + Router.GAUGE[0] + 0.5F, dialY = y + Router.GAUGE[1] + 0.5F;
+        for (float t = 0.0F; t <= Router.GAUGE_R - 4.0F; t += 0.5F) {
+            int nx = Mth.floor(dialX + Math.cos(angle) * t), ny = Mth.floor(dialY + Math.sin(angle) * t);
+            g.fill(nx, ny, nx + 1, ny + 1, 0xFFC8281E);
+        }
+        g.fill(x + Router.GAUGE[0], y + Router.GAUGE[1], x + Router.GAUGE[0] + 1, y + Router.GAUGE[1] + 1, 0xFF2A2C32);
+
         // gears under the module slots, the redstone button, the readouts' icons
         for (int i = 0; i < Router.GEARS.length; i++) {
             int gx = x + Router.GEARS[i][0], gy = y + Router.GEARS[i][1];

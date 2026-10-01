@@ -7,8 +7,9 @@ public final class Layouts {
 
     public static final class Router {
         public static final int MH = 124, H = 220, PANEL_X = 28, INV_X = 36, INV_Y = 136, HOTBAR_Y = 194;
-        public static final int[] BUFFER = {107, 35}, CORE = {116, 44}, REDSTONE = {10, 26};
-        public static final int CORE_R = 19, GEAR = 8, BUS_Y = 79, LED = 4;
+        public static final int[] BUFFER = {108, 36}, CORE = {116, 44}, REDSTONE = {10, 26};
+        public static final int CORE_R = 19, GEAR = 8, BUS_Y = 79, LED = 4, GAUGE_R = 9;
+        public static final int[] GAUGE = {164, 31};
         public static final int[][] MODULES = {{24, 86}, {42, 86}, {60, 86}, {78, 86}, {96, 86}, {114, 86}, {132, 86}, {150, 86}, {168, 86}};
         public static final int[][] GEARS = {{29, 106}, {47, 106}, {65, 106}, {83, 106}, {101, 106}, {119, 106}, {137, 106}, {155, 106}, {173, 106}};
         public static final int[][] UPGRADES = {{206, 24}, {206, 42}, {206, 60}, {206, 78}, {206, 96}};

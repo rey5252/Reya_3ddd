@@ -29,7 +29,7 @@ def inventory(mh):
 class Router:
     MH = 124
     PANEL_X, INV_X, INV_Y, HOTBAR_Y, H = inventory(MH)
-    BUFFER = (107, 35)                          # the buffer slot
+    BUFFER = (108, 36)                          # the buffer slot: its frame (107..124) is centred on CORE
     CORE = (116, 44)                            # the middle of the buffer's socket and its tick ring
     CORE_R = 19
     MODULES = [(24 + 18 * i, 86) for i in range(9)]
@@ -41,6 +41,9 @@ class Router:
     BUS_Y = 79                                  # the trace from the buffer to the modules runs along here
     LEDS = [(156 + 6 * c, 52 + 6 * r) for r in range(3) for c in range(3)]   # a light for each module, 4 square
     LED = 4
+    GAUGE = (164, 31)                           # a pressure gauge's middle pixel (its needle shows the router's speed)
+    GAUGE_R = 9
+    TITLE = (46, 186)                           # the title's window in the header
 
 
 class Module:
@@ -61,6 +64,7 @@ class Module:
     # what the toggles are, in order: list mode, damage, NBT, tags, mod, termination, module redstone, (spare)
     INFO = (142, 62, 222, 88)                   # a readout of what the module will do
     PANEL = (10, 98, 222, 128)                  # the module's own settings
+    TITLE = (42, 214)                           # the title's window in the header (after the icon)
 
 
 class Sheet:
@@ -102,7 +106,9 @@ def java():
            % (r.MH, r.H, r.PANEL_X, r.INV_X, r.INV_Y, r.HOTBAR_Y),
            "        public static final int[] BUFFER = {%d, %d}, CORE = {%d, %d}, REDSTONE = {%d, %d};\n"
            % (r.BUFFER + r.CORE + r.REDSTONE),
-           "        public static final int CORE_R = %d, GEAR = %d, BUS_Y = %d, LED = %d;\n" % (r.CORE_R, r.GEAR, r.BUS_Y, r.LED),
+           "        public static final int CORE_R = %d, GEAR = %d, BUS_Y = %d, LED = %d, GAUGE_R = %d;\n"
+           % (r.CORE_R, r.GEAR, r.BUS_Y, r.LED, r.GAUGE_R),
+           "        public static final int[] GAUGE = {%d, %d};\n" % r.GAUGE,
            pts("MODULES", r.MODULES), pts("GEARS", r.GEARS), pts("UPGRADES", r.UPGRADES), pts("INFO", r.INFO), pts("LEDS", r.LEDS),
            "\n        private Router() {\n        }\n    }\n\n",
            "    public static final class Module {\n",

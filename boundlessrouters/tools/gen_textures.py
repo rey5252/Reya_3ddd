@@ -14,6 +14,13 @@ sys.path.insert(0, HERE)
 import layout as L  # noqa: E402
 from art import *  # noqa: E402,F401,F403
 
+
+def riveted(cv, x1, y1, x2, y2):
+    """A copper frame with a rivet in each corner."""
+    copper_frame(cv, x1, y1, x2, y2)
+    for (x, y) in ((x1 + 1, y1 + 1), (x2 - 2, y1 + 1), (x1 + 1, y2 - 2), (x2 - 2, y2 - 2)):
+        rivet(cv, x, y)
+
 ROOT = os.path.dirname(HERE)
 ASSETS = os.path.join(ROOT, "src", "main", "resources", "assets", "boundlessrouters")
 TEX = os.path.join(ASSETS, "textures")
@@ -35,36 +42,115 @@ def out(*parts):
 
 # ------------------------------------------------------------------ the panels
 
+def plates(cv, horizontal, fixed, a, b, plate, vent=False, turn=0):
+    """A side of the casing as steel plates from a to b along it: engraved joints between them, a screw holding each
+    (the middle one a vent instead, if vent). fixed: the first row (horizontal side) or column of the side's band."""
+    n = max(1, round((b - a) / plate))
+    edges = [round(a + (b - a) * k / n) for k in range(n + 1)]
+    for e in edges[1:-1]:
+        if horizontal:
+            seam(cv, e, fixed, False)
+        else:
+            seam(cv, fixed, e, True)
+    for k in range(n):
+        mid = (edges[k] + edges[k + 1]) // 2
+        if vent and k == n // 2:
+            length = min(13, edges[k + 1] - edges[k] - 8) | 1
+            if horizontal:
+                louvres(cv, mid - length // 2, fixed, length, False)
+            else:
+                louvres(cv, fixed, mid - length // 2, length, True)
+        elif horizontal:
+            screw(cv, mid - 2, fixed, turn + k)
+        else:
+            screw(cv, fixed, mid - 2, turn + k)
+
+
 def machine_and_inventory(cv, mh, h, seed):
-    """A machine area mh tall, the player's inventory panel under it, joined."""
+    """A machine area mh tall, the player's inventory panel under it, joined: a riveted steel casing with copper
+    brackets on its corners and braces between the two."""
     w = L.W
     px = (w - L.INV_W) // 2
+    qx = px + L.INV_W
     interior(cv, 6, 6, w - 6, mh - 6, seed=seed)
     steel_frame(cv, 0, 0, w, mh, seed=seed + 10)
-    interior(cv, px + 6, mh - 6, px + L.INV_W - 6, h - 6, seed=seed + 1, grid=False)
-    steel_frame(cv, px, mh - 6, px + L.INV_W, h, seed=seed + 20)
+    interior(cv, px + 6, mh - 6, qx - 6, h - 6, seed=seed + 1, grid=False)
+    steel_frame(cv, px, mh - 6, qx, h, seed=seed + 20)
     # open the join between the two: the machine's inside runs into the inventory's
     for y in range(mh - 6, mh):
-        for x in range(px + 6, px + L.INV_W - 6):
+        for x in range(px + 6, qx - 6):
             cv.set(x, y, mix(BASE, BASE_LO, (y - (mh - 6)) / 6.0))
     for y in range(mh - 6, mh + 1):
         cv.set(px + 5, y, OUTLINE)
-        cv.set(px + L.INV_W - 6, y, OUTLINE)
+        cv.set(qx - 6, y, OUTLINE)
         cv.set(px + 4, y, STEEL_LO)
-        cv.set(px + L.INV_W - 5, y, STEEL_HI)
-    for (x, y) in ((3, 3), (w - 4, 3), (3, mh - 4), (w - 4, mh - 4), (px + 3, h - 4), (px + L.INV_W - 4, h - 4)):
-        rivet(cv, x, y)
+        cv.set(qx - 5, y, STEEL_HI)
+    arm = 14
+    # the machine's sides: plates and screws, a vent in the middle of each upright side
+    plates(cv, True, 1, arm, w - arm, 44)
+    plates(cv, False, 1, arm, mh - arm, 32, vent=True)
+    plates(cv, False, w - 5, arm, mh - arm, 32, vent=True, turn=1)
+    screw(cv, (arm + px) // 2 - 2, mh - 5, 1)
+    screw(cv, (qx + w - arm) // 2 - 1, mh - 5, 0)
+    # the inventory's
+    plates(cv, True, h - 5, px + arm, qx - arm, 44, turn=1)
+    plates(cv, False, px + 1, mh + 2, h - arm, 40)
+    plates(cv, False, qx - 5, mh + 2, h - arm, 40, turn=1)
+    # copper brackets on the outer corners, braces in the corners between the two
+    for (cx, cy, dx, dy) in ((0, 0, 1, 1), (w - 1, 0, -1, 1), (0, mh - 1, 1, -1), (w - 1, mh - 1, -1, -1),
+                             (px, h - 1, 1, -1), (qx - 1, h - 1, -1, -1)):
+        bracket(cv, cx, cy, dx, dy, arm)
+    gusset(cv, px - 1, mh, -1)
+    gusset(cv, qx, mh, 1)
 
 
-def header(cv):
+def header(cv, window, grilles=True):
+    """The title strip: a dark steel plate, the title in a window let into it, slotted grilles either side and copper
+    bolts at its ends, a copper line under it."""
     x1, y1, x2, y2 = L.HEADER
     for y in range(y1, y2):
-        cv.rect(x1, y, x2, y + 1, mix(HEADER, BASE_LO, (y - y1) / (y2 - y1)))
+        cv.rect(x1, y, x2, y + 1, mix((46, 50, 60), (27, 29, 36), (y - y1) / (y2 - y1)))
+    noise(cv, x1, y1, x2, y2 - 1, 1.6, 23)
     for x in range(x1, x2):
         cv.set(x, y2 - 1, COPPER_LO)
         cv.set(x, y2, OUTLINE)
-    rivet(cv, x1 + 4, (y1 + y2) // 2)
-    rivet(cv, x2 - 5, (y1 + y2) // 2)
+    wx1, wx2 = window
+    cv.rect(wx1, y1 + 2, wx2, y2 - 3, (15, 17, 21))
+    cv.bevel(wx1 - 1, y1 + 1, wx2 + 1, y2 - 2, OUTLINE, mix(STEEL_LO, STEEL_MID, 0.5))
+    if grilles:
+        for (gx1, gx2) in ((x1 + 10, wx1 - 4), (wx2 + 4, x2 - 10)):
+            for x in range(gx1, gx2 - 1, 3):
+                for y in range(y1 + 3, y2 - 4):
+                    cv.set(x, y, OUTLINE)
+                    cv.set(x + 1, y, mix(STEEL_LO, STEEL, 0.5) if y < y2 - 5 else STEEL)
+    bolt(cv, x1 + 3, y1 + 5)
+    bolt(cv, x2 - 7, y1 + 5)
+
+
+def gauge(cv, cx, cy, r):
+    """A round pressure gauge, its middle at pixel (cx, cy), screwed on by an ear either side: a copper bezel and a pale
+    face ticked over three quarters of a turn, red at the top end (the screen draws its needle)."""
+    for side in (-1, 1):
+        ex = cx - r - 5 if side < 0 else cx + r
+        ear = [(x, y) for x in range(ex, ex + 6) for y in range(cy - 4, cy + 4)]
+        shape(cv, ear, STEEL, STEEL_HI, STEEL_LO)
+        screw(cv, ex + (1 if side < 0 else 1), cy - 2, 0 if side < 0 else 1)
+    fx, fy = cx + 0.5, cy + 0.5
+
+    def at(d, a):
+        if d > r - 0.5:
+            return OUTLINE
+        if d > r - 2.5:
+            light = 0.5 - 0.5 * math.cos(a + math.pi / 4)
+            return mix(COPPER_HI, COPPER_LO, light)
+        if d > r - 3.1:
+            return shade(COPPER_LO, 0.55)
+        return mix((226, 224, 210), (176, 174, 162), min(1.0, d / (r - 3.1) * 0.5 + (0.5 + 0.5 * math.sin(a + math.pi / 4)) * 0.4))
+    disc(cv, fx, fy, r, at)
+    for k in range(9):
+        a = math.radians(135 + 270 * k / 8)
+        x, y = fx + math.cos(a) * (r - 4.2), fy + math.sin(a) * (r - 4.2)
+        cv.set(int(math.floor(x)), int(math.floor(y)), (200, 44, 34) if k >= 7 else (52, 54, 60))
 
 
 def inventory_slots(cv, inv_x, inv_y, hot_y):
@@ -83,7 +169,7 @@ def router_panel():
     R = L.Router
     cv = Canvas(256, 256)
     machine_and_inventory(cv, R.MH, R.H, 3)
-    header(cv)
+    header(cv, R.TITLE)
     cx, cy = R.CORE
 
     # traces from the core to the modules, the upgrades and the readouts (under everything else)
@@ -151,8 +237,14 @@ def router_panel():
     for (gx, gy) in R.GEARS:
         plate(cv, gx - 1, gy - 1, gx + R.GEAR + 1, gy + R.GEAR + 1)
 
+    # a pressure gauge over the module lights, grilles like the block's top either side of the modules
+    gauge(cv, R.GAUGE[0], R.GAUGE[1], R.GAUGE_R)
+    first_x, last_x = R.MODULES[0][0], R.MODULES[-1][0]
+    mesh(cv, 9, 85, first_x - 3, R.MH - 9)
+    mesh(cv, last_x + 20, 85, ux - 6, R.MH - 9)
+
     # the upgrade column
-    copper_frame(cv, ux - 4, R.UPGRADES[0][1] - 4, ux + 20, R.UPGRADES[-1][1] + 20)
+    riveted(cv, ux - 4, R.UPGRADES[0][1] - 4, ux + 20, R.UPGRADES[-1][1] + 20)
     for y in range(R.UPGRADES[0][1] - 2, R.UPGRADES[-1][1] + 18):
         for x in range(ux - 2, ux + 18):
             cv.set(x, y, BASE_LO)
@@ -168,7 +260,7 @@ def module_panel():
     M = L.Module
     cv = Canvas(256, 256)
     machine_and_inventory(cv, M.MH, M.H, 7)
-    header(cv)
+    header(cv, M.TITLE, grilles=False)
     # the module's icon sits in the header, on a little plate
     ix, iy = M.ICON
     plate(cv, ix - 1, iy - 1, ix + 17, iy + 15, fill=(16, 18, 22))
@@ -178,7 +270,7 @@ def module_panel():
         cv.outline(x - 1, y - 1, x + M.DIR_CELL + 1, y + M.DIR_CELL + 1, mix(BASE_LO, TEAL_DK, 0.6))
     lcd(cv, 12, M.DIR_LABEL[1] - 4, 65, M.DIR_LABEL[1] + 5)
     # the filter: its slots on a copper-framed plate
-    copper_frame(cv, 73, 23, 137, 87)
+    riveted(cv, 73, 23, 137, 87)
     cv.rect(75, 25, 135, 85, BASE_LO)
     for (x, y) in M.FILTER:
         slot(cv, x, y)
@@ -186,9 +278,11 @@ def module_panel():
     for (x, y) in M.TOGGLES:
         plate(cv, x - 1, y - 1, x + M.TOGGLE + 1, y + M.TOGGLE + 1)
     lcd(cv, *M.INFO)
+    # a grille beside the toggles
+    mesh(cv, M.TOGGLES[3][0] + M.TOGGLE + 5, M.TOGGLES[0][1] - 2, M.INFO[2] - 1, M.TOGGLES[-1][1] + M.TOGGLE + 2)
     # its own settings
     x1, y1, x2, y2 = M.PANEL
-    copper_frame(cv, x1 - 2, y1 - 2, x2 + 2, y2 + 2)
+    riveted(cv, x1 - 2, y1 - 2, x2 + 2, y2 + 2)
     cv.rect(x1, y1, x2, y2, BASE_LO)
     noise(cv, x1, y1, x2, y2, 1.5, 17)
     inventory_slots(cv, M.INV_X, M.INV_Y, M.HOTBAR_Y)
