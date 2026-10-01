@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "redstone",
+  "ingredients": [
+    {
+      "item": "boundlessrouters:blank_module"
+    },
+    {
+      "item": "minecraft:dropper"
+    }
+  ],
+  "result": {
+    "item": "boundlessrouters:dropper_module",
+    "count": 1
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    "GRG",
+    "NLN"
+  ],
+  "key": {
+    "G": {
+      "item": "minecraft:gold_nugget"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    },
+    "N": {
+      "item": "minecraft:iron_nugget"
+    },
+    "L": {
+      "item": "minecraft:lapis_lazuli"
+    }
+  },
+  "result": {
+    "item": "boundlessrouters:blank_upgrade",
+    "count": 4
+  }
+}

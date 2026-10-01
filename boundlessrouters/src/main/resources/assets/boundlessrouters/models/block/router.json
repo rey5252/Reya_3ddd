@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/orientable_with_bottom",
+  "textures": {
+    "top": "boundlessrouters:block/router_top",
+    "bottom": "boundlessrouters:block/router_bottom",
+    "side": "boundlessrouters:block/router_side",
+    "front": "boundlessrouters:block/router_front"
+  }
+}

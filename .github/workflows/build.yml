@@ -34,6 +34,8 @@ jobs:
             dir: chaosspawner
           - mod: alfheimheart
             dir: alfheimheart
+          - mod: boundlessrouters
+            dir: boundlessrouters
     defaults:
       run:
         working-directory: ${{ matrix.dir }}
@@ -47,6 +49,9 @@ jobs:
       - name: Check that the GUI code and its textures agree
         if: matrix.mod == 'alfheimheart'
         run: for f in tools/*/check_layout.py; do python3 "$f" || exit 1; done
+      - name: Check the layouts, textures and languages
+        if: matrix.mod == 'boundlessrouters'
+        run: python3 tools/check.py
       - name: Build mod
         run: |
           chmod +x ./gradlew

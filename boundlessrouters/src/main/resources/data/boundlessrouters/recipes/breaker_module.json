@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "redstone",
+  "ingredients": [
+    {
+      "item": "boundlessrouters:blank_module"
+    },
+    {
+      "item": "minecraft:iron_pickaxe"
+    }
+  ],
+  "result": {
+    "item": "boundlessrouters:breaker_module",
+    "count": 1
+  }
+}

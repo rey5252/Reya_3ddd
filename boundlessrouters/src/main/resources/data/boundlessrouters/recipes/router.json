@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    "IRI",
+    "RHR",
+    "IRI"
+  ],
+  "key": {
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    },
+    "H": {
+      "item": "minecraft:hopper"
+    }
+  },
+  "result": {
+    "item": "boundlessrouters:router",
+    "count": 1
+  }
+}

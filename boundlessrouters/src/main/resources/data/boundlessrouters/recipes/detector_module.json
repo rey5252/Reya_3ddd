@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "redstone",
+  "ingredients": [
+    {
+      "item": "boundlessrouters:blank_module"
+    },
+    {
+      "item": "minecraft:observer"
+    }
+  ],
+  "result": {
+    "item": "boundlessrouters:detector_module",
+    "count": 1
+  }
+}

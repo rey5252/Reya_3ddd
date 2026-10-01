@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "redstone",
+  "ingredients": [
+    {
+      "item": "boundlessrouters:blank_module"
+    },
+    {
+      "item": "minecraft:ender_chest"
+    }
+  ],
+  "result": {
+    "item": "boundlessrouters:player_module",
+    "count": 1
+  }
+}

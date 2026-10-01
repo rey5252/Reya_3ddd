@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "redstone",
+  "ingredients": [
+    {
+      "item": "boundlessrouters:blank_upgrade"
+    },
+    {
+      "item": "minecraft:sugar"
+    },
+    {
+      "item": "minecraft:redstone"
+    }
+  ],
+  "result": {
+    "item": "boundlessrouters:speed_upgrade",
+    "count": 1
+  }
+}

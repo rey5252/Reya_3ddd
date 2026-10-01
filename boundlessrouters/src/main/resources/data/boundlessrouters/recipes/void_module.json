@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "redstone",
+  "ingredients": [
+    {
+      "item": "boundlessrouters:blank_module"
+    },
+    {
+      "item": "minecraft:cactus"
+    }
+  ],
+  "result": {
+    "item": "boundlessrouters:void_module",
+    "count": 1
+  }
+}
