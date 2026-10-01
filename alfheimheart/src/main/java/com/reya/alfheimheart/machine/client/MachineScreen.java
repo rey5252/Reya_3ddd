@@ -58,6 +58,12 @@ public abstract class MachineScreen<M extends MachineMenu> extends AbstractConta
     protected static final int MANA_BRIGHT = 0xA6F6FF, GREEN_LIGHT = 0xB6F59A, GOLD_LIGHT = 0xFFE27A, PINK_LIGHT = 0xFF9AD8;
     protected static final float PI = (float) Math.PI;
 
+    /**
+     * Whether JEI shows a machine's recipes on a click on its layout's click areas: JeiCompat sets it, and draws no
+     * tooltip of its own there, so the machine's tooltip says so instead of two tooltips drawing over each other.
+     */
+    public static boolean recipesOnClick;
+
     protected final MachineLayout layout;
     private final ResourceLocation panel;
     /** The machine's widget sheet. */
@@ -632,7 +638,20 @@ public abstract class MachineScreen<M extends MachineMenu> extends AbstractConta
         } else {
             heartTooltip(tip, mx, my);
         }
+        if (hoveredSlot == null && overClickArea(mx, my)) {
+            if (tip.isEmpty()) tip.add(title.copy().withStyle(ChatFormatting.GOLD));
+            tip.add(Component.translatable("gui.alfheimheart.show_recipes").withStyle(ChatFormatting.DARK_AQUA));
+        }
         if (!tip.isEmpty()) g.renderComponentTooltip(font, tip, mouseX, mouseY);
+    }
+
+    /** Whether (mx, my), in menu coordinates, is on one of the areas a click on shows the machine's recipes in JEI. */
+    private boolean overClickArea(int mx, int my) {
+        if (!recipesOnClick) return false;
+        for (int[] a : layout.clickAreas) {
+            if (mx >= a[0] && mx < a[0] + a[2] && my >= a[1] && my < a[1] + a[3]) return true;
+        }
+        return false;
     }
 
     /** The status line, coloured. */

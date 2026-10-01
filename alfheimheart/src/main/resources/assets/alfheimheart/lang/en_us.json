@@ -114,6 +114,7 @@
   "jei.alfheimheart.info.portal": "A whole Alfheim gateway in one block. Put items in (by hand, hoppers or pipes, or throw them on it) and the elves trade them by every elven trade recipe, Botania's own and any a pack adds; they also refine ores. Every trade costs 500 mana, which the portal takes from the mana pools beside it and from mana spreaders aimed at it.",
   "block.alfheimheart.machine.stored": "Mana inside: %s",
   "gui.alfheimheart.close": "Close",
+  "gui.alfheimheart.show_recipes": "Click: show recipes",
   "gui.alfheimheart.redstone": "Redstone control",
   "gui.alfheimheart.redstone.ignore": "Works whatever the redstone",
   "gui.alfheimheart.redstone.high": "Works only with a redstone signal",

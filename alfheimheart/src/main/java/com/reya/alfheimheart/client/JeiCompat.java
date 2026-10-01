@@ -1,5 +1,7 @@
 package com.reya.alfheimheart.client;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import com.reya.alfheimheart.AlfheimHeart;
@@ -19,11 +21,14 @@ import com.reya.alfheimheart.portal.client.PortalScreen;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.constants.VanillaTypes;
+import mezz.jei.api.gui.handlers.IGuiClickableArea;
 import mezz.jei.api.gui.handlers.IGuiContainerHandler;
+import mezz.jei.api.recipe.IFocusFactory;
 import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.registration.IGuiHandlerRegistration;
 import mezz.jei.api.registration.IRecipeCatalystRegistration;
 import mezz.jei.api.registration.IRecipeRegistration;
+import mezz.jei.api.runtime.IRecipesGui;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -41,7 +46,7 @@ import vazkii.botania.common.crafting.OrechidIgnemRecipe;
 
 /**
  * Only loaded when JEI is installed: information pages for the blocks and items, the Elven Portal and the
- * machines as catalysts of Botania's categories (and the arrows in their GUIs opening them), and the areas the
+ * machines as catalysts of Botania's categories (and click areas in their GUIs opening them), and the areas the
  * GUIs draw outside their panels, so JEI's item lists keep clear of them.
  */
 @JeiPlugin
@@ -113,36 +118,58 @@ public class JeiCompat implements IModPlugin {
                 return screen.extraAreas();
             }
         });
-        machine(registration, RuneAltarScreen.class);
-        machine(registration, TerraPlateScreen.class);
-        machine(registration, ManaInfuserScreen.class);
-        machine(registration, PureDaisyScreen.class);
-        machine(registration, PetalApothecaryScreen.class);
-        machine(registration, PetalFarmScreen.class);
-        machine(registration, OrechidMineScreen.class);
-        machine(registration, CropFieldScreen.class);
-        // the arrows into and out of the portal show its trades; each machine's click areas (its layout's) its recipes
+        // each machine's click areas (its layout's) show its recipes; the arrows into and out of the portal its trades
+        machine(registration, RuneAltarScreen.class, MachineLayouts.RUNE_ALTAR, RUNIC_ALTAR);
+        machine(registration, TerraPlateScreen.class, MachineLayouts.TERRA_PLATE, TERRA_PLATE);
+        machine(registration, ManaInfuserScreen.class, MachineLayouts.MANA_INFUSER, MANA_POOL);
+        machine(registration, PureDaisyScreen.class, MachineLayouts.PURE_DAISY, PURE_DAISY);
+        machine(registration, PetalApothecaryScreen.class, MachineLayouts.PETAL_APOTHECARY, PETALS);
+        machine(registration, PetalFarmScreen.class, MachineLayouts.PETAL_FARM);
+        machine(registration, OrechidMineScreen.class, MachineLayouts.ORECHID_MINE, ORECHID, ORECHID_IGNEM, MARIMORPHOSIS);
+        machine(registration, CropFieldScreen.class, MachineLayouts.CROP_FIELD);
+        MachineScreen.recipesOnClick = true;
         registration.addRecipeClickArea(PortalScreen.class, 74, 53, 12, 9, ELVEN_TRADE);
         registration.addRecipeClickArea(PortalScreen.class, 155, 53, 12, 9, ELVEN_TRADE);
-        clickAreas(registration, RuneAltarScreen.class, MachineLayouts.RUNE_ALTAR, RUNIC_ALTAR);
-        clickAreas(registration, TerraPlateScreen.class, MachineLayouts.TERRA_PLATE, TERRA_PLATE);
-        clickAreas(registration, ManaInfuserScreen.class, MachineLayouts.MANA_INFUSER, MANA_POOL);
-        clickAreas(registration, PureDaisyScreen.class, MachineLayouts.PURE_DAISY, PURE_DAISY);
-        clickAreas(registration, PetalApothecaryScreen.class, MachineLayouts.PETAL_APOTHECARY, PETALS);
-        clickAreas(registration, OrechidMineScreen.class, MachineLayouts.ORECHID_MINE, ORECHID, ORECHID_IGNEM, MARIMORPHOSIS);
     }
 
-    private static <T extends MachineScreen<?>> void machine(IGuiHandlerRegistration registration, Class<T> screen) {
+    /**
+     * A machine's GUI: the areas it draws outside its panel, and its layout's click areas showing its recipes. The
+     * areas draw no "Show Recipes" tooltip of JEI's: the machine's own tooltip there, over its heart, says it.
+     */
+    private static <T extends MachineScreen<?>> void machine(IGuiHandlerRegistration registration, Class<T> screen, MachineLayout layout,
+                                                             RecipeType<?>... types) {
+        List<IGuiClickableArea> areas = new ArrayList<>();
+        if (types.length > 0) {
+            for (int[] a : layout.clickAreas) {
+                IGuiClickableArea basic = IGuiClickableArea.createBasic(a[0], a[1], a[2], a[3], types);
+                areas.add(new IGuiClickableArea() {
+                    @Override
+                    public Rect2i getArea() {
+                        return basic.getArea();
+                    }
+
+                    @Override
+                    public boolean isTooltipEnabled() {
+                        return false;
+                    }
+
+                    @Override
+                    public void onClick(IFocusFactory focusFactory, IRecipesGui recipesGui) {
+                        basic.onClick(focusFactory, recipesGui);
+                    }
+                });
+            }
+        }
         registration.addGuiContainerHandler(screen, new IGuiContainerHandler<T>() {
             @Override
             public List<Rect2i> getGuiExtraAreas(T s) {
                 return s.extraAreas();
             }
-        });
-    }
 
-    private static <T extends MachineScreen<?>> void clickAreas(IGuiHandlerRegistration registration, Class<T> screen, MachineLayout layout,
-                                                                RecipeType<?>... types) {
-        for (int[] area : layout.clickAreas) registration.addRecipeClickArea(screen, area[0], area[1], area[2], area[3], types);
+            @Override
+            public Collection<IGuiClickableArea> getGuiClickableAreas(T s, double guiMouseX, double guiMouseY) {
+                return areas;
+            }
+        });
     }
 }

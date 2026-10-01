@@ -77,7 +77,7 @@ final class MachineShots {
         s.add(new Step(1, AutoShot::mouseAway));
         s.add(new Step(30, () -> shot("mana_infuser_gui.png")));
         s.add(new Step(9, () -> shot("mana_infuser_gui_2.png")));
-        s.add(new Step(5, () -> mouseAtGui(120, 40)));
+        s.add(new Step(5, () -> mouseAtGui(128, 30)));
         s.add(new Step(10, () -> shot("mana_infuser_gui_tip.png")));
         s.add(new Step(5, AutoShot::mouseAway));
         s.add(new Step(5, () -> catalyst(stack("botania", "alchemy_catalyst", 1))));
@@ -162,7 +162,7 @@ final class MachineShots {
         s.add(new Step(5, AutoShot::closeScreen));
         s.add(new Step(5, () -> eye(INFUSER, 0.5D, 1.9D, 2.6D, 0.5D, 0.6D, 0.5D)));
         s.add(new Step(20, () -> open(INFUSER)));
-        s.add(new Step(40, () -> mouseAtGui(120, 40)));
+        s.add(new Step(40, () -> mouseAtGui(128, 30)));
         s.add(new Step(10, () -> shot("mana_infuser_gui_uk.png")));
         s.add(new Step(5, AutoShot::closeScreen));
         s.add(new Step(5, () -> eye(FARM, 0.5D, 1.9D, 2.6D, 0.5D, 0.6D, 0.5D)));
