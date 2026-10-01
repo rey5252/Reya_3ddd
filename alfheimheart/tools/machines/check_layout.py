@@ -197,6 +197,23 @@ def main():
     same("farm: heart's box", farm["HEART_BOX"], L.FARM.HEART_BOX)
     same("farm: halo (sheet)", (farm["HALO_U"], farm["HALO_V"], farm["HALO_SIZE"]), (sheet["HALO_UV"][0], sheet["HALO_UV"][1], sheet["HALO_SIZE"]))
 
+    for name in ("orechid_mine", "crop_field"):
+        same(f"{name} panel texture size", png_size(os.path.join(TEXTURES, name + ".png")), (L.W + 2 * L.M, L.H + 2 * L.M))
+    mine = java_constants(os.path.join(MACHINE, "orechid", "client", "OrechidMineScreen.java"))
+    same("mine: its window, ring, heart", (mine["MINE_X"], mine["MINE_Y"], mine["MINE_R"], mine["ROCK_R"], mine["ORE_R"], mine["HEART_R"]),
+         (L.MINE.CENTER[0], L.MINE.CENTER[1], L.MINE.R, L.MINE.ROCK_R, L.MINE.ORE_R, L.MINE.HEART_R))
+    same("mine: gem", (mine["GEM_X"], mine["GEM_Y"]), L.MINE.GEM)
+    same("mine: ore sockets", mine["ORES"], [tuple(p) for p in L.MINE.ORES])
+    same("mine: halo (sheet)", (mine["HALO_U"], mine["HALO_V"], mine["HALO_SIZE"]), (sheet["HALO_UV"][0], sheet["HALO_UV"][1], sheet["HALO_SIZE"]))
+    field_menu = java_constants(os.path.join(MACHINE, "field", "CropFieldMenu.java"))
+    field = java_constants(os.path.join(MACHINE, "field", "client", "CropFieldScreen.java"))
+    same("field: bone meal slot", (field_menu["FERTILIZER_X"], field_menu["FERTILIZER_Y"]), L.FIELD.SLOT)
+    same("field: its frame", field["BOX"], L.FIELD.BOX)
+    same("field: its rows", field["ROWS"], tuple(L.FIELD.ROWS))
+    same("field: the cloud", (field["CLOUD_X"], field["CLOUD_Y"]), L.FIELD.CLOUD)
+    same("field: gem", (field["GEM_X"], field["GEM_Y"]), L.FIELD.GEM)
+    same("field: heart's box", field["HEART_BOX"], L.FIELD.HEART_BOX)
+
     # JEI's click areas are the arrows
     jei = java_source(os.path.join(JAVA, "client", "JeiCompat.java"))
     m = re.search(r"void arrows\(.*?\{(.*?)\n    \}", jei, re.S)

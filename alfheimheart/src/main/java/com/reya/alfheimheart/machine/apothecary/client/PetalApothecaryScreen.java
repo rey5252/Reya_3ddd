@@ -150,7 +150,7 @@ public class PetalApothecaryScreen extends MachineScreen<PetalApothecaryMenu> {
                 int col = mix(DEEP, MID, 0.4F + 0.6F * k);
                 if (k > 0.8F) col = mix(col, LIGHT, (k - 0.8F) / 0.2F);
                 col = mix(col, DEEP, Math.max(0.0F, -fy) * 0.3F);
-                col = mix(col, tint, 0.15F + 0.45F * p);
+                col = mix(col, tint, 0.06F + 0.3F * p);
                 g.fill(leftPos + x, topPos + BOWL_Y + y, leftPos + x + 1, topPos + BOWL_Y + y + 1, 0xF0000000 | col);
             }
         }

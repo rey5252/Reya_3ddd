@@ -75,6 +75,34 @@ public final class MachineConfig {
         B.pop();
     }
 
+    public static final Numbers MINE = new Numbers("orechidMine", "Orechid Mine", 500_000, 5_000, 10_000, 40);
+    public static final ForgeConfigSpec.IntValue MINE_ORECHID, MINE_IGNEM, MINE_MARIMORPHOSIS, MINE_BATCH;
+
+    static {
+        B.push("orechidMine");
+        MINE_ORECHID = B.comment("Mana a block of stone takes to become an ore (the Orechid takes 17500).")
+                .defineInRange("manaPerOre", 17_500, 0, 1_000_000);
+        MINE_IGNEM = B.comment("Mana a block of netherrack takes to become a nether ore (the Orechid Ignem takes 20000).")
+                .defineInRange("manaPerNetherOre", 20_000, 0, 1_000_000);
+        MINE_MARIMORPHOSIS = B.comment("Mana a block of stone takes to become a metamorphic stone (the Marimorphosis takes 12).")
+                .defineInRange("manaPerMetamorphicStone", 12, 0, 1_000_000);
+        MINE_BATCH = B.comment("Blocks of a kind it turns at once.").defineInRange("batch", 4, 1, 64);
+        B.pop();
+    }
+
+    public static final Numbers FIELD = new Numbers("cropField", "Crop Field", 100_000, 500, 2_000, 200);
+    public static final ForgeConfigSpec.IntValue FIELD_MANA, FIELD_PER_SEEDS, FIELD_MOST;
+
+    static {
+        B.push("cropField");
+        FIELD_MANA = B.comment("Mana one harvest takes.").defineInRange("manaPerHarvest", 150, 0, 1_000_000);
+        FIELD_PER_SEEDS = B.comment("A kind of seed is harvested once a cycle, and once more for every this many of it.")
+                .defineInRange("seedsPerHarvest", 16, 1, 64);
+        FIELD_MOST = B.comment("Most harvests a kind gives a cycle (before bone meal doubles them).")
+                .defineInRange("mostPerKind", 4, 1, 64);
+        B.pop();
+    }
+
     public static final ForgeConfigSpec SPEC = B.build();
 
     private MachineConfig() {

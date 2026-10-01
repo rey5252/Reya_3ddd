@@ -1,0 +1,34 @@
+{
+  "variants": {
+    "active=false,facing=north": {
+      "model": "alfheimheart:block/crop_field"
+    },
+    "active=true,facing=north": {
+      "model": "alfheimheart:block/crop_field"
+    },
+    "active=false,facing=east": {
+      "model": "alfheimheart:block/crop_field",
+      "y": 90
+    },
+    "active=true,facing=east": {
+      "model": "alfheimheart:block/crop_field",
+      "y": 90
+    },
+    "active=false,facing=south": {
+      "model": "alfheimheart:block/crop_field",
+      "y": 180
+    },
+    "active=true,facing=south": {
+      "model": "alfheimheart:block/crop_field",
+      "y": 180
+    },
+    "active=false,facing=west": {
+      "model": "alfheimheart:block/crop_field",
+      "y": 270
+    },
+    "active=true,facing=west": {
+      "model": "alfheimheart:block/crop_field",
+      "y": 270
+    }
+  }
+}

@@ -125,8 +125,28 @@ def petal_farm():
     return textures, elements
 
 
+def orechid_mine():
+    textures = {"particle": "alfheimheart:block/orechid_mine_side", "bricks": "alfheimheart:block/machine_bricks",
+                "side": "alfheimheart:block/orechid_mine_side", "top": "alfheimheart:block/orechid_mine_top",
+                "crystal": "alfheimheart:block/machine_crystal"}
+    elements = [box((0, 0, 0), (16, 10, 16), all_faces("#side", "#top", "#bricks", cull_down=True))]
+    for (x, z) in ((0, 0), (14, 0), (0, 14)):
+        elements.append(crystal(x + 0.5, 10, z + 0.5, 1.0, 2.0))
+    return textures, elements
+
+
+def crop_field():
+    textures = {"particle": "alfheimheart:block/petal_farm_side", "bricks": "alfheimheart:block/machine_bricks",
+                "planks": "alfheimheart:block/machine_planks", "side": "alfheimheart:block/petal_farm_side",
+                "soil": "alfheimheart:block/crop_field_top", "crystal": "alfheimheart:block/machine_crystal"}
+    elements = [box((0, 0, 0), (16, 7, 16), all_faces("#side", "#soil", "#planks", cull_down=True))]
+    for (x, z) in ((0, 0), (14, 0), (0, 14), (14, 14)):
+        elements.append(box((x, 7, z), (x + 2, 8, z + 2), all_faces("#bricks", "#bricks", "#bricks", skip=("down",))))
+    return textures, elements
+
+
 MACHINES = {"rune_altar": rune_altar, "terra_plate": terra_plate, "mana_infuser": mana_infuser, "pure_daisy": pure_daisy,
-            "petal_apothecary": petal_apothecary, "petal_farm": petal_farm}
+            "petal_apothecary": petal_apothecary, "petal_farm": petal_farm, "orechid_mine": orechid_mine, "crop_field": crop_field}
 
 
 def write(path, data):

@@ -23,6 +23,12 @@ import com.reya.alfheimheart.machine.daisy.PureDaisyMenu;
 import com.reya.alfheimheart.machine.farm.PetalFarmBlock;
 import com.reya.alfheimheart.machine.farm.PetalFarmBlockEntity;
 import com.reya.alfheimheart.machine.farm.PetalFarmMenu;
+import com.reya.alfheimheart.machine.field.CropFieldBlock;
+import com.reya.alfheimheart.machine.field.CropFieldBlockEntity;
+import com.reya.alfheimheart.machine.field.CropFieldMenu;
+import com.reya.alfheimheart.machine.orechid.OrechidMineBlock;
+import com.reya.alfheimheart.machine.orechid.OrechidMineBlockEntity;
+import com.reya.alfheimheart.machine.orechid.OrechidMineMenu;
 import com.reya.alfheimheart.machine.infuser.ManaInfuserBlock;
 import com.reya.alfheimheart.machine.infuser.ManaInfuserBlockEntity;
 import com.reya.alfheimheart.machine.infuser.ManaInfuserMenu;
@@ -61,7 +67,8 @@ import org.slf4j.Logger;
  * animations. The Mana Greenhouse grows generating flowers that make mana on their own; the Elven Portal
  * is a whole Alfheim gateway in one block that trades by every elven trade recipe and refines ores; the
  * machines (the Runic Altar, the Terrestrial Plate, the Mana Infuser, the Pure Daisy, the Petal Apothecary)
- * craft by Botania's recipes from their slots, with mana from pools and spreaders, and the Petal Farm grows petals.
+ * craft by Botania's recipes from their slots, with mana from pools and spreaders; the Petal Farm grows petals,
+ * the Orechid Mine turns stone into ores and the Crop Field harvests crops.
  */
 @Mod(AlfheimHeart.MODID)
 public class AlfheimHeart {
@@ -178,6 +185,24 @@ public class AlfheimHeart {
     public static final RegistryObject<MenuType<PetalFarmMenu>> PETAL_FARM_MENU = MENUS.register("petal_farm",
             () -> IForgeMenuType.create(PetalFarmMenu::new));
 
+    public static final RegistryObject<Block> ORECHID_MINE = BLOCKS.register("orechid_mine",
+            () -> new OrechidMineBlock(machine(MapColor.STONE)));
+    public static final RegistryObject<Item> ORECHID_MINE_ITEM = ITEMS.register("orechid_mine",
+            () -> new MachineBlockItem(ORECHID_MINE.get(), new Item.Properties().rarity(Rarity.RARE)));
+    public static final RegistryObject<BlockEntityType<OrechidMineBlockEntity>> ORECHID_MINE_BE = BLOCK_ENTITIES.register("orechid_mine",
+            () -> BlockEntityType.Builder.of(OrechidMineBlockEntity::new, ORECHID_MINE.get()).build(null));
+    public static final RegistryObject<MenuType<OrechidMineMenu>> ORECHID_MINE_MENU = MENUS.register("orechid_mine",
+            () -> IForgeMenuType.create(OrechidMineMenu::new));
+
+    public static final RegistryObject<Block> CROP_FIELD = BLOCKS.register("crop_field",
+            () -> new CropFieldBlock(machine(MapColor.DIRT)));
+    public static final RegistryObject<Item> CROP_FIELD_ITEM = ITEMS.register("crop_field",
+            () -> new MachineBlockItem(CROP_FIELD.get(), new Item.Properties().rarity(Rarity.UNCOMMON)));
+    public static final RegistryObject<BlockEntityType<CropFieldBlockEntity>> CROP_FIELD_BE = BLOCK_ENTITIES.register("crop_field",
+            () -> BlockEntityType.Builder.of(CropFieldBlockEntity::new, CROP_FIELD.get()).build(null));
+    public static final RegistryObject<MenuType<CropFieldMenu>> CROP_FIELD_MENU = MENUS.register("crop_field",
+            () -> IForgeMenuType.create(CropFieldMenu::new));
+
     private static BlockBehaviour.Properties machine(MapColor color) {
         return BlockBehaviour.Properties.of()
                 .mapColor(color)
@@ -201,6 +226,8 @@ public class AlfheimHeart {
                 output.accept(PURE_DAISY_ITEM.get());
                 output.accept(PETAL_APOTHECARY_ITEM.get());
                 output.accept(PETAL_FARM_ITEM.get());
+                output.accept(ORECHID_MINE_ITEM.get());
+                output.accept(CROP_FIELD_ITEM.get());
                 output.accept(GREENHOUSE_HEART.get());
                 output.accept(UPGRADE_BASE.get());
                 output.accept(SPEED_UPGRADE.get());

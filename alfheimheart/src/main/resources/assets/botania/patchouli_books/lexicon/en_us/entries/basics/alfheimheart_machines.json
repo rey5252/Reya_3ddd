@@ -41,6 +41,16 @@
       "type": "crafting",
       "recipe": "alfheimheart:petal_farm",
       "text": "alfheimheart.lexicon.machines7"
+    },
+    {
+      "type": "crafting",
+      "recipe": "alfheimheart:orechid_mine",
+      "text": "alfheimheart.lexicon.machines8"
+    },
+    {
+      "type": "crafting",
+      "recipe": "alfheimheart:crop_field",
+      "text": "alfheimheart.lexicon.machines9"
     }
   ]
 }

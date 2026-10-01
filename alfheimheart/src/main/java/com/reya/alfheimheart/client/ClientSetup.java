@@ -11,6 +11,10 @@ import com.reya.alfheimheart.machine.daisy.client.PureDaisyRenderer;
 import com.reya.alfheimheart.machine.daisy.client.PureDaisyScreen;
 import com.reya.alfheimheart.machine.farm.client.PetalFarmRenderer;
 import com.reya.alfheimheart.machine.farm.client.PetalFarmScreen;
+import com.reya.alfheimheart.machine.field.client.CropFieldRenderer;
+import com.reya.alfheimheart.machine.field.client.CropFieldScreen;
+import com.reya.alfheimheart.machine.orechid.client.OrechidMineRenderer;
+import com.reya.alfheimheart.machine.orechid.client.OrechidMineScreen;
 import com.reya.alfheimheart.machine.infuser.client.ManaInfuserRenderer;
 import com.reya.alfheimheart.machine.infuser.client.ManaInfuserScreen;
 import com.reya.alfheimheart.machine.plate.client.TerraPlateRenderer;
@@ -38,6 +42,8 @@ public final class ClientSetup {
             MenuScreens.register(AlfheimHeart.PURE_DAISY_MENU.get(), PureDaisyScreen::new);
             MenuScreens.register(AlfheimHeart.PETAL_APOTHECARY_MENU.get(), PetalApothecaryScreen::new);
             MenuScreens.register(AlfheimHeart.PETAL_FARM_MENU.get(), PetalFarmScreen::new);
+            MenuScreens.register(AlfheimHeart.ORECHID_MINE_MENU.get(), OrechidMineScreen::new);
+            MenuScreens.register(AlfheimHeart.CROP_FIELD_MENU.get(), CropFieldScreen::new);
         });
     }
 
@@ -51,6 +57,8 @@ public final class ClientSetup {
         event.registerBlockEntityRenderer(AlfheimHeart.PURE_DAISY_BE.get(), PureDaisyRenderer::new);
         event.registerBlockEntityRenderer(AlfheimHeart.PETAL_APOTHECARY_BE.get(), PetalApothecaryRenderer::new);
         event.registerBlockEntityRenderer(AlfheimHeart.PETAL_FARM_BE.get(), PetalFarmRenderer::new);
+        event.registerBlockEntityRenderer(AlfheimHeart.ORECHID_MINE_BE.get(), OrechidMineRenderer::new);
+        event.registerBlockEntityRenderer(AlfheimHeart.CROP_FIELD_BE.get(), CropFieldRenderer::new);
     }
 
     /** The greenhouse's petals and crystal move, so they are models of their own, not part of the block's. */

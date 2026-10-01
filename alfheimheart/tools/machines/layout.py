@@ -123,3 +123,27 @@ class FARM:
     GEM = (120, 62)                  # the status gem on the planter's front
     SLOT = SPECIAL_SLOT              # the fertilizer slot under the planter
     HEART_BOX = (86, 10, 154, 80)
+
+
+# ---------------------------------------------------------------- the Orechid Mine
+
+class MINE:
+    CENTER = (120, 50)               # the middle of the window into the rock
+    R = 19                           # the window's outer radius (a gold and livingrock rim)
+    ROCK_R = 15                      # the rock inside it (the screen draws the block and its cracks)
+    ORE_R = 30                       # the possible ores sit in sockets on a ring this far out
+    ORE_SOCKET_R = 6.5
+    ORES = ring_points(120, 50, 30, 8, -90 + 22.5)
+    GEM = (120, 31)                  # the keystone gem on the window's rim
+    HEART_R = 37
+
+
+# ---------------------------------------------------------------- the Crop Field
+
+class FIELD:
+    BOX = (88, 24, 152, 76)          # the field's livingwood frame: x1, y1, x2, y2
+    ROWS = [38, 54, 70]              # the furrows' lines, where the crops stand
+    CLOUD = (120, 14)                # where the little rain cloud floats (the screen draws it)
+    GEM = (120, 76)                  # the status gem on the frame's bottom edge
+    SLOT = SPECIAL_SLOT              # the bone meal slot under the field
+    HEART_BOX = (86, 6, 154, 80)

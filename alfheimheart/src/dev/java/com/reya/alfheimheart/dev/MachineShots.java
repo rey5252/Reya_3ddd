@@ -10,6 +10,7 @@ import com.reya.alfheimheart.machine.MachineBlockEntity;
 import com.reya.alfheimheart.machine.altar.RuneAltarBlockEntity;
 import com.reya.alfheimheart.machine.apothecary.PetalApothecaryBlockEntity;
 import com.reya.alfheimheart.machine.farm.PetalFarmBlockEntity;
+import com.reya.alfheimheart.machine.field.CropFieldBlockEntity;
 import com.reya.alfheimheart.machine.infuser.ManaInfuserBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -28,6 +29,7 @@ import net.minecraftforge.network.NetworkHooks;
 final class MachineShots {
     static final BlockPos ALTAR = new BlockPos(70, -60, 0), PLATE = ALTAR.east(3), INFUSER = ALTAR.east(6);
     static final BlockPos DAISY = ALTAR.south(4), APOTHECARY = DAISY.east(3), FARM = DAISY.east(6);
+    static final BlockPos MINE = ALTAR.west(4), FIELD = MINE.south(4);
     private static final String ENTRY = "basics/alfheimheart_machines";
 
     static void steps(List<Step> s) {
@@ -76,6 +78,7 @@ final class MachineShots {
         s.add(new Step(5, () -> catalyst(ItemStack.EMPTY)));
         s.add(new Step(5, AutoShot::closeScreen));
         // the second row: the Pure Daisy, the Petal Apothecary, the Petal Farm
+        s.add(new Step(5, AutoShot::worldView));
         s.add(new Step(5, () -> eye(DAISY, 3.5D, 2.6D, 4.4D, 3.5D, 0.3D, 0.5D)));
         s.add(new Step(40, () -> shot("garden_scene.png")));
         s.add(new Step(5, () -> eye(DAISY, 1.4D, 1.6D, 1.8D, 0.5D, 0.6D, 0.5D)));
@@ -106,6 +109,28 @@ final class MachineShots {
         s.add(new Step(30, () -> shot("petal_farm_gui_2.png")));
         s.add(new Step(5, () -> mouseAtGui(120, 40)));
         s.add(new Step(10, () -> shot("petal_farm_gui_tip.png")));
+        s.add(new Step(5, AutoShot::mouseAway));
+        s.add(new Step(5, AutoShot::closeScreen));
+        // the Orechid Mine and the Crop Field, to the west
+        s.add(new Step(5, AutoShot::worldView));
+        s.add(new Step(5, () -> eye(MINE, 1.5D, 1.7D, 2.0D, 0.5D, 0.6D, 0.5D)));
+        s.add(new Step(30, () -> shot("orechid_mine_block.png")));
+        s.add(new Step(5, () -> eye(FIELD, 1.5D, 1.6D, 1.9D, 0.5D, 0.5D, 0.5D)));
+        s.add(new Step(40, () -> shot("crop_field_block.png")));
+        s.add(new Step(5, () -> eye(MINE, 0.5D, 1.9D, 2.6D, 0.5D, 0.6D, 0.5D)));
+        s.add(new Step(10, () -> open(MINE)));
+        s.add(new Step(30, () -> shot("orechid_mine_gui.png")));
+        s.add(new Step(15, () -> shot("orechid_mine_gui_2.png")));
+        s.add(new Step(5, () -> mouseAtGui(131, 22)));
+        s.add(new Step(10, () -> shot("orechid_mine_gui_tip.png")));
+        s.add(new Step(5, AutoShot::mouseAway));
+        s.add(new Step(5, AutoShot::closeScreen));
+        s.add(new Step(5, () -> eye(FIELD, 0.5D, 1.9D, 2.6D, 0.5D, 0.6D, 0.5D)));
+        s.add(new Step(10, () -> open(FIELD)));
+        s.add(new Step(60, () -> shot("crop_field_gui.png")));
+        s.add(new Step(60, () -> shot("crop_field_gui_2.png")));
+        s.add(new Step(5, () -> mouseAtGui(120, 40)));
+        s.add(new Step(10, () -> shot("crop_field_gui_tip.png")));
         s.add(new Step(5, AutoShot::mouseAway));
         s.add(new Step(5, AutoShot::closeScreen));
         // the lexicon
@@ -140,7 +165,7 @@ final class MachineShots {
         MinecraftServer server = server();
         server.execute(() -> {
             ServerLevel level = server.overworld();
-            for (int x = -2; x <= 8; x++) {
+            for (int x = -6; x <= 8; x++) {
                 for (int z = -2; z <= 6; z++) {
                     level.setBlock(ALTAR.offset(x, -1, z), block("botania", "livingrock_bricks").defaultBlockState(), 3);
                 }
@@ -151,7 +176,9 @@ final class MachineShots {
             place(level, DAISY, AlfheimHeart.PURE_DAISY.get());
             place(level, APOTHECARY, AlfheimHeart.PETAL_APOTHECARY.get());
             place(level, FARM, AlfheimHeart.PETAL_FARM.get());
-            for (BlockPos pos : new BlockPos[]{ALTAR, PLATE, INFUSER, DAISY, APOTHECARY, FARM}) {
+            place(level, MINE, AlfheimHeart.ORECHID_MINE.get());
+            place(level, FIELD, AlfheimHeart.CROP_FIELD.get());
+            for (BlockPos pos : new BlockPos[]{ALTAR, PLATE, INFUSER, DAISY, APOTHECARY, FARM, MINE, FIELD}) {
                 level.setBlock(pos.north(), block("botania", "creative_pool").defaultBlockState(), 3);
             }
             String[] colours = {"white", "pink", "light_blue", "magenta", "yellow", "lime", "cyan", "purple"};
@@ -209,6 +236,19 @@ final class MachineShots {
             set(farm, MachineBlockEntity.OUTPUT_START, stack("botania", "pink_petal", 9), stack("botania", "light_blue_petal", 12),
                     stack("botania", "yellow_petal", 5));
             farm.items().setStackInSlot(PetalFarmBlockEntity.FERTILIZER, stack("minecraft", "bone_meal", 16));
+        }
+        if (level.getBlockEntity(MINE) instanceof MachineBlockEntity mine) {
+            set(mine, MachineBlockEntity.INPUT_START, stack("minecraft", "stone", 64), stack("minecraft", "netherrack", 32),
+                    stack("minecraft", "deepslate", 16));
+            set(mine, MachineBlockEntity.OUTPUT_START, stack("minecraft", "coal_ore", 9), stack("minecraft", "iron_ore", 5),
+                    stack("minecraft", "copper_ore", 4), stack("minecraft", "gold_ore", 1));
+        }
+        if (level.getBlockEntity(FIELD) instanceof CropFieldBlockEntity field) {
+            set(field, MachineBlockEntity.INPUT_START, stack("minecraft", "wheat_seeds", 32), stack("minecraft", "carrot", 16),
+                    stack("minecraft", "potato", 16), stack("minecraft", "beetroot_seeds", 8), stack("minecraft", "melon_seeds", 4),
+                    stack("minecraft", "sugar_cane", 8));
+            set(field, MachineBlockEntity.OUTPUT_START, stack("minecraft", "wheat", 12), stack("minecraft", "carrot", 20));
+            field.items().setStackInSlot(CropFieldBlockEntity.FERTILIZER, stack("minecraft", "bone_meal", 16));
         }
     }
 

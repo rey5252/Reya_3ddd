@@ -8,6 +8,8 @@ import com.reya.alfheimheart.machine.altar.client.RuneAltarScreen;
 import com.reya.alfheimheart.machine.apothecary.client.PetalApothecaryScreen;
 import com.reya.alfheimheart.machine.daisy.client.PureDaisyScreen;
 import com.reya.alfheimheart.machine.farm.client.PetalFarmScreen;
+import com.reya.alfheimheart.machine.field.client.CropFieldScreen;
+import com.reya.alfheimheart.machine.orechid.client.OrechidMineScreen;
 import com.reya.alfheimheart.machine.client.MachineScreen;
 import com.reya.alfheimheart.machine.infuser.client.ManaInfuserScreen;
 import com.reya.alfheimheart.machine.plate.client.TerraPlateScreen;
@@ -27,10 +29,13 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
 import vazkii.botania.api.recipe.ElvenTradeRecipe;
 import vazkii.botania.api.recipe.ManaInfusionRecipe;
+import vazkii.botania.api.recipe.OrechidRecipe;
 import vazkii.botania.api.recipe.PetalApothecaryRecipe;
 import vazkii.botania.api.recipe.PureDaisyRecipe;
 import vazkii.botania.api.recipe.RunicAltarRecipe;
 import vazkii.botania.api.recipe.TerrestrialAgglomerationRecipe;
+import vazkii.botania.common.crafting.MarimorphosisRecipe;
+import vazkii.botania.common.crafting.OrechidIgnemRecipe;
 
 /**
  * Only loaded when JEI is installed: information pages for the blocks and items, the Elven Portal and the
@@ -47,6 +52,10 @@ public class JeiCompat implements IModPlugin {
     private static final RecipeType<ManaInfusionRecipe> MANA_POOL = RecipeType.create("botania", "mana_pool", ManaInfusionRecipe.class);
     private static final RecipeType<PureDaisyRecipe> PURE_DAISY = RecipeType.create("botania", "pure_daisy", PureDaisyRecipe.class);
     private static final RecipeType<PetalApothecaryRecipe> PETALS = RecipeType.create("botania", "petals", PetalApothecaryRecipe.class);
+    private static final RecipeType<OrechidRecipe> ORECHID = RecipeType.create("botania", "orechid", OrechidRecipe.class);
+    private static final RecipeType<OrechidIgnemRecipe> ORECHID_IGNEM = RecipeType.create("botania", "orechid_ignem", OrechidIgnemRecipe.class);
+    private static final RecipeType<MarimorphosisRecipe> MARIMORPHOSIS = RecipeType.create("botania", "marimorphosis",
+            MarimorphosisRecipe.class);
 
     @Override
     public ResourceLocation getPluginUid() {
@@ -69,6 +78,8 @@ public class JeiCompat implements IModPlugin {
         info(registration, AlfheimHeart.PURE_DAISY_ITEM.get(), "pure_daisy");
         info(registration, AlfheimHeart.PETAL_APOTHECARY_ITEM.get(), "petal_apothecary");
         info(registration, AlfheimHeart.PETAL_FARM_ITEM.get(), "petal_farm");
+        info(registration, AlfheimHeart.ORECHID_MINE_ITEM.get(), "orechid_mine");
+        info(registration, AlfheimHeart.CROP_FIELD_ITEM.get(), "crop_field");
     }
 
     private static void info(IRecipeRegistration registration, ItemLike item, String key) {
@@ -83,6 +94,7 @@ public class JeiCompat implements IModPlugin {
         registration.addRecipeCatalyst(new ItemStack(AlfheimHeart.MANA_INFUSER_ITEM.get()), MANA_POOL);
         registration.addRecipeCatalyst(new ItemStack(AlfheimHeart.PURE_DAISY_ITEM.get()), PURE_DAISY);
         registration.addRecipeCatalyst(new ItemStack(AlfheimHeart.PETAL_APOTHECARY_ITEM.get()), PETALS);
+        registration.addRecipeCatalyst(new ItemStack(AlfheimHeart.ORECHID_MINE_ITEM.get()), ORECHID, ORECHID_IGNEM, MARIMORPHOSIS);
     }
 
     @Override
@@ -105,6 +117,8 @@ public class JeiCompat implements IModPlugin {
         machine(registration, PureDaisyScreen.class);
         machine(registration, PetalApothecaryScreen.class);
         machine(registration, PetalFarmScreen.class);
+        machine(registration, OrechidMineScreen.class);
+        machine(registration, CropFieldScreen.class);
         // the arrows into and out of the portal and the machines show their recipes
         registration.addRecipeClickArea(PortalScreen.class, 74, 53, 12, 9, ELVEN_TRADE);
         registration.addRecipeClickArea(PortalScreen.class, 155, 53, 12, 9, ELVEN_TRADE);
@@ -113,6 +127,7 @@ public class JeiCompat implements IModPlugin {
         arrows(registration, ManaInfuserScreen.class, MANA_POOL);
         arrows(registration, PureDaisyScreen.class, PURE_DAISY);
         arrows(registration, PetalApothecaryScreen.class, PETALS);
+        arrows(registration, OrechidMineScreen.class, ORECHID, ORECHID_IGNEM, MARIMORPHOSIS);
     }
 
     private static <T extends MachineScreen<?>> void machine(IGuiHandlerRegistration registration, Class<T> screen) {
@@ -124,8 +139,8 @@ public class JeiCompat implements IModPlugin {
         });
     }
 
-    private static <T extends MachineScreen<?>> void arrows(IGuiHandlerRegistration registration, Class<T> screen, RecipeType<?> type) {
-        registration.addRecipeClickArea(screen, 74, 53, 12, 9, type);
-        registration.addRecipeClickArea(screen, 155, 53, 12, 9, type);
+    private static <T extends MachineScreen<?>> void arrows(IGuiHandlerRegistration registration, Class<T> screen, RecipeType<?>... types) {
+        registration.addRecipeClickArea(screen, 74, 53, 12, 9, types);
+        registration.addRecipeClickArea(screen, 155, 53, 12, 9, types);
     }
 }

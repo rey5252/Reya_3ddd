@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "SAS",
+    "LHL",
+    "WWW"
+  ],
+  "key": {
+    "S": {"item": "minecraft:wheat_seeds"},
+    "A": {"item": "botania:agricarnation"},
+    "H": {"item": "minecraft:diamond_hoe"},
+    "L": {"item": "botania:livingrock_bricks"},
+    "W": {"item": "botania:livingwood_planks"}
+  },
+  "result": {"item": "alfheimheart:crop_field"}
+}

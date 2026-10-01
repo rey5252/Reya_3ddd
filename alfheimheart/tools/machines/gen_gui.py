@@ -31,7 +31,7 @@ import sys
 
 from pix import Canvas, ASSETS, mix, shade, hexc, rnd2
 from layout import (M, W, H, MACHINE_H, INV_X1, INV_X2, INPUT, OUTPUT, INV_Y, HOTBAR_Y, INV_SLOT_X, ARROWS, BAR,
-                    LIGHTS, ALTAR, PLATE, POOL_, DAISY, BOWL, FARM)
+                    LIGHTS, ALTAR, PLATE, POOL_, DAISY, BOWL, FARM, MINE, FIELD)
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "lib"))
 import wood as WD  # noqa: E402
@@ -45,6 +45,8 @@ HOLLOW = (hexc("12345E"), hexc("060E1C"))
 GRASS = [hexc(h) for h in ("9BE36A", "6FC24A", "4E9E38", "37782C", "245420")]
 SOIL = [hexc(h) for h in ("5A3B22", "43291A", "2E1C12", "1C110B")]
 PETALS = [hexc(h) for h in ("FFFFFF", "FFB3DE", "FFE066", "B9A3FF", "8FD8FF", "FF8A80")]
+ROCK = [hexc(h) for h in ("A9A9A9", "8E8E8E", "767676", "5E5E5E", "434343")]
+ORES = [hexc(h) for h in ("E8B37F", "D8D8D8", "FCEE4B", "5DECF5", "17DD62", "345EC3", "FF2A2A")]
 
 
 # ---------------------------------------------------------------- shared
@@ -594,10 +596,95 @@ def farm(cv):
     special_slot(cv, *FARM.SLOT)
 
 
+# ---------------------------------------------------------------- the Orechid Mine
+
+def rock_window(cv):
+    """The window into the rock: a dark outline, a gold rim, a band of livingrock, then rough stone with flecks
+    of ore in it (the screen draws the block being turned over it, and its cracks)."""
+    cx, cy = MINE.CENTER
+    r, rr = MINE.R, MINE.ROCK_R
+    for y in range(int(cy - r) - 1, int(cy + r) + 2):
+        for x in range(int(cx - r) - 1, int(cx + r) + 2):
+            px, py = x + 0.5 - cx, y + 0.5 - cy
+            d = math.hypot(px, py)
+            if d > r:
+                continue
+            lit = (px * LIGHT_DIR[0] + py * LIGHT_DIR[1]) / max(d, 0.001)
+            hi, lo = lit > 0.35, lit < -0.35
+            if d > r - 1:
+                c = OUTLINE
+            elif d > r - 3:
+                c = GOLD[1] if hi else (GOLD[3] if lo else GOLD[2])
+            elif d > rr + 0.5:
+                c = LR[0] if hi else (LR[2] if lo else LR[1])
+            elif d > rr - 0.5:
+                c = OUTLINE
+            else:
+                n = WD.noise(x, y, 2.5, 101)
+                c = ROCK[1] if n > 0.6 else (ROCK[2] if n > 0.3 else ROCK[3])
+                if rnd2(x, y, 102) < 0.05:
+                    c = ORES[int(rnd2(x, y, 103) * len(ORES))]
+                c = mix(c, ROCK[4], max(0.0, (d - rr + 4) / 4.0) * 0.5)
+            cv.set(x, y, c)
+
+
+def mine(cv):
+    cx, cy = MINE.CENTER
+    WD.inlay_ring(cv, cx, cy, MINE.ORE_R)
+    WD.carved_runes(cv, cx, cy, MINE.ORE_R + 7, 16,
+                    skip=lambda x, y: y > cy + 30 or y < 9 or x < INPUT[0] + 58 or x > OUTPUT[0] - 4
+                    or min(math.hypot(x - ox, y - oy) for (ox, oy) in MINE.ORES) < 10)
+    for (ox, oy) in MINE.ORES:
+        socket(cv, ox, oy, MINE.ORE_SOCKET_R)
+    rock_window(cv)
+    gem_socket(cv, *MINE.GEM)
+
+
+# ---------------------------------------------------------------- the Crop Field
+
+def field(cv):
+    x1, y1, x2, y2 = FIELD.BOX
+    # the frame of livingwood, its livingrock rim, the tilled soil inside in furrows
+    for y in range(y1, y2):
+        for x in range(x1, x2):
+            edge = min(x - x1, x2 - 1 - x, y - y1, y2 - 1 - y)
+            if edge == 0:
+                c = OUTLINE
+            elif edge in (1, 2):
+                lit = x - x1 < 3 or y - y1 < 3
+                c = WOOD[1] if lit else WOOD[4]
+                if edge == 2:
+                    c = LR[1] if lit else LR[3]
+            elif edge == 3:
+                c = OUTLINE
+            else:
+                # furrows: a ridge of soil, lit on top, before each row of crops
+                row_y = min(FIELD.ROWS, key=lambda r: abs(r - y))
+                k = y - row_y
+                if k == 0:
+                    c = SOIL[0]
+                elif k in (-1, 1):
+                    c = SOIL[1]
+                elif k > 0:
+                    c = mix(SOIL[2], SOIL[3], min(1.0, (k - 1) / 5.0))
+                else:
+                    c = mix(SOIL[1], SOIL[2], min(1.0, (-k - 1) / 5.0))
+                if rnd2(x, y, 104) < 0.08:
+                    c = mix(c, SOIL[3], 0.5)
+            cv.set(x, y, c)
+    gem_socket(cv, *FIELD.GEM)
+    # little legs at its corners down towards the slot
+    for lx in (x1 + 4, x2 - 8):
+        for y in range(y2, y2 + 5):
+            for x in range(lx, lx + 4):
+                cv.set(x, y, OUTLINE if x in (lx, lx + 3) or y == y2 + 4 else (WOOD[2] if x == lx + 1 else WOOD[4]))
+    special_slot(cv, *FIELD.SLOT)
+
+
 # ---------------------------------------------------------------- build
 
 MACHINES = {"rune_altar": altar, "terra_plate": plate, "mana_infuser": pool, "pure_daisy": daisy, "petal_apothecary": bowl,
-            "petal_farm": farm}
+            "petal_farm": farm, "orechid_mine": mine, "crop_field": field}
 
 
 def build(name):

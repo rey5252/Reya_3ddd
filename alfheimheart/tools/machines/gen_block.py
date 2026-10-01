@@ -431,6 +431,65 @@ def farm_soil():
     cv.save(os.path.join(BLOCK, "petal_farm_soil.png"))
 
 
+# ---------------------------------------------------------------- the Orechid Mine, the Crop Field
+
+ROCK = [hexc(h) for h in ("A9A9A9", "8E8E8E", "767676", "5E5E5E", "434343")]
+ORE_FLECKS = [hexc(h) for h in ("E8B37F", "D8D8D8", "FCEE4B", "5DECF5", "17DD62", "345EC3", "FF2A2A")]
+
+
+def mine_top():
+    """The pit's top (columns and rows 1 to 14 show): a livingrock rim round raw rock with flecks of ore."""
+    cv = tex()
+    for y in range(16):
+        for x in range(16):
+            if x in (0, 15) or y in (0, 15):
+                c = GOLD[2]
+            elif x in (1, 14) or y in (1, 14):
+                c = LR[0] if (x == 1 or y == 1) else LR[3]
+            else:
+                n = rnd2(x // 2, y // 2, 51)
+                c = ROCK[1] if n > 0.6 else (ROCK[2] if n > 0.25 else ROCK[3])
+                if rnd2(x, y, 52) < 0.09:
+                    c = ORE_FLECKS[int(rnd2(x, y, 53) * len(ORE_FLECKS))]
+            cv.set(x, y, c)
+    cv.save(os.path.join(BLOCK, "orechid_mine_top.png"))
+
+
+def mine_side():
+    """The pit's sides (rows 6 to 15 show): a livingrock edge with a gold band, then livingrock bricks flecked with ore."""
+    cv = tex()
+    for y in range(16):
+        for x in range(16):
+            if y <= 6:
+                c = LR[0]
+            elif y == 7:
+                c = GOLD[1] if x % 3 else GOLD[0]
+            elif y == 8:
+                c = GOLD[3]
+            else:
+                c = bricks_px(x, y)
+                if rnd2(x, y, 54) < 0.05:
+                    c = ORE_FLECKS[int(rnd2(x, y, 55) * len(ORE_FLECKS))]
+            cv.set(x, y, c)
+    cv.save(os.path.join(BLOCK, "orechid_mine_side.png"))
+
+
+def field_top():
+    """The field's top: tilled soil in furrows, damp, a livingrock rim."""
+    cv = tex()
+    for y in range(16):
+        for x in range(16):
+            if x in (0, 15) or y in (0, 15):
+                c = LR[1]
+            else:
+                k = y % 4
+                c = SOIL[0] if k == 0 else (SOIL[1] if k in (1, 3) else SOIL[3])
+                if rnd2(x, y, 56) < 0.12:
+                    c = mix(c, SOIL[2], 0.6)
+            cv.set(x, y, c)
+    cv.save(os.path.join(BLOCK, "crop_field_top.png"))
+
+
 # ---------------------------------------------------------------- the renderers' textures
 
 def glow():
@@ -498,6 +557,9 @@ def main():
     apothecary_inner()
     farm_side()
     farm_soil()
+    mine_top()
+    mine_side()
+    field_top()
     glow()
     beam()
     mana()
