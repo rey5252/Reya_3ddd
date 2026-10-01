@@ -40,6 +40,7 @@ import net.minecraftforge.items.IItemHandler;
 @GameTestHolder(BoundlessRouters.MODID)
 @PrefixGameTestTemplate(false)
 public class RouterTests {
+    /** A room nine blocks square: its stone floor is at y = 1 (a test's y = 0 is the structure block's), so tests work at y = 2. */
     private static final String ROOM = "empty";
 
     // ------------------------------------------------------------------ helpers
@@ -92,7 +93,7 @@ public class RouterTests {
 
     @GameTest(template = ROOM)
     public static void senderSendsIntoTheChestInFront(GameTestHelper h) {
-        BlockPos at = new BlockPos(4, 1, 4), chest = at.south();
+        BlockPos at = new BlockPos(4, 2, 4), chest = at.south();
         RouterBlockEntity router = router(h, at, Direction.SOUTH);
         h.setBlock(chest, Blocks.CHEST);
         router.modules().setStackInSlot(0, module(ModuleKind.SENDER, s -> {
@@ -109,9 +110,9 @@ public class RouterTests {
 
     @GameTest(template = ROOM)
     public static void senderLooksAlongItsDirectionThroughBlocks(GameTestHelper h) {
-        BlockPos at = new BlockPos(1, 1, 4), chest = new BlockPos(7, 1, 4);
+        BlockPos at = new BlockPos(1, 2, 4), chest = new BlockPos(7, 2, 4);
         RouterBlockEntity router = router(h, at, Direction.EAST);
-        for (int x = 2; x < 7; x++) h.setBlock(new BlockPos(x, 1, 4), Blocks.STONE);
+        for (int x = 2; x < 7; x++) h.setBlock(new BlockPos(x, 2, 4), Blocks.STONE);
         h.setBlock(chest, Blocks.CHEST);
         router.modules().setStackInSlot(0, module(ModuleKind.SENDER, s -> {
         }));
@@ -123,7 +124,7 @@ public class RouterTests {
 
     @GameTest(template = ROOM)
     public static void boundSenderReachesAnotherDimension(GameTestHelper h) {
-        BlockPos at = new BlockPos(4, 1, 4);
+        BlockPos at = new BlockPos(4, 2, 4);
         RouterBlockEntity router = router(h, at, Direction.NORTH);
         ServerLevel nether = h.getLevel().getServer().getLevel(Level.NETHER);
         h.assertTrue(nether != null, "the nether exists");
@@ -144,7 +145,7 @@ public class RouterTests {
 
     @GameTest(template = ROOM)
     public static void pullerPullsFromBehind(GameTestHelper h) {
-        BlockPos at = new BlockPos(4, 1, 4), chest = at.north();
+        BlockPos at = new BlockPos(4, 2, 4), chest = at.north();
         RouterBlockEntity router = router(h, at, Direction.SOUTH);
         h.setBlock(chest, Blocks.CHEST);
         inventory(h.getBlockEntity(chest)).insertItem(0, new ItemStack(Items.IRON_INGOT, 10), false);
@@ -158,7 +159,7 @@ public class RouterTests {
 
     @GameTest(template = ROOM)
     public static void whitelistTakesOnlyWhatItLists(GameTestHelper h) {
-        BlockPos at = new BlockPos(4, 1, 4), chest = at.south();
+        BlockPos at = new BlockPos(4, 2, 4), chest = at.south();
         RouterBlockEntity router = router(h, at, Direction.SOUTH);
         h.setBlock(chest, Blocks.CHEST);
         router.modules().setStackInSlot(0, module(ModuleKind.SENDER, s -> {
@@ -176,7 +177,7 @@ public class RouterTests {
 
     @GameTest(template = ROOM)
     public static void terminationStopsTheModulesAfter(GameTestHelper h) {
-        BlockPos at = new BlockPos(4, 1, 4), chest = at.south();
+        BlockPos at = new BlockPos(4, 2, 4), chest = at.south();
         RouterBlockEntity router = router(h, at, Direction.SOUTH);
         h.setBlock(chest, Blocks.CHEST);
         router.modules().setStackInSlot(0, module(ModuleKind.SENDER, s -> s.apply(Setting.TERMINATE, 1)));
@@ -194,7 +195,7 @@ public class RouterTests {
 
     @GameTest(template = ROOM)
     public static void distributorTakesTurns(GameTestHelper h) {
-        BlockPos at = new BlockPos(4, 1, 4), a = new BlockPos(1, 1, 1), b = new BlockPos(7, 1, 7);
+        BlockPos at = new BlockPos(4, 2, 4), a = new BlockPos(1, 2, 1), b = new BlockPos(7, 2, 7);
         RouterBlockEntity router = router(h, at, Direction.SOUTH);
         h.setBlock(a, Blocks.CHEST);
         h.setBlock(b, Blocks.CHEST);
@@ -213,7 +214,7 @@ public class RouterTests {
 
     @GameTest(template = ROOM)
     public static void voidDestroys(GameTestHelper h) {
-        RouterBlockEntity router = router(h, new BlockPos(4, 1, 4), Direction.SOUTH);
+        RouterBlockEntity router = router(h, new BlockPos(4, 2, 4), Direction.SOUTH);
         router.modules().setStackInSlot(0, module(ModuleKind.VOID, s -> {
         }));
         router.upgrades().setStackInSlot(0, upgrades(UpgradeKind.STACK, 2));
@@ -227,7 +228,7 @@ public class RouterTests {
 
     @GameTest(template = ROOM)
     public static void dropperDropsInFront(GameTestHelper h) {
-        BlockPos at = new BlockPos(4, 1, 4);
+        BlockPos at = new BlockPos(4, 2, 4);
         RouterBlockEntity router = router(h, at, Direction.SOUTH);
         router.modules().setStackInSlot(0, module(ModuleKind.DROPPER, s -> {
         }));
@@ -240,7 +241,7 @@ public class RouterTests {
 
     @GameTest(template = ROOM)
     public static void placerPlacesAndBreakerBreaks(GameTestHelper h) {
-        BlockPos at = new BlockPos(4, 1, 4), front = at.south();
+        BlockPos at = new BlockPos(4, 2, 4), front = at.south();
         RouterBlockEntity router = router(h, at, Direction.SOUTH);
         router.modules().setStackInSlot(0, module(ModuleKind.PLACER, s -> {
         }));
@@ -266,11 +267,11 @@ public class RouterTests {
 
     @GameTest(template = ROOM)
     public static void vacuumPicksUpItemsAround(GameTestHelper h) {
-        RouterBlockEntity router = router(h, new BlockPos(4, 1, 4), Direction.SOUTH);
+        RouterBlockEntity router = router(h, new BlockPos(4, 2, 4), Direction.SOUTH);
         router.modules().setStackInSlot(0, module(ModuleKind.VACUUM, s -> {
         }));
-        h.spawnItem(Items.GOLD_INGOT, 6.5F, 1.2F, 6.5F);
-        h.spawnItem(Items.GOLD_INGOT, 2.5F, 1.2F, 1.5F);
+        h.spawnItem(Items.GOLD_INGOT, 6.5F, 2.2F, 6.5F);
+        h.spawnItem(Items.GOLD_INGOT, 2.5F, 2.2F, 1.5F);
         run(h, router);
         expect(h, count(inventory(router), Items.GOLD_INGOT), 2, "both picked up");
         h.succeed();
@@ -278,7 +279,7 @@ public class RouterTests {
 
     @GameTest(template = ROOM)
     public static void detectorSignalsWhileTheBufferMatches(GameTestHelper h) {
-        BlockPos at = new BlockPos(4, 1, 4);
+        BlockPos at = new BlockPos(4, 2, 4);
         RouterBlockEntity router = router(h, at, Direction.SOUTH);
         router.modules().setStackInSlot(0, module(ModuleKind.DETECTOR, s -> s.apply(Setting.POWER, 9)));
         router.buffer().setStackInSlot(0, new ItemStack(Items.DIRT));
@@ -293,7 +294,7 @@ public class RouterTests {
 
     @GameTest(template = ROOM)
     public static void extruderBuildsWithASignalAndTakesBackWithout(GameTestHelper h) {
-        BlockPos at = new BlockPos(1, 1, 4);
+        BlockPos at = new BlockPos(1, 2, 4);
         RouterBlockEntity router = router(h, at, Direction.EAST);
         router.modules().setStackInSlot(0, module(ModuleKind.EXTRUDER, s -> {
         }));
@@ -303,12 +304,12 @@ public class RouterTests {
         run(h, router);
         run(h, router);
         run(h, router);
-        for (int x = 2; x <= 4; x++) h.assertBlockPresent(Blocks.STONE, new BlockPos(x, 1, 4));
+        for (int x = 2; x <= 4; x++) h.assertBlockPresent(Blocks.STONE, new BlockPos(x, 2, 4));
         expect(h, buffered(router), 2, "three put out");
         h.setBlock(at.above(), Blocks.AIR);
         h.assertTrue(!router.powered(), "no signal now");
         run(h, router);
-        h.assertBlockPresent(Blocks.AIR, new BlockPos(4, 1, 4));
+        h.assertBlockPresent(Blocks.AIR, new BlockPos(4, 2, 4));
         expect(h, buffered(router), 3, "the last one taken back");
         h.succeed();
     }
@@ -317,7 +318,7 @@ public class RouterTests {
 
     @GameTest(template = ROOM)
     public static void upgradesHaveNoCap(GameTestHelper h) {
-        RouterBlockEntity router = router(h, new BlockPos(4, 1, 4), Direction.SOUTH);
+        RouterBlockEntity router = router(h, new BlockPos(4, 2, 4), Direction.SOUTH);
         expect(h, router.interval(), 20, "ticks between runs without upgrades");
         router.upgrades().setStackInSlot(0, upgrades(UpgradeKind.SPEED, 9));
         expect(h, router.interval(), 2, "nine speed upgrades");
@@ -334,8 +335,8 @@ public class RouterTests {
 
     @GameTest(template = ROOM, timeoutTicks = 120)
     public static void routerRunsOnItsOwnUnlessToldNever(GameTestHelper h) {
-        BlockPos at = new BlockPos(2, 1, 4), chest = at.south();
-        BlockPos at2 = new BlockPos(6, 1, 4), chest2 = at2.south();
+        BlockPos at = new BlockPos(2, 2, 4), chest = at.south();
+        BlockPos at2 = new BlockPos(6, 2, 4), chest2 = at2.south();
         RouterBlockEntity running = router(h, at, Direction.SOUTH);
         RouterBlockEntity never = router(h, at2, Direction.SOUTH);
         h.setBlock(chest, Blocks.CHEST);
@@ -357,7 +358,7 @@ public class RouterTests {
 
     @GameTest(template = ROOM)
     public static void brokenRouterKeepsItsModules(GameTestHelper h) {
-        BlockPos at = new BlockPos(4, 1, 4);
+        BlockPos at = new BlockPos(4, 2, 4);
         RouterBlockEntity router = router(h, at, Direction.SOUTH);
         router.modules().setStackInSlot(0, module(ModuleKind.SENDER, s -> {
         }));
