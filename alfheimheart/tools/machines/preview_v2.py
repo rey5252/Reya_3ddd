@@ -251,6 +251,14 @@ def infuser_extra(img, sh, left, top):
     blit(img, sh, left + f.POOL[0], top + f.POOL[1], (L.POOL_UV[0] + 16, L.POOL_UV[1], L.POOL_UV[0] + 32, L.POOL_UV[1] + 16))
 
 
+def lamp(key):
+    """Only the pool lamp lit: for the machines whose moving parts the preview doesn't draw."""
+    def extra(img, sh, left, top):
+        px, py = dict(L.LAYOUTS)[key.upper()]["pool"]
+        blit(img, sh, left + px, top + py, (L.POOL_UV[0] + 16, L.POOL_UV[1], L.POOL_UV[0] + 32, L.POOL_UV[1] + 16))
+    return extra
+
+
 PREVIEWS = {
     "rune_altar": ("RUNIC ALTAR", ["manasteel_ingot", "mana_powder", "mana_pearl", "rune_mana", "mana_diamond", None, None, None,
                                    "rune_fire", "rune_water", "rune_earth", None, None, None, "livingrock"], altar_extra),
@@ -258,6 +266,16 @@ PREVIEWS = {
                                       "mana_pearl", "manasteel_ingot", None, None, None, None, "alchemy_catalyst"], infuser_extra),
     "terra_plate": ("TERRESTRIAL PLATE", ["manasteel_ingot", None, "mana_pearl", None, "mana_diamond", None,
                                           "terrasteel_ingot", None, None], plate_extra),
+    "pure_daisy": ("PURE DAISY", ["livingrock", "livingrock", None, "livingwood_log", None, None, None, None,
+                                  "livingrock", "livingwood_log", None, None, None, None], lamp("pure_daisy")),
+    "petal_apothecary": ("PETAL APOTHECARY", ["red_petal", "red_petal", "orange_petal", "orange_petal", None, None, None, None, None,
+                                              None, None, None, None, "grass_seeds"], lamp("petal_apothecary")),
+    "petal_farm": ("PETAL FARM", ["pink_mystical_flower", "white_mystical_flower", None, "lime_mystical_flower", None, None,
+                                  "pink_petal", "white_petal", "lime_petal", None, None, None, None, None, "fertilizer"], lamp("petal_farm")),
+    "orechid_mine": ("ORECHID MINE", ["livingrock", "livingrock", None, None,
+                                      None, None, None, None, None, None, None, None, None], lamp("orechid_mine")),
+    "crop_field": ("CROP FIELD", ["grass_seeds", "golden_seeds", None, None, None, None,
+                                  None, None, None, None, None, None, None, None, None, "fertilizer"], lamp("crop_field")),
 }
 
 

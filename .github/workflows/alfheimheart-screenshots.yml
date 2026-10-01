@@ -42,7 +42,12 @@ jobs:
           LIBGL_ALWAYS_SOFTWARE: '1'
         run: |
           chmod +x ./gradlew
-          timeout 2400 xvfb-run -a -s "-screen 0 1920x1080x24" ./gradlew devClasses runClient --stacktrace || true
+          # a maven that is down for a moment fails the build before the game starts: try once more then
+          for attempt in 1 2; do
+            timeout 2400 xvfb-run -a -s "-screen 0 1920x1080x24" ./gradlew devClasses runClient --stacktrace || true
+            ls run/screenshots/*.png >/dev/null 2>&1 && break
+            echo "No screenshots after attempt $attempt"; sleep 60
+          done
           ls -la run/screenshots || true
           grep -n -i "alfheimheart\|exception\|error" run/logs/latest.log | grep -v -i "narrator\|realms" | tail -n 120 || true
       - name: Commit screenshots
