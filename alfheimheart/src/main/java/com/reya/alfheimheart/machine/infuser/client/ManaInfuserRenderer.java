@@ -1,7 +1,6 @@
 package com.reya.alfheimheart.machine.infuser.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.reya.alfheimheart.machine.MachineBlockEntity;
 import com.reya.alfheimheart.machine.client.MachineRender;
 import com.reya.alfheimheart.machine.infuser.ManaInfuserBlockEntity;
@@ -48,30 +47,25 @@ public class ManaInfuserRenderer implements BlockEntityRenderer<ManaInfuserBlock
         if (fill > 0.002F) {
             int frame = (int) (time / 2.0F) % MachineRender.MANA_FRAMES;
             float v1 = frame / (float) MachineRender.MANA_FRAMES, v2 = (frame + 1) / (float) MachineRender.MANA_FRAMES;
-            VertexConsumer mana = buffers.getBuffer(RenderType.entityTranslucent(MachineRender.MANA));
             float bright = 0.85F + 0.15F * MachineRender.pulse(time, 40.0F, 0.0F) + 0.2F * flash;
-            MachineRender.flat(pose, mana, IN1, IN1, IN2, IN2, surface, 0.0F, v1, 1.0F, v2,
+            MachineRender.flat(pose, buffers, RenderType.entityTranslucent(MachineRender.MANA), IN1, IN1, IN2, IN2, surface, 0.0F, v1, 1.0F, v2,
                     Math.min(1.0F, tint[0] * bright), Math.min(1.0F, tint[1] * bright), Math.min(1.0F, tint[2] * bright), 0.92F,
                     LightTexture.FULL_BRIGHT, true);
         }
-
-        VertexConsumer glow = buffers.getBuffer(RenderType.eyes(MachineRender.GLOW));
-        // a ripple after each infusion
+        // the glows (a ripple after each infusion, the light round the item), then the items
         if (flash > 0.0F) {
             float r = (1.0F - flash) * 0.42F + 0.05F;
             float s = flash * 0.7F;
-            MachineRender.flat(pose, glow, 0.5F - r, 0.5F - r, 0.5F + r, 0.5F + r, surface + 0.003F, 0.0F, 0.0F, 1.0F, 1.0F,
-                    tint[0] * 0.5F * s, tint[1] * s, tint[2] * s, 1.0F, LightTexture.FULL_BRIGHT, false);
+            MachineRender.flat(pose, buffers, RenderType.eyes(MachineRender.GLOW), 0.5F - r, 0.5F - r, 0.5F + r, 0.5F + r, surface + 0.003F,
+                    0.0F, 0.0F, 1.0F, 1.0F, tint[0] * 0.5F * s, tint[1] * s, tint[2] * s, 1.0F, LightTexture.FULL_BRIGHT, false);
         }
-
-        // the item on the mana
         ItemStack stack = shownItem(be);
+        float y = surface + 0.1F + 0.03F * Mth.sin(time * 0.12F) + 0.06F * act;
         if (!stack.isEmpty()) {
-            float y = surface + 0.1F + 0.03F * Mth.sin(time * 0.12F) + 0.06F * act;
-            MachineRender.item(items, be.getLevel(), stack, pose, buffers, light, 0.5F, y, 0.5F, 0.42F, time * (2.0F + 6.0F * act));
             float g = act * (0.25F + 0.65F * prog);
-            MachineRender.glow(pose, glow, 0.5F, y + 0.08F, 0.5F, 0.45F + 0.25F * prog * act, 0.35F * g * tint[0], 0.75F * g * tint[1],
+            MachineRender.glow(pose, buffers, 0.5F, y + 0.08F, 0.5F, 0.45F + 0.25F * prog * act, 0.35F * g * tint[0], 0.75F * g * tint[1],
                     g * tint[2]);
+            MachineRender.item(items, be.getLevel(), stack, pose, buffers, light, 0.5F, y, 0.5F, 0.42F, time * (2.0F + 6.0F * act));
         }
         if (flash > 0.0F) {
             float rise = 1.0F - flash;

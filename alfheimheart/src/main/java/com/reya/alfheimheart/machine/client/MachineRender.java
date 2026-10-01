@@ -11,6 +11,7 @@ import com.reya.alfheimheart.machine.MachineBlockEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
@@ -25,6 +26,9 @@ import org.joml.Matrix4f;
  * What the machines' renderers draw alike, in blocks (0 to 1 across the block): soft glows facing the camera,
  * flat overlays on a face, columns of light, floating items. Glows go through an additive render type (eyes):
  * their colour is their strength, and black adds nothing.
+ * <p>
+ * Each helper asks the buffer source for its buffer itself: drawing an item in between ends the batch of
+ * whatever came before, so a buffer can't be kept from one drawing to the next.
  */
 public final class MachineRender {
     public static final ResourceLocation GLOW = texture("glow"), BEAM = texture("beam"), MANA = texture("mana");
@@ -56,8 +60,9 @@ public final class MachineRender {
     }
 
     /** A glow facing the camera round (x, y, z), `size` across, adding the colour (r, g, b). */
-    public static void glow(PoseStack pose, VertexConsumer buffer, float x, float y, float z, float size, float r, float g, float b) {
+    public static void glow(PoseStack pose, MultiBufferSource buffers, float x, float y, float z, float size, float r, float g, float b) {
         if (r + g + b <= 0.005F || size <= 0.001F) return;
+        VertexConsumer buffer = buffers.getBuffer(RenderType.eyes(GLOW));
         pose.pushPose();
         pose.translate(x, y, z);
         pose.mulPose(Minecraft.getInstance().getEntityRenderDispatcher().cameraOrientation());
@@ -80,8 +85,9 @@ public final class MachineRender {
      * A flat square lying at height y over (x1..x2, z1..z2), seen from above (and, for culling render types, from
      * below too when `both`), with the texture's (u1..u2, v1..v2) on it.
      */
-    public static void flat(PoseStack pose, VertexConsumer buffer, float x1, float z1, float x2, float z2, float y,
+    public static void flat(PoseStack pose, MultiBufferSource buffers, RenderType type, float x1, float z1, float x2, float z2, float y,
                             float u1, float v1, float u2, float v2, float r, float g, float b, float a, int light, boolean both) {
+        VertexConsumer buffer = buffers.getBuffer(type);
         Matrix4f m = pose.last().pose();
         Matrix3f n = pose.last().normal();
         vertex(buffer, m, n, x1, y, z1, u1, v1, r, g, b, a, light);
@@ -97,8 +103,9 @@ public final class MachineRender {
     }
 
     /** A column of light from y1 up to y2 over (x, z), `width` across: two crossed panes, fading upwards (beam.png). */
-    public static void beam(PoseStack pose, VertexConsumer buffer, float x, float z, float y1, float y2, float width, float r, float g, float b) {
+    public static void beam(PoseStack pose, MultiBufferSource buffers, float x, float z, float y1, float y2, float width, float r, float g, float b) {
         if (r + g + b <= 0.005F) return;
+        VertexConsumer buffer = buffers.getBuffer(RenderType.eyes(BEAM));
         Matrix4f m = pose.last().pose();
         Matrix3f n = pose.last().normal();
         float h = width / 2.0F;

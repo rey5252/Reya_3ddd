@@ -51,7 +51,7 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
     public static final int INPUTS = 9, OUTPUTS = 9;
     public static final int INPUT_START = 0, OUTPUT_START = INPUTS, SPECIAL_START = INPUTS + OUTPUTS;
     /** The menu's numbers shared by every machine (see {@link #data}); a machine's own follow them. */
-    public static final int BASE_DATA = 12;
+    public static final int BASE_DATA = 14;
     /** Block event: a craft finished (the parameter is the raw id of its first output). */
     public static final int EVENT_CRAFTED = 1;
     public static final String TAG_MANA = "Mana";
@@ -73,7 +73,7 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
     // client side
     private long clientAge;
     private float activity, prevActivity;
-    private int clientMana, clientCapacity = 1, clientCost, clientCharged;
+    private int clientMana, clientCapacity = 1, clientCost, clientCharged, clientTicks, clientMinTicks;
     private float progress, prevProgress;
     private boolean clientWorking;
     private long craftedAt = -1000L;
@@ -400,6 +400,8 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
                 case 9 -> crafts;
                 case 10 -> lastOutput & 0xFFFF;
                 case 11 -> lastOutput >>> 16 & 0xFFFF;
+                case 12 -> jobId != null ? Math.min(jobTicks, 0x7FFF) : 0;
+                case 13 -> jobId != null ? Math.min(jobMinTicks, 0x7FFF) : 0;
                 default -> extraData(index - BASE_DATA) & 0xFFFF;
             };
         }
@@ -476,7 +478,9 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
         be.prevActivity = be.activity;
         be.activity = be.clientWorking ? Math.min(1.0F, be.activity + 0.07F) : Math.max(0.0F, be.activity - 0.05F);
         be.prevProgress = be.progress;
-        float target = be.clientCost > 0 ? Math.min(1.0F, be.clientCharged / (float) be.clientCost) : 0.0F;
+        // between the server's updates the craft's time runs on here
+        if (be.clientWorking && be.clientTicks < be.clientMinTicks) be.clientTicks++;
+        float target = be.craftProgress();
         be.progress = target < be.progress - 0.2F ? target : be.progress + (target - be.progress) * 0.25F;
         be.prevPhase = be.phase;
         be.phase += 1.0F + be.activity * (2.5F + 5.0F * be.progress);
@@ -488,6 +492,14 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
 
     public long clientAge() {
         return clientAge;
+    }
+
+    /** How far a craft is (client side): as far as its mana and its time allow, whichever is behind. */
+    private float craftProgress() {
+        if (clientMinTicks <= 0 && clientCost <= 0) return 0.0F;
+        float time = clientMinTicks > 0 ? Math.min(1.0F, clientTicks / (float) clientMinTicks) : 1.0F;
+        float mana = clientCost > 0 ? Math.min(1.0F, clientCharged / (float) clientCost) : 1.0F;
+        return Math.min(time, mana);
     }
 
     /** 0 (idle) to 1 (working), eased. */
@@ -587,6 +599,8 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
         tag.putInt("Capacity", capacity());
         tag.putInt("JobCost", jobId != null ? jobCost : 0);
         tag.putInt("JobCharged", jobId != null ? jobCharged : 0);
+        tag.putInt("JobTicks", jobId != null ? jobTicks : 0);
+        tag.putInt("JobMinTicks", jobId != null ? jobMinTicks : 0);
         tag.putBoolean("Working", status == MachineStatus.WORKING);
         return tag;
     }
@@ -617,6 +631,8 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
         clientCapacity = Math.max(1, tag.getInt("Capacity"));
         clientCost = tag.getInt("JobCost");
         clientCharged = tag.getInt("JobCharged");
+        clientTicks = tag.getInt("JobTicks");
+        clientMinTicks = tag.getInt("JobMinTicks");
         clientWorking = tag.getBoolean("Working");
     }
 

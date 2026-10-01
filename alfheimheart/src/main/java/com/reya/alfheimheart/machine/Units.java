@@ -59,34 +59,38 @@ public final class Units {
 
     /**
      * One item for each of the ingredients from the slots [from, to), or null if some ingredient finds none.
-     * The ingredients that fewest items fit go first, so a broad one (a tag) doesn't take what a narrow one needs.
+     * The ingredients that fewest items fit choose first, so a broad one (a tag) doesn't take what a narrow one
+     * needs; the items come back in the recipe's own order (Botania's recipes match an item to the first
+     * ingredient that takes it, so in that order they always match).
      */
     @Nullable
     public static Pick pick(IItemHandler items, int from, int to, List<Ingredient> ingredients) {
         int[] left = new int[to - from];
         for (int i = 0; i < left.length; i++) left[i] = items.getStackInSlot(from + i).getCount();
-        List<Ingredient> order = new ArrayList<>();
-        for (Ingredient ingredient : ingredients) {
-            if (!ingredient.isEmpty()) order.add(ingredient);
+        List<Integer> order = new ArrayList<>();
+        for (int k = 0; k < ingredients.size(); k++) {
+            if (!ingredients.get(k).isEmpty()) order.add(k);
         }
         if (order.isEmpty()) return null;
-        order.sort(Comparator.comparingInt(ingredient -> ingredient.getItems().length));
+        order.sort(Comparator.comparingInt(k -> ingredients.get(k).getItems().length));
         int[] taken = new int[to - from];
-        List<ItemStack> units = new ArrayList<>();
-        for (Ingredient ingredient : order) {
-            boolean found = false;
-            for (int i = 0; i < left.length; i++) {
+        ItemStack[] chosen = new ItemStack[ingredients.size()];
+        for (int k : order) {
+            Ingredient ingredient = ingredients.get(k);
+            for (int i = 0; i < left.length && chosen[k] == null; i++) {
                 if (left[i] <= 0) continue;
                 ItemStack stack = items.getStackInSlot(from + i);
                 if (ingredient.test(stack)) {
                     left[i]--;
                     taken[i]++;
-                    units.add(stack.copyWithCount(1));
-                    found = true;
-                    break;
+                    chosen[k] = stack.copyWithCount(1);
                 }
             }
-            if (!found) return null;
+            if (chosen[k] == null) return null;
+        }
+        List<ItemStack> units = new ArrayList<>();
+        for (ItemStack unit : chosen) {
+            if (unit != null) units.add(unit);
         }
         return new Pick(taken, units);
     }

@@ -127,9 +127,22 @@ public abstract class MachineMenu extends AbstractContainerMenu {
         return wide(6);
     }
 
+    /** The craft's ticks so far, and its shortest time. */
+    public int jobTicks() {
+        return data.get(12) & 0x7FFF;
+    }
+
+    public int jobMinTicks() {
+        return data.get(13) & 0x7FFF;
+    }
+
+    /** How far the craft is: as far as its mana and its time allow, whichever is behind (0 without one). */
     public float progress() {
-        int cost = jobCost();
-        return cost <= 0 ? (working() ? 1.0F : 0.0F) : Math.min(1.0F, jobCharged() / (float) cost);
+        if (!working()) return 0.0F;
+        int cost = jobCost(), minTicks = jobMinTicks();
+        float mana = cost > 0 ? Math.min(1.0F, jobCharged() / (float) cost) : 1.0F;
+        float time = minTicks > 0 ? Math.min(1.0F, jobTicks() / (float) minTicks) : 1.0F;
+        return Math.min(mana, time);
     }
 
     private int flags() {
