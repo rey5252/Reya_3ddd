@@ -42,7 +42,7 @@ public final class MachineRender {
     /** The items in the input slots, one of each slot, at most `max` (what the machine is about to use). */
     public static List<ItemStack> inputs(MachineBlockEntity be, int max) {
         List<ItemStack> out = new ArrayList<>();
-        for (int i = 0; i < MachineBlockEntity.INPUTS && out.size() < max; i++) {
+        for (int i = 0; i < be.inputCount() && out.size() < max; i++) {
             ItemStack stack = be.clientItems().get(MachineBlockEntity.INPUT_START + i);
             if (!stack.isEmpty()) out.add(stack.copyWithCount(1));
         }

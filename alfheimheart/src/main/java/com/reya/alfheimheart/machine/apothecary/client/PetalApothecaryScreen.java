@@ -5,7 +5,6 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.reya.alfheimheart.AlfheimHeart;
 import com.reya.alfheimheart.greenhouse.Format;
 import com.reya.alfheimheart.machine.MachineBlockEntity;
 import com.reya.alfheimheart.machine.apothecary.PetalApothecaryBlockEntity;
@@ -14,7 +13,6 @@ import com.reya.alfheimheart.machine.client.MachineScreen;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
@@ -27,7 +25,6 @@ import net.minecraft.world.item.Items;
  * a ring of light closing round it; when it is done the water splashes and the flower flies out to the outputs.
  */
 public class PetalApothecaryScreen extends MachineScreen<PetalApothecaryMenu> {
-    public static final ResourceLocation PANEL = new ResourceLocation(AlfheimHeart.MODID, "textures/gui/petal_apothecary.png");
     // the bowl (tools/machines/layout.py BOWL; check_layout.py keeps these in step)
     static final int BOWL_X = 120, BOWL_Y = 46, WATER_RX = 21, WATER_RY = 5;
     static final int ITEM_X = 120, ITEM_Y = 22, ITEM_RING_R = 11;
@@ -44,7 +41,7 @@ public class PetalApothecaryScreen extends MachineScreen<PetalApothecaryMenu> {
     private long moteAt;
 
     public PetalApothecaryScreen(PetalApothecaryMenu menu, Inventory inventory, Component title) {
-        super(menu, inventory, title, PANEL, ITEM_X, ITEM_Y, GEM_X, GEM_Y);
+        super(menu, inventory, title);
     }
 
     @Override

@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.reya.alfheimheart.AlfheimHeart;
 import com.reya.alfheimheart.greenhouse.Format;
 import com.reya.alfheimheart.machine.MachineBlockEntity;
 import com.reya.alfheimheart.machine.client.MachineScreen;
@@ -14,7 +13,6 @@ import com.reya.alfheimheart.machine.orechid.OrechidMineMenu;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.player.Inventory;
@@ -28,7 +26,6 @@ import net.minecraft.world.item.ItemStack;
  * it became shines on its socket as it flies to the outputs.
  */
 public class OrechidMineScreen extends MachineScreen<OrechidMineMenu> {
-    public static final ResourceLocation PANEL = new ResourceLocation(AlfheimHeart.MODID, "textures/gui/orechid_mine.png");
     // the window and its sockets (tools/machines/layout.py MINE; check_layout.py keeps these in step)
     static final int MINE_X = 120, MINE_Y = 50, MINE_R = 19, ROCK_R = 15, ORE_R = 30, HEART_R = 37;
     static final int GEM_X = 120, GEM_Y = 31;
@@ -61,7 +58,7 @@ public class OrechidMineScreen extends MachineScreen<OrechidMineMenu> {
     private float chase;
 
     public OrechidMineScreen(OrechidMineMenu menu, Inventory inventory, Component title) {
-        super(menu, inventory, title, PANEL, MINE_X, MINE_Y, GEM_X, GEM_Y);
+        super(menu, inventory, title);
     }
 
     @Override
@@ -76,7 +73,7 @@ public class OrechidMineScreen extends MachineScreen<OrechidMineMenu> {
         ores.clear();
         weights.clear();
         total = 0;
-        for (int i = 0; i < MachineBlockEntity.INPUTS; i++) {
+        for (int i = 0; i < menu.layout().inputCount(); i++) {
             ItemStack stack = menu.items().getStackInSlot(MachineBlockEntity.INPUT_START + i);
             if (stack.isEmpty()) continue;
             Map<Item, Integer> chances = OrechidMineBlockEntity.chances(minecraft.level, stack);

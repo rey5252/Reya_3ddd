@@ -7,6 +7,8 @@ import javax.annotation.Nullable;
 import com.reya.alfheimheart.AlfheimHeart;
 import com.reya.alfheimheart.machine.MachineBlockEntity;
 import com.reya.alfheimheart.machine.MachineConfig;
+import com.reya.alfheimheart.machine.MachineLayout;
+import com.reya.alfheimheart.machine.MachineLayouts;
 import com.reya.alfheimheart.machine.Units;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -31,10 +33,14 @@ import vazkii.botania.common.handler.BotaniaSounds;
  * which it holds in a store of a million.
  */
 public class TerraPlateBlockEntity extends MachineBlockEntity {
+    public static final MachineLayout LAYOUT = MachineLayouts.TERRA_PLATE;
+    /** Its slots (its layout's): the inputs, the outputs from OUTPUT_START, the special slots from SPECIAL_START. */
+    public static final int INPUTS = LAYOUT.inputCount(), OUTPUTS = LAYOUT.outputCount(), OUTPUT_START = LAYOUT.outputStart(),
+            SPECIAL_START = LAYOUT.specialStart();
     public static final int SLOTS = SPECIAL_START;
 
     public TerraPlateBlockEntity(BlockPos pos, BlockState state) {
-        super(AlfheimHeart.TERRA_PLATE_BE.get(), pos, state, 0);
+        super(AlfheimHeart.TERRA_PLATE_BE.get(), pos, state, LAYOUT);
     }
 
     @Override

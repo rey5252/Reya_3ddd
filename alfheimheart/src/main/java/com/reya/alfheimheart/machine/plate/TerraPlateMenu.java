@@ -22,6 +22,6 @@ public class TerraPlateMenu extends MachineMenu {
     }
 
     public TerraPlateMenu(int id, Inventory inventory, @Nullable MachineBlockEntity machine, IItemHandler items, ContainerData data) {
-        super(AlfheimHeart.TERRA_PLATE_MENU.get(), id, inventory, machine, items, data, new int[0][]);
+        super(AlfheimHeart.TERRA_PLATE_MENU.get(), id, inventory, machine, items, data, TerraPlateBlockEntity.LAYOUT);
     }
 }

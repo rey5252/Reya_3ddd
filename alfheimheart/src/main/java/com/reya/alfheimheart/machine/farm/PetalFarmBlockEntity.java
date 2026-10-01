@@ -10,6 +10,8 @@ import javax.annotation.Nullable;
 import com.reya.alfheimheart.AlfheimHeart;
 import com.reya.alfheimheart.machine.MachineBlockEntity;
 import com.reya.alfheimheart.machine.MachineConfig;
+import com.reya.alfheimheart.machine.MachineLayout;
+import com.reya.alfheimheart.machine.MachineLayouts;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -33,13 +35,17 @@ import vazkii.botania.client.fx.WispParticleData;
  * in the slot under the bed doubles a cycle's petals.
  */
 public class PetalFarmBlockEntity extends MachineBlockEntity {
+    public static final MachineLayout LAYOUT = MachineLayouts.PETAL_FARM;
+    /** Its slots (its layout's): the inputs, the outputs from OUTPUT_START, the special slots from SPECIAL_START. */
+    public static final int INPUTS = LAYOUT.inputCount(), OUTPUTS = LAYOUT.outputCount(), OUTPUT_START = LAYOUT.outputStart(),
+            SPECIAL_START = LAYOUT.specialStart();
     public static final int FERTILIZER = SPECIAL_START;
     public static final int SLOTS = SPECIAL_START + 1;
     private static final ResourceLocation JOB = new ResourceLocation(AlfheimHeart.MODID, "petal_farm");
     private static final String[] FLOWERS = {"_mystical_flower", "_double_flower"};
 
     public PetalFarmBlockEntity(BlockPos pos, BlockState state) {
-        super(AlfheimHeart.PETAL_FARM_BE.get(), pos, state, 1);
+        super(AlfheimHeart.PETAL_FARM_BE.get(), pos, state, LAYOUT);
     }
 
     @Override

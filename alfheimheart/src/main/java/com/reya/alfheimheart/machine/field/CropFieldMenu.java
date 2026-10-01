@@ -14,7 +14,7 @@ import net.minecraftforge.items.IItemHandler;
 /** The Crop Field's menu: the machine's layout, and the bone meal slot under the field. */
 public class CropFieldMenu extends MachineMenu {
     /** The bone meal slot's item corner (tools/machines/layout.py FIELD.SLOT). */
-    public static final int FERTILIZER_X = 112, FERTILIZER_Y = 84;
+    public static final int FERTILIZER_X = CropFieldBlockEntity.LAYOUT.special[0][0], FERTILIZER_Y = CropFieldBlockEntity.LAYOUT.special[0][1];
 
     public CropFieldMenu(int id, Inventory inventory, FriendlyByteBuf buf) {
         this(id, inventory, clientMachine(inventory, buf));
@@ -25,6 +25,6 @@ public class CropFieldMenu extends MachineMenu {
     }
 
     public CropFieldMenu(int id, Inventory inventory, @Nullable MachineBlockEntity machine, IItemHandler items, ContainerData data) {
-        super(AlfheimHeart.CROP_FIELD_MENU.get(), id, inventory, machine, items, data, new int[][]{{FERTILIZER_X, FERTILIZER_Y}});
+        super(AlfheimHeart.CROP_FIELD_MENU.get(), id, inventory, machine, items, data, CropFieldBlockEntity.LAYOUT);
     }
 }

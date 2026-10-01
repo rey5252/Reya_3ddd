@@ -10,6 +10,8 @@ import javax.annotation.Nullable;
 import com.reya.alfheimheart.AlfheimHeart;
 import com.reya.alfheimheart.machine.MachineBlockEntity;
 import com.reya.alfheimheart.machine.MachineConfig;
+import com.reya.alfheimheart.machine.MachineLayout;
+import com.reya.alfheimheart.machine.MachineLayouts;
 import com.reya.alfheimheart.machine.Units;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -40,12 +42,16 @@ import vazkii.botania.client.fx.SparkleParticleData;
  * time, for the flowers' mana a block.
  */
 public class OrechidMineBlockEntity extends MachineBlockEntity {
+    public static final MachineLayout LAYOUT = MachineLayouts.ORECHID_MINE;
+    /** Its slots (its layout's): the inputs, the outputs from OUTPUT_START, the special slots from SPECIAL_START. */
+    public static final int INPUTS = LAYOUT.inputCount(), OUTPUTS = LAYOUT.outputCount(), OUTPUT_START = LAYOUT.outputStart(),
+            SPECIAL_START = LAYOUT.specialStart();
     public static final int SLOTS = SPECIAL_START;
     /** The recipe types it works by, in the order it tries them. */
     public static final ResourceLocation[] TYPES = {OrechidRecipe.TYPE_ID, OrechidRecipe.IGNEM_TYPE_ID, OrechidRecipe.MARIMORPHOSIS_TYPE_ID};
 
     public OrechidMineBlockEntity(BlockPos pos, BlockState state) {
-        super(AlfheimHeart.ORECHID_MINE_BE.get(), pos, state, 0);
+        super(AlfheimHeart.ORECHID_MINE_BE.get(), pos, state, LAYOUT);
     }
 
     @Override

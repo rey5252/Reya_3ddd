@@ -204,56 +204,58 @@ final class MachineShots {
         if (level.getBlockEntity(ALTAR) instanceof RuneAltarBlockEntity altar) {
             set(altar, MachineBlockEntity.INPUT_START, stack("botania", "mana_powder", 64), stack("botania", "manasteel_ingot", 64),
                     stack("minecraft", "nether_brick", 64), stack("minecraft", "gunpowder", 64), stack("minecraft", "nether_wart", 64));
-            set(altar, MachineBlockEntity.OUTPUT_START, stack("botania", "rune_fire", 6), stack("botania", "rune_water", 4),
+            set(altar, altar.outputStart(), stack("botania", "rune_fire", 6), stack("botania", "rune_water", 4),
                     stack("botania", "rune_earth", 2));
             altar.items().setStackInSlot(RuneAltarBlockEntity.REAGENT, stack("botania", "livingrock", 32));
         }
         if (level.getBlockEntity(PLATE) instanceof MachineBlockEntity plate) {
             set(plate, MachineBlockEntity.INPUT_START, stack("botania", "manasteel_ingot", 16), stack("botania", "mana_pearl", 16),
                     stack("botania", "mana_diamond", 16));
-            set(plate, MachineBlockEntity.OUTPUT_START, stack("botania", "terrasteel_ingot", 3));
+            set(plate, plate.outputStart(), stack("botania", "terrasteel_ingot", 3));
         }
         if (level.getBlockEntity(INFUSER) instanceof ManaInfuserBlockEntity infuser) {
             set(infuser, MachineBlockEntity.INPUT_START, stack("minecraft", "iron_ingot", 64), stack("minecraft", "diamond", 32),
                     stack("minecraft", "ender_pearl", 16), stack("minecraft", "glass", 64));
-            set(infuser, MachineBlockEntity.OUTPUT_START, stack("botania", "manasteel_ingot", 24));
+            set(infuser, infuser.outputStart(), stack("botania", "manasteel_ingot", 24));
         }
         if (level.getBlockEntity(DAISY) instanceof MachineBlockEntity daisy) {
             set(daisy, MachineBlockEntity.INPUT_START, stack("minecraft", "stone", 64), stack("minecraft", "oak_log", 32),
                     stack("minecraft", "netherrack", 16));
-            set(daisy, MachineBlockEntity.OUTPUT_START, stack("botania", "livingrock", 24));
+            set(daisy, daisy.outputStart(), stack("botania", "livingrock", 24));
         }
         if (level.getBlockEntity(APOTHECARY) instanceof PetalApothecaryBlockEntity apothecary) {
             set(apothecary, MachineBlockEntity.INPUT_START, stack("botania", "brown_petal", 16), stack("botania", "red_petal", 16),
                     stack("botania", "light_gray_petal", 16));
-            set(apothecary, MachineBlockEntity.OUTPUT_START, stack("botania", "endoflame", 2));
+            set(apothecary, apothecary.outputStart(), stack("botania", "endoflame", 2));
             apothecary.items().setStackInSlot(PetalApothecaryBlockEntity.REAGENT, stack("minecraft", "wheat_seeds", 16));
         }
         if (level.getBlockEntity(FARM) instanceof PetalFarmBlockEntity farm) {
             set(farm, MachineBlockEntity.INPUT_START, stack("botania", "pink_mystical_flower", 16), stack("botania", "light_blue_mystical_flower", 32),
                     stack("botania", "yellow_mystical_flower", 8), stack("botania", "magenta_mystical_flower", 12),
                     stack("botania", "white_mystical_flower", 4), stack("botania", "lime_mystical_flower", 20));
-            set(farm, MachineBlockEntity.OUTPUT_START, stack("botania", "pink_petal", 9), stack("botania", "light_blue_petal", 12),
+            set(farm, farm.outputStart(), stack("botania", "pink_petal", 9), stack("botania", "light_blue_petal", 12),
                     stack("botania", "yellow_petal", 5));
             farm.items().setStackInSlot(PetalFarmBlockEntity.FERTILIZER, stack("minecraft", "bone_meal", 16));
         }
         if (level.getBlockEntity(MINE) instanceof MachineBlockEntity mine) {
             set(mine, MachineBlockEntity.INPUT_START, stack("minecraft", "stone", 64), stack("minecraft", "netherrack", 32),
                     stack("minecraft", "deepslate", 16));
-            set(mine, MachineBlockEntity.OUTPUT_START, stack("minecraft", "coal_ore", 9), stack("minecraft", "iron_ore", 5),
+            set(mine, mine.outputStart(), stack("minecraft", "coal_ore", 9), stack("minecraft", "iron_ore", 5),
                     stack("minecraft", "copper_ore", 4), stack("minecraft", "gold_ore", 1));
         }
         if (level.getBlockEntity(FIELD) instanceof CropFieldBlockEntity field) {
             set(field, MachineBlockEntity.INPUT_START, stack("minecraft", "wheat_seeds", 32), stack("minecraft", "carrot", 16),
                     stack("minecraft", "potato", 16), stack("minecraft", "beetroot_seeds", 8), stack("minecraft", "melon_seeds", 4),
                     stack("minecraft", "sugar_cane", 8));
-            set(field, MachineBlockEntity.OUTPUT_START, stack("minecraft", "wheat", 12), stack("minecraft", "carrot", 20));
+            set(field, field.outputStart(), stack("minecraft", "wheat", 12), stack("minecraft", "carrot", 20));
             field.items().setStackInSlot(CropFieldBlockEntity.FERTILIZER, stack("minecraft", "bone_meal", 16));
         }
     }
 
+    /** Fills the inputs (from INPUT_START) or the outputs (from outputStart) with the stacks, emptying the rest of them. */
     private static void set(MachineBlockEntity be, int from, ItemStack... stacks) {
-        for (int i = 0; i < MachineBlockEntity.INPUTS; i++) {
+        int n = from == MachineBlockEntity.INPUT_START ? be.inputCount() : be.outputCount();
+        for (int i = 0; i < n; i++) {
             be.items().setStackInSlot(from + i, i < stacks.length ? stacks[i] : ItemStack.EMPTY);
         }
         be.setChanged();

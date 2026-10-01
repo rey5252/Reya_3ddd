@@ -6,7 +6,6 @@ import javax.annotation.Nullable;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.math.Axis;
-import com.reya.alfheimheart.AlfheimHeart;
 import com.reya.alfheimheart.greenhouse.Format;
 import com.reya.alfheimheart.machine.MachineBlockEntity;
 import com.reya.alfheimheart.machine.client.MachineScreen;
@@ -15,7 +14,6 @@ import com.reya.alfheimheart.machine.farm.PetalFarmMenu;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
@@ -28,7 +26,6 @@ import net.minecraft.world.item.Items;
  * and the harvest flies to the outputs.
  */
 public class PetalFarmScreen extends MachineScreen<PetalFarmMenu> {
-    public static final ResourceLocation PANEL = new ResourceLocation(AlfheimHeart.MODID, "textures/gui/petal_farm.png");
     // the planter (tools/machines/layout.py FARM; check_layout.py keeps these in step)
     static final int BED_X1 = 88, SOIL_Y = 50, BED_X2 = 152, BED_Y2 = 72, SOIL_TOP = 45;
     static final int SUN_X = 120, SUN_Y = 46, SUN_R = 31;
@@ -42,7 +39,7 @@ public class PetalFarmScreen extends MachineScreen<PetalFarmMenu> {
     private long moteAt;
 
     public PetalFarmScreen(PetalFarmMenu menu, Inventory inventory, Component title) {
-        super(menu, inventory, title, PANEL, SUN_X, SOIL_Y - 6, GEM_X, GEM_Y);
+        super(menu, inventory, title);
     }
 
     @Override

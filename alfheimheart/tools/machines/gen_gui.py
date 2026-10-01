@@ -1,15 +1,9 @@
-"""The machines' GUI panels in the living-wood style, all on the same layout (layout.py): livingwood planks
+"""The first-generation machines' GUI panels in the living-wood style, all on the same layout (layout.py): livingwood planks
 framed with livingrock, mana crystals on the corners, the input slots on the left (livingrock rims), the
 output slots on the right (gold rims), a special slot (mana-blue rim) under the heart where a machine has one,
 the arrows, the mana bar, the player's inventory on a panel hanging under it. Each machine's heart is drawn
-in the middle:
+in the middle (the Runic Altar's and the Terrestrial Plate's own looks are gen_v2.py's):
 
-  rune_altar.png    the altar's round top seen from above: a gold-rimmed livingrock disc with eight runes
-                    carved round a dark hollow (the rune takes shape there), a keystone gem, a ring inlaid
-                    in the wood round it (the ingredients circle along it), its stem down to the reagent slot
-  terra_plate.png   the plate: a livingrock octagon with a lapis field and a pale sun pattern, a dark core
-                    (the light gathers there), three sockets on a ring round it (the ingredients hover over
-                    them), a gem on its rim
   mana_infuser.png  a little mana pool seen from a little above: a livingrock rim round the mana (the screen
                     draws it), its front wall with a gem set in it, its stand down to the catalyst slot; a
                     carved ring over it where the item being infused floats
@@ -31,7 +25,7 @@ import sys
 
 from pix import Canvas, ASSETS, mix, shade, hexc, rnd2
 from layout import (M, W, H, MACHINE_H, INV_X1, INV_X2, INPUT, OUTPUT, INV_Y, HOTBAR_Y, INV_SLOT_X, ARROWS, BAR,
-                    LIGHTS, ALTAR, PLATE, POOL_, DAISY, BOWL, FARM, MINE, FIELD)
+                    LIGHTS, POOL_, DAISY, BOWL, FARM, MINE, FIELD)
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "lib"))
 import wood as WD  # noqa: E402
@@ -39,8 +33,6 @@ import wood as WD  # noqa: E402
 WOOD, LR, MANA, GOLD = WD.WOOD, WD.LR, WD.MANA, WD.GOLD
 OUTLINE = WOOD[6]
 LIGHT_DIR = (-0.62, -0.78)
-LAPIS = [hexc(h) for h in ("4A7CE0", "3361C6", "254CA8", "1B3A88", "122966")]
-TEAL = [hexc(h) for h in ("D8FFF6", "8FF0DE", "4FC9C4", "2C8F98")]
 HOLLOW = (hexc("12345E"), hexc("060E1C"))
 GRASS = [hexc(h) for h in ("9BE36A", "6FC24A", "4E9E38", "37782C", "245420")]
 SOIL = [hexc(h) for h in ("5A3B22", "43291A", "2E1C12", "1C110B")]
@@ -159,9 +151,10 @@ def base(cv, heart):
     decorations(cv)
 
 
-# ---------------------------------------------------------------- the Runic Altar
+# ---------------------------------------------------------------- runes and sockets
 
-# the altar's runes, 5x5: water, fire, earth, air, mana, spring, summer, winter (the sheet has them lit, in order)
+# the first Runic Altar's runes, 5x5: water, fire, earth, air, mana, spring, summer, winter (the shared sheet has
+# them lit, in order)
 ALTAR_GLYPHS = [
     ["..#..", ".###.", "##.##", "#...#", ".###."],
     ["..#..", ".#.#.", ".#..#", "#.#.#", ".###."],
@@ -171,136 +164,6 @@ ALTAR_GLYPHS = [
     ["#...#", ".#.#.", "..#..", "..#..", ".###."],
     ["#.#.#", ".###.", "##.##", ".###.", "#.#.#"],
     ["#.#.#", ".###.", "#####", ".###.", "#.#.#"]]
-
-
-def altar_disc(cv):
-    """The altar's top: a dark outline, a gold rim, a band of livingrock with the runes carved in it, a thin
-    gold inner rim and the dark hollow, all lit from the top-left (the hollow's rim the other way)."""
-    cx, cy = ALTAR.CENTER
-    r, rr = ALTAR.R, ALTAR.RECESS_R
-    for y in range(int(cy - r) - 1, int(cy + r) + 2):
-        for x in range(int(cx - r) - 1, int(cx + r) + 2):
-            px, py = x + 0.5 - cx, y + 0.5 - cy
-            d = math.hypot(px, py)
-            if d > r:
-                continue
-            lit = (px * LIGHT_DIR[0] + py * LIGHT_DIR[1]) / max(d, 0.001)
-            hi, lo = lit > 0.35, lit < -0.35
-            if d > r - 1:
-                c = OUTLINE
-            elif d > r - 3:
-                c = GOLD[1] if hi else (GOLD[3] if lo else GOLD[2])
-            elif d > rr + 1.5:
-                t = (d - (rr + 1.5)) / float(r - 3 - (rr + 1.5))
-                c = LR[0] if hi else (LR[2] if lo else LR[1])
-                c = mix(c, LR[3], 0.25 * (1.0 - t))
-                if rnd2(x, y, 23) < 0.08:
-                    c = mix(c, LR[3], 0.4)
-            elif d > rr + 0.5:
-                c = GOLD[2] if lo else GOLD[3]
-            elif d > rr - 0.5:
-                c = OUTLINE
-            else:
-                c = hollow_color(d, rr, x, y, 51)
-            cv.set(x, y, c)
-    for (gx, gy), g in zip(ALTAR.RUNES, ALTAR_GLYPHS):
-        for j, row in enumerate(g):
-            for i, ch in enumerate(row):
-                if ch == "#":
-                    cv.set(gx + i, gy + j, mix(LR[3], LR[4], 0.35))
-
-
-STONE = ["...o...",
-         "..oLo..",
-         ".oLlmo.",
-         "oLlgmDo",
-         ".omDDo.",
-         "..oDo..",
-         "...o..."]
-
-
-def stone(cv, x, y):
-    """A little livingrock diamond (7x7 round the pixel (x, y)) with a gold heart: the altar's stones down to
-    the reagent slot, which the screen lights as the livingrock is used."""
-    cv.sprite(STONE, x - 3, y - 3, {"o": OUTLINE, "L": LR[0], "l": LR[1], "m": LR[2], "D": LR[3], "g": GOLD[1]})
-
-
-def altar(cv):
-    cx, cy = ALTAR.CENTER
-    WD.inlay_ring(cv, cx, cy, ALTAR.ORBIT_R)
-    WD.carved_runes(cv, cx, cy, ALTAR.ORBIT_R + 6, 12,
-                    skip=lambda x, y: y > cy + 8 or y < 9 or x < INPUT[0] + 58 or x > OUTPUT[0] - 4)
-    sx, sy = ALTAR.SLOT
-    for (gx, gy) in ALTAR.STONES:
-        stone(cv, gx, gy)
-    altar_disc(cv)
-    gem_socket(cv, *ALTAR.GEM)
-    special_slot(cv, sx, sy)
-
-
-# ---------------------------------------------------------------- the Terrestrial Plate
-
-OCT_NORMALS = [(math.cos(math.radians(a)), math.sin(math.radians(a))) for a in range(0, 360, 45)]
-
-
-def oct_depth(px, py, r):
-    """How far inside the octagon of inradius r the point is, and the outward normal of its nearest edge."""
-    best, normal = None, (0.0, 0.0)
-    for (nx, ny) in OCT_NORMALS:
-        d = r - (px * nx + py * ny)
-        if best is None or d < best:
-            best, normal = d, (nx, ny)
-    return best, normal
-
-
-def plate_field(px, py, x, y):
-    """The plate's lapis field with its pale sun: a ring and eight rays round the core."""
-    d = math.hypot(px, py)
-    t = (py + PLATE.R) / (2.0 * PLATE.R)
-    c = mix(LAPIS[1], LAPIS[3], t)
-    if rnd2(x, y, 31) < 0.12:
-        c = mix(c, LAPIS[0] if rnd2(x, y, 32) < 0.5 else LAPIS[4], 0.45)
-    if abs(d - 12.5) < 0.6:
-        return TEAL[2] if py < 0 else TEAL[3]
-    ang = math.atan2(py, px)
-    k = round(ang / (math.pi / 4.0))
-    off = abs(ang - k * math.pi / 4.0) * d
-    if 8.0 < d < 17.5 and off < 0.6:
-        return TEAL[1] if d < 12.5 else TEAL[2]
-    if 17.5 <= d < 18.6 and off < 1.1:
-        return TEAL[0]
-    return c
-
-
-def plate(cv):
-    cx, cy = PLATE.CENTER
-    WD.inlay_ring(cv, cx, cy, PLATE.SOCKET_R)
-    r = PLATE.R
-    for y in range(cy - r - 2, cy + r + 3):
-        for x in range(cx - r - 2, cx + r + 3):
-            px, py = x + 0.5 - cx, y + 0.5 - cy
-            depth, (nx, ny) = oct_depth(px, py, r)
-            if depth <= 0:
-                continue
-            lit = nx * LIGHT_DIR[0] + ny * LIGHT_DIR[1]
-            hi, lo = lit > 0.3, lit < -0.3
-            d = math.hypot(px, py)
-            if depth < 1:
-                c = OUTLINE
-            elif depth < 3:
-                c = LR[0] if hi else (LR[3] if lo else LR[1])
-            elif depth < 4:
-                c = GOLD[3] if hi else GOLD[2]
-            elif d > PLATE.CORE_R + 1:
-                c = plate_field(px, py, x, y)
-            elif d > PLATE.CORE_R:
-                c = GOLD[2] if py > 0 else GOLD[3]
-            else:
-                c = hollow_color(d, PLATE.CORE_R, x, y, 61)
-            cv.set(x, y, c)
-    for (sx, sy) in PLATE.SOCKETS:
-        socket(cv, sx, sy, PLATE.SOCKET_SIZE)
-    gem_socket(cv, *PLATE.GEM)
 
 
 def socket(cv, sx, sy, r):
@@ -683,8 +546,8 @@ def field(cv):
 
 # ---------------------------------------------------------------- build
 
-MACHINES = {"rune_altar": altar, "terra_plate": plate, "mana_infuser": pool, "pure_daisy": daisy, "petal_apothecary": bowl,
-            "petal_farm": farm, "orechid_mine": mine, "crop_field": field}
+MACHINES = {"mana_infuser": pool, "pure_daisy": daisy, "petal_apothecary": bowl, "petal_farm": farm, "orechid_mine": mine,
+            "crop_field": field}
 
 
 def build(name):

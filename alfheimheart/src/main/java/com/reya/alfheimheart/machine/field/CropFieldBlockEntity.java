@@ -8,6 +8,8 @@ import javax.annotation.Nullable;
 import com.reya.alfheimheart.AlfheimHeart;
 import com.reya.alfheimheart.machine.MachineBlockEntity;
 import com.reya.alfheimheart.machine.MachineConfig;
+import com.reya.alfheimheart.machine.MachineLayout;
+import com.reya.alfheimheart.machine.MachineLayouts;
 import com.reya.alfheimheart.machine.Units;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -45,12 +47,16 @@ import vazkii.botania.client.fx.WispParticleData;
  * for a little mana a harvest; bone meal in the slot under the field doubles a cycle's harvest.
  */
 public class CropFieldBlockEntity extends MachineBlockEntity {
+    public static final MachineLayout LAYOUT = MachineLayouts.CROP_FIELD;
+    /** Its slots (its layout's): the inputs, the outputs from OUTPUT_START, the special slots from SPECIAL_START. */
+    public static final int INPUTS = LAYOUT.inputCount(), OUTPUTS = LAYOUT.outputCount(), OUTPUT_START = LAYOUT.outputStart(),
+            SPECIAL_START = LAYOUT.specialStart();
     public static final int FERTILIZER = SPECIAL_START;
     public static final int SLOTS = SPECIAL_START + 1;
     private static final ResourceLocation JOB = new ResourceLocation(AlfheimHeart.MODID, "crop_field");
 
     public CropFieldBlockEntity(BlockPos pos, BlockState state) {
-        super(AlfheimHeart.CROP_FIELD_BE.get(), pos, state, 1);
+        super(AlfheimHeart.CROP_FIELD_BE.get(), pos, state, LAYOUT);
     }
 
     @Override

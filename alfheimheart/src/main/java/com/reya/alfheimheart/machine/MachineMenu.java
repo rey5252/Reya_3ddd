@@ -20,15 +20,10 @@ import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.items.SlotItemHandler;
 
 /**
- * A mana machine's menu, laid out as every machine's GUI is: nine input slots on the left, nine output slots on
- * the right, the machine's own special slots where its heart is drawn (given by the machine's menu), the
- * player's inventory under the panel.
+ * A mana machine's menu, laid out as the machine's GUI is ({@link MachineLayout}): its input, output and special
+ * slots where its panel has them, the player's inventory under the panel.
  */
 public abstract class MachineMenu extends AbstractContainerMenu {
-    // the layout of every machine's panel (tools/lib/machine_gui.py; the check_layout scripts keep them in step)
-    public static final int WIDTH = 240, HEIGHT = 214;
-    public static final int INPUT_X = 18, OUTPUT_X = 168, GRID_Y = 30;
-    public static final int INV_X = 40, INV_Y = 132, HOTBAR_Y = 190;
     public static final int BUTTON_REDSTONE = 0;
 
     @Nullable
@@ -36,36 +31,35 @@ public abstract class MachineMenu extends AbstractContainerMenu {
     private final BlockPos pos;
     protected final IItemHandler items;
     protected final ContainerData data;
+    protected final MachineLayout layout;
     private final int machineSlots;
 
-    /**
-     * @param special where the machine's special slots go: {x, y} for each, in the menu's coordinates
-     */
     protected MachineMenu(MenuType<?> type, int id, Inventory inventory, @Nullable MachineBlockEntity machine, IItemHandler items,
-                          ContainerData data, int[][] special) {
+                          ContainerData data, MachineLayout layout) {
         super(type, id);
         this.machine = machine;
         this.pos = machine != null ? machine.getBlockPos() : BlockPos.ZERO;
         this.items = items;
         this.data = data;
-        this.machineSlots = MachineBlockEntity.SPECIAL_START + special.length;
+        this.layout = layout;
+        this.machineSlots = layout.slots();
         checkContainerDataCount(data, data.getCount());
-        for (int i = 0; i < MachineBlockEntity.INPUTS; i++) {
-            addSlot(new SlotItemHandler(items, MachineBlockEntity.INPUT_START + i, INPUT_X + i % 3 * 18, GRID_Y + i / 3 * 18));
+        for (int i = 0; i < layout.inputs.length; i++) {
+            addSlot(new SlotItemHandler(items, MachineBlockEntity.INPUT_START + i, layout.inputs[i][0], layout.inputs[i][1]));
         }
-        for (int i = 0; i < MachineBlockEntity.OUTPUTS; i++) {
-            addSlot(new SlotItemHandler(items, MachineBlockEntity.OUTPUT_START + i, OUTPUT_X + i % 3 * 18, GRID_Y + i / 3 * 18));
+        for (int i = 0; i < layout.outputs.length; i++) {
+            addSlot(new SlotItemHandler(items, layout.outputStart() + i, layout.outputs[i][0], layout.outputs[i][1]));
         }
-        for (int i = 0; i < special.length; i++) {
-            addSlot(new SlotItemHandler(items, MachineBlockEntity.SPECIAL_START + i, special[i][0], special[i][1]));
+        for (int i = 0; i < layout.special.length; i++) {
+            addSlot(new SlotItemHandler(items, layout.specialStart() + i, layout.special[i][0], layout.special[i][1]));
         }
         for (int r = 0; r < 3; r++) {
             for (int c = 0; c < 9; c++) {
-                addSlot(new Slot(inventory, 9 + r * 9 + c, INV_X + c * 18, INV_Y + r * 18));
+                addSlot(new Slot(inventory, 9 + r * 9 + c, layout.invX + c * 18, layout.invY + r * 18));
             }
         }
         for (int c = 0; c < 9; c++) {
-            addSlot(new Slot(inventory, c, INV_X + c * 18, HOTBAR_Y));
+            addSlot(new Slot(inventory, c, layout.invX + c * 18, layout.hotbarY));
         }
         addDataSlots(data);
     }
@@ -95,6 +89,10 @@ public abstract class MachineMenu extends AbstractContainerMenu {
     @Nullable
     public MachineBlockEntity machine() {
         return machine;
+    }
+
+    public MachineLayout layout() {
+        return layout;
     }
 
     /** How many of the menu's slots are the machine's (inputs, outputs, special slots): the player's follow them. */
@@ -206,11 +204,11 @@ public abstract class MachineMenu extends AbstractContainerMenu {
         } else {
             boolean moved = false;
             // the special slots first (a reagent, a catalyst), then the inputs
-            for (int i = MachineBlockEntity.SPECIAL_START; i < machineSlots && !moved; i++) {
+            for (int i = layout.specialStart(); i < machineSlots && !moved; i++) {
                 if (slots.get(i).mayPlace(stack)) moved = moveItemStackTo(stack, i, i + 1, false);
             }
-            if (!moved && slots.get(MachineBlockEntity.INPUT_START).mayPlace(stack)) {
-                moved = moveItemStackTo(stack, MachineBlockEntity.INPUT_START, MachineBlockEntity.OUTPUT_START, false);
+            if (!moved && layout.inputCount() > 0 && slots.get(MachineBlockEntity.INPUT_START).mayPlace(stack)) {
+                moved = moveItemStackTo(stack, MachineBlockEntity.INPUT_START, layout.outputStart(), false);
             }
             if (!moved) {
                 if (index < inv + 27) {

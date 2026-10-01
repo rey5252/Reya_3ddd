@@ -5,7 +5,6 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.reya.alfheimheart.AlfheimHeart;
 import com.reya.alfheimheart.greenhouse.Format;
 import com.reya.alfheimheart.machine.MachineBlockEntity;
 import com.reya.alfheimheart.machine.client.MachineScreen;
@@ -14,7 +13,6 @@ import com.reya.alfheimheart.machine.infuser.ManaInfuserMenu;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
@@ -26,7 +24,6 @@ import net.minecraft.world.item.ItemStack;
  * a ripple runs over the mana and what it made flies out to the outputs.
  */
 public class ManaInfuserScreen extends MachineScreen<ManaInfuserMenu> {
-    public static final ResourceLocation PANEL = new ResourceLocation(AlfheimHeart.MODID, "textures/gui/mana_infuser.png");
     // the pool (tools/machines/layout.py POOL_; check_layout.py keeps these in step)
     static final int POOL_X = 120, POOL_Y = 50, SURFACE_RX = 23, SURFACE_RY = 7;
     static final int ITEM_X = 120, ITEM_Y = 27, ITEM_RING_R = 12;
@@ -41,7 +38,7 @@ public class ManaInfuserScreen extends MachineScreen<ManaInfuserMenu> {
     private float twinkleX, twinkleY;
 
     public ManaInfuserScreen(ManaInfuserMenu menu, Inventory inventory, Component title) {
-        super(menu, inventory, title, PANEL, ITEM_X, ITEM_Y, GEM_X, GEM_Y);
+        super(menu, inventory, title);
     }
 
     @Override

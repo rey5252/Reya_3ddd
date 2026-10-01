@@ -6,7 +6,6 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.reya.alfheimheart.AlfheimHeart;
 import com.reya.alfheimheart.machine.MachineBlockEntity;
 import com.reya.alfheimheart.machine.client.MachineScreen;
 import com.reya.alfheimheart.machine.daisy.PureDaisyBlockEntity;
@@ -14,7 +13,6 @@ import com.reya.alfheimheart.machine.daisy.PureDaisyMenu;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
@@ -28,7 +26,6 @@ import vazkii.botania.common.block.BotaniaFlowerBlocks;
  * it hurry: the daisy glows mana blue.
  */
 public class PureDaisyScreen extends MachineScreen<PureDaisyMenu> {
-    public static final ResourceLocation PANEL = new ResourceLocation(AlfheimHeart.MODID, "textures/gui/pure_daisy.png");
     // the meadow (tools/machines/layout.py DAISY; check_layout.py keeps these in step)
     static final int DAISY_X = 120, DAISY_Y = 52, RING_R = 24, HEART_R = 34;
     static final int GEM_X = 120, GEM_Y = 19;
@@ -43,7 +40,7 @@ public class PureDaisyScreen extends MachineScreen<PureDaisyMenu> {
     private long moteAt;
 
     public PureDaisyScreen(PureDaisyMenu menu, Inventory inventory, Component title) {
-        super(menu, inventory, title, PANEL, DAISY_X, DAISY_Y, GEM_X, GEM_Y);
+        super(menu, inventory, title);
     }
 
     @Override

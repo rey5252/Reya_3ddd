@@ -14,7 +14,7 @@ import net.minecraftforge.items.IItemHandler;
 /** The Mana Infuser's menu: the machine's layout, and the catalyst slot the basin stands on. */
 public class ManaInfuserMenu extends MachineMenu {
     /** The catalyst slot's item corner (tools/machines/layout.py POOL_.SLOT). */
-    public static final int CATALYST_X = 112, CATALYST_Y = 84;
+    public static final int CATALYST_X = ManaInfuserBlockEntity.LAYOUT.special[0][0], CATALYST_Y = ManaInfuserBlockEntity.LAYOUT.special[0][1];
 
     public ManaInfuserMenu(int id, Inventory inventory, FriendlyByteBuf buf) {
         this(id, inventory, clientMachine(inventory, buf));
@@ -25,6 +25,6 @@ public class ManaInfuserMenu extends MachineMenu {
     }
 
     public ManaInfuserMenu(int id, Inventory inventory, @Nullable MachineBlockEntity machine, IItemHandler items, ContainerData data) {
-        super(AlfheimHeart.MANA_INFUSER_MENU.get(), id, inventory, machine, items, data, new int[][]{{CATALYST_X, CATALYST_Y}});
+        super(AlfheimHeart.MANA_INFUSER_MENU.get(), id, inventory, machine, items, data, ManaInfuserBlockEntity.LAYOUT);
     }
 }

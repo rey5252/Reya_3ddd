@@ -1,5 +1,6 @@
 package com.reya.alfheimheart.machine;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.Nonnull;
@@ -9,12 +10,14 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.Containers;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.Item;
@@ -35,9 +38,9 @@ import vazkii.botania.api.mana.ManaPool;
 import vazkii.botania.api.mana.ManaReceiver;
 
 /**
- * A mana machine: nine input slots, nine output slots and a few special ones (a reagent, a catalyst...), a
- * store of mana filled by mana spreaders (it is a mana receiver, like a pool) and from the mana pools on its six
- * sides, a redstone setting.
+ * A mana machine: input slots, output slots and a few special ones (a reagent, a catalyst...), as many of each as
+ * its layout has ({@link MachineLayout}), a store of mana filled by mana spreaders (it is a mana receiver, like a
+ * pool) and from the mana pools on its six sides, a redstone setting.
  * <p>
  * It works one craft at a time: when its inputs make a recipe ({@link #findJob}) and the outputs would fit, it
  * charges the craft with mana from its store, a little each tick ({@link #chargeRate}), for at least the craft's
@@ -48,16 +51,21 @@ import vazkii.botania.api.mana.ManaReceiver;
  * craft as a block event.
  */
 public abstract class MachineBlockEntity extends BlockEntity implements MenuProvider, ManaReceiver {
-    public static final int INPUTS = 9, OUTPUTS = 9;
-    public static final int INPUT_START = 0, OUTPUT_START = INPUTS, SPECIAL_START = INPUTS + OUTPUTS;
+    /** The slots: the inputs from 0, then the outputs, then the special slots (see {@link #outputStart}...). */
+    public static final int INPUT_START = 0;
+    /** How many inputs and outputs every machine had before each had its own layout (older saves have that many). */
+    private static final int OLD_INPUTS = 9, OLD_OUTPUTS = 9;
     /** The menu's numbers shared by every machine (see {@link #data}); a machine's own follow them. */
     public static final int BASE_DATA = 14;
     /** Block event: a craft finished (the parameter is the raw id of its first output). */
     public static final int EVENT_CRAFTED = 1;
     public static final String TAG_MANA = "Mana";
 
-    private final int specialSlots;
+    protected final MachineLayout layout;
+    private final int inputCount, outputCount, specialCount;
     protected final ItemStackHandler items;
+    /** Items an older save had no room for in this layout: dropped by the machine on its first tick. */
+    private final List<ItemStack> overflow = new ArrayList<>();
     protected int mana;
     protected MachineStatus status = MachineStatus.IDLE;
     protected RedstoneMode redstone = RedstoneMode.IGNORE;
@@ -88,21 +96,25 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
     private final LazyOptional<IItemHandler> itemCap;
     private final LazyOptional<ManaReceiver> manaCap = LazyOptional.of(() -> this);
 
-    protected MachineBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, int specialSlots) {
+    protected MachineBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, MachineLayout layout) {
         super(type, pos, state);
-        this.specialSlots = specialSlots;
-        this.clientItems = NonNullList.withSize(SPECIAL_START + specialSlots, ItemStack.EMPTY);
-        this.items = new ItemStackHandler(SPECIAL_START + specialSlots) {
+        this.layout = layout;
+        this.inputCount = layout.inputCount();
+        this.outputCount = layout.outputCount();
+        this.specialCount = layout.specialCount();
+        int slots = layout.slots();
+        this.clientItems = NonNullList.withSize(slots, ItemStack.EMPTY);
+        this.items = new ItemStackHandler(slots) {
             @Override
             public boolean isItemValid(int slot, @Nonnull ItemStack stack) {
-                if (slot < OUTPUT_START) return acceptsInput(stack);
-                if (slot < SPECIAL_START) return false;
-                return acceptsSpecial(slot - SPECIAL_START, stack);
+                if (slot < outputStart()) return acceptsInput(stack);
+                if (slot < specialStart()) return false;
+                return acceptsSpecial(slot - specialStart(), stack);
             }
 
             @Override
             public int getSlotLimit(int slot) {
-                return slot >= SPECIAL_START ? specialLimit(slot - SPECIAL_START) : 64;
+                return slot >= specialStart() ? specialLimit(slot - specialStart()) : 64;
             }
 
             @Override
@@ -125,12 +137,12 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
 
             @Override
             public @Nonnull ItemStack insertItem(int slot, @Nonnull ItemStack stack, boolean simulate) {
-                return slot >= OUTPUT_START && slot < SPECIAL_START ? stack : items.insertItem(slot, stack, simulate);
+                return slot >= outputStart() && slot < specialStart() ? stack : items.insertItem(slot, stack, simulate);
             }
 
             @Override
             public @Nonnull ItemStack extractItem(int slot, int amount, boolean simulate) {
-                return slot >= OUTPUT_START && slot < SPECIAL_START ? items.extractItem(slot, amount, simulate) : ItemStack.EMPTY;
+                return slot >= outputStart() && slot < specialStart() ? items.extractItem(slot, amount, simulate) : ItemStack.EMPTY;
             }
 
             @Override
@@ -197,15 +209,37 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
 
     /** An array for Job.taken, one entry for every slot. */
     protected int[] takenArray() {
-        return new int[SPECIAL_START + specialSlots];
+        return new int[layout.slots()];
     }
 
     public ItemStackHandler items() {
         return items;
     }
 
+    public MachineLayout layout() {
+        return layout;
+    }
+
+    public int inputCount() {
+        return inputCount;
+    }
+
+    public int outputCount() {
+        return outputCount;
+    }
+
     public int specialSlots() {
-        return specialSlots;
+        return specialCount;
+    }
+
+    /** The first output slot (the inputs are the slots before it). */
+    public int outputStart() {
+        return inputCount;
+    }
+
+    /** The first special slot (the outputs are the slots from outputStart up to it). */
+    public int specialStart() {
+        return inputCount + outputCount;
     }
 
     // ------------------------------------------------------------------ server
@@ -215,6 +249,7 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
     }
 
     protected void tickServer(Level level, BlockPos pos, BlockState state) {
+        if (!overflow.isEmpty()) spill(level, pos);
         int capacity = capacity();
         if (mana > capacity) mana = capacity;
         long time = level.getGameTime();
@@ -248,7 +283,7 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
                 status = MachineStatus.IDLE;
                 return;
             }
-            if (!Units.insertAll(items, OUTPUT_START, SPECIAL_START, job.outputs(), true)) {
+            if (!Units.insertAll(items, outputStart(), specialStart(), job.outputs(), true)) {
                 status = MachineStatus.OUTPUT_FULL;
                 return;
             }
@@ -288,7 +323,7 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
             cancel();
             return;
         }
-        if (!Units.insertAll(items, OUTPUT_START, SPECIAL_START, job.outputs(), true)) {
+        if (!Units.insertAll(items, outputStart(), specialStart(), job.outputs(), true)) {
             status = MachineStatus.OUTPUT_FULL;           // keeps its mana, and waits
             return;
         }
@@ -296,7 +331,7 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
         for (int i = 0; i < taken.length && i < items.getSlots(); i++) {
             if (taken[i] > 0) items.extractItem(i, taken[i], false);
         }
-        Units.insertAll(items, OUTPUT_START, SPECIAL_START, job.outputs(), false);
+        Units.insertAll(items, outputStart(), specialStart(), job.outputs(), false);
         crafts = crafts + 1 & 0x7FFF;
         ItemStack first = job.outputs().isEmpty() ? ItemStack.EMPTY : job.outputs().get(0);
         lastOutput = first.isEmpty() ? 0 : Item.getId(first.getItem()) + 1;
@@ -311,6 +346,13 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
     /** Whether the items still make the craft being charged (the same recipe, for the same mana: as many items). */
     private boolean same(@Nullable Job job) {
         return job != null && job.id().equals(jobId) && Math.max(0, job.mana()) == jobCost;
+    }
+
+    /** Drops what an older save had no room for here, over the machine. */
+    private void spill(Level level, BlockPos pos) {
+        for (ItemStack stack : overflow) Containers.dropItemStack(level, pos.getX() + 0.5D, pos.getY() + 1.1D, pos.getZ() + 0.5D, stack);
+        overflow.clear();
+        setChanged();
     }
 
     /** The craft stops (its inputs went): its mana goes back into the store. */
@@ -563,6 +605,13 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
     protected void saveAdditional(CompoundTag tag) {
         super.saveAdditional(tag);
         tag.put("Items", items.serializeNBT());
+        tag.putInt("Inputs", inputCount);
+        tag.putInt("Outputs", outputCount);
+        if (!overflow.isEmpty()) {
+            ListTag list = new ListTag();
+            for (ItemStack stack : overflow) list.add(stack.save(new CompoundTag()));
+            tag.put("Overflow", list);
+        }
         if (mana > 0) tag.putInt(TAG_MANA, mana);
         tag.putByte("Redstone", (byte) redstone.ordinal());
         if (jobId != null) {
@@ -578,10 +627,24 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
     @Override
     public void load(CompoundTag tag) {
         super.load(tag);
+        overflow.clear();
         if (tag.contains("Items", Tag.TAG_COMPOUND)) {
             CompoundTag saved = tag.getCompound("Items");
-            saved.putInt("Size", items.getSlots());
-            items.deserializeNBT(saved);
+            int in = tag.contains("Inputs", Tag.TAG_INT) ? tag.getInt("Inputs") : OLD_INPUTS;
+            int out = tag.contains("Outputs", Tag.TAG_INT) ? tag.getInt("Outputs") : OLD_OUTPUTS;
+            if (in == inputCount && out == outputCount) {
+                saved.putInt("Size", items.getSlots());
+                items.deserializeNBT(saved);
+            } else {
+                rearrange(saved, in, out);
+            }
+        }
+        if (tag.contains("Overflow", Tag.TAG_LIST)) {
+            ListTag list = tag.getList("Overflow", Tag.TAG_COMPOUND);
+            for (int i = 0; i < list.size(); i++) {
+                ItemStack stack = ItemStack.of(list.getCompound(i));
+                if (!stack.isEmpty()) overflow.add(stack);
+            }
         }
         mana = Math.max(0, tag.getInt(TAG_MANA));
         redstone = RedstoneMode.byId(tag.getByte("Redstone"));
@@ -591,6 +654,41 @@ public abstract class MachineBlockEntity extends BlockEntity implements MenuProv
         jobTicks = tag.getInt("JobTicks");
         jobMinTicks = tag.getInt("JobMinTicks");
         crafts = tag.getInt("Crafts") & 0x7FFF;
+    }
+
+    /**
+     * Items saved with another number of inputs or outputs (before the machine had its own layout): the inputs go
+     * into the inputs, the outputs into the outputs, the special slots into the special slots, as far as they go;
+     * what has no room is dropped on the machine's first tick.
+     */
+    private void rearrange(CompoundTag saved, int oldInputs, int oldOutputs) {
+        ItemStackHandler old = new ItemStackHandler();
+        old.deserializeNBT(saved);
+        for (int i = 0; i < items.getSlots(); i++) items.setStackInSlot(i, ItemStack.EMPTY);
+        int oldSpecial = oldInputs + oldOutputs;
+        moveInto(old, 0, Math.min(oldInputs, old.getSlots()), INPUT_START, outputStart());
+        moveInto(old, Math.min(oldInputs, old.getSlots()), Math.min(oldSpecial, old.getSlots()), outputStart(), specialStart());
+        moveInto(old, Math.min(oldSpecial, old.getSlots()), old.getSlots(), specialStart(), items.getSlots());
+    }
+
+    private void moveInto(ItemStackHandler from, int start, int end, int to, int toEnd) {
+        for (int i = start; i < end; i++) {
+            ItemStack rest = from.getStackInSlot(i).copy();
+            for (int j = to; j < toEnd && !rest.isEmpty(); j++) {
+                ItemStack there = items.getStackInSlot(j);
+                if (there.isEmpty()) {
+                    items.setStackInSlot(j, rest);
+                    rest = ItemStack.EMPTY;
+                } else if (ItemStack.isSameItemSameTags(there, rest)) {
+                    int move = Math.min(rest.getCount(), Math.min(there.getMaxStackSize(), items.getSlotLimit(j)) - there.getCount());
+                    if (move > 0) {
+                        items.setStackInSlot(j, there.copyWithCount(there.getCount() + move));
+                        rest.shrink(move);
+                    }
+                }
+            }
+            if (!rest.isEmpty()) overflow.add(rest);
+        }
     }
 
     /** What the client needs: the items (the renderer shows them), the mana, the craft's progress. */

@@ -22,6 +22,6 @@ public class PureDaisyMenu extends MachineMenu {
     }
 
     public PureDaisyMenu(int id, Inventory inventory, @Nullable MachineBlockEntity machine, IItemHandler items, ContainerData data) {
-        super(AlfheimHeart.PURE_DAISY_MENU.get(), id, inventory, machine, items, data, new int[0][]);
+        super(AlfheimHeart.PURE_DAISY_MENU.get(), id, inventory, machine, items, data, PureDaisyBlockEntity.LAYOUT);
     }
 }

@@ -6,7 +6,6 @@ import javax.annotation.Nullable;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.math.Axis;
-import com.reya.alfheimheart.AlfheimHeart;
 import com.reya.alfheimheart.greenhouse.Format;
 import com.reya.alfheimheart.machine.MachineBlockEntity;
 import com.reya.alfheimheart.machine.client.MachineScreen;
@@ -16,7 +15,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
@@ -28,7 +26,6 @@ import net.minecraft.world.item.Items;
  * ends they shake, and the harvest flies out to the outputs.
  */
 public class CropFieldScreen extends MachineScreen<CropFieldMenu> {
-    public static final ResourceLocation PANEL = new ResourceLocation(AlfheimHeart.MODID, "textures/gui/crop_field.png");
     // the field (tools/machines/layout.py FIELD; check_layout.py keeps these in step)
     static final int[] BOX = {88, 24, 152, 76};
     static final int[] ROWS = {38, 54, 70};
@@ -48,7 +45,7 @@ public class CropFieldScreen extends MachineScreen<CropFieldMenu> {
     private final float[][] drops = new float[10][];
 
     public CropFieldScreen(CropFieldMenu menu, Inventory inventory, Component title) {
-        super(menu, inventory, title, PANEL, (BOX[0] + BOX[2]) / 2, (BOX[1] + BOX[3]) / 2, GEM_X, GEM_Y);
+        super(menu, inventory, title);
     }
 
     @Override

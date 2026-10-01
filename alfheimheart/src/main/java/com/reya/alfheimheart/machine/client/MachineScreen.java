@@ -5,11 +5,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
+import javax.annotation.Nullable;
+
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.reya.alfheimheart.AlfheimHeart;
 import com.reya.alfheimheart.greenhouse.Format;
-import com.reya.alfheimheart.machine.MachineBlockEntity;
+import com.reya.alfheimheart.machine.MachineLayout;
 import com.reya.alfheimheart.machine.MachineMenu;
 import com.reya.alfheimheart.machine.MachineStatus;
 import com.reya.alfheimheart.portal.client.PlateFont;
@@ -28,42 +31,48 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 
 /**
- * A mana machine's GUI in the mod's living-wood style: the machine's panel texture (tools/&lt;machine&gt;/gen_gui.py:
- * livingwood planks framed with livingrock, mana crystals on the corners, the input slots on the left, the output
- * slots on the right, the machine's heart between them, the mana bar under it), and over it what every machine's
- * GUI does alike: the title on a livingrock plaque, the close button, the crystals twinkling, mana running round
- * the frame while it works, the arrows lighting up, the mana bar, the redstone button, the pool light, the status
- * gem, the finished craft flying out to the output slots, sparkles; opening, the panel grows out of the machine's
- * heart a little past its size and settles, and closing, it folds back into it.
+ * A mana machine's GUI: the machine's panel texture (its own look: tools/machines/gen_v2.py; or the living-wood
+ * panel the first machines shared, gen_gui.py), laid out by its {@link MachineLayout}, and over it what every
+ * machine's GUI does alike: the title on a plaque, the redstone and close buttons, the lights on the corners
+ * twinkling, mana running round the frame's groove while it works, a shine sweeping over its metal now and then,
+ * the mana gauge, the pool lamp, the status gem, the finished craft flying out to the outputs, sparkles; opening,
+ * the panel grows out of the machine's heart a little past its size and settles, and closing, it folds back in.
  * <p>
- * Each machine draws its heart ({@link #drawHeart}) and says what its tooltips over it are ({@link #heartTooltip}).
+ * Each machine draws its heart ({@link #drawHeart}) and its gauge ({@link #drawGauge}; the first machines share a
+ * mana bar), and says what its tooltips over its heart are ({@link #heartTooltip}).
  */
 public abstract class MachineScreen<M extends MachineMenu> extends AbstractContainerScreen<M> {
+    /** The widget sheet the first-generation machines share. */
     public static final ResourceLocation WIDGETS = new ResourceLocation(AlfheimHeart.MODID, "textures/gui/machine_widgets.png");
-    protected static final int M = 12, TEX_W = MachineMenu.WIDTH + 2 * M, TEX_H = MachineMenu.HEIGHT + 2 * M;
+    protected static final int M = MachineLayout.MARGIN;
     protected static final int WIDGETS_W = 256, WIDGETS_H = 128;
 
-    // the layout every machine's panel shares (tools/lib/machine_gui.py; tools/*/check_layout.py keep them in step)
-    protected static final int MACHINE_H = 124, INV_PANEL_X1 = 28, INV_PANEL_X2 = 212;
-    protected static final int ARROW_IN_X = 74, ARROW_OUT_X = 155, ARROW_Y = 53, ARROW_W = 12, ARROW_H = 9, ARROW_U = 160, ARROW_V = 0;
-    protected static final int BAR_X1 = 64, BAR_Y1 = 108, BAR_X2 = 176, BAR_Y2 = 114, FILL_V = 80;
-    protected static final int BUTTON_REDSTONE_X = 18, BUTTON_Y = 102, BUTTON_SIZE = 16, ICON_V = 16;
-    protected static final int POOL_X = 206, POOL_Y = 102, POOL_SIZE = 16, POOL_U = 192, POOL_V = 0;
+    // the pieces every machine's sheet has in the same places (tools/machines/gen_widgets.py and theme.py;
+    // check_layout.py keeps them in step)
+    protected static final int BUTTON_SIZE = 16, ICON_V = 16;
+    protected static final int POOL_SIZE = 16, POOL_U = 192, POOL_V = 0;
     protected static final int GEM_SIZE = 7, GEM_U = 160, GEM_V = 16;
     protected static final int SCROLL_H = 20, SCROLL_CAP = 16, SCROLL_V = 56, SCROLL_TILE_U = 32, SCROLL_TILE_W = 8,
             SCROLL_UP = 12, SCROLL_PAD = 6;
-    protected static final int CLOSE_X = 229, CLOSE_Y = -8, CLOSE_SIZE = 16, CLOSE_U = 104, CLOSE_V = 0;
+    protected static final int CLOSE_SIZE = 16, CLOSE_U = 104, CLOSE_V = 0;
     protected static final int GLOW_U = 104, GLOW_V = 16, GLOW_SIZE = 9;
-    protected static final int VEIN = 3;
-    /** The mana crystals on the panels' corners (their middles), which twinkle. */
-    protected static final int[][] LIGHTS = {{1, 1}, {1, 122}, {238, 122}, {29, 212}, {210, 212}};
-    protected static final int INPUT_MID_X = 44, OUTPUT_MID_X = 194, GRID_MID_Y = 56;
+    // the first-generation panel's arrows and mana bar (layout.py)
+    protected static final int ARROW_W = 12, ARROW_H = 9, ARROW_U = 160, ARROW_V = 0;
+    protected static final int BAR_X1 = 64, BAR_Y1 = 108, BAR_X2 = 176, BAR_Y2 = 114, FILL_V = 80;
+    /** How often a shine sweeps over the panel's metal, and how long it takes. */
+    protected static final long GLOSS_EVERY = 7000L, GLOSS_MS = 1500L;
 
     protected static final long GROW_MS = 380L, CLOSE_MS = 260L, FLASH_MS = 500L;
     protected static final int MANA_BRIGHT = 0xA6F6FF, GREEN_LIGHT = 0xB6F59A, GOLD_LIGHT = 0xFFE27A, PINK_LIGHT = 0xFF9AD8;
     protected static final float PI = (float) Math.PI;
 
+    protected final MachineLayout layout;
     private final ResourceLocation panel;
+    /** The machine's widget sheet (its own, or the one the first machines share). */
+    protected final ResourceLocation widgets;
+    @Nullable
+    private final ResourceLocation gloss;
+    private final int texW, texH;
     /** The middle of the machine's heart (menu coordinates): the panel grows from there, crafts fly out of it. */
     protected final int heartX, heartY;
     /** Where the status gem sits (its middle), or -1 for none. */
@@ -80,15 +89,20 @@ public abstract class MachineScreen<M extends MachineMenu> extends AbstractConta
     private boolean welcomed;
     private int scrollHalf = 60;
 
-    protected MachineScreen(M menu, Inventory inv, Component title, ResourceLocation panel, int heartX, int heartY, int gemX, int gemY) {
+    protected MachineScreen(M menu, Inventory inv, Component title) {
         super(menu, inv, title);
-        this.panel = panel;
-        this.heartX = heartX;
-        this.heartY = heartY;
-        this.gemX = gemX;
-        this.gemY = gemY;
-        imageWidth = MachineMenu.WIDTH;
-        imageHeight = MachineMenu.HEIGHT;
+        this.layout = menu.layout();
+        this.panel = layout.panel();
+        this.widgets = layout.widgets();
+        this.gloss = layout.gloss();
+        this.heartX = layout.heartX;
+        this.heartY = layout.heartY;
+        this.gemX = layout.gemX;
+        this.gemY = layout.gemY;
+        imageWidth = layout.width;
+        imageHeight = layout.height;
+        texW = layout.width + 2 * M;
+        texH = layout.height + 2 * M;
     }
 
     @Override
@@ -106,11 +120,11 @@ public abstract class MachineScreen<M extends MachineMenu> extends AbstractConta
         return age() >= GROW_MS;
     }
 
-    /** Where the GUI draws outside its panel: the title plaque and the crystals. */
+    /** Where the GUI draws outside its panel: the title plaque and the ornaments. */
     public List<Rect2i> extraAreas() {
         List<Rect2i> areas = new ArrayList<>();
         areas.add(new Rect2i(leftPos - M, topPos - SCROLL_UP - 2, imageWidth + 2 * M, SCROLL_UP + 2));
-        areas.add(new Rect2i(leftPos - M, topPos - M, imageWidth + 2 * M, MACHINE_H + 2 * M));
+        areas.add(new Rect2i(leftPos - M, topPos - M, imageWidth + 2 * M, layout.machineHeight + 2 * M));
         return areas;
     }
 
@@ -130,12 +144,56 @@ public abstract class MachineScreen<M extends MachineMenu> extends AbstractConta
     protected void specialSlotTooltip(List<Component> tip, int index) {
     }
 
+    /** The tooltip of an empty input slot (index among the inputs): what goes there. */
+    protected void inputSlotTooltip(List<Component> tip, int index) {
+        String k = "gui.alfheimheart." + key() + ".slot.input";
+        tip.add(Component.translatable(k).withStyle(ChatFormatting.GREEN));
+        tip.add(Component.translatable(k + ".tip").withStyle(ChatFormatting.GRAY));
+    }
+
     /** A craft just finished (the screen noticed the count change). */
     protected void onCraft(long t) {
     }
 
+    /** A finished craft reached the outputs. */
+    protected void onLanded(long t) {
+    }
+
     /** The key of the machine's lang entries: gui.alfheimheart.&lt;key&gt;.… */
     protected abstract String key();
+
+    /**
+     * The mana gauge (called over the panel; `mana` is how full the store is, 0..1, smoothed): the first
+     * machines' mana bar, unless a machine draws its own.
+     */
+    protected void drawGauge(GuiGraphics g, long t, float mana) {
+        drawManaBar(g, t, mana);
+    }
+
+    /** Whether the mouse (menu coordinates) is over the gauge: its tooltip shows there. */
+    protected boolean overGauge(int mx, int my) {
+        int[] box = layout.gauge;
+        return mx >= box[0] && mx < box[2] && my >= box[1] && my < box[3];
+    }
+
+    /** The title's colour on its plaque, and the line under it (drawn a pixel lower and to the right). */
+    protected int titleColour() {
+        return 0xFF4E3417;
+    }
+
+    protected int titleShadow() {
+        return 0xFFFFF9E0;
+    }
+
+    /** The colour the lights on the corners twinkle in. */
+    protected int lightColour() {
+        return 0x99F2FF;
+    }
+
+    /** The mana running round the frame: its head, just behind it, and its tail. */
+    protected int[] veinColours() {
+        return new int[]{0xF2FFFF, 0xA6F6FF, 0x55D9F7};
+    }
 
     // ------------------------------------------------------------------ render
 
@@ -230,10 +288,15 @@ public abstract class MachineScreen<M extends MachineMenu> extends AbstractConta
         float dt = lastFrame == 0L ? 0.0F : Math.min(0.1F, (now - lastFrame) / 1000.0F);
         lastFrame = now;
         updateMotes(dt);
+        float target = menu.capacity() <= 1 ? 0.0F : Mth.clamp(menu.mana() / (float) menu.capacity(), 0.0F, 1.0F);
+        shownMana += (target - shownMana) * Math.min(1.0F, dt * 6.0F);
+        float p = menu.progress();
+        shownProgress = p < shownProgress - 0.2F ? p : shownProgress + (p - shownProgress) * Math.min(1.0F, dt * 8.0F);
 
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
-        g.blit(panel, leftPos - M, topPos - M, 0, 0, TEX_W, TEX_H, TEX_W, TEX_H);
+        g.blit(panel, leftPos - M, topPos - M, 0, 0, texW, texH, texW, texH);
+        drawGloss(g, t);
         drawLights(g, t);
         drawTitle(g);
         drawClose(g, mouseX, mouseY);
@@ -245,8 +308,10 @@ public abstract class MachineScreen<M extends MachineMenu> extends AbstractConta
             drawVeinPulse(g, t);
         });
         drawGem(g, t);
-        drawArrows(g, t);
-        drawManaBar(g, t, dt);
+        if (layout.classic) drawArrows(g, t);
+        drawGauge(g, t, shownMana);
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
         drawButtons(g, mouseX, mouseY, t);
     }
 
@@ -262,8 +327,23 @@ public abstract class MachineScreen<M extends MachineMenu> extends AbstractConta
         return shownProgress;
     }
 
+    /** How full the mana store is (0..1), smoothed. */
+    protected float shownMana() {
+        return shownMana;
+    }
+
     protected boolean working() {
         return menu.status() == MachineStatus.WORKING;
+    }
+
+    /** Now and then a shine sweeps over the panel's metal (where its gloss mask is white). */
+    private void drawGloss(GuiGraphics g, long t) {
+        if (gloss == null || t < GROW_MS) return;
+        long k = (t - GROW_MS + GLOSS_EVERY - 1200L) % GLOSS_EVERY;
+        if (k >= GLOSS_MS) return;
+        float e = k / (float) GLOSS_MS;
+        float span = texW + texH * 0.5F;
+        Gfx.sheen(g, gloss, leftPos - M, topPos - M, texW, texH, -40.0F + (span + 80.0F) * e, 26.0F, 0.55F);
     }
 
     private void drawGem(GuiGraphics g, long t) {
@@ -274,28 +354,30 @@ public abstract class MachineScreen<M extends MachineMenu> extends AbstractConta
             case NO_MANA, OUTPUT_FULL -> 2;
             case REDSTONE -> 3;
         };
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
         if (kind == 0 || kind == 2) {
             float beat = 0.5F + 0.5F * Mth.sin(t / (kind == 0 ? 170.0F : 380.0F));
-            RenderSystem.enableBlend();
             if (kind == 0) g.setColor(0.7F, 1.0F, 0.6F, 0.4F + 0.5F * beat);
             else g.setColor(1.0F, 0.4F, 0.35F, 0.3F + 0.4F * beat);
-            g.blit(WIDGETS, leftPos + gemX - GLOW_SIZE / 2, topPos + gemY - GLOW_SIZE / 2, GLOW_U, GLOW_V, GLOW_SIZE, GLOW_SIZE, WIDGETS_W, WIDGETS_H);
+            g.blit(widgets, leftPos + gemX - GLOW_SIZE / 2, topPos + gemY - GLOW_SIZE / 2, GLOW_U, GLOW_V, GLOW_SIZE, GLOW_SIZE, WIDGETS_W, WIDGETS_H);
             g.setColor(1.0F, 1.0F, 1.0F, 1.0F);
         }
         RenderSystem.enableBlend();
-        g.blit(WIDGETS, leftPos + gemX - GEM_SIZE / 2, topPos + gemY - GEM_SIZE / 2, GEM_U + kind * GEM_SIZE, GEM_V, GEM_SIZE, GEM_SIZE,
+        g.blit(widgets, leftPos + gemX - GEM_SIZE / 2, topPos + gemY - GEM_SIZE / 2, GEM_U + kind * GEM_SIZE, GEM_V, GEM_SIZE, GEM_SIZE,
                 WIDGETS_W, WIDGETS_H);
     }
 
-    /** The arrows glow while the machine works, and flash on each craft (into the heart, then out). */
+    /** The first machines' arrows glow while the machine works, and flash on each craft (into the heart, then out). */
     private void drawArrows(GuiGraphics g, long t) {
+        if (layout.clickAreas.length < 2) return;
         boolean on = working();
         long since = t - craftedAt;
-        drawArrow(g, ARROW_IN_X, t, on ? (t / 600L % 2L == 0L ? t % 600L : 1000L) : 1000L, on);
-        drawArrow(g, ARROW_OUT_X, t, since, on);
+        drawArrow(g, layout.clickAreas[0][0], layout.clickAreas[0][1], t, on ? (t / 600L % 2L == 0L ? t % 600L : 1000L) : 1000L, on);
+        drawArrow(g, layout.clickAreas[1][0], layout.clickAreas[1][1], t, since, on);
     }
 
-    private void drawArrow(GuiGraphics g, int x, long t, long since, boolean on) {
+    private void drawArrow(GuiGraphics g, int x, int y, long t, long since, boolean on) {
         float flash = since >= 0L && since < 400L ? 1.0F - since / 400.0F : 0.0F;
         float glow = on ? 0.3F + 0.15F * Mth.sin(t / 240.0F + x) : 0.0F;
         float a = Math.max(flash, glow);
@@ -303,21 +385,17 @@ public abstract class MachineScreen<M extends MachineMenu> extends AbstractConta
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         g.setColor(1.0F, 1.0F, 1.0F, a);
-        g.blit(WIDGETS, leftPos + x, topPos + ARROW_Y, ARROW_U + (flash > 0.5F ? ARROW_W : 0), ARROW_V, ARROW_W, ARROW_H, WIDGETS_W, WIDGETS_H);
+        g.blit(widgets, leftPos + x, topPos + y, ARROW_U + (flash > 0.5F ? ARROW_W : 0), ARROW_V, ARROW_W, ARROW_H, WIDGETS_W, WIDGETS_H);
         g.setColor(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
-    /** The mana store: fills smoothly, a shine runs over it while it works, it blinks red when a craft waits for mana. */
-    private void drawManaBar(GuiGraphics g, long t, float dt) {
-        float target = menu.capacity() <= 1 ? 0.0F : Mth.clamp(menu.mana() / (float) menu.capacity(), 0.0F, 1.0F);
-        shownMana += (target - shownMana) * Math.min(1.0F, dt * 6.0F);
-        float p = menu.progress();
-        shownProgress = p < shownProgress - 0.2F ? p : shownProgress + (p - shownProgress) * Math.min(1.0F, dt * 8.0F);
+    /** The first machines' mana bar: a shine runs over it while it works, it blinks red when a craft waits for mana. */
+    private void drawManaBar(GuiGraphics g, long t, float mana) {
         int x1 = leftPos + BAR_X1, y1 = topPos + BAR_Y1, y2 = topPos + BAR_Y2;
-        int w = Math.round((BAR_X2 - BAR_X1) * shownMana);
+        int w = Math.round((BAR_X2 - BAR_X1) * mana);
         if (w > 0) {
             RenderSystem.enableBlend();
-            g.blit(WIDGETS, x1, y1, 0, FILL_V, w, BAR_Y2 - BAR_Y1, WIDGETS_W, WIDGETS_H);
+            g.blit(widgets, x1, y1, 0, FILL_V, w, BAR_Y2 - BAR_Y1, WIDGETS_W, WIDGETS_H);
             if (working()) {
                 int sx = x1 + (int) ((t / 7L) % (w + 30)) - 15;
                 for (int k = 0; k < 6; k++) {
@@ -334,16 +412,17 @@ public abstract class MachineScreen<M extends MachineMenu> extends AbstractConta
     }
 
     private void drawButtons(GuiGraphics g, int mouseX, int mouseY, long t) {
-        int x = leftPos + BUTTON_REDSTONE_X, y = topPos + BUTTON_Y;
-        boolean hot = ready() && inside(BUTTON_REDSTONE_X, BUTTON_Y, BUTTON_SIZE, BUTTON_SIZE, mouseX, mouseY);
+        int x = leftPos + layout.redstoneX, y = topPos + layout.redstoneY;
+        boolean hot = ready() && inside(layout.redstoneX, layout.redstoneY, BUTTON_SIZE, BUTTON_SIZE, mouseX, mouseY);
         RenderSystem.enableBlend();
-        g.blit(WIDGETS, x, y, hot ? 16 : 0, 0, BUTTON_SIZE, BUTTON_SIZE, WIDGETS_W, WIDGETS_H);
-        g.blit(WIDGETS, x + 2, y + 2, menu.redstone().ordinal() * 12, ICON_V, 12, 12, WIDGETS_W, WIDGETS_H);
+        g.blit(widgets, x, y, hot ? 16 : 0, 0, BUTTON_SIZE, BUTTON_SIZE, WIDGETS_W, WIDGETS_H);
+        g.blit(widgets, x + 2, y + 2, menu.redstone().ordinal() * 12, ICON_V, 12, 12, WIDGETS_W, WIDGETS_H);
         boolean pool = menu.hasPool();
-        g.blit(WIDGETS, leftPos + POOL_X, topPos + POOL_Y, POOL_U + (pool ? POOL_SIZE : 0), POOL_V, POOL_SIZE, POOL_SIZE, WIDGETS_W, WIDGETS_H);
+        g.blit(widgets, leftPos + layout.poolX, topPos + layout.poolY, POOL_U + (pool ? POOL_SIZE : 0), POOL_V, POOL_SIZE, POOL_SIZE,
+                WIDGETS_W, WIDGETS_H);
         if (pool) {
             float beat = 0.5F + 0.5F * Mth.sin(t / 300.0F);
-            if (beat > 0.9F) sparkle(g, leftPos + POOL_X + 7, topPos + POOL_Y + 4, MANA_BRIGHT, (beat - 0.9F) / 0.1F);
+            if (beat > 0.9F) sparkle(g, leftPos + layout.poolX + 7, topPos + layout.poolY + 4, MANA_BRIGHT, (beat - 0.9F) / 0.1F);
         }
     }
 
@@ -356,43 +435,45 @@ public abstract class MachineScreen<M extends MachineMenu> extends AbstractConta
         scrollHalf = paper / 2 + SCROLL_CAP;
         RenderSystem.enableBlend();
         for (int x = x0, k = 0; x < x1; x += SCROLL_TILE_W, k++) {
-            g.blit(WIDGETS, x, top, SCROLL_TILE_U + (k & 1) * SCROLL_TILE_W, SCROLL_V, Math.min(SCROLL_TILE_W, x1 - x), SCROLL_H,
+            g.blit(widgets, x, top, SCROLL_TILE_U + (k & 1) * SCROLL_TILE_W, SCROLL_V, Math.min(SCROLL_TILE_W, x1 - x), SCROLL_H,
                     WIDGETS_W, WIDGETS_H);
         }
-        g.blit(WIDGETS, x0 - SCROLL_CAP, top, 0, SCROLL_V, SCROLL_CAP, SCROLL_H, WIDGETS_W, WIDGETS_H);
-        g.blit(WIDGETS, x1, top, SCROLL_CAP, SCROLL_V, SCROLL_CAP, SCROLL_H, WIDGETS_W, WIDGETS_H);
-        PlateFont.draw(g, title, mid - textW / 2 + 1, top + 9, 0xFFFFF9E0);
-        PlateFont.draw(g, title, mid - textW / 2, top + 8, 0xFF4E3417);
+        g.blit(widgets, x0 - SCROLL_CAP, top, 0, SCROLL_V, SCROLL_CAP, SCROLL_H, WIDGETS_W, WIDGETS_H);
+        g.blit(widgets, x1, top, SCROLL_CAP, SCROLL_V, SCROLL_CAP, SCROLL_H, WIDGETS_W, WIDGETS_H);
+        PlateFont.draw(g, title, mid - textW / 2 + 1, top + 9, titleShadow());
+        PlateFont.draw(g, title, mid - textW / 2, top + 8, titleColour());
     }
 
     private void drawClose(GuiGraphics g, int mouseX, int mouseY) {
-        boolean hot = ready() && inside(CLOSE_X, CLOSE_Y, CLOSE_SIZE, CLOSE_SIZE, mouseX, mouseY);
+        boolean hot = ready() && inside(layout.closeX, layout.closeY, CLOSE_SIZE, CLOSE_SIZE, mouseX, mouseY);
         int state = closingAt >= 0L ? 2 : hot ? 1 : 0;
         RenderSystem.enableBlend();
-        g.blit(WIDGETS, leftPos + CLOSE_X, topPos + CLOSE_Y, CLOSE_U + state * CLOSE_SIZE, CLOSE_V, CLOSE_SIZE, CLOSE_SIZE,
+        g.blit(widgets, leftPos + layout.closeX, topPos + layout.closeY, CLOSE_U + state * CLOSE_SIZE, CLOSE_V, CLOSE_SIZE, CLOSE_SIZE,
                 WIDGETS_W, WIDGETS_H);
     }
 
-    /** The mana crystals twinkle: a soft halo round each on its own beat, livelier while the machine works. */
+    /** The lights on the corners twinkle: a soft halo round each on its own beat, livelier while the machine works. */
     private void drawLights(GuiGraphics g, long t) {
         boolean busy = working();
+        int c = lightColour();
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
-        for (int i = 0; i < LIGHTS.length; i++) {
+        for (int i = 0; i < layout.lights.length; i++) {
             float beat = 0.5F + 0.5F * Mth.sin(t / (busy ? 330.0F : 560.0F) + i * 1.9F);
             float a = (busy ? 0.4F : 0.25F) + beat * beat * (busy ? 0.6F : 0.5F);
-            int x = leftPos + LIGHTS[i][0], y = topPos + LIGHTS[i][1];
-            g.setColor(0.6F, 0.95F, 1.0F, a);
-            g.blit(WIDGETS, x - GLOW_SIZE / 2, y - GLOW_SIZE / 2, GLOW_U, GLOW_V, GLOW_SIZE, GLOW_SIZE, WIDGETS_W, WIDGETS_H);
+            int x = leftPos + layout.lights[i][0], y = topPos + layout.lights[i][1];
+            g.setColor((c >> 16 & 0xFF) / 255.0F, (c >> 8 & 0xFF) / 255.0F, (c & 0xFF) / 255.0F, a);
+            g.blit(widgets, x - GLOW_SIZE / 2, y - GLOW_SIZE / 2, GLOW_U, GLOW_V, GLOW_SIZE, GLOW_SIZE, WIDGETS_W, WIDGETS_H);
             g.setColor(1.0F, 1.0F, 1.0F, 1.0F);
-            if (beat > 0.94F && ready()) sparkle(g, x, y, MANA_BRIGHT, (beat - 0.94F) / 0.06F);
+            if (beat > 0.94F && ready()) sparkle(g, x, y, c, (beat - 0.94F) / 0.06F);
         }
     }
 
-    /** Mana runs round the livingrock strip in the frame while the machine works. */
+    /** Mana runs round the groove in the frame while the machine works. */
     private void drawVeinPulse(GuiGraphics g, long t) {
-        if (!working()) return;
-        int x1 = VEIN, y1 = VEIN, x2 = MachineMenu.WIDTH - 1 - VEIN, y2 = MACHINE_H - 1 - VEIN;
+        if (!working() || layout.vein.length < 4) return;
+        int x1 = layout.vein[0], y1 = layout.vein[1], x2 = layout.vein[2], y2 = layout.vein[3];
+        int[] colours = veinColours();
         int perimeter = 2 * (x2 - x1) + 2 * (y2 - y1);
         for (int k = 0; k < 2; k++) {
             int head = (int) ((t / 22L + k * perimeter / 2) % perimeter);
@@ -403,7 +484,7 @@ public abstract class MachineScreen<M extends MachineMenu> extends AbstractConta
                 if ((p[0] == x1 || p[0] == x2) && (p[1] == y1 || p[1] == y2)) continue;
                 float f = j / 18.0F;
                 int a = (int) (230 * (1.0F - f) * (1.0F - f)) + 10;
-                int c = j == 0 ? 0xF2FFFF : j < 3 ? 0xA6F6FF : 0x55D9F7;
+                int c = j == 0 ? colours[0] : j < 3 ? colours[1] : colours[2];
                 g.fill(leftPos + p[0], topPos + p[1], leftPos + p[0] + 1, topPos + p[1] + 1, a << 24 | c);
             }
         }
@@ -501,6 +582,20 @@ public abstract class MachineScreen<M extends MachineMenu> extends AbstractConta
         return 0xFFFFFF;
     }
 
+    /** A piece of the machine's sheet drawn as light, adding to what is under it, tinted (menu coordinates). */
+    protected void glowBlit(GuiGraphics g, float x, float y, int u, int v, int w, int h, int rgb, float alpha) {
+        if (alpha <= 0.01F) return;
+        RenderSystem.enableBlend();
+        RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
+        g.setColor((rgb >> 16 & 0xFF) / 255.0F, (rgb >> 8 & 0xFF) / 255.0F, (rgb & 0xFF) / 255.0F, Math.min(1.0F, alpha));
+        g.pose().pushPose();
+        g.pose().translate(leftPos + x, topPos + y, 0.0F);
+        g.blit(widgets, 0, 0, u, v, w, h, WIDGETS_W, WIDGETS_H);
+        g.pose().popPose();
+        g.setColor(1.0F, 1.0F, 1.0F, 1.0F);
+        RenderSystem.defaultBlendFunc();
+    }
+
     /** An item drawn at a point of the GUI (menu coordinates, its middle), scaled, over the slots. */
     protected void floatingItem(GuiGraphics g, ItemStack stack, float x, float y, float scale) {
         if (stack.isEmpty() || scale <= 0.02F) return;
@@ -521,12 +616,13 @@ public abstract class MachineScreen<M extends MachineMenu> extends AbstractConta
             Flight f = it.next();
             long a = t - f.at();
             if (a >= 480L) {
-                burst(OUTPUT_MID_X, GRID_MID_Y, 7, GOLD_LIGHT, 0.6F);
+                burst(layout.landX, layout.landY, 7, GOLD_LIGHT, 0.6F);
+                onLanded(t);
                 it.remove();
                 continue;
             }
             float p = a / 480.0F, e = 1.0F - (1.0F - p) * (1.0F - p);
-            float x = Mth.lerp(e, heartX, OUTPUT_MID_X), y = Mth.lerp(e, heartY, GRID_MID_Y) - 12.0F * Mth.sin(e * PI);
+            float x = Mth.lerp(e, heartX, layout.landX), y = Mth.lerp(e, heartY, layout.landY) - 12.0F * Mth.sin(e * PI);
             floatingItem(g, f.stack(), x, y, 0.2F + 0.8F * Math.min(1.0F, p * 1.8F));
         }
     }
@@ -542,12 +638,12 @@ public abstract class MachineScreen<M extends MachineMenu> extends AbstractConta
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (!ready() || closingAt >= 0L) return true;
         if (button == 0 && minecraft != null && minecraft.gameMode != null) {
-            if (inside(CLOSE_X, CLOSE_Y, CLOSE_SIZE, CLOSE_SIZE, mouseX, mouseY)) {
+            if (inside(layout.closeX, layout.closeY, CLOSE_SIZE, CLOSE_SIZE, mouseX, mouseY)) {
                 minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
                 onClose();
                 return true;
             }
-            if (inside(BUTTON_REDSTONE_X, BUTTON_Y, BUTTON_SIZE, BUTTON_SIZE, mouseX, mouseY)) {
+            if (inside(layout.redstoneX, layout.redstoneY, BUTTON_SIZE, BUTTON_SIZE, mouseX, mouseY)) {
                 minecraft.gameMode.handleInventoryButtonClick(menu.containerId, MachineMenu.BUTTON_REDSTONE);
                 minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
                 return true;
@@ -559,10 +655,11 @@ public abstract class MachineScreen<M extends MachineMenu> extends AbstractConta
     @Override
     protected boolean hasClickedOutside(double mouseX, double mouseY, int left, int top, int button) {
         if (mouseY >= top - SCROLL_UP && mouseY < top && Math.abs(mouseX - (left + imageWidth / 2.0D)) < scrollHalf) return false;
-        if (inside(CLOSE_X, CLOSE_Y, CLOSE_SIZE, CLOSE_SIZE, mouseX, mouseY)) return false;
+        if (inside(layout.closeX, layout.closeY, CLOSE_SIZE, CLOSE_SIZE, mouseX, mouseY)) return false;
+        if (inside(layout.redstoneX, layout.redstoneY, BUTTON_SIZE, BUTTON_SIZE, mouseX, mouseY)) return false;
         double mx = mouseX - left, my = mouseY - top;
-        boolean inMachine = mx >= 0 && mx < imageWidth && my >= 0 && my < MACHINE_H;
-        boolean inInventory = mx >= INV_PANEL_X1 && mx < INV_PANEL_X2 && my >= MACHINE_H && my < imageHeight;
+        boolean inMachine = mx >= 0 && mx < imageWidth && my >= 0 && my < layout.machineHeight;
+        boolean inInventory = mx >= layout.invPanelX1 && mx < layout.invPanelX2 && my >= layout.machineHeight && my < imageHeight;
         return !inMachine && !inInventory;
     }
 
@@ -571,26 +668,25 @@ public abstract class MachineScreen<M extends MachineMenu> extends AbstractConta
     private void ownTooltips(GuiGraphics g, int mouseX, int mouseY) {
         List<Component> tip = new ArrayList<>();
         int mx = mouseX - leftPos, my = mouseY - topPos;
-        if (inside(CLOSE_X, CLOSE_Y, CLOSE_SIZE, CLOSE_SIZE, mouseX, mouseY)) {
+        if (inside(layout.closeX, layout.closeY, CLOSE_SIZE, CLOSE_SIZE, mouseX, mouseY)) {
             tip.add(Component.translatable("gui.alfheimheart.close"));
-        } else if (inside(BUTTON_REDSTONE_X, BUTTON_Y, BUTTON_SIZE, BUTTON_SIZE, mouseX, mouseY)) {
+        } else if (inside(layout.redstoneX, layout.redstoneY, BUTTON_SIZE, BUTTON_SIZE, mouseX, mouseY)) {
             tip.add(Component.translatable("gui.alfheimheart.redstone"));
             tip.add(Component.translatable("gui.alfheimheart.redstone." + menu.redstone().name().toLowerCase(Locale.ROOT))
                     .withStyle(ChatFormatting.GRAY));
-        } else if (inside(POOL_X, POOL_Y, POOL_SIZE, POOL_SIZE, mouseX, mouseY)
-                || inside(BAR_X1 - 14, BAR_Y1 - 3, BAR_X2 - BAR_X1 + 16, BAR_Y2 - BAR_Y1 + 6, mouseX, mouseY)) {
+        } else if (inside(layout.poolX, layout.poolY, POOL_SIZE, POOL_SIZE, mouseX, mouseY) || hoveredSlot == null && overGauge(mx, my)) {
             tip.add(Component.translatable("gui.alfheimheart.mana", Format.mana(menu.mana()), Format.mana(menu.capacity()))
                     .withStyle(ChatFormatting.AQUA));
             tip.add(Component.translatable(menu.hasPool() ? "gui.alfheimheart.pool" : "gui.alfheimheart.no_pool").withStyle(ChatFormatting.GRAY));
             if (menu.status() == MachineStatus.NO_MANA) tip.add(status());
-        } else if (hoveredSlot != null && hoveredSlot.index >= MachineBlockEntity.SPECIAL_START && hoveredSlot.index < menu.machineSlots()
+        } else if (hoveredSlot != null && hoveredSlot.index >= layout.specialStart() && hoveredSlot.index < menu.machineSlots()
                 && !hoveredSlot.hasItem()) {
-            specialSlotTooltip(tip, hoveredSlot.index - MachineBlockEntity.SPECIAL_START);
-        } else if (hoveredSlot != null && hoveredSlot.index < MachineBlockEntity.SPECIAL_START && !hoveredSlot.hasItem()) {
-            boolean input = hoveredSlot.index < MachineBlockEntity.OUTPUT_START;
-            String k = input ? "gui.alfheimheart." + key() + ".slot.input" : "gui.alfheimheart.slot.output";
-            tip.add(Component.translatable(k).withStyle(input ? ChatFormatting.GREEN : ChatFormatting.GOLD));
-            tip.add(Component.translatable(k + ".tip").withStyle(ChatFormatting.GRAY));
+            specialSlotTooltip(tip, hoveredSlot.index - layout.specialStart());
+        } else if (hoveredSlot != null && hoveredSlot.index < layout.outputStart() && !hoveredSlot.hasItem()) {
+            inputSlotTooltip(tip, hoveredSlot.index);
+        } else if (hoveredSlot != null && hoveredSlot.index < layout.specialStart() && !hoveredSlot.hasItem()) {
+            tip.add(Component.translatable("gui.alfheimheart.slot.output").withStyle(ChatFormatting.GOLD));
+            tip.add(Component.translatable("gui.alfheimheart.slot.output.tip").withStyle(ChatFormatting.GRAY));
         } else {
             heartTooltip(tip, mx, my);
         }

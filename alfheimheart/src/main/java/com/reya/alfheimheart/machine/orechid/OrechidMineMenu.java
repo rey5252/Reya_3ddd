@@ -22,6 +22,6 @@ public class OrechidMineMenu extends MachineMenu {
     }
 
     public OrechidMineMenu(int id, Inventory inventory, @Nullable MachineBlockEntity machine, IItemHandler items, ContainerData data) {
-        super(AlfheimHeart.ORECHID_MINE_MENU.get(), id, inventory, machine, items, data, new int[0][]);
+        super(AlfheimHeart.ORECHID_MINE_MENU.get(), id, inventory, machine, items, data, OrechidMineBlockEntity.LAYOUT);
     }
 }

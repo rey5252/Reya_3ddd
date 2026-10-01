@@ -10,6 +10,8 @@ import com.reya.alfheimheart.machine.daisy.client.PureDaisyScreen;
 import com.reya.alfheimheart.machine.farm.client.PetalFarmScreen;
 import com.reya.alfheimheart.machine.field.client.CropFieldScreen;
 import com.reya.alfheimheart.machine.orechid.client.OrechidMineScreen;
+import com.reya.alfheimheart.machine.MachineLayout;
+import com.reya.alfheimheart.machine.MachineLayouts;
 import com.reya.alfheimheart.machine.client.MachineScreen;
 import com.reya.alfheimheart.machine.infuser.client.ManaInfuserScreen;
 import com.reya.alfheimheart.machine.plate.client.TerraPlateScreen;
@@ -119,15 +121,15 @@ public class JeiCompat implements IModPlugin {
         machine(registration, PetalFarmScreen.class);
         machine(registration, OrechidMineScreen.class);
         machine(registration, CropFieldScreen.class);
-        // the arrows into and out of the portal and the machines show their recipes
+        // the arrows into and out of the portal show its trades; each machine's click areas (its layout's) its recipes
         registration.addRecipeClickArea(PortalScreen.class, 74, 53, 12, 9, ELVEN_TRADE);
         registration.addRecipeClickArea(PortalScreen.class, 155, 53, 12, 9, ELVEN_TRADE);
-        arrows(registration, RuneAltarScreen.class, RUNIC_ALTAR);
-        arrows(registration, TerraPlateScreen.class, TERRA_PLATE);
-        arrows(registration, ManaInfuserScreen.class, MANA_POOL);
-        arrows(registration, PureDaisyScreen.class, PURE_DAISY);
-        arrows(registration, PetalApothecaryScreen.class, PETALS);
-        arrows(registration, OrechidMineScreen.class, ORECHID, ORECHID_IGNEM, MARIMORPHOSIS);
+        clickAreas(registration, RuneAltarScreen.class, MachineLayouts.RUNE_ALTAR, RUNIC_ALTAR);
+        clickAreas(registration, TerraPlateScreen.class, MachineLayouts.TERRA_PLATE, TERRA_PLATE);
+        clickAreas(registration, ManaInfuserScreen.class, MachineLayouts.MANA_INFUSER, MANA_POOL);
+        clickAreas(registration, PureDaisyScreen.class, MachineLayouts.PURE_DAISY, PURE_DAISY);
+        clickAreas(registration, PetalApothecaryScreen.class, MachineLayouts.PETAL_APOTHECARY, PETALS);
+        clickAreas(registration, OrechidMineScreen.class, MachineLayouts.ORECHID_MINE, ORECHID, ORECHID_IGNEM, MARIMORPHOSIS);
     }
 
     private static <T extends MachineScreen<?>> void machine(IGuiHandlerRegistration registration, Class<T> screen) {
@@ -139,8 +141,8 @@ public class JeiCompat implements IModPlugin {
         });
     }
 
-    private static <T extends MachineScreen<?>> void arrows(IGuiHandlerRegistration registration, Class<T> screen, RecipeType<?>... types) {
-        registration.addRecipeClickArea(screen, 74, 53, 12, 9, types);
-        registration.addRecipeClickArea(screen, 155, 53, 12, 9, types);
+    private static <T extends MachineScreen<?>> void clickAreas(IGuiHandlerRegistration registration, Class<T> screen, MachineLayout layout,
+                                                                RecipeType<?>... types) {
+        for (int[] area : layout.clickAreas) registration.addRecipeClickArea(screen, area[0], area[1], area[2], area[3], types);
     }
 }
