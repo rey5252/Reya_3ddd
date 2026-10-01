@@ -277,9 +277,21 @@ public class RouterBlockEntity extends BlockEntity implements MenuProvider {
 
     public void neighborChanged() {
         if (level == null || level.isClientSide) return;
-        boolean now = level.hasNeighborSignal(worldPosition);
+        boolean now = signalIn(level, worldPosition);
         if (now && !powered && redstone == RedstoneMode.PULSE) pulse = true;
         powered = now;
+    }
+
+    /**
+     * Whether a redstone signal comes into the router. A side a detector signals out of isn't read: what comes
+     * back there (through dust, or a block it powers) is the router's own signal, and it mustn't power itself.
+     */
+    private boolean signalIn(Level level, BlockPos pos) {
+        for (Direction side : Direction.values()) {
+            if (weak[side.get3DDataValue()] > 0) continue;
+            if (level.getSignal(pos.relative(side), side) > 0) return true;
+        }
+        return false;
     }
 
     public boolean powered() {
@@ -304,6 +316,8 @@ public class RouterBlockEntity extends BlockEntity implements MenuProvider {
         for (Direction side : Direction.values()) {
             if (strongChanged[side.get3DDataValue()]) level.updateNeighborsAt(pos.relative(side), block);
         }
+        // the sides it reads changed with the sides it signals out of
+        neighborChanged();
     }
 
     /** 0 empty, up to 15 a full stack in the buffer. */
@@ -319,7 +333,7 @@ public class RouterBlockEntity extends BlockEntity implements MenuProvider {
     public void onLoad() {
         super.onLoad();
         countUpgrades();
-        if (level != null && !level.isClientSide) powered = level.hasNeighborSignal(worldPosition);
+        if (level != null && !level.isClientSide) powered = signalIn(level, worldPosition);
     }
 
     /** The buffer spills when the router goes; its modules and upgrades stay in the router item it drops. */

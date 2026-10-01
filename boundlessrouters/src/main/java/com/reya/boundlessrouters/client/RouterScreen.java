@@ -195,16 +195,17 @@ public class RouterScreen extends AbstractContainerScreen<RouterMenu> {
         g.drawString(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, Ui.TEXT_DIM, false);
         // the redstone mode, a red dot while the router has a signal
         int lx = Router.REDSTONE[0] + 24, ly = Router.REDSTONE[1] + 4;
-        g.drawString(font, Component.translatable("gui.boundlessrouters.redstone." + menu.redstoneMode().key()), lx, ly, Ui.TEXT_LCD, false);
+        Ui.fit(g, font, Component.translatable("gui.boundlessrouters.redstone." + menu.redstoneMode().key()), lx, ly, 81 - lx, Ui.TEXT_LCD, 1.0F);
         if (menu.powered()) g.fill(83, ly + 2, 86, ly + 5, 0xFFFF4B3E);
-        // the readouts
+        // the readouts (on their screen, which ends at x 88)
         int interval = menu.interval();
         Component[] lines = {
-                interval <= 1 ? Component.translatable("gui.boundlessrouters.every_tick") : Component.translatable("gui.boundlessrouters.interval", interval),
+                interval <= 1 ? Component.translatable("gui.boundlessrouters.every_tick") : Ui.count("gui.boundlessrouters.interval", interval),
                 Component.translatable("gui.boundlessrouters.items", menu.itemsPerRun()),
-                Component.translatable("gui.boundlessrouters.range", menu.range())};
+                Ui.count("gui.boundlessrouters.range", menu.range())};
         for (int k = 0; k < lines.length; k++) {
-            g.drawString(font, lines[k], Router.INFO[k][0] + 13, Router.INFO[k][1] + 1, Ui.TEXT_LCD, false);
+            int tx = Router.INFO[k][0] + 13;
+            Ui.fit(g, font, lines[k], tx, Router.INFO[k][1] + 1, 86 - tx, Ui.TEXT_LCD, 1.0F);
         }
     }
 

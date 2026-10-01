@@ -61,8 +61,46 @@ final class Ui {
         g.pose().popPose();
     }
 
+    /** Text at a scale, made smaller still if it would be wider than maxWidth (a long translation), its top left at (x, y). */
+    static void fit(GuiGraphics g, Font font, Component text, float x, float y, float maxWidth, int colour, float scale) {
+        float width = font.width(text) * scale;
+        float s = width > maxWidth ? Math.max(0.5F, scale * maxWidth / width) : scale;
+        small(g, font, text, x, y + (scale - s) * 6.0F, colour, s);
+    }
+
     static void centred(GuiGraphics g, Font font, Component text, int cx, int y, int colour, boolean shadow) {
         g.drawString(font, text, cx - font.width(text) / 2, y, colour, shadow);
+    }
+
+    /** Centred text, made smaller if it would be wider than maxWidth. */
+    static void centredFit(GuiGraphics g, Font font, Component text, int cx, int y, int maxWidth, int colour) {
+        int width = font.width(text);
+        if (width <= maxWidth) {
+            centred(g, font, text, cx, y, colour, false);
+            return;
+        }
+        float s = Math.max(0.5F, maxWidth / (float) width);
+        small(g, font, text, cx - width * s / 2.0F, y + (1.0F - s) * 4.0F, colour, s);
+    }
+
+    /**
+     * A number with its noun in the form the language wants: key.one, key.few or key.many (Ukrainian and Russian
+     * have three: 1 блок, 2 блоки, 5 блоків; English two, where few is many).
+     */
+    static Component count(String key, int n) {
+        return Component.translatable(key + "." + plural(n), n);
+    }
+
+    static String plural(int n) {
+        String lang = Minecraft.getInstance().getLanguageManager().getSelected();
+        int a = Math.abs(n);
+        if (lang.startsWith("uk") || lang.startsWith("ru")) {
+            int last = a % 10, lastTwo = a % 100;
+            if (last == 1 && lastTwo != 11) return "one";
+            if (last >= 2 && last <= 4 && (lastTwo < 12 || lastTwo > 14)) return "few";
+            return "many";
+        }
+        return a == 1 ? "one" : "many";
     }
 
     private Ui() {

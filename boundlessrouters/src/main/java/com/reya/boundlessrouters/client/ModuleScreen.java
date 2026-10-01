@@ -111,7 +111,14 @@ public class ModuleScreen extends AbstractContainerScreen<ModuleMenu> {
             boolean usable = kind.directional();
             int state = !usable ? 3 : dir == current ? 2 : hover ? 1 : 0;
             Ui.button(g, cx, cy, state);
-            if (usable || dir == current) Ui.glyph(g, Sheet.DIRS, dir.ordinal(), cx + 3, cy + 3);
+            if (usable) {
+                Ui.glyph(g, Sheet.DIRS, dir.ordinal(), cx + 3, cy + 3);
+            } else {
+                // a module that doesn't look anywhere: the cube, dimmed
+                g.setColor(0.42F, 0.45F, 0.5F, 1.0F);
+                Ui.glyph(g, Sheet.DIRS, dir.ordinal(), cx + 3, cy + 3);
+                g.setColor(1.0F, 1.0F, 1.0F, 1.0F);
+            }
             if (dir == current && usable) {
                 Gfx.radial(g, cx + 8, cy + 8, 11.0F, Gfx.argb(Ui.TEAL, 0.25F + 0.1F * Mth.sin(now / 300.0F)), Gfx.argb(Ui.TEAL, 0.0F), true);
             }
@@ -188,7 +195,7 @@ public class ModuleScreen extends AbstractContainerScreen<ModuleMenu> {
                 int cx = cycleButton(g, px, rowA - 1, mouseX, mouseY, Setting.STRATEGY, strategy.ordinal(), ModuleSettings.Strategy.values().length,
                         "gui.boundlessrouters.strategy");
                 text(g, Component.translatable("gui.boundlessrouters.strategy." + strategy.key()), cx, rowA, Ui.TEXT);
-                Component count = Component.translatable("gui.boundlessrouters.targets", targets.size());
+                Component count = Ui.count("gui.boundlessrouters.targets", targets.size());
                 text(g, count, right - 14 - font.width(count), rowA, Ui.TEXT_LCD);
                 if (!targets.isEmpty()) {
                     clearButton(g, right - 10, rowA - 1, mouseX, mouseY, Setting.CLEAR_TARGETS, "gui.boundlessrouters.clear_targets");
@@ -236,7 +243,7 @@ public class ModuleScreen extends AbstractContainerScreen<ModuleMenu> {
                 text(g, Component.translatable("gui.boundlessrouters.detector_hint"), px, rowB, Ui.TEXT_DIM);
             }
             case EXTRUDER -> {
-                text(g, Component.translatable("gui.boundlessrouters.extended", s.extended()), px, rowA, Ui.TEXT);
+                text(g, Ui.count("gui.boundlessrouters.extended", s.extended()), px, rowA, Ui.TEXT);
                 text(g, Component.translatable("gui.boundlessrouters.extruder_hint"), px, rowB, Ui.TEXT_DIM);
             }
             case INFO -> {
@@ -319,11 +326,13 @@ public class ModuleScreen extends AbstractContainerScreen<ModuleMenu> {
         ModuleKind kind = kind();
         Component dir = kind.directional() ? Component.translatable("direction.boundlessrouters." + s.direction().key())
                 : Component.translatable("gui.boundlessrouters.no_direction");
-        Ui.centred(g, font, dir, Module.DIR_LABEL[0], Module.DIR_LABEL[1] - 3, kind.directional() ? Ui.TEXT_LCD : Ui.TEXT_DIM, false);
-        int ix = Module.INFO[0] + 3, iy = Module.INFO[1] + 3;
-        for (Component line : summary(s)) {
-            Ui.small(g, font, line, ix, iy, Ui.TEXT_LCD, 0.75F);
-            iy += 8;
+        Ui.centredFit(g, font, dir, Module.DIR_LABEL[0], Module.DIR_LABEL[1] - 3, 49, kind.directional() ? Ui.TEXT_LCD : Ui.TEXT_DIM);
+        // the readout: three lines, or four closer together
+        List<Component> lines = summary(s);
+        int ix = Module.INFO[0] + 3, iy = Module.INFO[1] + (lines.size() > 3 ? 2 : 3), gap = lines.size() > 3 ? 6 : 8;
+        for (Component line : lines) {
+            Ui.fit(g, font, line, ix, iy, Module.INFO[2] - Module.INFO[0] - 6, Ui.TEXT_LCD, 0.75F);
+            iy += gap;
         }
     }
 

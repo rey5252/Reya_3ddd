@@ -66,7 +66,7 @@ public final class AutoShot {
         STEPS.add(new Step(40, () -> eye(3.2D, 2.4D, 3.6D, 0.5D, 0.5D, 0.5D)));
         STEPS.add(new Step(5, AutoShot::worldView));
         STEPS.add(new Step(60, () -> shot("router_block.png")));
-        STEPS.add(new Step(5, () -> eye(0.5D, 1.6D, 2.8D, 0.5D, 0.5D, 0.5D)));
+        STEPS.add(new Step(5, () -> eye(1.7D, 1.35D, 2.3D, 0.5D, 0.5D, 0.5D)));
         STEPS.add(new Step(30, () -> shot("router_front.png")));
         // the router's GUI, at work
         STEPS.add(new Step(5, AutoShot::beforeGui));
@@ -168,8 +168,10 @@ public final class AutoShot {
     }
 
     /**
-     * A router facing south between chests: one behind it full of cobblestone (a puller takes from it), one in
-     * front (a sender fills it), two more a distributor shares out to; and every other kind of module set up.
+     * A router facing south between chests: one behind it full of cobblestone (a puller takes from it), one three
+     * blocks ahead (a sender finds it and fills it), two more a distributor shares iron out to; and every other
+     * kind of module set up. Each run the sender sends what the puller took the run before, so the buffer is
+     * seldom empty and a detector sees it.
      */
     private static void setUp() {
         MinecraftServer server = server();
@@ -179,7 +181,7 @@ public final class AutoShot {
                 for (int z = -4; z <= 4; z++) level.setBlockAndUpdate(ROUTER.offset(x, -1, z), Blocks.POLISHED_DEEPSLATE.defaultBlockState());
             }
             level.setBlockAndUpdate(ROUTER, BoundlessRouters.ROUTER.get().defaultBlockState().setValue(RouterBlock.FACING, Direction.SOUTH));
-            BlockPos back = ROUTER.north(), front = ROUTER.south(), left = ROUTER.offset(3, 0, 2), right = ROUTER.offset(-3, 0, 2);
+            BlockPos back = ROUTER.north(), front = ROUTER.south(3), left = ROUTER.offset(3, 0, 2), right = ROUTER.offset(-3, 0, 2);
             for (BlockPos pos : new BlockPos[]{back, front, left, right}) level.setBlockAndUpdate(pos, Blocks.CHEST.defaultBlockState());
             if (level.getBlockEntity(back) != null) {
                 IItemHandler chest = level.getBlockEntity(back).getCapability(ForgeCapabilities.ITEM_HANDLER, null).resolve().orElseThrow();
@@ -196,6 +198,8 @@ public final class AutoShot {
                         s.toggleTarget(new Target(dim, left, Direction.UP));
                         s.toggleTarget(new Target(dim, right, Direction.UP));
                         s.apply(Setting.STRATEGY, 0);
+                        s.apply(Setting.BLACKLIST, 0);
+                        s.setFilterItems(List.of(new ItemStack(Items.IRON_INGOT)));
                     }),
                     module(ModuleKind.FLINGER, s -> {
                         s.apply(Setting.SPEED, 15);

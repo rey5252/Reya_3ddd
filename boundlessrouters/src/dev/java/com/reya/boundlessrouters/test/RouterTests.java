@@ -25,6 +25,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.RedStoneWireBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.AABB;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
@@ -289,6 +290,22 @@ public class RouterTests {
         router.buffer().setStackInSlot(0, ItemStack.EMPTY);
         run(h, router);
         expect(h, router.signal(Direction.SOUTH, false), 0, "no signal with the buffer empty");
+        h.succeed();
+    }
+
+    @GameTest(template = ROOM)
+    public static void detectorDoesNotPowerItsOwnRouter(GameTestHelper h) {
+        BlockPos at = new BlockPos(4, 2, 4);
+        RouterBlockEntity router = router(h, at, Direction.SOUTH);
+        h.setBlock(at.south(), Blocks.REDSTONE_WIRE);
+        router.modules().setStackInSlot(0, module(ModuleKind.DETECTOR, s -> {
+        }));
+        router.buffer().setStackInSlot(0, new ItemStack(Items.DIRT));
+        run(h, router);
+        expect(h, h.getLevel().getBlockState(h.absolutePos(at.south())).getValue(RedStoneWireBlock.POWER), 15, "the dust the detector powers");
+        h.assertTrue(!router.powered(), "the router isn't powered by its own signal coming back");
+        h.setBlock(at.east(), Blocks.REDSTONE_BLOCK);
+        h.assertTrue(router.powered(), "a signal from elsewhere powers it");
         h.succeed();
     }
 
