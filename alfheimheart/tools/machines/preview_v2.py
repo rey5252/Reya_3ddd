@@ -218,9 +218,44 @@ def plate_extra(img, sh, left, top):
     blit(img, sh, left + px, top + py, (L.POOL_UV[0] + 16, L.POOL_UV[1], L.POOL_UV[0] + 32, L.POOL_UV[1] + 16))
 
 
+def infuser_extra(img, sh, left, top):
+    f = L.INFUSER
+    mana = 0.7
+    wy = f.CY + f.WATER_EMPTY + (f.WATER_FULL - f.WATER_EMPTY) * mana
+    px = img.load()
+
+    def half(y, mid):
+        fy = (y + 0.5 - mid) / f.OPEN_RY
+        return -1 if abs(fy) >= 1 else f.OPEN_RX * math.sqrt(1 - fy * fy)
+    for y in range(int(wy - f.OPEN_RY), int(wy + f.OPEN_RY) + 1):
+        h = min(half(y, wy), half(y, f.CY))
+        if h <= 0:
+            continue
+        fy = (y + 0.5 - wy) / f.OPEN_RY
+        for x in range(int(math.ceil(f.CX - h - 0.5)), int(math.floor(f.CX + h - 0.5)) + 1):
+            wave = math.sin((x - f.CX) * 0.42 + y * 0.9) + 0.6 * math.sin((x - f.CX) * -0.19 + y * 1.4)
+            k = (wave + 1.6) / 3.2
+            t = 0.55 + 0.45 * (fy + 1) / 2
+            c = (int(14 + (42 - 14) * t), int(58 + (159 - 58) * t), int(122 + (226 - 122) * t))
+            if k > 0.6:
+                c = tuple(min(255, int(v + (w - v) * (k - 0.6) * 1.5)) for v, w in zip(c, (85, 217, 247)))
+            if half(y - 1, wy) < 0:
+                c = (200, 250, 255)
+            px[left + x, top + y] = c + (255,)
+    add_disc(img, left + f.CX, top + f.CY - 21, 14, (120, 220, 255), 0.6)
+    blit(img, item("mana_pearl"), left + f.CX - 8, top + f.CY - 29)
+    s_ = f.CATALYST_RING_SIZE
+    sx, sy = f.CATALYST
+    blit(img, sh, left + sx + 8 - s_ // 2, top + sy + 8 - s_ // 2, (f.CATALYST_RING_UV[0], f.CATALYST_RING_UV[1], f.CATALYST_RING_UV[0] + s_, f.CATALYST_RING_UV[1] + s_),
+         tint=(255, 150, 255), alpha=0.7, add=True)
+    blit(img, sh, left + f.POOL[0], top + f.POOL[1], (L.POOL_UV[0] + 16, L.POOL_UV[1], L.POOL_UV[0] + 32, L.POOL_UV[1] + 16))
+
+
 PREVIEWS = {
     "rune_altar": ("RUNIC ALTAR", ["manasteel_ingot", "mana_powder", "mana_pearl", "rune_mana", "mana_diamond", None, None, None,
                                    "rune_fire", "rune_water", "rune_earth", None, None, None, "livingrock"], altar_extra),
+    "mana_infuser": ("MANA INFUSER", ["ender_pearl", "manasteel_ingot", "mana_diamond", None, None, None,
+                                      "mana_pearl", "manasteel_ingot", None, None, None, None, "alchemy_catalyst"], infuser_extra),
     "terra_plate": ("TERRESTRIAL PLATE", ["manasteel_ingot", None, "mana_pearl", None, "mana_diamond", None,
                                           "terrasteel_ingot", None, None], plate_extra),
 }

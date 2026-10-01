@@ -146,30 +146,6 @@ def main():
                     errors.append(f"{key}: slots at {(x1, y1)} and {(x2, y2)} overlap")
 
     # the first-generation machines' own numbers
-    infuser = java_constants(os.path.join(MACHINE, "infuser", "client", "ManaInfuserScreen.java"))
-    same("infuser: the pool", (infuser["POOL_X"], infuser["POOL_Y"], infuser["SURFACE_RX"], infuser["SURFACE_RY"]),
-         (L.POOL_.CENTER[0], L.POOL_.CENTER[1], L.POOL_.SURFACE_RX, L.POOL_.SURFACE_RY))
-    same("infuser: the item", (infuser["ITEM_X"], infuser["ITEM_Y"], infuser["ITEM_RING_R"]),
-         (L.POOL_.ITEM[0], L.POOL_.ITEM[1], L.POOL_.ITEM_RING_R))
-    same("infuser: gem", (infuser["GEM_X"], infuser["GEM_Y"]), L.POOL_.GEM)
-    same("infuser: heart's box", infuser["HEART_BOX"], L.POOL_.HEART_BOX)
-    same("infuser: halo (sheet)", (infuser["HALO_U"], infuser["HALO_V"], infuser["HALO_SIZE"]), (sheet["HALO_UV"][0], sheet["HALO_UV"][1], sheet["HALO_SIZE"]))
-
-    daisy = java_constants(os.path.join(MACHINE, "daisy", "client", "PureDaisyScreen.java"))
-    same("daisy: its middle, ring, heart", (daisy["DAISY_X"], daisy["DAISY_Y"], daisy["RING_R"], daisy["HEART_R"]),
-         (L.DAISY.CENTER[0], L.DAISY.CENTER[1], L.DAISY.RING_R, L.DAISY.HEART_R))
-    same("daisy: gem", (daisy["GEM_X"], daisy["GEM_Y"]), L.DAISY.GEM)
-    same("daisy: stones", daisy["CELLS"], [tuple(p) for p in L.DAISY.CELLS])
-    same("daisy: halo (sheet)", (daisy["HALO_U"], daisy["HALO_V"], daisy["HALO_SIZE"]), (sheet["HALO_UV"][0], sheet["HALO_UV"][1], sheet["HALO_SIZE"]))
-
-    bowl = java_constants(os.path.join(MACHINE, "apothecary", "client", "PetalApothecaryScreen.java"))
-    same("apothecary: the water", (bowl["BOWL_X"], bowl["BOWL_Y"], bowl["WATER_RX"], bowl["WATER_RY"]),
-         (L.BOWL.CENTER[0], L.BOWL.CENTER[1], L.BOWL.WATER_RX, L.BOWL.WATER_RY))
-    same("apothecary: the flower", (bowl["ITEM_X"], bowl["ITEM_Y"], bowl["ITEM_RING_R"]), (L.BOWL.ITEM[0], L.BOWL.ITEM[1], L.BOWL.ITEM_RING_R))
-    same("apothecary: gem", (bowl["GEM_X"], bowl["GEM_Y"]), L.BOWL.GEM)
-    same("apothecary: heart's box", bowl["HEART_BOX"], L.BOWL.HEART_BOX)
-    same("apothecary: halo (sheet)", (bowl["HALO_U"], bowl["HALO_V"], bowl["HALO_SIZE"]), (sheet["HALO_UV"][0], sheet["HALO_UV"][1], sheet["HALO_SIZE"]))
-
     farm = java_constants(os.path.join(MACHINE, "farm", "client", "PetalFarmScreen.java"))
     same("farm: the planter", (farm["BED_X1"], farm["SOIL_Y"], farm["BED_X2"], farm["BED_Y2"]), L.FARM.BED)
     same("farm: the soil's top", farm["SOIL_TOP"], L.FARM.SOIL_TOP)

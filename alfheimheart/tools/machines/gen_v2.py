@@ -4,6 +4,9 @@
 
   rune_altar   the rune sanctum (sanctum.py)
   terra_plate  the celestial astrolabe (astrolabe.py)
+  mana_infuser the crystal fountain (fountain.py)
+  pure_daisy   the dawn garden (garden.py)
+  petal_apothecary  the flower alchemist's table (alchemy.py)
 
 Each writes textures/gui/<key>.png (the panel, with the texture's margin round it), <key>_widgets.png (its
 sheet: the shared pieces where machine/client/MachineScreen.java reads them, its own elsewhere) and
@@ -12,10 +15,14 @@ sheet: the shared pieces where machine/client/MachineScreen.java reads them, its
 import os
 
 from pix import ASSETS
+import alchemy
 import astrolabe
+import fountain
+import garden
 import sanctum
 
-MACHINES = {"rune_altar": sanctum, "terra_plate": astrolabe}
+MACHINES = {"rune_altar": sanctum, "terra_plate": astrolabe, "mana_infuser": fountain, "pure_daisy": garden,
+            "petal_apothecary": alchemy}
 
 
 def build(key):

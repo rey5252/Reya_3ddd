@@ -244,25 +244,27 @@ public class TerraPlateScreen extends MachineScreen<TerraPlateMenu> {
         }
     }
 
-    /** Two curtains of aurora wavering across the top of the sky, shimmering along their length. */
+    /** Three curtains of aurora wavering across the top of the sky, shimmering along their length, green to violet. */
     private void drawAurora(GuiGraphics g, long t, float strength) {
         float time = t / 1000.0F;
         int x1 = 8, x2 = layout.width - 8, step = 4;
         int n = (x2 - x1) / step + 1;
         float[] xs = new float[n], ys = new float[n];
         int[] colours = new int[n];
-        for (int band = 0; band < 2; band++) {
-            float base = band == 0 ? 30.0F : 44.0F, speed = 0.6F + band * 0.25F;
-            int col = band == 0 ? 0x3DFFB0 : 0x2EC8E6;
+        int[] tints = {0x3DFFB0, 0x2EC8E6, 0xA67CFF};
+        float[] bases = {34.0F, 50.0F, 22.0F}, heights = {26.0F, 20.0F, 16.0F}, strengths = {0.36F, 0.28F, 0.2F};
+        for (int band = 0; band < 3; band++) {
+            float speed = 0.5F + band * 0.22F;
             for (int i = 0; i < n; i++) {
                 float x = x1 + i * step;
                 xs[i] = leftPos + x;
-                ys[i] = topPos + base + 6.0F * Mth.sin(x * 0.045F + time * speed) + 3.0F * Mth.sin(x * 0.11F - time * 1.3F);
+                ys[i] = topPos + bases[band] + 7.0F * Mth.sin(x * 0.04F + time * speed + band) + 3.0F * Mth.sin(x * 0.11F - time * 1.3F);
                 float edge = Math.min(1.0F, Math.min(x - x1, x2 - x) / 40.0F);
-                float shimmer = 0.55F + 0.45F * Mth.sin(x * 0.07F + time * 2.0F + band * 1.7F);
-                colours[i] = Gfx.argb(col, 0.17F * strength * edge * shimmer);
+                float shimmer = 0.5F + 0.5F * Mth.sin(x * 0.07F + time * 2.0F + band * 1.7F);
+                int tint = Gfx.mix(0xFF000000 | tints[band], 0xFF000000 | tints[(band + 1) % 3], 0.5F + 0.5F * Mth.sin(x * 0.02F + time * 0.4F));
+                colours[i] = Gfx.argb(tint, strengths[band] * strength * edge * shimmer);
             }
-            Gfx.ribbon(g, xs, ys, 16.0F, colours, true);
+            Gfx.ribbon(g, xs, ys, heights[band], colours, true);
         }
     }
 

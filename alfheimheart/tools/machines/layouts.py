@@ -160,6 +160,159 @@ PLATE.INPUTS = [slot_at(PLATE.CX, PLATE.CY, PLATE.SOCKET_R, a) for a in PLATE.IN
 PLATE.SHEET = [("star", PLATE.STAR_UV[0], PLATE.STAR_UV[1], PLATE.STAR_SIZE, PLATE.STAR_SIZE)]
 
 
+# ---------------------------------------------------------------- the Mana Infuser: the crystal fountain
+
+class INFUSER:
+    """A marble fountain in a courtyard: the pool in the middle, its water the machine's mana (it rises as the
+    machine fills: the gauge), the item being infused floating over it; the inputs in an alcove trimmed with sea
+    glass on the left, the outputs in a gilded one on the right, the catalyst the stone the fountain stands on."""
+    KEY = "mana_infuser"
+    CX, CY = 128, 56                     # the middle of the basin's rim (seen from above and in front)
+    RIM_RX, RIM_RY = 46, 17              # the rim's outer edge
+    OPEN_RX, OPEN_RY = 40, 13            # its opening (the water's surface is this big)
+    DEPTH = 32                           # the basin's front wall below the rim
+    WATER_EMPTY, WATER_FULL = 27, 2      # how far below the rim's middle the water's surface is, empty and full
+    INPUTS = grid(26, 44, 2, 3)
+    OUTPUTS = grid(194, 44, 2, 3)
+    ALCOVES = [(19, 30, 69, 106), (187, 30, 237, 106)]       # x1, y1 (the arch's top), x2, y2
+    CATALYST = (120, 117)
+    POOL = (20, 128)
+    GEM = (CX, CY + RIM_RY + 16)         # on the basin's front wall
+    LAND = (212, 70)
+    CLICK = [(CX - 10, CY - 34, 20, 20)]  # over the pool, where the item floats
+    LIGHTS = [(3, 152), (252, 152), (43, 244), (212, 244)]
+    VEIN = (3, 3, W - 4, MACHINE_H - 4)
+    GAUGE_BOX = (CX - RIM_RX, CY, CX + RIM_RX, CY + RIM_RY + DEPTH)  # the basin's wall (the water's level)
+    CATALYST_RING_UV, CATALYST_RING_SIZE = (128, 32), 28   # a circle of runes round the catalyst, white
+
+
+INFUSER.SHEET = [("catalyst ring", INFUSER.CATALYST_RING_UV[0], INFUSER.CATALYST_RING_UV[1], INFUSER.CATALYST_RING_SIZE,
+                  INFUSER.CATALYST_RING_SIZE)]
+
+
+# ---------------------------------------------------------------- the Pure Daisy: the dawn garden
+
+class DAISY:
+    """A garden at dawn: the Pure Daisy in the middle of a square bed of nine tiles, the blocks it purifies on
+    the eight round it (as round the daisy in the world), a dewdrop of mana on the left, a woven basket of what
+    it has made on the right."""
+    KEY = "pure_daisy"
+    CX, CY = 124, 82
+    CELL = 28                            # the bed's tiles
+    RING = [(-1, -1), (0, -1), (1, -1), (1, 0), (1, 1), (0, 1), (-1, 1), (-1, 0)]   # the inputs, clockwise from the top-left
+    OUTPUTS = grid(203, 54, 2, 3)
+    BASKET = (194, 44, 246, 116)         # x1, y1, x2, y2 (its handle arches over it)
+    DROP = (34, 100, 17, 56)             # the dewdrop: its round part's middle, radius, and how far over that its tip is
+    POOL = (26, 126)
+    GEM = (CX, CY + 3 * CELL // 2 + 7)
+    LAND = (220, 80)
+    CLICK = [(CX - 9, CY - 9, 18, 18)]   # the daisy
+    LIGHTS = [(3, 152), (252, 152), (43, 244), (212, 244)]
+    VEIN = (3, 3, W - 4, MACHINE_H - 4)
+    BUTTERFLY_UV, BUTTERFLY_SIZE = (128, 32), 7   # a butterfly, wings open and closed, white (the screen tints it)
+    PETAL_UV = (144, 32)                 # a petal 3x3, white
+
+
+DAISY.INPUTS = [(DAISY.CX + dx * DAISY.CELL - 8, DAISY.CY + dy * DAISY.CELL - 8) for (dx, dy) in DAISY.RING]
+DAISY.SHEET = [("butterfly", DAISY.BUTTERFLY_UV[0], DAISY.BUTTERFLY_UV[1], 2 * DAISY.BUTTERFLY_SIZE, DAISY.BUTTERFLY_SIZE),
+               ("petal", DAISY.PETAL_UV[0], DAISY.PETAL_UV[1], 3, 3)]
+
+
+def drop_half(y):
+    """The dewdrop's half-width on the row y (its outline), 0 off it."""
+    cx, cy, r, tip = DAISY.DROP
+    py = y + 0.5
+    if py >= cy:
+        d = py - cy
+        return math.sqrt(max(0.0, r * r - d * d))
+    t = (py - (cy - tip)) / float(tip)
+    if t <= 0:
+        return 0.0
+    return r * math.sin(t * math.pi / 2) ** 1.6
+
+
+def drop_rows(inset=2):
+    """The mana's rows inside the dewdrop's glass: y, x1, x2 (x2 exclusive), bottom first."""
+    cx, cy, r, tip = DAISY.DROP
+    rows = []
+    for y in range(cy + r - 1, cy - tip, -1):
+        h = drop_half(y) - inset
+        if h < 0.5:
+            continue
+        x1, x2 = int(math.ceil(cx - h)), int(math.floor(cx + h))
+        if x2 > x1:
+            rows.append((y, x1, x2))
+    return rows
+
+
+DAISY.GAUGE_BOX = (DAISY.DROP[0] - DAISY.DROP[2] - 2, DAISY.DROP[1] - DAISY.DROP[3] - 2, DAISY.DROP[0] + DAISY.DROP[2] + 2,
+                   DAISY.DROP[1] + DAISY.DROP[2] + 2)
+
+
+# ---------------------------------------------------------------- the Petal Apothecary: the flower alchemist's table
+
+class APOTHECARY:
+    """An alchemist's table: the apothecary's stone bowl in the middle, its nine inputs a fan of petals over it
+    (a flower's, the bowl its heart), the flower taking shape between, the seeds' slot under the bowl; a round
+    flask of mana on the left, a shelf for the flowers made on the right."""
+    KEY = "petal_apothecary"
+    CX, CY = 128, 104                    # the middle of the bowl's rim (seen from above and in front)
+    RIM_RX, RIM_RY = 24, 8
+    WATER_RX, WATER_RY = 20, 5
+    BODY = 14                            # the bowl's body under the rim, narrowing to its foot
+    FAN_R = 64
+    FAN_ANGLES = [180 + k * 22.5 for k in range(9)]
+    FLOWER = (128, 70)                   # where the flower takes shape
+    HEART = FLOWER
+    REAGENT = (120, 127)
+    OUTPUTS = [(216, 38 + 18 * i) for i in range(4)]
+    SHELF = (207, 24, 243, 118)
+    FLASK = (30, 104, 15, 44, 4)         # its bulb's middle and radius, its neck's height over that middle and half-width
+    POOL = (22, 128)
+    GEM = (CX, CY + RIM_RY + 7)
+    LAND = (224, 74)
+    CLICK = [(FLOWER[0] - 9, FLOWER[1] - 9, 18, 18)]
+    LIGHTS = [(3, 152), (252, 152), (43, 244), (212, 244)]
+    VEIN = (3, 3, W - 4, MACHINE_H - 4)
+    PETAL_UV = (128, 32)                 # a petal 4x3, white (the screen tints it)
+    STEAM_UV, STEAM_SIZE = (136, 32), 9  # a puff of steam, white
+
+
+APOTHECARY.INPUTS = [slot_at(APOTHECARY.CX, APOTHECARY.CY, APOTHECARY.FAN_R, a) for a in APOTHECARY.FAN_ANGLES]
+APOTHECARY.SHEET = [("petal", APOTHECARY.PETAL_UV[0], APOTHECARY.PETAL_UV[1], 4, 3),
+                    ("steam", APOTHECARY.STEAM_UV[0], APOTHECARY.STEAM_UV[1], APOTHECARY.STEAM_SIZE, APOTHECARY.STEAM_SIZE)]
+
+
+def flask_half(y):
+    """The flask's half-width on the row y (its outline), 0 off it."""
+    cx, cy, r, neck, nw = APOTHECARY.FLASK
+    py = y + 0.5
+    if py >= cy - r * 0.6:
+        d = py - cy
+        return math.sqrt(max(0.0, r * r - d * d))
+    if py >= cy - neck:
+        return float(nw)
+    return 0.0
+
+
+def flask_rows(inset=2):
+    """The mana's rows inside the flask's glass: y, x1, x2 (x2 exclusive), bottom first."""
+    cx, cy, r, neck, nw = APOTHECARY.FLASK
+    rows = []
+    for y in range(cy + r - 1, cy - neck + 3, -1):
+        h = flask_half(y) - inset
+        if h < 0.5:
+            continue
+        x1, x2 = int(math.ceil(cx - h)), int(math.floor(cx + h))
+        if x2 > x1:
+            rows.append((y, x1, x2))
+    return rows
+
+
+APOTHECARY.GAUGE_BOX = (APOTHECARY.FLASK[0] - APOTHECARY.FLASK[2] - 2, APOTHECARY.FLASK[1] - APOTHECARY.FLASK[3] - 4,
+                        APOTHECARY.FLASK[0] + APOTHECARY.FLASK[2] + 2, APOTHECARY.FLASK[1] + APOTHECARY.FLASK[2] + 2)
+
+
 # ---------------------------------------------------------------- the first-generation machines
 
 def classic(key, heart, gem, special):
@@ -179,7 +332,7 @@ def classic(key, heart, gem, special):
 def v2(m, special):
     return dict(key=m.KEY, classic=False, size=(W, H, MACHINE_H), inputs=m.INPUTS, outputs=m.OUTPUTS, special=special,
                 inventory=(INV_X, INV_Y, HOTBAR_Y, INV_PANEL[0], INV_PANEL[1]), close=CLOSE, redstone=REDSTONE,
-                pool=m.POOL, gem=m.GEM, heart=(m.CX, m.CY), land=m.LAND,
+                pool=m.POOL, gem=m.GEM, heart=getattr(m, "HEART", (m.CX, m.CY)), land=m.LAND,
                 gauge=getattr(m, "GAUGE_BOX", (0, 0, 0, 0)), click=m.CLICK, lights=m.LIGHTS, vein=m.VEIN)
 
 
@@ -187,16 +340,17 @@ SPECIAL = CLASSIC.SPECIAL_SLOT
 LAYOUTS = [
     ("RUNE_ALTAR", v2(ALTAR, [ALTAR.REAGENT])),
     ("TERRA_PLATE", v2(PLATE, [])),
-    ("MANA_INFUSER", classic("mana_infuser", (120, 27), (120, 66), [SPECIAL])),
-    ("PURE_DAISY", classic("pure_daisy", (120, 52), (120, 19), [])),
-    ("PETAL_APOTHECARY", classic("petal_apothecary", (120, 22), (120, 57), [SPECIAL])),
+    ("MANA_INFUSER", v2(INFUSER, [INFUSER.CATALYST])),
+    ("PURE_DAISY", v2(DAISY, [])),
+    ("PETAL_APOTHECARY", v2(APOTHECARY, [APOTHECARY.REAGENT])),
     ("PETAL_FARM", classic("petal_farm", (120, 44), (120, 62), [SPECIAL])),
     ("ORECHID_MINE", classic("orechid_mine", (120, 50), (120, 31), [])),
     ("CROP_FIELD", classic("crop_field", (120, 50), (120, 76), [SPECIAL])),
 ]
 
 
-V2 = {"rune_altar": ALTAR, "terra_plate": PLATE}       # the second-generation machines
+V2 = {"rune_altar": ALTAR, "terra_plate": PLATE, "mana_infuser": INFUSER, "pure_daisy": DAISY,  # the second-generation machines
+      "petal_apothecary": APOTHECARY}
 
 
 def art_constants():
@@ -219,7 +373,29 @@ def art_constants():
         ("SUN_RING_R", float(p.SUN_RING_R)), ("RAY_FROM", float(p.RAY_FROM)), ("RAY_TO", float(p.RAY_TO)), ("TIP_TO", float(p.TIP_TO)),
         ("STARS", p.STARS), ("STAR_U", p.STAR_UV[0]), ("STAR_V", p.STAR_UV[1]), ("STAR_SIZE", p.STAR_SIZE),
     ]
-    return [("Altar", "the Runic Altar's sanctum", altar), ("Plate", "the Terrestrial Plate's astrolabe", plate)]
+    f = INFUSER
+    infuser = [
+        ("CX", f.CX), ("CY", f.CY), ("RIM_RX", f.RIM_RX), ("RIM_RY", f.RIM_RY), ("OPEN_RX", f.OPEN_RX), ("OPEN_RY", f.OPEN_RY),
+        ("DEPTH", f.DEPTH), ("WATER_EMPTY", f.WATER_EMPTY), ("WATER_FULL", f.WATER_FULL), ("ALCOVES", f.ALCOVES),
+        ("CATALYST_RING_U", f.CATALYST_RING_UV[0]), ("CATALYST_RING_V", f.CATALYST_RING_UV[1]), ("CATALYST_RING_SIZE", f.CATALYST_RING_SIZE),
+    ]
+    d = DAISY
+    daisy = [
+        ("CX", d.CX), ("CY", d.CY), ("CELL", d.CELL), ("RING", d.RING), ("BASKET", d.BASKET), ("DROP", d.DROP),
+        ("DROP_ROWS", drop_rows()),
+        ("BUTTERFLY_U", d.BUTTERFLY_UV[0]), ("BUTTERFLY_V", d.BUTTERFLY_UV[1]), ("BUTTERFLY_SIZE", d.BUTTERFLY_SIZE),
+        ("PETAL_U", d.PETAL_UV[0]), ("PETAL_V", d.PETAL_UV[1]),
+    ]
+    b = APOTHECARY
+    apothecary = [
+        ("CX", b.CX), ("CY", b.CY), ("RIM_RX", b.RIM_RX), ("RIM_RY", b.RIM_RY), ("WATER_RX", b.WATER_RX), ("WATER_RY", b.WATER_RY),
+        ("FLOWER", b.FLOWER), ("SHELF", b.SHELF), ("FLASK", b.FLASK), ("FLASK_ROWS", flask_rows()),
+        ("PETAL_U", b.PETAL_UV[0]), ("PETAL_V", b.PETAL_UV[1]), ("STEAM_U", b.STEAM_UV[0]), ("STEAM_V", b.STEAM_UV[1]),
+        ("STEAM_SIZE", b.STEAM_SIZE),
+    ]
+    return [("Altar", "the Runic Altar's sanctum", altar), ("Plate", "the Terrestrial Plate's astrolabe", plate),
+            ("Infuser", "the Mana Infuser's fountain", infuser), ("Daisy", "the Pure Daisy's garden", daisy),
+            ("Apothecary", "the Petal Apothecary's table", apothecary)]
 
 
 # ---------------------------------------------------------------- the Java file

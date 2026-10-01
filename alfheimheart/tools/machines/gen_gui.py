@@ -2,15 +2,8 @@
 framed with livingrock, mana crystals on the corners, the input slots on the left (livingrock rims), the
 output slots on the right (gold rims), a special slot (mana-blue rim) under the heart where a machine has one,
 the arrows, the mana bar, the player's inventory on a panel hanging under it. Each machine's heart is drawn
-in the middle (the Runic Altar's and the Terrestrial Plate's own looks are gen_v2.py's):
+in the middle (the machines with looks of their own are gen_v2.py's):
 
-  mana_infuser.png  a little mana pool seen from a little above: a livingrock rim round the mana (the screen
-                    draws it), its front wall with a gem set in it, its stand down to the catalyst slot; a
-                    carved ring over it where the item being infused floats
-  pure_daisy.png    a round meadow: the daisy's bed in a gold ring in the middle, eight livingrock stones round
-                    it (the blocks being purified sit on them), a gem on its top edge
-  petal_apothecary.png  a livingrock bowl with petals in relief round it, its water's dark bed (the screen draws
-                    the water), its stem down to the seeds slot; a carved ring over it where the flower rises
   petal_farm.png    a livingwood planter of soil on short legs over the bone meal slot, a dotted arc over it
                     that the sun runs along
 
@@ -25,7 +18,7 @@ import sys
 
 from pix import Canvas, ASSETS, mix, shade, hexc, rnd2
 from layout import (M, W, H, MACHINE_H, INV_X1, INV_X2, INPUT, OUTPUT, INV_Y, HOTBAR_Y, INV_SLOT_X, ARROWS, BAR,
-                    LIGHTS, POOL_, DAISY, BOWL, FARM, MINE, FIELD)
+                    LIGHTS, FARM, MINE, FIELD)
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "lib"))
 import wood as WD  # noqa: E402
@@ -186,225 +179,8 @@ def socket(cv, sx, sy, r):
             cv.set(x, y, c)
 
 
-# ---------------------------------------------------------------- the Mana Infuser
-
 def ellipse_k(px, py, rx, ry):
     return (px / rx) ** 2 + (py / ry) ** 2
-
-
-def pool(cv):
-    cx, cy = POOL_.CENTER
-    rx, ry = POOL_.RX, POOL_.RY
-    srx, sry = POOL_.SURFACE_RX, POOL_.SURFACE_RY
-    wall = POOL_.WALL_H
-    ix, iy = POOL_.ITEM
-    WD.inlay_ring(cv, ix, iy, POOL_.ITEM_RING_R)
-    WD.carved_runes(cv, cx, cy - 4, 38, 14,
-                    skip=lambda x, y: y > cy - 12 or y < 9 or x < INPUT[0] + 58 or x > OUTPUT[0] - 4
-                    or math.hypot(x - ix, y - iy) < POOL_.ITEM_RING_R + 4)
-    sx, sy = POOL_.SLOT
-    stem(cv, cx, cy + ry + wall - 1, sy - 1, 12, gold_rows=(3, 4))
-    for x in range(cx - 8, cx + 8):
-        cv.set(x, sy - 2, OUTLINE if x in (cx - 8, cx + 7) else (LR[1] if x < cx + 3 else LR[3]))
-    # the front wall: livingrock bricks, lit on the left, under the rim's front half
-    for x in range(cx - rx, cx + rx):
-        px = x + 0.5 - cx
-        if abs(px) >= rx:
-            continue
-        top = cy + ry * math.sqrt(max(0.0, 1.0 - (px / rx) ** 2))
-        y0 = int(math.floor(top))
-        t = (px + rx) / (2.0 * rx)                  # 0 at the left, 1 at the right
-        for j in range(0, wall + 1):
-            y = y0 + j
-            if j == wall or abs(px) > rx - 1.0:
-                c = OUTLINE
-            else:
-                c = LR[0] if t < 0.12 else (LR[1] if t < 0.5 else (LR[2] if t < 0.82 else LR[3]))
-                row = j
-                if row in (1, 2):
-                    c = GOLD[1] if t < 0.3 else (GOLD[2] if t < 0.75 else GOLD[3])
-                elif row == 3 or row == 8:
-                    c = mix(c, WOOD[5], 0.45)
-                elif (row < 8 and (x + 3) % 9 == 0) or (row > 8 and (x + 7) % 9 == 0):
-                    c = mix(c, WOOD[5], 0.4)
-            cv.set(x, y, c)
-    # the rim: livingrock round the mana, its far inner wall in shadow, its near lip lit
-    def outer(x, y):
-        return ellipse_k(x + 0.5 - cx, y + 0.5 - cy, rx, ry) <= 1.0
-
-    for y in range(cy - ry - 1, cy + ry + 2):
-        for x in range(cx - rx - 1, cx + rx + 2):
-            px, py = x + 0.5 - cx, y + 0.5 - cy
-            if not outer(x, y):
-                continue
-            ki = ellipse_k(px, py, srx, sry)
-            if not all(outer(x + dx, y + dy) for (dx, dy) in ((1, 0), (-1, 0), (0, 1), (0, -1))):
-                c = OUTLINE                         # the rim's outer edge
-            elif ki > 1.0:
-                nx, ny = px / rx ** 2, py / ry ** 2
-                n = math.hypot(nx, ny) or 1.0
-                lit = (nx * LIGHT_DIR[0] + ny * LIGHT_DIR[1]) / n
-                c = LR[0] if lit > 0.35 else (LR[2] if lit < -0.35 else LR[1])
-                if ki < 1.35:
-                    c = LR[3] if py < 0 else LR[0]  # the inner edge: the far wall in shadow, the near lip lit
-                if rnd2(x, y, 81) < 0.07:
-                    c = mix(c, LR[3], 0.35)
-            else:
-                # the empty basin under the mana (the screen draws the mana over it)
-                c = mix(hexc("10263F"), hexc("070F1C"), min(1.0, ki))
-            cv.set(x, y, c)
-    gem_socket(cv, *POOL_.GEM)
-    special_slot(cv, sx, sy)
-
-
-# ---------------------------------------------------------------- the Pure Daisy
-
-def meadow(cv, cx, cy, r):
-    """A round patch of grass, lit from the top-left, with a few tiny flowers in it and a dark edge."""
-    for y in range(int(cy - r) - 1, int(cy + r) + 2):
-        for x in range(int(cx - r) - 1, int(cx + r) + 2):
-            px, py = x + 0.5 - cx, y + 0.5 - cy
-            d = math.hypot(px, py)
-            if d > r:
-                continue
-            if d > r - 1:
-                cv.set(x, y, mix(GRASS[4], WOOD[6], 0.5))
-                continue
-            t = (py + r) / (2.0 * r)
-            c = mix(GRASS[1], GRASS[3], t * 0.8 + 0.1 * (px / r))
-            n = WD.noise(x, y, 3, 91)
-            if n < 0.3:
-                c = mix(c, GRASS[3], 0.45)
-            elif n > 0.78:
-                c = mix(c, GRASS[0], 0.35)
-            if rnd2(x, y, 92) < 0.012:
-                c = PETALS[int(rnd2(x, y, 93) * len(PETALS))]
-            cv.set(x, y, c)
-
-
-def stone_cell(cv, sx, sy, r):
-    """A stone round the daisy (a block being purified): a round livingrock rim, moss on its top, a dark earthy
-    hollow the screen draws the block in."""
-    for y in range(int(sy - r) - 1, int(sy + r) + 2):
-        for x in range(int(sx - r) - 1, int(sx + r) + 2):
-            px, py = x + 0.5 - sx - 0.5, y + 0.5 - sy - 0.5
-            d = math.hypot(px, py)
-            if d > r:
-                continue
-            lit = (px * LIGHT_DIR[0] + py * LIGHT_DIR[1]) / max(d, 0.001)
-            if d > r - 1:
-                c = OUTLINE
-            elif d > r - 2.5:
-                c = LR[0] if lit > 0.3 else (LR[3] if lit < -0.3 else LR[1])
-                if py < -r + 3.5 and rnd2(x, y, 94) < 0.45:
-                    c = GRASS[1] if rnd2(x, y, 95) < 0.5 else GRASS[2]
-            elif d > r - 3.2:
-                c = OUTLINE
-            else:
-                c = mix(hexc("2C2416"), hexc("17110A"), d / (r - 3.2))
-            cv.set(x, y, c)
-
-
-def daisy_bed(cv, cx, cy, r):
-    """The daisy's own bed in the middle: a gold ring round soft grass (the screen draws the daisy on it)."""
-    for y in range(int(cy - r) - 1, int(cy + r) + 2):
-        for x in range(int(cx - r) - 1, int(cx + r) + 2):
-            px, py = x + 0.5 - cx, y + 0.5 - cy
-            d = math.hypot(px, py)
-            if d > r:
-                continue
-            lit = (px * LIGHT_DIR[0] + py * LIGHT_DIR[1]) / max(d, 0.001)
-            if d > r - 1:
-                c = OUTLINE
-            elif d > r - 2.5:
-                c = GOLD[1] if lit > 0.3 else (GOLD[3] if lit < -0.3 else GOLD[2])
-            else:
-                c = mix(GRASS[2], GRASS[4], d / r)
-                if rnd2(x, y, 96) < 0.15:
-                    c = mix(c, GRASS[1], 0.5)
-            cv.set(x, y, c)
-
-
-def daisy(cv):
-    cx, cy = DAISY.CENTER
-    meadow(cv, cx, cy, DAISY.MEADOW_R + 0.5)
-    WD.inlay_ring(cv, cx, cy, DAISY.RING_R, col=mix(GRASS[3], GRASS[4], 0.4))
-    for (sx, sy) in DAISY.CELLS:
-        stone_cell(cv, sx, sy, DAISY.STONE_R)
-    daisy_bed(cv, cx, cy, DAISY.BED_R)
-    gem_socket(cv, *DAISY.GEM)
-
-
-# ---------------------------------------------------------------- the Petal Apothecary
-
-def bowl(cv):
-    cx, cy = BOWL.CENTER
-    rx, ry = BOWL.RX, BOWL.RY
-    wrx, wry = BOWL.WATER_RX, BOWL.WATER_RY
-    deep = ry + BOWL.BODY_H
-    ix, iy = BOWL.ITEM
-    WD.inlay_ring(cv, ix, iy, BOWL.ITEM_RING_R)
-    WD.carved_runes(cv, cx, cy - 4, 38, 14,
-                    skip=lambda x, y: y > cy - 12 or y < 9 or x < INPUT[0] + 58 or x > OUTPUT[0] - 4
-                    or math.hypot(x - ix, y - iy) < BOWL.ITEM_RING_R + 4)
-    sx, sy = BOWL.SLOT
-    stem(cv, cx, cy + deep - 2, sy - 1, 8, gold_rows=(4,))
-    for x in range(cx - 7, cx + 7):
-        cv.set(x, sy - 2, OUTLINE if x in (cx - 7, cx + 6) else (LR[1] if x < cx + 3 else LR[3]))
-
-    def body(x, y):
-        return ellipse_k(x + 0.5 - cx, y + 0.5 - cy, rx, deep) <= 1.0 and y + 0.5 >= cy
-
-    # the bowl's body: livingrock, round with the light from the left, a gold band and a ring of petals
-    for y in range(cy, cy + deep + 1):
-        for x in range(cx - rx - 1, cx + rx + 1):
-            if not body(x, y):
-                continue
-            px = x + 0.5 - cx
-            t = (px + rx) / (2.0 * rx)
-            if not all(body(x + dx, y + dy) for (dx, dy) in ((1, 0), (-1, 0), (0, 1))):
-                c = OUTLINE
-            else:
-                c = LR[0] if t < 0.14 else (LR[1] if t < 0.52 else (LR[2] if t < 0.82 else LR[3]))
-                row = y - cy
-                if row in (ry - 1, ry):
-                    c = GOLD[1] if t < 0.3 else (GOLD[2] if t < 0.75 else GOLD[3])
-            cv.set(x, y, c)
-    # petals in relief round the body, between the band and the foot
-    for k in range(7):
-        px = -18 + k * 6
-        x0, y0 = cx + px, cy + ry + 5 + int(abs(px) / 9)
-        if not body(x0, y0 + 2):
-            continue
-        col = PETALS[1 + k % 4]
-        for (dx, dy) in ((0, 0), (1, 0), (0, 1), (1, 1), (0, -1), (1, -1), (-1, 0), (2, 0)):
-            if body(x0 + dx, y0 + dy):
-                cv.set(x0 + dx, y0 + dy, mix(col, LR[2], 0.45 if dy else 0.2))
-
-    def outer(x, y):
-        return ellipse_k(x + 0.5 - cx, y + 0.5 - cy, rx, ry) <= 1.0
-
-    # the rim, and the water's dark bed inside it
-    for y in range(cy - ry - 1, cy + ry + 2):
-        for x in range(cx - rx - 1, cx + rx + 2):
-            if not outer(x, y):
-                continue
-            px, py = x + 0.5 - cx, y + 0.5 - cy
-            ki = ellipse_k(px, py, wrx, wry)
-            if not all(outer(x + dx, y + dy) for (dx, dy) in ((1, 0), (-1, 0), (0, 1), (0, -1))):
-                c = OUTLINE
-            elif ki > 1.0:
-                nx, ny = px / rx ** 2, py / ry ** 2
-                n = math.hypot(nx, ny) or 1.0
-                lit = (nx * LIGHT_DIR[0] + ny * LIGHT_DIR[1]) / n
-                c = LR[0] if lit > 0.35 else (LR[2] if lit < -0.35 else LR[1])
-                if ki < 1.4:
-                    c = LR[3] if py < 0 else LR[0]
-            else:
-                c = mix(hexc("1C4A52"), hexc("0B1E24"), min(1.0, ki))
-            cv.set(x, y, c)
-    gem_socket(cv, *BOWL.GEM)
-    special_slot(cv, sx, sy)
 
 
 # ---------------------------------------------------------------- the Petal Farm
@@ -546,8 +322,7 @@ def field(cv):
 
 # ---------------------------------------------------------------- build
 
-MACHINES = {"mana_infuser": pool, "pure_daisy": daisy, "petal_apothecary": bowl, "petal_farm": farm, "orechid_mine": mine,
-            "crop_field": field}
+MACHINES = {"petal_farm": farm, "orechid_mine": mine, "crop_field": field}
 
 
 def build(name):

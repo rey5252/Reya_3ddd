@@ -43,47 +43,6 @@ def ring_points(cx, cy, r, n, start_deg):
     return pts
 
 
-# ---------------------------------------------------------------- the Mana Infuser
-
-class POOL_:
-    CENTER = (120, 50)               # the middle of the basin's rim (seen from a little above)
-    RX, RY = 27, 10                  # the rim's outer half-axes
-    SURFACE_RX, SURFACE_RY = 23, 7   # the mana's (the screen draws it)
-    WALL_H = 12                      # the basin's front wall below the rim
-    ITEM = (120, 27)                 # the middle of the item being infused, floating over the mana
-    ITEM_RING_R = 12                 # the progress ring round it
-    GEM = (120, 66)                  # the status gem set in the front wall
-    SLOT = SPECIAL_SLOT              # the catalyst slot the basin stands on
-    HEART_BOX = (90, 12, 150, 80)
-
-
-# ---------------------------------------------------------------- the Pure Daisy
-
-class DAISY:
-    CENTER = (120, 52)               # the daisy's bed in the middle of a round meadow
-    MEADOW_R = 33
-    BED_R = 10.5
-    RING_R = 24                      # the eight stones round it (the blocks being purified), as round the real daisy
-    STONE_R = 7.5
-    CELLS = ring_points(120, 52, 24, 8, -90 + 22.5)
-    GEM = (120, 19)                  # the status gem on the meadow's top edge
-    HEART_R = 34
-
-
-# ---------------------------------------------------------------- the Petal Apothecary
-
-class BOWL:
-    CENTER = (120, 46)               # the middle of the bowl's rim (seen from a little above)
-    RX, RY = 25, 8                   # the rim's outer half-axes
-    WATER_RX, WATER_RY = 21, 5       # the water's (the screen draws it)
-    BODY_H = 15                      # the bowl's body under the rim, narrowing to its foot
-    ITEM = (120, 22)                 # the flower taking shape over the water
-    ITEM_RING_R = 11
-    GEM = (120, 57)                  # the status gem on the bowl's front
-    SLOT = SPECIAL_SLOT              # the seeds slot its stem stands on
-    HEART_BOX = (90, 8, 150, 80)
-
-
 # ---------------------------------------------------------------- the Petal Farm
 
 class FARM:

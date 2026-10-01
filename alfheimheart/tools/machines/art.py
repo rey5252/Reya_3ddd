@@ -8,7 +8,7 @@ inside); a pixel's middle is (x + 0.5, y + 0.5). Colours are (r, g, b) tuples.
 import colorsys
 import math
 
-from pix import hexc, rnd2
+from pix import hexc, rnd, rnd2  # noqa: F401
 
 LIGHT = (-0.62, -0.78)          # where the light comes from (top-left), as every panel of the mod is lit
 

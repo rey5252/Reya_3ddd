@@ -18,27 +18,27 @@ public final class MachineLayouts {
             new int[]{48, 166, 224, 40, 216}, new int[]{245, -8}, new int[]{-5, -8}, new int[]{24, 128},
             new int[]{216, 30}, new int[]{114, 78}, new int[]{216, 78}, new int[]{44, 16, 84, 140},
             new int[][]{{106, 70, 16, 16}}, new int[][]{{3, 152}, {252, 152}, {43, 244}, {212, 244}}, new int[]{3, 3, 252, 152});
-    public static final MachineLayout MANA_INFUSER = new MachineLayout("mana_infuser", true, 240, 214, 124,
-            new int[][]{{18, 30}, {36, 30}, {54, 30}, {18, 48}, {36, 48}, {54, 48}, {18, 66}, {36, 66}, {54, 66}},
-            new int[][]{{168, 30}, {186, 30}, {204, 30}, {168, 48}, {186, 48}, {204, 48}, {168, 66}, {186, 66}, {204, 66}},
-            new int[][]{{112, 84}},
-            new int[]{40, 132, 190, 28, 212}, new int[]{229, -8}, new int[]{18, 102}, new int[]{206, 102},
-            new int[]{120, 66}, new int[]{120, 27}, new int[]{194, 56}, new int[]{50, 105, 178, 117},
-            new int[][]{{74, 53, 12, 9}, {155, 53, 12, 9}}, new int[][]{{1, 1}, {1, 122}, {238, 122}, {29, 212}, {210, 212}}, new int[]{3, 3, 236, 120});
-    public static final MachineLayout PURE_DAISY = new MachineLayout("pure_daisy", true, 240, 214, 124,
-            new int[][]{{18, 30}, {36, 30}, {54, 30}, {18, 48}, {36, 48}, {54, 48}, {18, 66}, {36, 66}, {54, 66}},
-            new int[][]{{168, 30}, {186, 30}, {204, 30}, {168, 48}, {186, 48}, {204, 48}, {168, 66}, {186, 66}, {204, 66}},
+    public static final MachineLayout MANA_INFUSER = new MachineLayout("mana_infuser", false, 256, 248, 156,
+            new int[][]{{26, 44}, {44, 44}, {26, 62}, {44, 62}, {26, 80}, {44, 80}},
+            new int[][]{{194, 44}, {212, 44}, {194, 62}, {212, 62}, {194, 80}, {212, 80}},
+            new int[][]{{120, 117}},
+            new int[]{48, 166, 224, 40, 216}, new int[]{245, -8}, new int[]{-5, -8}, new int[]{20, 128},
+            new int[]{128, 89}, new int[]{128, 56}, new int[]{212, 70}, new int[]{82, 56, 174, 105},
+            new int[][]{{118, 22, 20, 20}}, new int[][]{{3, 152}, {252, 152}, {43, 244}, {212, 244}}, new int[]{3, 3, 252, 152});
+    public static final MachineLayout PURE_DAISY = new MachineLayout("pure_daisy", false, 256, 248, 156,
+            new int[][]{{88, 46}, {116, 46}, {144, 46}, {144, 74}, {144, 102}, {116, 102}, {88, 102}, {88, 74}},
+            new int[][]{{203, 54}, {221, 54}, {203, 72}, {221, 72}, {203, 90}, {221, 90}},
             new int[0][],
-            new int[]{40, 132, 190, 28, 212}, new int[]{229, -8}, new int[]{18, 102}, new int[]{206, 102},
-            new int[]{120, 19}, new int[]{120, 52}, new int[]{194, 56}, new int[]{50, 105, 178, 117},
-            new int[][]{{74, 53, 12, 9}, {155, 53, 12, 9}}, new int[][]{{1, 1}, {1, 122}, {238, 122}, {29, 212}, {210, 212}}, new int[]{3, 3, 236, 120});
-    public static final MachineLayout PETAL_APOTHECARY = new MachineLayout("petal_apothecary", true, 240, 214, 124,
-            new int[][]{{18, 30}, {36, 30}, {54, 30}, {18, 48}, {36, 48}, {54, 48}, {18, 66}, {36, 66}, {54, 66}},
-            new int[][]{{168, 30}, {186, 30}, {204, 30}, {168, 48}, {186, 48}, {204, 48}, {168, 66}, {186, 66}, {204, 66}},
-            new int[][]{{112, 84}},
-            new int[]{40, 132, 190, 28, 212}, new int[]{229, -8}, new int[]{18, 102}, new int[]{206, 102},
-            new int[]{120, 57}, new int[]{120, 22}, new int[]{194, 56}, new int[]{50, 105, 178, 117},
-            new int[][]{{74, 53, 12, 9}, {155, 53, 12, 9}}, new int[][]{{1, 1}, {1, 122}, {238, 122}, {29, 212}, {210, 212}}, new int[]{3, 3, 236, 120});
+            new int[]{48, 166, 224, 40, 216}, new int[]{245, -8}, new int[]{-5, -8}, new int[]{26, 126},
+            new int[]{124, 131}, new int[]{124, 82}, new int[]{220, 80}, new int[]{15, 42, 53, 119},
+            new int[][]{{115, 73, 18, 18}}, new int[][]{{3, 152}, {252, 152}, {43, 244}, {212, 244}}, new int[]{3, 3, 252, 152});
+    public static final MachineLayout PETAL_APOTHECARY = new MachineLayout("petal_apothecary", false, 256, 248, 156,
+            new int[][]{{56, 96}, {61, 72}, {75, 51}, {96, 37}, {120, 32}, {144, 37}, {165, 51}, {179, 72}, {184, 96}},
+            new int[][]{{216, 38}, {216, 56}, {216, 74}, {216, 92}},
+            new int[][]{{120, 127}},
+            new int[]{48, 166, 224, 40, 216}, new int[]{245, -8}, new int[]{-5, -8}, new int[]{22, 128},
+            new int[]{128, 119}, new int[]{128, 70}, new int[]{224, 74}, new int[]{13, 56, 47, 121},
+            new int[][]{{119, 61, 18, 18}}, new int[][]{{3, 152}, {252, 152}, {43, 244}, {212, 244}}, new int[]{3, 3, 252, 152});
     public static final MachineLayout PETAL_FARM = new MachineLayout("petal_farm", true, 240, 214, 124,
             new int[][]{{18, 30}, {36, 30}, {54, 30}, {18, 48}, {36, 48}, {54, 48}, {18, 66}, {36, 66}, {54, 66}},
             new int[][]{{168, 30}, {186, 30}, {204, 30}, {168, 48}, {186, 48}, {204, 48}, {168, 66}, {186, 66}, {204, 66}},
@@ -117,6 +117,67 @@ public final class MachineLayouts {
         public static final int STAR_SIZE = 9;
 
         private Plate() {
+        }
+    }
+
+    /** The numbers the Mana Infuser's fountain is drawn at. */
+    public static final class Infuser {
+        public static final int CX = 128;
+        public static final int CY = 56;
+        public static final int RIM_RX = 46;
+        public static final int RIM_RY = 17;
+        public static final int OPEN_RX = 40;
+        public static final int OPEN_RY = 13;
+        public static final int DEPTH = 32;
+        public static final int WATER_EMPTY = 27;
+        public static final int WATER_FULL = 2;
+        public static final int[][] ALCOVES = {{19, 30, 69, 106}, {187, 30, 237, 106}};
+        public static final int CATALYST_RING_U = 128;
+        public static final int CATALYST_RING_V = 32;
+        public static final int CATALYST_RING_SIZE = 28;
+
+        private Infuser() {
+        }
+    }
+
+    /** The numbers the Pure Daisy's garden is drawn at. */
+    public static final class Daisy {
+        public static final int CX = 124;
+        public static final int CY = 82;
+        public static final int CELL = 28;
+        public static final int[][] RING = {{-1, -1}, {0, -1}, {1, -1}, {1, 0}, {1, 1}, {0, 1}, {-1, 1}, {-1, 0}};
+        public static final int[] BASKET = {194, 44, 246, 116};
+        public static final int[] DROP = {34, 100, 17, 56};
+        public static final int[][] DROP_ROWS = {{116, 32, 36}, {115, 30, 38}, {114, 28, 40}, {113, 26, 42}, {112, 25, 43}, {111, 24, 44}, {110, 23, 45}, {109, 22, 46}, {108, 22, 46}, {107, 21, 47}, {106, 21, 47}, {105, 20, 48}, {104, 20, 48}, {103, 20, 48}, {102, 20, 48}, {101, 20, 48}, {100, 20, 48}, {99, 20, 48}, {98, 20, 48}, {97, 20, 48}, {96, 20, 48}, {95, 20, 48}, {94, 20, 48}, {93, 20, 48}, {92, 20, 48}, {91, 20, 48}, {90, 20, 48}, {89, 21, 47}, {88, 21, 47}, {87, 21, 47}, {86, 21, 47}, {85, 22, 46}, {84, 22, 46}, {83, 22, 46}, {82, 23, 45}, {81, 23, 45}, {80, 23, 45}, {79, 24, 44}, {78, 24, 44}, {77, 24, 44}, {76, 25, 43}, {75, 25, 43}, {74, 26, 42}, {73, 26, 42}, {72, 27, 41}, {71, 27, 41}, {70, 27, 41}, {69, 28, 40}, {68, 28, 40}, {67, 29, 39}, {66, 29, 39}, {65, 30, 38}, {64, 30, 38}, {63, 31, 37}, {62, 31, 37}, {61, 31, 37}, {60, 32, 36}, {59, 32, 36}, {58, 33, 35}, {57, 33, 35}, {56, 33, 35}};
+        public static final int BUTTERFLY_U = 128;
+        public static final int BUTTERFLY_V = 32;
+        public static final int BUTTERFLY_SIZE = 7;
+        public static final int PETAL_U = 144;
+        public static final int PETAL_V = 32;
+
+        private Daisy() {
+        }
+    }
+
+    /** The numbers the Petal Apothecary's table is drawn at. */
+    public static final class Apothecary {
+        public static final int CX = 128;
+        public static final int CY = 104;
+        public static final int RIM_RX = 24;
+        public static final int RIM_RY = 8;
+        public static final int WATER_RX = 20;
+        public static final int WATER_RY = 5;
+        public static final int[] FLOWER = {128, 70};
+        public static final int[] SHELF = {207, 24, 243, 118};
+        public static final int[] FLASK = {30, 104, 15, 44, 4};
+        public static final int[][] FLASK_ROWS = {{118, 29, 31}, {117, 26, 34}, {116, 24, 36}, {115, 23, 37}, {114, 22, 38}, {113, 21, 39}, {112, 20, 40}, {111, 20, 40}, {110, 19, 41}, {109, 19, 41}, {108, 18, 42}, {107, 18, 42}, {106, 18, 42}, {105, 18, 42}, {104, 18, 42}, {103, 18, 42}, {102, 18, 42}, {101, 18, 42}, {100, 18, 42}, {99, 18, 42}, {98, 19, 41}, {97, 19, 41}, {96, 20, 40}, {95, 20, 40}, {94, 28, 32}, {93, 28, 32}, {92, 28, 32}, {91, 28, 32}, {90, 28, 32}, {89, 28, 32}, {88, 28, 32}, {87, 28, 32}, {86, 28, 32}, {85, 28, 32}, {84, 28, 32}, {83, 28, 32}, {82, 28, 32}, {81, 28, 32}, {80, 28, 32}, {79, 28, 32}, {78, 28, 32}, {77, 28, 32}, {76, 28, 32}, {75, 28, 32}, {74, 28, 32}, {73, 28, 32}, {72, 28, 32}, {71, 28, 32}, {70, 28, 32}, {69, 28, 32}, {68, 28, 32}, {67, 28, 32}, {66, 28, 32}, {65, 28, 32}, {64, 28, 32}};
+        public static final int PETAL_U = 128;
+        public static final int PETAL_V = 32;
+        public static final int STEAM_U = 136;
+        public static final int STEAM_V = 32;
+        public static final int STEAM_SIZE = 9;
+
+        private Apothecary() {
         }
     }
 
