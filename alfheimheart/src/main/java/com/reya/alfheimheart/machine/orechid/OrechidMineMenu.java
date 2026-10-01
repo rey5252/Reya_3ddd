@@ -11,7 +11,7 @@ import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraftforge.items.IItemHandler;
 
-/** The Orechid Mine's menu: the machine's layout, no special slots. */
+/** The Orechid Mine's menu: its inputs in a minecart, its outputs in a chest. */
 public class OrechidMineMenu extends MachineMenu {
     public OrechidMineMenu(int id, Inventory inventory, FriendlyByteBuf buf) {
         this(id, inventory, clientMachine(inventory, buf));

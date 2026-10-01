@@ -117,7 +117,7 @@ final class MachineShots {
         s.add(new Step(1, AutoShot::mouseAway));
         s.add(new Step(40, () -> shot("petal_farm_gui.png")));
         s.add(new Step(30, () -> shot("petal_farm_gui_2.png")));
-        s.add(new Step(5, () -> mouseAtGui(120, 40)));
+        s.add(new Step(5, () -> mouseAtGui(128, 24)));
         s.add(new Step(10, () -> shot("petal_farm_gui_tip.png")));
         s.add(new Step(5, AutoShot::mouseAway));
         s.add(new Step(5, AutoShot::closeScreen));
@@ -132,7 +132,7 @@ final class MachineShots {
         s.add(new Step(1, AutoShot::mouseAway));
         s.add(new Step(30, () -> shot("orechid_mine_gui.png")));
         s.add(new Step(15, () -> shot("orechid_mine_gui_2.png")));
-        s.add(new Step(5, () -> mouseAtGui(131, 22)));
+        s.add(new Step(5, () -> mouseAtGui(135, 33)));
         s.add(new Step(10, () -> shot("orechid_mine_gui_tip.png")));
         s.add(new Step(5, AutoShot::mouseAway));
         s.add(new Step(5, AutoShot::closeScreen));
@@ -141,7 +141,7 @@ final class MachineShots {
         s.add(new Step(1, AutoShot::mouseAway));
         s.add(new Step(60, () -> shot("crop_field_gui.png")));
         s.add(new Step(60, () -> shot("crop_field_gui_2.png")));
-        s.add(new Step(5, () -> mouseAtGui(120, 40)));
+        s.add(new Step(5, () -> mouseAtGui(122, 84)));
         s.add(new Step(10, () -> shot("crop_field_gui_tip.png")));
         s.add(new Step(5, AutoShot::mouseAway));
         s.add(new Step(5, AutoShot::closeScreen));
@@ -167,7 +167,7 @@ final class MachineShots {
         s.add(new Step(5, AutoShot::closeScreen));
         s.add(new Step(5, () -> eye(FARM, 0.5D, 1.9D, 2.6D, 0.5D, 0.6D, 0.5D)));
         s.add(new Step(20, () -> open(FARM)));
-        s.add(new Step(40, () -> mouseAtGui(120, 40)));
+        s.add(new Step(40, () -> mouseAtGui(128, 24)));
         s.add(new Step(10, () -> shot("petal_farm_gui_uk.png")));
         s.add(new Step(5, AutoShot::closeScreen));
     }

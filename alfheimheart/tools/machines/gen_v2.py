@@ -7,6 +7,9 @@
   mana_infuser the crystal fountain (fountain.py)
   pure_daisy   the dawn garden (garden.py)
   petal_apothecary  the flower alchemist's table (alchemy.py)
+  petal_farm   the greenhouse (greenhouse.py)
+  orechid_mine the gem cavern (cavern.py)
+  crop_field   the golden field (harvest.py)
 
 Each writes textures/gui/<key>.png (the panel, with the texture's margin round it), <key>_widgets.png (its
 sheet: the shared pieces where machine/client/MachineScreen.java reads them, its own elsewhere) and
@@ -17,12 +20,15 @@ import os
 from pix import ASSETS
 import alchemy
 import astrolabe
+import cavern
 import fountain
 import garden
+import greenhouse
+import harvest
 import sanctum
 
 MACHINES = {"rune_altar": sanctum, "terra_plate": astrolabe, "mana_infuser": fountain, "pure_daisy": garden,
-            "petal_apothecary": alchemy}
+            "petal_apothecary": alchemy, "petal_farm": greenhouse, "orechid_mine": cavern, "crop_field": harvest}
 
 
 def build(key):

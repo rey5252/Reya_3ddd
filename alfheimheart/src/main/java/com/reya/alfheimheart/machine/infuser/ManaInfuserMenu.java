@@ -11,11 +11,8 @@ import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraftforge.items.IItemHandler;
 
-/** The Mana Infuser's menu: the machine's layout, and the catalyst slot the basin stands on. */
+/** The Mana Infuser's menu: its inputs and outputs in alcoves either side of the fountain, the catalyst the stone it stands on. */
 public class ManaInfuserMenu extends MachineMenu {
-    /** The catalyst slot's item corner (tools/machines/layout.py POOL_.SLOT). */
-    public static final int CATALYST_X = ManaInfuserBlockEntity.LAYOUT.special[0][0], CATALYST_Y = ManaInfuserBlockEntity.LAYOUT.special[0][1];
-
     public ManaInfuserMenu(int id, Inventory inventory, FriendlyByteBuf buf) {
         this(id, inventory, clientMachine(inventory, buf));
     }

@@ -11,7 +11,7 @@ import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraftforge.items.IItemHandler;
 
-/** The Pure Daisy's menu: the machine's layout, no special slots. */
+/** The Pure Daisy's menu: its eight inputs the tiles round the daisy in a bed of nine, as round the daisy in the world. */
 public class PureDaisyMenu extends MachineMenu {
     public PureDaisyMenu(int id, Inventory inventory, FriendlyByteBuf buf) {
         this(id, inventory, clientMachine(inventory, buf));

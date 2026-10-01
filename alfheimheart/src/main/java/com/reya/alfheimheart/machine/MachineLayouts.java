@@ -4,62 +4,62 @@ package com.reya.alfheimheart.machine;
 
 /** Every machine's GUI layout (see {@link MachineLayout}), and the numbers its screen draws its own parts at. */
 public final class MachineLayouts {
-    public static final MachineLayout RUNE_ALTAR = new MachineLayout("rune_altar", false, 256, 248, 156,
+    public static final MachineLayout RUNE_ALTAR = new MachineLayout("rune_altar", 256, 248, 156,
             new int[][]{{99, 23}, {133, 23}, {159, 45}, {165, 79}, {148, 108}, {84, 108}, {67, 79}, {73, 45}},
             new int[][]{{203, 52}, {221, 52}, {203, 70}, {221, 70}, {203, 88}, {221, 88}},
             new int[][]{{116, 120}},
             new int[]{48, 166, 224, 40, 216}, new int[]{245, -8}, new int[]{-5, -8}, new int[]{25, 129},
             new int[]{124, 59}, new int[]{124, 78}, new int[]{220, 78}, new int[]{21, 18, 45, 126},
             new int[][]{{115, 69, 18, 18}}, new int[][]{{3, 152}, {252, 152}, {43, 244}, {212, 244}}, new int[]{3, 3, 252, 152});
-    public static final MachineLayout TERRA_PLATE = new MachineLayout("terra_plate", false, 256, 248, 156,
+    public static final MachineLayout TERRA_PLATE = new MachineLayout("terra_plate", 256, 248, 156,
             new int[][]{{106, 24}, {146, 47}, {146, 93}, {106, 116}, {66, 93}, {66, 47}},
             new int[][]{{208, 52}, {208, 70}, {208, 88}},
             new int[0][],
             new int[]{48, 166, 224, 40, 216}, new int[]{245, -8}, new int[]{-5, -8}, new int[]{24, 128},
             new int[]{216, 30}, new int[]{114, 78}, new int[]{216, 78}, new int[]{44, 16, 84, 140},
             new int[][]{{106, 70, 16, 16}}, new int[][]{{3, 152}, {252, 152}, {43, 244}, {212, 244}}, new int[]{3, 3, 252, 152});
-    public static final MachineLayout MANA_INFUSER = new MachineLayout("mana_infuser", false, 256, 248, 156,
+    public static final MachineLayout MANA_INFUSER = new MachineLayout("mana_infuser", 256, 248, 156,
             new int[][]{{26, 44}, {44, 44}, {26, 62}, {44, 62}, {26, 80}, {44, 80}},
             new int[][]{{194, 44}, {212, 44}, {194, 62}, {212, 62}, {194, 80}, {212, 80}},
             new int[][]{{120, 117}},
             new int[]{48, 166, 224, 40, 216}, new int[]{245, -8}, new int[]{-5, -8}, new int[]{20, 128},
             new int[]{128, 89}, new int[]{128, 56}, new int[]{212, 70}, new int[]{82, 56, 174, 105},
             new int[][]{{118, 22, 20, 20}}, new int[][]{{3, 152}, {252, 152}, {43, 244}, {212, 244}}, new int[]{3, 3, 252, 152});
-    public static final MachineLayout PURE_DAISY = new MachineLayout("pure_daisy", false, 256, 248, 156,
+    public static final MachineLayout PURE_DAISY = new MachineLayout("pure_daisy", 256, 248, 156,
             new int[][]{{88, 46}, {116, 46}, {144, 46}, {144, 74}, {144, 102}, {116, 102}, {88, 102}, {88, 74}},
             new int[][]{{203, 54}, {221, 54}, {203, 72}, {221, 72}, {203, 90}, {221, 90}},
             new int[0][],
             new int[]{48, 166, 224, 40, 216}, new int[]{245, -8}, new int[]{-5, -8}, new int[]{26, 126},
             new int[]{124, 131}, new int[]{124, 82}, new int[]{220, 80}, new int[]{15, 42, 53, 119},
             new int[][]{{115, 73, 18, 18}}, new int[][]{{3, 152}, {252, 152}, {43, 244}, {212, 244}}, new int[]{3, 3, 252, 152});
-    public static final MachineLayout PETAL_APOTHECARY = new MachineLayout("petal_apothecary", false, 256, 248, 156,
+    public static final MachineLayout PETAL_APOTHECARY = new MachineLayout("petal_apothecary", 256, 248, 156,
             new int[][]{{56, 96}, {61, 72}, {75, 51}, {96, 37}, {120, 32}, {144, 37}, {165, 51}, {179, 72}, {184, 96}},
             new int[][]{{216, 38}, {216, 56}, {216, 74}, {216, 92}},
             new int[][]{{120, 127}},
             new int[]{48, 166, 224, 40, 216}, new int[]{245, -8}, new int[]{-5, -8}, new int[]{22, 128},
             new int[]{128, 119}, new int[]{128, 70}, new int[]{224, 74}, new int[]{13, 56, 47, 121},
             new int[][]{{119, 61, 18, 18}}, new int[][]{{3, 152}, {252, 152}, {43, 244}, {212, 244}}, new int[]{3, 3, 252, 152});
-    public static final MachineLayout PETAL_FARM = new MachineLayout("petal_farm", true, 240, 214, 124,
-            new int[][]{{18, 30}, {36, 30}, {54, 30}, {18, 48}, {36, 48}, {54, 48}, {18, 66}, {36, 66}, {54, 66}},
-            new int[][]{{168, 30}, {186, 30}, {204, 30}, {168, 48}, {186, 48}, {204, 48}, {168, 66}, {186, 66}, {204, 66}},
-            new int[][]{{112, 84}},
-            new int[]{40, 132, 190, 28, 212}, new int[]{229, -8}, new int[]{18, 102}, new int[]{206, 102},
-            new int[]{120, 62}, new int[]{120, 44}, new int[]{194, 56}, new int[]{50, 105, 178, 117},
-            new int[][]{{74, 53, 12, 9}, {155, 53, 12, 9}}, new int[][]{{1, 1}, {1, 122}, {238, 122}, {29, 212}, {210, 212}}, new int[]{3, 3, 236, 120});
-    public static final MachineLayout ORECHID_MINE = new MachineLayout("orechid_mine", true, 240, 214, 124,
-            new int[][]{{18, 30}, {36, 30}, {54, 30}, {18, 48}, {36, 48}, {54, 48}, {18, 66}, {36, 66}, {54, 66}},
-            new int[][]{{168, 30}, {186, 30}, {204, 30}, {168, 48}, {186, 48}, {204, 48}, {168, 66}, {186, 66}, {204, 66}},
+    public static final MachineLayout PETAL_FARM = new MachineLayout("petal_farm", 256, 248, 156,
+            new int[][]{{86, 40}, {120, 40}, {154, 40}, {86, 84}, {120, 84}, {154, 84}},
+            new int[][]{{203, 30}, {225, 30}, {203, 52}, {225, 52}, {203, 74}, {225, 74}, {203, 96}, {225, 96}},
+            new int[][]{{120, 127}},
+            new int[]{48, 166, 224, 40, 216}, new int[]{245, -8}, new int[]{-5, -8}, new int[]{22, 124},
+            new int[]{128, 66}, new int[]{128, 70}, new int[]{225, 70}, new int[]{12, 60, 62, 114},
+            new int[0][], new int[][]{{3, 152}, {252, 152}, {43, 244}, {212, 244}}, new int[]{3, 3, 252, 152});
+    public static final MachineLayout ORECHID_MINE = new MachineLayout("orechid_mine", 256, 248, 156,
+            new int[][]{{19, 101}, {37, 101}, {19, 119}, {37, 119}},
+            new int[][]{{188, 52}, {206, 52}, {224, 52}, {188, 70}, {206, 70}, {224, 70}, {188, 88}, {206, 88}, {224, 88}},
             new int[0][],
-            new int[]{40, 132, 190, 28, 212}, new int[]{229, -8}, new int[]{18, 102}, new int[]{206, 102},
-            new int[]{120, 31}, new int[]{120, 50}, new int[]{194, 56}, new int[]{50, 105, 178, 117},
-            new int[][]{{74, 53, 12, 9}, {155, 53, 12, 9}}, new int[][]{{1, 1}, {1, 122}, {238, 122}, {29, 212}, {210, 212}}, new int[]{3, 3, 236, 120});
-    public static final MachineLayout CROP_FIELD = new MachineLayout("crop_field", true, 240, 214, 124,
-            new int[][]{{18, 30}, {36, 30}, {54, 30}, {18, 48}, {36, 48}, {54, 48}, {18, 66}, {36, 66}, {54, 66}},
-            new int[][]{{168, 30}, {186, 30}, {204, 30}, {168, 48}, {186, 48}, {204, 48}, {168, 66}, {186, 66}, {204, 66}},
-            new int[][]{{112, 84}},
-            new int[]{40, 132, 190, 28, 212}, new int[]{229, -8}, new int[]{18, 102}, new int[]{206, 102},
-            new int[]{120, 76}, new int[]{120, 50}, new int[]{194, 56}, new int[]{50, 105, 178, 117},
-            new int[][]{{74, 53, 12, 9}, {155, 53, 12, 9}}, new int[][]{{1, 1}, {1, 122}, {238, 122}, {29, 212}, {210, 212}}, new int[]{3, 3, 236, 120});
+            new int[]{48, 166, 224, 40, 216}, new int[]{245, -8}, new int[]{-5, -8}, new int[]{66, 128},
+            new int[]{121, 28}, new int[]{121, 66}, new int[]{215, 79}, new int[]{21, 10, 47, 66},
+            new int[][]{{112, 57, 18, 18}}, new int[][]{{3, 152}, {252, 152}, {43, 244}, {212, 244}}, new int[]{3, 3, 252, 152});
+    public static final MachineLayout CROP_FIELD = new MachineLayout("crop_field", 256, 248, 156,
+            new int[][]{{78, 56}, {114, 56}, {150, 56}, {78, 94}, {114, 94}, {150, 94}},
+            new int[][]{{189, 56}, {207, 56}, {225, 56}, {189, 74}, {207, 74}, {225, 74}, {189, 92}, {207, 92}, {225, 92}},
+            new int[][]{{114, 127}},
+            new int[]{48, 166, 224, 40, 216}, new int[]{245, -8}, new int[]{-5, -8}, new int[]{24, 128},
+            new int[]{122, 84}, new int[]{122, 84}, new int[]{215, 83}, new int[]{20, 57, 44, 123},
+            new int[0][], new int[][]{{3, 152}, {252, 152}, {43, 244}, {212, 244}}, new int[]{3, 3, 252, 152});
 
     /** The numbers the Runic Altar's sanctum is drawn at. */
     public static final class Altar {
@@ -178,6 +178,54 @@ public final class MachineLayouts {
         public static final int STEAM_SIZE = 9;
 
         private Apothecary() {
+        }
+    }
+
+    /** The numbers the Petal Farm's greenhouse is drawn at. */
+    public static final class Farm {
+        public static final int CX = 128;
+        public static final int CY = 74;
+        public static final int[][] SHELVES = {{74, 64, 182}, {74, 108, 182}};
+        public static final int[] JARS = {197, 22, 247, 118};
+        public static final int[] SUN = {128, 44, 40};
+        public static final int[] CAN = {14, 74, 46, 112, 6};
+        public static final int[][] CAN_ROWS = {{111, 17, 43}, {110, 17, 43}, {109, 17, 43}, {108, 17, 43}, {107, 17, 43}, {106, 17, 43}, {105, 17, 43}, {104, 17, 43}, {103, 17, 43}, {102, 17, 43}, {101, 17, 43}, {100, 17, 43}, {99, 17, 43}, {98, 17, 43}, {97, 17, 43}, {96, 17, 43}, {95, 17, 43}, {94, 17, 43}, {93, 17, 43}, {92, 17, 43}, {91, 17, 43}, {90, 17, 43}, {89, 17, 43}, {88, 17, 43}, {87, 17, 43}, {86, 17, 43}, {85, 17, 43}, {84, 17, 43}, {83, 17, 43}, {82, 17, 43}, {81, 17, 43}, {80, 17, 43}, {79, 17, 43}, {78, 17, 43}, {77, 17, 43}};
+        public static final int PETAL_U = 128;
+        public static final int PETAL_V = 32;
+
+        private Farm() {
+        }
+    }
+
+    /** The numbers the Orechid Mine's cavern is drawn at. */
+    public static final class Mine {
+        public static final int CX = 121;
+        public static final int CY = 66;
+        public static final int ORE_R = 36;
+        public static final int[][] ORES = {{135, 33}, {154, 52}, {154, 80}, {135, 99}, {107, 99}, {88, 80}, {88, 52}, {107, 33}};
+        public static final int[] ORECHID = {121, 116};
+        public static final int[] CART = {13, 95, 61, 139};
+        public static final int[] CHEST = {182, 34, 248, 112};
+        public static final int[] LANTERN = {34, 40, 11, 22};
+        public static final int[][] LANTERN_ROWS = {{61, 28, 40}, {60, 28, 40}, {59, 28, 40}, {58, 27, 41}, {57, 27, 41}, {56, 27, 41}, {55, 27, 41}, {54, 27, 41}, {53, 27, 41}, {52, 26, 42}, {51, 26, 42}, {50, 26, 42}, {49, 26, 42}, {48, 26, 42}, {47, 26, 42}, {46, 26, 42}, {45, 26, 42}, {44, 26, 42}, {43, 26, 42}, {42, 26, 42}, {41, 26, 42}, {40, 26, 42}, {39, 26, 42}, {38, 26, 42}, {37, 26, 42}, {36, 26, 42}, {35, 26, 42}, {34, 26, 42}, {33, 26, 42}, {32, 26, 42}, {31, 26, 42}, {30, 26, 42}, {29, 26, 42}, {28, 26, 42}, {27, 26, 42}, {26, 27, 41}, {25, 27, 41}, {24, 27, 41}, {23, 27, 41}, {22, 27, 41}, {21, 27, 41}, {20, 28, 40}, {19, 28, 40}, {18, 28, 40}};
+        public static final int[][] CRYSTALS = {{88, 22}, {160, 30}, {70, 70}, {172, 128}, {98, 138}, {150, 20}};
+
+        private Mine() {
+        }
+    }
+
+    /** The numbers the Crop Field's field is drawn at. */
+    public static final class Field {
+        public static final int CX = 122;
+        public static final int CY = 76;
+        public static final int[][] FURROWS = {{66, 50, 178, 78}, {66, 88, 178, 116}};
+        public static final int[] CRATE = {182, 46, 248, 116};
+        public static final int[] TUBE = {32, 92, 8, 27};
+        public static final int[][] TUBE_ROWS = {{116, 26, 38}, {115, 26, 38}, {114, 26, 38}, {113, 26, 38}, {112, 26, 38}, {111, 26, 38}, {110, 26, 38}, {109, 26, 38}, {108, 26, 38}, {107, 26, 38}, {106, 26, 38}, {105, 26, 38}, {104, 26, 38}, {103, 26, 38}, {102, 26, 38}, {101, 26, 38}, {100, 26, 38}, {99, 26, 38}, {98, 26, 38}, {97, 26, 38}, {96, 26, 38}, {95, 26, 38}, {94, 26, 38}, {93, 26, 38}, {92, 26, 38}, {91, 26, 38}, {90, 26, 38}, {89, 26, 38}, {88, 26, 38}, {87, 26, 38}, {86, 26, 38}, {85, 26, 38}, {84, 26, 38}, {83, 26, 38}, {82, 26, 38}, {81, 26, 38}, {80, 26, 38}, {79, 26, 38}, {78, 26, 38}, {77, 26, 38}, {76, 26, 38}, {75, 26, 38}, {74, 26, 38}, {73, 26, 38}, {72, 26, 38}, {71, 26, 38}, {70, 26, 38}, {69, 26, 38}, {68, 26, 38}, {67, 26, 38}};
+        public static final int[] CLOUD = {32, 46};
+        public static final int[] SCARECROW = {176, 14};
+
+        private Field() {
         }
     }
 

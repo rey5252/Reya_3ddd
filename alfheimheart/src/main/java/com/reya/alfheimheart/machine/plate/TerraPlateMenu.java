@@ -11,7 +11,7 @@ import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraftforge.items.IItemHandler;
 
-/** The Terrestrial Plate's menu: the machine's layout, no special slots. */
+/** The Terrestrial Plate's menu: its six inputs the points of a hexagram round the plate, no special slots. */
 public class TerraPlateMenu extends MachineMenu {
     public TerraPlateMenu(int id, Inventory inventory, FriendlyByteBuf buf) {
         this(id, inventory, clientMachine(inventory, buf));

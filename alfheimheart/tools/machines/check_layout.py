@@ -3,14 +3,12 @@
     python3 tools/machines/check_layout.py
 
 Every machine's layout lives in layouts.py: the Java code reads it from machine/MachineLayouts.java, which
-layouts.py writes, and the panels are drawn on it (gen_v2.py for the machines' own looks; gen_gui.py, on
-layout.py, for the living-wood panel the first machines shared). This makes sure the Java file is current, the
+layouts.py writes, and the panels are drawn on it (gen_v2.py). This makes sure the Java file is current, the
 panels, gloss masks and widget sheets are their layouts' size, the sheets' shared pieces are where
-machine/client/MachineScreen.java reads them and no two pieces of a sheet overlap, and the first-generation
-screens' own numbers match layout.py. A slot a few pixels off its frame is easy to miss, so CI runs this. Needs
-only the Python standard library.
+machine/client/MachineScreen.java reads them, no two pieces of a sheet overlap and no two slots do, and every
+machine with recipes in JEI gets its click areas from its layout. A slot a few pixels off its frame is easy to
+miss, so CI runs this. Needs only the Python standard library.
 """
-import ast
 import os
 import re
 import struct
@@ -18,7 +16,6 @@ import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
-import layout as L  # noqa: E402
 import layouts as LS  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(HERE))
@@ -27,45 +24,17 @@ MACHINE = os.path.join(JAVA, "machine")
 TEXTURES = os.path.join(ROOT, "src", "main", "resources", "assets", "alfheimheart", "textures", "gui")
 
 
-def python_constants(path):
-    """The module's top-level NAME = literal assignments (without running it)."""
-    out = {}
-    with open(path) as f:
-        tree = ast.parse(f.read())
-    for node in tree.body:
-        if isinstance(node, ast.Assign):
-            try:
-                value = ast.literal_eval(node.value)
-            except ValueError:
-                continue
-            for target in node.targets:
-                if isinstance(target, ast.Name):
-                    out[target.id] = value
-                elif isinstance(target, ast.Tuple) and isinstance(value, tuple):
-                    for t, v in zip(target.elts, value):
-                        out[t.id] = v
-    return out
-
-
 def java_source(path):
     with open(path, encoding="utf-8") as f:
         return f.read()
 
 
 def java_constants(path):
-    """The class's `static final int A = 1, B = 2;` constants, int[] and int[][] tables."""
-    src = java_source(path)
+    """The class's `static final int A = 1, B = 2;` constants."""
     out = {}
-    for decl in re.findall(r"static final int\s+([^;]*);", src):
+    for decl in re.findall(r"static final int\s+([^;]*);", java_source(path)):
         for name, value in re.findall(r"(\w+)\s*=\s*(-?\d+)\b(?!\s*[-+*/.\[])", decl):
             out[name] = int(value)
-    for decl in re.findall(r"static final float\s+([^;]*);", src):
-        for name, value in re.findall(r"(\w+)\s*=\s*(-?\d+(?:\.\d+)?)F\b", decl):
-            out[name] = float(value)
-    for name, body in re.findall(r"static final int\[\]\[\]\s+(\w+)\s*=\s*\{(.*?)\};", src, re.S):
-        out[name] = [tuple(int(v) for v in re.findall(r"-?\d+", pair)) for pair in re.findall(r"\{([^{}]*)\}", body)]
-    for name, body in re.findall(r"static final int\[\]\s+(\w+)\s*=\s*\{([^{}]*)\};", src):
-        out[name] = tuple(int(v) for v in re.findall(r"-?\d+", body))
     return out
 
 
@@ -92,8 +61,7 @@ def main():
             errors.append(f"{what}: code {code}, texture {texture}")
 
     # the Java layouts are layouts.py's
-    generated = java_source(LS.JAVA_OUT)
-    if generated != LS.java():
+    if java_source(LS.JAVA_OUT) != LS.java():
         errors.append("machine/MachineLayouts.java isn't current: run python3 tools/machines/layouts.py")
 
     # the pieces every sheet has where MachineScreen reads them
@@ -106,73 +74,32 @@ def main():
     same("glow", (screen["GLOW_SIZE"], screen["GLOW_U"], screen["GLOW_V"]), (LS.GLOW_SIZE,) + LS.GLOW_UV)
     same("title plaque", (screen["SCROLL_CAP"], screen["SCROLL_V"], screen["SCROLL_TILE_U"], screen["SCROLL_TILE_W"]),
          (LS.PLAQUE_CAP, LS.PLAQUE_V, LS.PLAQUE_TILE_U, LS.PLAQUE_TILE_W))
-    same("texture margin", LS.M, L.M)
+    margin = java_constants(os.path.join(MACHINE, "MachineLayout.java"))
+    same("texture margin", margin["MARGIN"], LS.M)
 
-    # the first machines' shared sheet has them in the same places
-    sheet = python_constants(os.path.join(HERE, "gen_widgets.py"))
-    same("shared sheet size", (sheet["SHEET_W"], sheet["SHEET_H"]), (LS.SHEET_W, LS.SHEET_H))
-    same("shared sheet: icons", sheet["ICON_V"], LS.ICON_UV[1])
-    same("shared sheet: gems", (sheet["GEM_SIZE"],) + sheet["GEM_UV"], (LS.GEM_SIZE,) + LS.GEM_UV)
-    same("shared sheet: pool light", (sheet["POOL_SIZE"],) + sheet["POOL_UV"], (LS.POOL_SIZE,) + LS.POOL_UV)
-    same("shared sheet: close button", (sheet["CLOSE_SIZE"],) + sheet["CLOSE_UV"], (LS.CLOSE_SIZE,) + LS.CLOSE_UV)
-    same("shared sheet: glow", (sheet["GLOW_SIZE"],) + sheet["GLOW_UV"], (LS.GLOW_SIZE,) + LS.GLOW_UV)
-    same("shared sheet: plaque", (sheet["SCROLL_CAP"], sheet["SCROLL_V"], sheet["SCROLL_TILE_U"], sheet["SCROLL_TILE_W"]),
-         (LS.PLAQUE_CAP, LS.PLAQUE_V, LS.PLAQUE_TILE_U, LS.PLAQUE_TILE_W))
-    same("shared sheet: halo", (sheet["HALO_SIZE"],) + sheet["HALO_UV"], (LS.HALO_SIZE,) + LS.HALO_UV)
-    same("shared sheet: lit arrows", (screen["ARROW_W"], screen["ARROW_H"], screen["ARROW_U"], screen["ARROW_V"]),
-         (sheet["ARROW_W"], sheet["ARROW_H"], sheet["ARROW_UV"][0], sheet["ARROW_UV"][1]))
-    same("shared sheet: mana fill", (screen["FILL_V"], screen["BAR_X2"] - screen["BAR_X1"], screen["BAR_Y2"] - screen["BAR_Y1"]),
-         (sheet["FILL_V"], sheet["FILL_W"], sheet["FILL_H"]))
-    same("first machines' mana bar", (screen["BAR_X1"], screen["BAR_Y1"], screen["BAR_X2"], screen["BAR_Y2"]), L.BAR)
-    same("shared sheet png", png_size(os.path.join(TEXTURES, "machine_widgets.png")), (LS.SHEET_W, LS.SHEET_H))
-    regions_fit(errors, "shared sheet", sheet["SHEET_REGIONS"], sheet["SHEET_W"], sheet["SHEET_H"])
-
-    # every machine's textures are its layout's size; the second-generation sheets' pieces fit
+    # every machine's textures are its layout's size, its sheet's pieces fit, its slots don't overlap
     for name, d in LS.LAYOUTS:
         key = d["key"]
-        w, h, _ = d["size"]
+        w, h, mh = d["size"]
         same(f"{key} panel texture size", png_size(os.path.join(TEXTURES, key + ".png")), (w + 2 * LS.M, h + 2 * LS.M))
-        if d["classic"]:
-            continue
         same(f"{key} gloss mask size", png_size(os.path.join(TEXTURES, key + "_gloss.png")), (w + 2 * LS.M, h + 2 * LS.M))
         same(f"{key} widget sheet size", png_size(os.path.join(TEXTURES, key + "_widgets.png")), (LS.SHEET_W, LS.SHEET_H))
-        regions_fit(errors, f"{key} sheet", LS.SHARED_REGIONS + LS.V2[key].SHEET, LS.SHEET_W, LS.SHEET_H)
+        regions_fit(errors, f"{key} sheet", LS.SHARED_REGIONS + LS.MACHINES[key].SHEET, LS.SHEET_W, LS.SHEET_H)
         slots = d["inputs"] + d["outputs"] + d["special"]
         for i, (x1, y1) in enumerate(slots):
-            if x1 - 1 < 0 or y1 - 1 < 0 or x1 + 17 > w or y1 + 17 > d["size"][2]:
-                errors.append(f"{key}: slot {i} at {(x1, y1)} is off the machine's panel")
+            if x1 - 1 < LS.FRAME or y1 - 1 < LS.FRAME or x1 + 17 > w - LS.FRAME or y1 + 17 > mh - LS.FRAME:
+                errors.append(f"{key}: slot {i} at {(x1, y1)} is on or past the machine's frame")
             for (x2, y2) in slots[i + 1:]:
                 if abs(x1 - x2) < 18 and abs(y1 - y2) < 18:
                     errors.append(f"{key}: slots at {(x1, y1)} and {(x2, y2)} overlap")
-
-    # the first-generation machines' own numbers
-    farm = java_constants(os.path.join(MACHINE, "farm", "client", "PetalFarmScreen.java"))
-    same("farm: the planter", (farm["BED_X1"], farm["SOIL_Y"], farm["BED_X2"], farm["BED_Y2"]), L.FARM.BED)
-    same("farm: the soil's top", farm["SOIL_TOP"], L.FARM.SOIL_TOP)
-    same("farm: the sun's arc", (farm["SUN_X"], farm["SUN_Y"], farm["SUN_R"]), (L.FARM.SUN[0], L.FARM.SUN[1], L.FARM.SUN_R))
-    same("farm: gem", (farm["GEM_X"], farm["GEM_Y"]), L.FARM.GEM)
-    same("farm: heart's box", farm["HEART_BOX"], L.FARM.HEART_BOX)
-    same("farm: halo (sheet)", (farm["HALO_U"], farm["HALO_V"], farm["HALO_SIZE"]), (sheet["HALO_UV"][0], sheet["HALO_UV"][1], sheet["HALO_SIZE"]))
-
-    mine = java_constants(os.path.join(MACHINE, "orechid", "client", "OrechidMineScreen.java"))
-    same("mine: its window, ring, heart", (mine["MINE_X"], mine["MINE_Y"], mine["MINE_R"], mine["ROCK_R"], mine["ORE_R"], mine["HEART_R"]),
-         (L.MINE.CENTER[0], L.MINE.CENTER[1], L.MINE.R, L.MINE.ROCK_R, L.MINE.ORE_R, L.MINE.HEART_R))
-    same("mine: gem", (mine["GEM_X"], mine["GEM_Y"]), L.MINE.GEM)
-    same("mine: ore sockets", mine["ORES"], [tuple(p) for p in L.MINE.ORES])
-    same("mine: halo (sheet)", (mine["HALO_U"], mine["HALO_V"], mine["HALO_SIZE"]), (sheet["HALO_UV"][0], sheet["HALO_UV"][1], sheet["HALO_SIZE"]))
-
-    field = java_constants(os.path.join(MACHINE, "field", "client", "CropFieldScreen.java"))
-    same("field: its frame", field["BOX"], L.FIELD.BOX)
-    same("field: its rows", field["ROWS"], tuple(L.FIELD.ROWS))
-    same("field: the cloud", (field["CLOUD_X"], field["CLOUD_Y"]), L.FIELD.CLOUD)
-    same("field: gem", (field["GEM_X"], field["GEM_Y"]), L.FIELD.GEM)
-    same("field: heart's box", field["HEART_BOX"], L.FIELD.HEART_BOX)
 
     # every machine with recipes in JEI has its click areas from its layout
     jei = java_source(os.path.join(JAVA, "client", "JeiCompat.java"))
     for name in ("RUNE_ALTAR", "TERRA_PLATE", "MANA_INFUSER", "PURE_DAISY", "PETAL_APOTHECARY", "ORECHID_MINE"):
         if "MachineLayouts." + name not in jei:
             errors.append(f"JEI: no click areas for {name} from its layout")
+        if not dict(LS.LAYOUTS)[name]["click"]:
+            errors.append(f"JEI: {name}'s layout has no click area")
 
     if errors:
         print("The machines' GUI code and textures disagree:")

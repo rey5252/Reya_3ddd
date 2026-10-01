@@ -5,8 +5,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
-import javax.annotation.Nullable;
-
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -31,24 +29,21 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 
 /**
- * A mana machine's GUI: the machine's panel texture (its own look: tools/machines/gen_v2.py; or the living-wood
- * panel the first machines shared, gen_gui.py), laid out by its {@link MachineLayout}, and over it what every
- * machine's GUI does alike: the title on a plaque, the redstone and close buttons, the lights on the corners
+ * A mana machine's GUI: the machine's panel texture (its own look: tools/machines/gen_v2.py), laid out by its
+ * {@link MachineLayout}, and over it what every machine's GUI does alike: the title on a plaque, the redstone and close buttons, the lights on the corners
  * twinkling, mana running round the frame's groove while it works, a shine sweeping over its metal now and then,
  * the mana gauge, the pool lamp, the status gem, the finished craft flying out to the outputs, sparkles; opening,
  * the panel grows out of the machine's heart a little past its size and settles, and closing, it folds back in.
  * <p>
- * Each machine draws its heart ({@link #drawHeart}) and its gauge ({@link #drawGauge}; the first machines share a
- * mana bar), and says what its tooltips over its heart are ({@link #heartTooltip}).
+ * Each machine draws its heart ({@link #drawHeart}) and its mana gauge ({@link #drawGauge}), and says what its
+ * tooltips over its heart are ({@link #heartTooltip}).
  */
 public abstract class MachineScreen<M extends MachineMenu> extends AbstractContainerScreen<M> {
-    /** The widget sheet the first-generation machines share. */
-    public static final ResourceLocation WIDGETS = new ResourceLocation(AlfheimHeart.MODID, "textures/gui/machine_widgets.png");
     protected static final int M = MachineLayout.MARGIN;
     protected static final int WIDGETS_W = 256, WIDGETS_H = 128;
 
-    // the pieces every machine's sheet has in the same places (tools/machines/gen_widgets.py and theme.py;
-    // check_layout.py keeps them in step)
+    // the pieces every machine's sheet has in the same places (tools/machines/layouts.py; check_layout.py keeps
+    // them in step)
     protected static final int BUTTON_SIZE = 16, ICON_V = 16;
     protected static final int POOL_SIZE = 16, POOL_U = 192, POOL_V = 0;
     protected static final int GEM_SIZE = 7, GEM_U = 160, GEM_V = 16;
@@ -56,9 +51,6 @@ public abstract class MachineScreen<M extends MachineMenu> extends AbstractConta
             SCROLL_UP = 12, SCROLL_PAD = 6;
     protected static final int CLOSE_SIZE = 16, CLOSE_U = 104, CLOSE_V = 0;
     protected static final int GLOW_U = 104, GLOW_V = 16, GLOW_SIZE = 9;
-    // the first-generation panel's arrows and mana bar (layout.py)
-    protected static final int ARROW_W = 12, ARROW_H = 9, ARROW_U = 160, ARROW_V = 0;
-    protected static final int BAR_X1 = 64, BAR_Y1 = 108, BAR_X2 = 176, BAR_Y2 = 114, FILL_V = 80;
     /** How often a shine sweeps over the panel's metal, and how long it takes. */
     protected static final long GLOSS_EVERY = 7000L, GLOSS_MS = 1500L;
 
@@ -68,9 +60,8 @@ public abstract class MachineScreen<M extends MachineMenu> extends AbstractConta
 
     protected final MachineLayout layout;
     private final ResourceLocation panel;
-    /** The machine's widget sheet (its own, or the one the first machines share). */
+    /** The machine's widget sheet. */
     protected final ResourceLocation widgets;
-    @Nullable
     private final ResourceLocation gloss;
     private final int texW, texH;
     /** The middle of the machine's heart (menu coordinates): the panel grows from there, crafts fly out of it. */
@@ -162,13 +153,8 @@ public abstract class MachineScreen<M extends MachineMenu> extends AbstractConta
     /** The key of the machine's lang entries: gui.alfheimheart.&lt;key&gt;.… */
     protected abstract String key();
 
-    /**
-     * The mana gauge (called over the panel; `mana` is how full the store is, 0..1, smoothed): the first
-     * machines' mana bar, unless a machine draws its own.
-     */
-    protected void drawGauge(GuiGraphics g, long t, float mana) {
-        drawManaBar(g, t, mana);
-    }
+    /** The mana gauge (called over the panel; `mana` is how full the store is, 0..1, smoothed). */
+    protected abstract void drawGauge(GuiGraphics g, long t, float mana);
 
     /** Whether the mouse (menu coordinates) is over the gauge: its tooltip shows there. */
     protected boolean overGauge(int mx, int my) {
@@ -308,7 +294,6 @@ public abstract class MachineScreen<M extends MachineMenu> extends AbstractConta
             drawVeinPulse(g, t);
         });
         drawGem(g, t);
-        if (layout.classic) drawArrows(g, t);
         drawGauge(g, t, shownMana);
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
@@ -338,7 +323,7 @@ public abstract class MachineScreen<M extends MachineMenu> extends AbstractConta
 
     /** Now and then a shine sweeps over the panel's metal (where its gloss mask is white). */
     private void drawGloss(GuiGraphics g, long t) {
-        if (gloss == null || t < GROW_MS) return;
+        if (t < GROW_MS) return;
         long k = (t - GROW_MS + GLOSS_EVERY - 1200L) % GLOSS_EVERY;
         if (k >= GLOSS_MS) return;
         float e = k / (float) GLOSS_MS;
@@ -366,49 +351,6 @@ public abstract class MachineScreen<M extends MachineMenu> extends AbstractConta
         RenderSystem.enableBlend();
         g.blit(widgets, leftPos + gemX - GEM_SIZE / 2, topPos + gemY - GEM_SIZE / 2, GEM_U + kind * GEM_SIZE, GEM_V, GEM_SIZE, GEM_SIZE,
                 WIDGETS_W, WIDGETS_H);
-    }
-
-    /** The first machines' arrows glow while the machine works, and flash on each craft (into the heart, then out). */
-    private void drawArrows(GuiGraphics g, long t) {
-        if (layout.clickAreas.length < 2) return;
-        boolean on = working();
-        long since = t - craftedAt;
-        drawArrow(g, layout.clickAreas[0][0], layout.clickAreas[0][1], t, on ? (t / 600L % 2L == 0L ? t % 600L : 1000L) : 1000L, on);
-        drawArrow(g, layout.clickAreas[1][0], layout.clickAreas[1][1], t, since, on);
-    }
-
-    private void drawArrow(GuiGraphics g, int x, int y, long t, long since, boolean on) {
-        float flash = since >= 0L && since < 400L ? 1.0F - since / 400.0F : 0.0F;
-        float glow = on ? 0.3F + 0.15F * Mth.sin(t / 240.0F + x) : 0.0F;
-        float a = Math.max(flash, glow);
-        if (a <= 0.02F) return;
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        g.setColor(1.0F, 1.0F, 1.0F, a);
-        g.blit(widgets, leftPos + x, topPos + y, ARROW_U + (flash > 0.5F ? ARROW_W : 0), ARROW_V, ARROW_W, ARROW_H, WIDGETS_W, WIDGETS_H);
-        g.setColor(1.0F, 1.0F, 1.0F, 1.0F);
-    }
-
-    /** The first machines' mana bar: a shine runs over it while it works, it blinks red when a craft waits for mana. */
-    private void drawManaBar(GuiGraphics g, long t, float mana) {
-        int x1 = leftPos + BAR_X1, y1 = topPos + BAR_Y1, y2 = topPos + BAR_Y2;
-        int w = Math.round((BAR_X2 - BAR_X1) * mana);
-        if (w > 0) {
-            RenderSystem.enableBlend();
-            g.blit(widgets, x1, y1, 0, FILL_V, w, BAR_Y2 - BAR_Y1, WIDGETS_W, WIDGETS_H);
-            if (working()) {
-                int sx = x1 + (int) ((t / 7L) % (w + 30)) - 15;
-                for (int k = 0; k < 6; k++) {
-                    int xx = sx + k;
-                    if (xx >= x1 && xx < x1 + w) g.fill(xx, y1 + 1, xx + 1, y2 - 1, (40 + (k < 3 ? k : 5 - k) * 25) << 24 | 0xFFFFFF);
-                }
-            }
-            g.fill(x1 + w - 1, y1, x1 + w, y2, 0xFF000000 | MANA_BRIGHT);
-        }
-        if (menu.status() == MachineStatus.NO_MANA) {
-            float beat = 0.5F + 0.5F * Mth.sin(t / 260.0F);
-            g.fill(x1 + Math.max(0, w), y1, leftPos + BAR_X2, y2, (int) (20 + beat * 60) << 24 | 0xC82C26);
-        }
     }
 
     private void drawButtons(GuiGraphics g, int mouseX, int mouseY, long t) {

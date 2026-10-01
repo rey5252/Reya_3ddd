@@ -3,25 +3,21 @@
     python3 tools/machines/layouts.py
 
 writes machine/MachineLayouts.java from them (the menus put the slots there, the screens draw there); the
-panels and widget sheets are drawn on the same numbers (gen_v2.py; the first-generation ones by gen_gui.py on
-layout.py), so code and textures can't disagree. check_layout.py makes sure the Java file is current.
+panels and widget sheets are drawn on the same numbers (gen_v2.py), so code and textures can't disagree.
+check_layout.py makes sure the Java file is current.
 
 Coordinates are the menu's (the panel's top-left is 0, 0). A slot is given by its item's corner: its 16x16
 item there, its 18x18 frame a pixel round it. Angles are degrees on the screen (y down): 0 is right, 90 down.
 
-Second-generation machines all share the panel's size and proportions (W x H, the machine's part MACHINE_H
-high, the player's inventory on a panel hanging under it in the same place) and where the controls are (the
-redstone button and the close button on the top corners, the title between them); each has its own look,
-slots placed as its machine works, its own mana gauge.
+The machines all share the panel's size and proportions (W x H, the machine's part MACHINE_H high, the
+player's inventory on a panel hanging under it in the same place) and where the controls are (the redstone
+button and the close button on the top corners, the title between them); each has its own look, its slots
+placed as its machine works, its own mana gauge.
 """
 import math
 import os
-import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, HERE)
-import layout as CLASSIC  # noqa: E402
-
 ROOT = os.path.dirname(os.path.dirname(HERE))
 JAVA_OUT = os.path.join(ROOT, "src", "main", "java", "com", "reya", "alfheimheart", "machine", "MachineLayouts.java")
 
@@ -34,7 +30,7 @@ REDSTONE = (-5, -8)
 FRAME = 7                                # the frame's width round the machine's part
 
 # every machine's widget sheet (256 x 128) keeps these pieces in the same places, where
-# machine/client/MachineScreen.java reads them (the first machines' shared sheet too: gen_widgets.py)
+# machine/client/MachineScreen.java reads them
 SHEET_W, SHEET_H = 256, 128
 BUTTON_UV = (0, 0)                       # the redstone button 16x16: normal, hover, pressed
 ICON_UV = (0, 16)                        # its icons 12x12: ignore, high, low
@@ -313,44 +309,164 @@ APOTHECARY.GAUGE_BOX = (APOTHECARY.FLASK[0] - APOTHECARY.FLASK[2] - 2, APOTHECAR
                         APOTHECARY.FLASK[0] + APOTHECARY.FLASK[2] + 2, APOTHECARY.FLASK[1] + APOTHECARY.FLASK[2] + 2)
 
 
-# ---------------------------------------------------------------- the first-generation machines
+# ---------------------------------------------------------------- gauges shaped like things
 
-def classic(key, heart, gem, special):
-    """The living-wood panel every machine shared before (layout.py): 3x3 grids, arrows, a mana bar."""
-    L = CLASSIC
-    bar = L.BAR
-    return dict(key=key, classic=True, size=(L.W, L.H, L.MACHINE_H),
-                inputs=grid(L.INPUT[0], L.INPUT[1], 3, 3), outputs=grid(L.OUTPUT[0], L.OUTPUT[1], 3, 3), special=special,
-                inventory=(L.INV_SLOT_X, L.INV_Y, L.HOTBAR_Y, L.INV_X1, L.INV_X2),
-                close=(229, -8), redstone=L.BUTTONS[0], pool=L.POOL, gem=gem, heart=heart,
-                land=(L.OUTPUT[0] + 26, L.OUTPUT[1] + 26),
-                gauge=(bar[0] - 14, bar[1] - 3, bar[2] + 2, bar[3] + 3),
-                click=[(ax, ay, L.ARROW_W, L.ARROW_H) for (ax, ay) in L.ARROWS],
-                lights=L.LIGHTS, vein=(3, 3, L.W - 4, L.MACHINE_H - 4))
+def rows_of(half, cx, top, bottom, inset=2):
+    """The rows inside an outline of half-widths half(y) round x = cx (pixel edges), from bottom - 1 up to top:
+    y, x1, x2 (x2 exclusive); a gauge fills them from the first."""
+    rows = []
+    for y in range(bottom - 1, top - 1, -1):
+        h = half(y) - inset
+        if h < 0.5:
+            continue
+        x1, x2 = int(math.ceil(cx - h)), int(math.floor(cx + h))
+        if x2 > x1:
+            rows.append((y, x1, x2))
+    return rows
 
 
-def v2(m, special):
-    return dict(key=m.KEY, classic=False, size=(W, H, MACHINE_H), inputs=m.INPUTS, outputs=m.OUTPUTS, special=special,
+# ---------------------------------------------------------------- the Petal Farm: the greenhouse
+
+class FARM:
+    """A greenhouse: the sky through its panes, the sun crossing it as a cycle goes by (one a day); the inputs
+    six clay pots on two shelves, the bone meal in a sack under them, a watering can of mana on the left, jars
+    for the petals on a shelf on the right."""
+    KEY = "petal_farm"
+    CX, CY = 128, 74
+    INPUTS = [(86, 40), (120, 40), (154, 40), (86, 84), (120, 84), (154, 84)]
+    SHELVES = [(74, 64, 182), (74, 108, 182)]          # x1, y (the board's top), x2
+    FERTILIZER = (120, 127)
+    OUTPUTS = [(203 + 22 * c, 30 + 22 * r) for r in range(4) for c in range(2)]
+    JARS = (197, 22, 247, 118)
+    SUN = (128, 44, 40)                  # the arc the sun runs along: its middle, its radius (it rises at 180)
+    CAN = (14, 74, 46, 112, 6)           # the watering can's body: x1, y1, x2, y2, corner
+    POOL = (22, 124)
+    GEM = (CX, 66)
+    LAND = (225, 70)
+    CLICK = []
+    LIGHTS = [(3, 152), (252, 152), (43, 244), (212, 244)]
+    VEIN = (3, 3, W - 4, MACHINE_H - 4)
+    PETAL_UV = (128, 32)                 # a petal 4x3, white
+
+
+FARM.SHEET = [("petal", FARM.PETAL_UV[0], FARM.PETAL_UV[1], 4, 3)]
+FARM.HEART = (FARM.CX, 70)
+
+
+def can_half(y):
+    x1, y1, x2, y2, r = FARM.CAN
+    if not (y1 <= y < y2):
+        return 0.0
+    return (x2 - x1) / 2.0
+
+
+FARM.CAN_ROWS = rows_of(can_half, (FARM.CAN[0] + FARM.CAN[2]) / 2.0, FARM.CAN[1] + 3, FARM.CAN[3], inset=3)
+FARM.GAUGE_BOX = (FARM.CAN[0] - 2, FARM.CAN[1] - 14, FARM.CAN[2] + 16, FARM.CAN[3] + 2)
+
+
+# ---------------------------------------------------------------- the Orechid Mine: the gem cavern
+
+class MINE:
+    """A cavern: the block being turned in the middle of a ring of the ores it may become (set in the rock like
+    gems), the orechid under it; the inputs in a minecart on rails, a lantern of mana hanging on the left, a
+    chest for the ores on the right."""
+    KEY = "orechid_mine"
+    CX, CY = 121, 66
+    ORE_R = 36
+    ORE_ANGLES = [-90 + 22.5 + k * 45 for k in range(8)]
+    ORECHID = (CX, 116)
+    INPUTS = [(19, 101), (37, 101), (19, 119), (37, 119)]
+    CART = (13, 95, 61, 139)
+    OUTPUTS = grid(188, 52, 3, 3)
+    CHEST = (182, 34, 248, 112)
+    LANTERN = (34, 40, 11, 22)           # its glass's middle, half-width, half-height
+    POOL = (66, 128)
+    GEM = (CX, CY - ORE_R - 2)
+    LAND = (215, 79)
+    CLICK = [(CX - 9, CY - 9, 18, 18)]
+    LIGHTS = [(3, 152), (252, 152), (43, 244), (212, 244)]
+    VEIN = (3, 3, W - 4, MACHINE_H - 4)
+    CRYSTALS = [(88, 22), (160, 30), (70, 70), (172, 128), (98, 138), (150, 20)]   # glowing crystals in the rock
+
+
+MINE.ORES = [(int(round(MINE.CX + MINE.ORE_R * math.cos(math.radians(a)))), int(round(MINE.CY + MINE.ORE_R * math.sin(math.radians(a)))))
+             for a in MINE.ORE_ANGLES]
+MINE.SHEET = []
+
+
+def lantern_half(y):
+    cx, cy, hw, hh = MINE.LANTERN
+    dy = abs(y + 0.5 - cy)
+    if dy > hh:
+        return 0.0
+    return hw * (1.0 - 0.25 * (dy / hh) ** 2)
+
+
+MINE.LANTERN_ROWS = rows_of(lantern_half, MINE.LANTERN[0], MINE.LANTERN[1] - MINE.LANTERN[3], MINE.LANTERN[1] + MINE.LANTERN[3],
+                            inset=2)
+MINE.GAUGE_BOX = (MINE.LANTERN[0] - MINE.LANTERN[2] - 2, MINE.LANTERN[1] - MINE.LANTERN[3] - 8, MINE.LANTERN[0] + MINE.LANTERN[2] + 2,
+                  MINE.LANTERN[1] + MINE.LANTERN[3] + 4)
+
+
+# ---------------------------------------------------------------- the Crop Field: the golden field
+
+class FIELD:
+    """A field of wheat at sunset: the inputs six plots in two furrows of tilled soil, the bone meal in a sack
+    under them, a rain gauge of mana on the left with a little cloud over it, a crate for the harvest on the
+    right, a scarecrow watching."""
+    KEY = "crop_field"
+    CX, CY = 122, 76
+    INPUTS = [(78, 56), (114, 56), (150, 56), (78, 94), (114, 94), (150, 94)]
+    FURROWS = [(66, 50, 178, 78), (66, 88, 178, 116)]   # x1, y1, x2, y2
+    FERTILIZER = (114, 127)
+    OUTPUTS = grid(189, 56, 3, 3)
+    CRATE = (182, 46, 248, 116)
+    TUBE = (32, 92, 8, 27)               # the rain gauge's glass: its middle, half-width, half-height
+    CLOUD = (32, 46)
+    SCARECROW = (176, 14)
+    POOL = (24, 128)
+    GEM = (CX, 84)
+    LAND = (215, 83)
+    CLICK = []
+    LIGHTS = [(3, 152), (252, 152), (43, 244), (212, 244)]
+    VEIN = (3, 3, W - 4, MACHINE_H - 4)
+
+
+FIELD.SHEET = []
+FIELD.HEART = (FIELD.CX, 84)
+
+
+def tube_half(y):
+    cx, cy, hw, hh = FIELD.TUBE
+    return float(hw) if abs(y + 0.5 - cy) <= hh else 0.0
+
+
+FIELD.TUBE_ROWS = rows_of(tube_half, FIELD.TUBE[0], FIELD.TUBE[1] - FIELD.TUBE[3] + 2, FIELD.TUBE[1] + FIELD.TUBE[3] - 2, inset=2)
+FIELD.GAUGE_BOX = (FIELD.TUBE[0] - FIELD.TUBE[2] - 4, FIELD.TUBE[1] - FIELD.TUBE[3] - 8, FIELD.TUBE[0] + FIELD.TUBE[2] + 4,
+                   FIELD.TUBE[1] + FIELD.TUBE[3] + 4)
+
+
+def layout(m, special):
+    return dict(key=m.KEY, size=(W, H, MACHINE_H), inputs=m.INPUTS, outputs=m.OUTPUTS, special=special,
                 inventory=(INV_X, INV_Y, HOTBAR_Y, INV_PANEL[0], INV_PANEL[1]), close=CLOSE, redstone=REDSTONE,
                 pool=m.POOL, gem=m.GEM, heart=getattr(m, "HEART", (m.CX, m.CY)), land=m.LAND,
                 gauge=getattr(m, "GAUGE_BOX", (0, 0, 0, 0)), click=m.CLICK, lights=m.LIGHTS, vein=m.VEIN)
 
 
-SPECIAL = CLASSIC.SPECIAL_SLOT
 LAYOUTS = [
-    ("RUNE_ALTAR", v2(ALTAR, [ALTAR.REAGENT])),
-    ("TERRA_PLATE", v2(PLATE, [])),
-    ("MANA_INFUSER", v2(INFUSER, [INFUSER.CATALYST])),
-    ("PURE_DAISY", v2(DAISY, [])),
-    ("PETAL_APOTHECARY", v2(APOTHECARY, [APOTHECARY.REAGENT])),
-    ("PETAL_FARM", classic("petal_farm", (120, 44), (120, 62), [SPECIAL])),
-    ("ORECHID_MINE", classic("orechid_mine", (120, 50), (120, 31), [])),
-    ("CROP_FIELD", classic("crop_field", (120, 50), (120, 76), [SPECIAL])),
+    ("RUNE_ALTAR", layout(ALTAR, [ALTAR.REAGENT])),
+    ("TERRA_PLATE", layout(PLATE, [])),
+    ("MANA_INFUSER", layout(INFUSER, [INFUSER.CATALYST])),
+    ("PURE_DAISY", layout(DAISY, [])),
+    ("PETAL_APOTHECARY", layout(APOTHECARY, [APOTHECARY.REAGENT])),
+    ("PETAL_FARM", layout(FARM, [FARM.FERTILIZER])),
+    ("ORECHID_MINE", layout(MINE, [])),
+    ("CROP_FIELD", layout(FIELD, [FIELD.FERTILIZER])),
 ]
 
 
-V2 = {"rune_altar": ALTAR, "terra_plate": PLATE, "mana_infuser": INFUSER, "pure_daisy": DAISY,  # the second-generation machines
-      "petal_apothecary": APOTHECARY}
+MACHINES = {"rune_altar": ALTAR, "terra_plate": PLATE, "mana_infuser": INFUSER, "pure_daisy": DAISY,  # every machine's own numbers
+      "petal_apothecary": APOTHECARY, "petal_farm": FARM, "orechid_mine": MINE, "crop_field": FIELD}
 
 
 def art_constants():
@@ -393,9 +509,23 @@ def art_constants():
         ("PETAL_U", b.PETAL_UV[0]), ("PETAL_V", b.PETAL_UV[1]), ("STEAM_U", b.STEAM_UV[0]), ("STEAM_V", b.STEAM_UV[1]),
         ("STEAM_SIZE", b.STEAM_SIZE),
     ]
+    fa, mi, fi = FARM, MINE, FIELD
+    farm = [
+        ("CX", fa.CX), ("CY", fa.CY), ("SHELVES", fa.SHELVES), ("JARS", fa.JARS), ("SUN", fa.SUN), ("CAN", fa.CAN), ("CAN_ROWS", fa.CAN_ROWS),
+        ("PETAL_U", fa.PETAL_UV[0]), ("PETAL_V", fa.PETAL_UV[1]),
+    ]
+    mine = [
+        ("CX", mi.CX), ("CY", mi.CY), ("ORE_R", mi.ORE_R), ("ORES", mi.ORES), ("ORECHID", mi.ORECHID), ("CART", mi.CART), ("CHEST", mi.CHEST),
+        ("LANTERN", mi.LANTERN), ("LANTERN_ROWS", mi.LANTERN_ROWS), ("CRYSTALS", mi.CRYSTALS),
+    ]
+    field = [
+        ("CX", fi.CX), ("CY", fi.CY), ("FURROWS", fi.FURROWS), ("CRATE", fi.CRATE), ("TUBE", fi.TUBE), ("TUBE_ROWS", fi.TUBE_ROWS),
+        ("CLOUD", fi.CLOUD), ("SCARECROW", fi.SCARECROW),
+    ]
     return [("Altar", "the Runic Altar's sanctum", altar), ("Plate", "the Terrestrial Plate's astrolabe", plate),
             ("Infuser", "the Mana Infuser's fountain", infuser), ("Daisy", "the Pure Daisy's garden", daisy),
-            ("Apothecary", "the Petal Apothecary's table", apothecary)]
+            ("Apothecary", "the Petal Apothecary's table", apothecary), ("Farm", "the Petal Farm's greenhouse", farm),
+            ("Mine", "the Orechid Mine's cavern", mine), ("Field", "the Crop Field's field", field)]
 
 
 # ---------------------------------------------------------------- the Java file
@@ -445,8 +575,7 @@ def java():
     for name, d in LAYOUTS:
         w, h, mh = d["size"]
         inv = d["inventory"]
-        out.append("    public static final MachineLayout %s = new MachineLayout(\"%s\", %s, %d, %d, %d," % (
-            name, d["key"], java_value(d["classic"]), w, h, mh))
+        out.append("    public static final MachineLayout %s = new MachineLayout(\"%s\", %d, %d, %d," % (name, d["key"], w, h, mh))
         out.append("            %s," % ints(d["inputs"]))
         out.append("            %s," % ints(d["outputs"]))
         out.append("            %s," % ints(d["special"]))

@@ -11,11 +11,8 @@ import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraftforge.items.IItemHandler;
 
-/** The Petal Apothecary's menu: the machine's layout, and the seeds slot the bowl stands on. */
+/** The Petal Apothecary's menu: its nine inputs a fan of petals over the bowl, the seeds' slot under the bowl. */
 public class PetalApothecaryMenu extends MachineMenu {
-    /** The seeds slot's item corner (tools/machines/layout.py BOWL.SLOT). */
-    public static final int REAGENT_X = PetalApothecaryBlockEntity.LAYOUT.special[0][0], REAGENT_Y = PetalApothecaryBlockEntity.LAYOUT.special[0][1];
-
     public PetalApothecaryMenu(int id, Inventory inventory, FriendlyByteBuf buf) {
         this(id, inventory, clientMachine(inventory, buf));
     }

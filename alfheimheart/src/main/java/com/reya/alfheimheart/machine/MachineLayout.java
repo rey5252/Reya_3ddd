@@ -17,8 +17,6 @@ public final class MachineLayout {
     public static final int MARGIN = 12;
 
     public final String key;
-    /** The first-generation look, the living-wood panel every machine shared: its arrows and its mana bar. */
-    public final boolean classic;
     public final int width, height, machineHeight;
     public final int[][] inputs, outputs, special;
     public final int invX, invY, hotbarY, invPanelX1, invPanelX2;
@@ -31,11 +29,10 @@ public final class MachineLayout {
     /** The groove mana runs round while the machine works: x1, y1, x2, y2. */
     public final int[] vein;
 
-    public MachineLayout(String key, boolean classic, int width, int height, int machineHeight, int[][] inputs, int[][] outputs,
+    public MachineLayout(String key, int width, int height, int machineHeight, int[][] inputs, int[][] outputs,
                          int[][] special, int[] inventory, int[] close, int[] redstone, int[] pool, int[] gem, int[] heart, int[] land,
                          int[] gauge, int[][] clickAreas, int[][] lights, int[] vein) {
         this.key = key;
-        this.classic = classic;
         this.width = width;
         this.height = height;
         this.machineHeight = machineHeight;
@@ -95,14 +92,14 @@ public final class MachineLayout {
         return gui(key);
     }
 
-    /** The widget sheet: the machine's own, or the one the first-generation machines share. */
+    /** The machine's widget sheet. */
     public ResourceLocation widgets() {
-        return gui(classic ? "machine_widgets" : key + "_widgets");
+        return gui(key + "_widgets");
     }
 
-    /** Where a shine sweeps over the panel (the panel's size; white where it shines), or null. */
+    /** Where a shine sweeps over the panel (the panel's size; white where it shines). */
     public ResourceLocation gloss() {
-        return classic ? null : gui(key + "_gloss");
+        return gui(key + "_gloss");
     }
 
     private static ResourceLocation gui(String name) {

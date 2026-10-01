@@ -13,9 +13,6 @@ import net.minecraftforge.items.IItemHandler;
 
 /** The Runic Altar's menu: the sanctum's layout, the inputs on a ring round the altar, the livingrock socket the ninth. */
 public class RuneAltarMenu extends MachineMenu {
-    /** The reagent slot's item corner. */
-    public static final int REAGENT_X = RuneAltarBlockEntity.LAYOUT.special[0][0], REAGENT_Y = RuneAltarBlockEntity.LAYOUT.special[0][1];
-
     public RuneAltarMenu(int id, Inventory inventory, FriendlyByteBuf buf) {
         this(id, inventory, clientMachine(inventory, buf));
     }
