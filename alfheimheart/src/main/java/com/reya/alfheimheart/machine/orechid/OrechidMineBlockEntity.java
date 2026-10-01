@@ -147,9 +147,11 @@ public class OrechidMineBlockEntity extends MachineBlockEntity {
                         break;
                     }
                 }
-                Item item = chosen.getOutput().pick(random).getBlock().asItem();
+                BlockState out = chosen.getOutput().pick(random);   // a tag of ores can be empty
+                Item item = out == null ? Items.AIR : out.getBlock().asItem();
                 if (item != Items.AIR) picked.merge(item, 1, Integer::sum);
             }
+            if (picked.isEmpty()) continue;
             List<ItemStack> outputs = new ArrayList<>();
             picked.forEach((item, count) -> outputs.add(new ItemStack(item, count)));
             int[] taken = new int[SLOTS];
