@@ -46,7 +46,7 @@ public class RouterTests {
 
     private static RouterBlockEntity router(GameTestHelper h, BlockPos at, Direction facing) {
         h.setBlock(at, BoundlessRouters.ROUTER.get().defaultBlockState().setValue(RouterBlock.FACING, facing));
-        return h.getBlockEntity(at);
+        return (RouterBlockEntity) h.getBlockEntity(at);
     }
 
     private static void run(GameTestHelper h, RouterBlockEntity router) {
