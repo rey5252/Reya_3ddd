@@ -33,7 +33,7 @@ import org.lwjgl.glfw.GLFW;
 
 /**
  * Dev-only: with ALFHEIMHEART_AUTOSHOT=true the client makes a flat world and photographs every block of the
- * mod in its own little scene ({@link GreenhouseShots}, {@link PortalShots}): in the world, its GUI opening,
+ * mod in its own little scene ({@link GreenhouseShots}, {@link PortalShots}, {@link MachineShots}): in the world, its GUI opening,
  * settled, with tooltips, closing, its lexicon pages; then the GUIs and the lexicon in Ukrainian; and quits.
  * The screenshots land in run/screenshots, named after their scene.
  */
@@ -50,10 +50,12 @@ public final class AutoShot {
     static {
         GreenhouseShots.steps(STEPS);
         PortalShots.steps(STEPS);
+        MachineShots.steps(STEPS);
         STEPS.add(new Step(5, () -> language("uk_ua")));
         STEPS.add(new Step(40, () -> guiScale(3)));
         GreenhouseShots.ukSteps(STEPS);
         PortalShots.ukSteps(STEPS);
+        MachineShots.ukSteps(STEPS);
         STEPS.add(new Step(10, () -> Minecraft.getInstance().stop()));
     }
 

@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PTP",
+    "LXL",
+    "WWW"
+  ],
+  "key": {
+    "P": {"item": "botania:mana_pearl"},
+    "T": {"item": "botania:terrasteel_ingot"},
+    "L": {"item": "botania:livingrock_bricks"},
+    "X": {"item": "botania:terra_plate"},
+    "W": {"item": "botania:livingwood_planks"}
+  },
+  "result": {"item": "alfheimheart:terra_plate"}
+}

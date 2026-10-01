@@ -3,6 +3,12 @@ package com.reya.alfheimheart.client;
 import com.reya.alfheimheart.AlfheimHeart;
 import com.reya.alfheimheart.greenhouse.client.GreenhouseRenderer;
 import com.reya.alfheimheart.greenhouse.client.GreenhouseScreen;
+import com.reya.alfheimheart.machine.altar.client.RuneAltarRenderer;
+import com.reya.alfheimheart.machine.altar.client.RuneAltarScreen;
+import com.reya.alfheimheart.machine.infuser.client.ManaInfuserRenderer;
+import com.reya.alfheimheart.machine.infuser.client.ManaInfuserScreen;
+import com.reya.alfheimheart.machine.plate.client.TerraPlateRenderer;
+import com.reya.alfheimheart.machine.plate.client.TerraPlateScreen;
 import com.reya.alfheimheart.portal.client.PortalRenderer;
 import com.reya.alfheimheart.portal.client.PortalScreen;
 import net.minecraft.client.gui.screens.MenuScreens;
@@ -20,6 +26,9 @@ public final class ClientSetup {
         event.enqueueWork(() -> {
             MenuScreens.register(AlfheimHeart.GREENHOUSE_MENU.get(), GreenhouseScreen::new);
             MenuScreens.register(AlfheimHeart.PORTAL_MENU.get(), PortalScreen::new);
+            MenuScreens.register(AlfheimHeart.RUNE_ALTAR_MENU.get(), RuneAltarScreen::new);
+            MenuScreens.register(AlfheimHeart.TERRA_PLATE_MENU.get(), TerraPlateScreen::new);
+            MenuScreens.register(AlfheimHeart.MANA_INFUSER_MENU.get(), ManaInfuserScreen::new);
         });
     }
 
@@ -27,6 +36,9 @@ public final class ClientSetup {
     public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerBlockEntityRenderer(AlfheimHeart.GREENHOUSE_BE.get(), GreenhouseRenderer::new);
         event.registerBlockEntityRenderer(AlfheimHeart.PORTAL_BE.get(), PortalRenderer::new);
+        event.registerBlockEntityRenderer(AlfheimHeart.RUNE_ALTAR_BE.get(), RuneAltarRenderer::new);
+        event.registerBlockEntityRenderer(AlfheimHeart.TERRA_PLATE_BE.get(), TerraPlateRenderer::new);
+        event.registerBlockEntityRenderer(AlfheimHeart.MANA_INFUSER_BE.get(), ManaInfuserRenderer::new);
     }
 
     /** The greenhouse's petals and crystal move, so they are models of their own, not part of the block's. */

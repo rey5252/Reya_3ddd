@@ -1,0 +1,34 @@
+{
+  "variants": {
+    "active=false,facing=north": {
+      "model": "alfheimheart:block/rune_altar"
+    },
+    "active=true,facing=north": {
+      "model": "alfheimheart:block/rune_altar"
+    },
+    "active=false,facing=east": {
+      "model": "alfheimheart:block/rune_altar",
+      "y": 90
+    },
+    "active=true,facing=east": {
+      "model": "alfheimheart:block/rune_altar",
+      "y": 90
+    },
+    "active=false,facing=south": {
+      "model": "alfheimheart:block/rune_altar",
+      "y": 180
+    },
+    "active=true,facing=south": {
+      "model": "alfheimheart:block/rune_altar",
+      "y": 180
+    },
+    "active=false,facing=west": {
+      "model": "alfheimheart:block/rune_altar",
+      "y": 270
+    },
+    "active=true,facing=west": {
+      "model": "alfheimheart:block/rune_altar",
+      "y": 270
+    }
+  }
+}

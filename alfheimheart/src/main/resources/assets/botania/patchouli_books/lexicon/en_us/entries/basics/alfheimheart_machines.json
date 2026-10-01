@@ -1,0 +1,31 @@
+{
+  "name": "alfheimheart.lexicon.machines",
+  "category": "botania:basics",
+  "icon": "alfheimheart:rune_altar",
+  "advancement": "botania:main/runic_altar_pickup",
+  "pages": [
+    {
+      "type": "text",
+      "text": "alfheimheart.lexicon.machines0"
+    },
+    {
+      "type": "text",
+      "text": "alfheimheart.lexicon.machines1"
+    },
+    {
+      "type": "crafting",
+      "recipe": "alfheimheart:rune_altar",
+      "text": "alfheimheart.lexicon.machines2"
+    },
+    {
+      "type": "crafting",
+      "recipe": "alfheimheart:terra_plate",
+      "text": "alfheimheart.lexicon.machines3"
+    },
+    {
+      "type": "crafting",
+      "recipe": "alfheimheart:mana_infuser",
+      "text": "alfheimheart.lexicon.machines4"
+    }
+  ]
+}

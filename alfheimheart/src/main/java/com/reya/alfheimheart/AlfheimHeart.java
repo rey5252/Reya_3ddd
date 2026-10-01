@@ -8,6 +8,18 @@ import com.reya.alfheimheart.greenhouse.GreenhouseMenu;
 import com.reya.alfheimheart.greenhouse.HintItem;
 import com.reya.alfheimheart.greenhouse.UpgradeItem;
 import com.reya.alfheimheart.greenhouse.UpgradeKind;
+import com.reya.alfheimheart.machine.MachineBlock;
+import com.reya.alfheimheart.machine.MachineBlockItem;
+import com.reya.alfheimheart.machine.MachineConfig;
+import com.reya.alfheimheart.machine.altar.RuneAltarBlock;
+import com.reya.alfheimheart.machine.altar.RuneAltarBlockEntity;
+import com.reya.alfheimheart.machine.altar.RuneAltarMenu;
+import com.reya.alfheimheart.machine.infuser.ManaInfuserBlock;
+import com.reya.alfheimheart.machine.infuser.ManaInfuserBlockEntity;
+import com.reya.alfheimheart.machine.infuser.ManaInfuserMenu;
+import com.reya.alfheimheart.machine.plate.TerraPlateBlock;
+import com.reya.alfheimheart.machine.plate.TerraPlateBlockEntity;
+import com.reya.alfheimheart.machine.plate.TerraPlateMenu;
 import com.reya.alfheimheart.portal.PortalBlock;
 import com.reya.alfheimheart.portal.PortalBlockEntity;
 import com.reya.alfheimheart.portal.PortalBlockItem;
@@ -38,7 +50,9 @@ import org.slf4j.Logger;
 /**
  * Heart of Alfheim, a Botania addon: Botania's work folded into single blocks, each with its own GUI and
  * animations. The Mana Greenhouse grows generating flowers that make mana on their own; the Elven Portal
- * is a whole Alfheim gateway in one block that trades by every elven trade recipe and refines ores.
+ * is a whole Alfheim gateway in one block that trades by every elven trade recipe and refines ores; the
+ * machines (the Runic Altar, the Terrestrial Plate, the Mana Infuser) craft by Botania's recipes from their
+ * slots, with mana from pools and spreaders.
  */
 @Mod(AlfheimHeart.MODID)
 public class AlfheimHeart {
@@ -99,12 +113,55 @@ public class AlfheimHeart {
     public static final RegistryObject<MenuType<PortalMenu>> PORTAL_MENU = MENUS.register("elven_portal",
             () -> IForgeMenuType.create(PortalMenu::new));
 
+    // ------------------------------------------------------------------ the machines
+
+    public static final RegistryObject<Block> RUNE_ALTAR = BLOCKS.register("rune_altar",
+            () -> new RuneAltarBlock(machine(MapColor.QUARTZ)));
+    public static final RegistryObject<Item> RUNE_ALTAR_ITEM = ITEMS.register("rune_altar",
+            () -> new MachineBlockItem(RUNE_ALTAR.get(), new Item.Properties().rarity(Rarity.RARE)));
+    public static final RegistryObject<BlockEntityType<RuneAltarBlockEntity>> RUNE_ALTAR_BE = BLOCK_ENTITIES.register("rune_altar",
+            () -> BlockEntityType.Builder.of(RuneAltarBlockEntity::new, RUNE_ALTAR.get()).build(null));
+    public static final RegistryObject<MenuType<RuneAltarMenu>> RUNE_ALTAR_MENU = MENUS.register("rune_altar",
+            () -> IForgeMenuType.create(RuneAltarMenu::new));
+
+    public static final RegistryObject<Block> TERRA_PLATE = BLOCKS.register("terra_plate",
+            () -> new TerraPlateBlock(machine(MapColor.COLOR_BLUE)));
+    public static final RegistryObject<Item> TERRA_PLATE_ITEM = ITEMS.register("terra_plate",
+            () -> new MachineBlockItem(TERRA_PLATE.get(), new Item.Properties().rarity(Rarity.EPIC)));
+    public static final RegistryObject<BlockEntityType<TerraPlateBlockEntity>> TERRA_PLATE_BE = BLOCK_ENTITIES.register("terra_plate",
+            () -> BlockEntityType.Builder.of(TerraPlateBlockEntity::new, TERRA_PLATE.get()).build(null));
+    public static final RegistryObject<MenuType<TerraPlateMenu>> TERRA_PLATE_MENU = MENUS.register("terra_plate",
+            () -> IForgeMenuType.create(TerraPlateMenu::new));
+
+    public static final RegistryObject<Block> MANA_INFUSER = BLOCKS.register("mana_infuser",
+            () -> new ManaInfuserBlock(machine(MapColor.QUARTZ)));
+    public static final RegistryObject<Item> MANA_INFUSER_ITEM = ITEMS.register("mana_infuser",
+            () -> new MachineBlockItem(MANA_INFUSER.get(), new Item.Properties().rarity(Rarity.RARE)));
+    public static final RegistryObject<BlockEntityType<ManaInfuserBlockEntity>> MANA_INFUSER_BE = BLOCK_ENTITIES.register("mana_infuser",
+            () -> BlockEntityType.Builder.of(ManaInfuserBlockEntity::new, MANA_INFUSER.get()).build(null));
+    public static final RegistryObject<MenuType<ManaInfuserMenu>> MANA_INFUSER_MENU = MENUS.register("mana_infuser",
+            () -> IForgeMenuType.create(ManaInfuserMenu::new));
+
+    private static BlockBehaviour.Properties machine(MapColor color) {
+        return BlockBehaviour.Properties.of()
+                .mapColor(color)
+                .strength(2.5F, 1200.0F)
+                .sound(SoundType.STONE)
+                .noOcclusion()
+                .isViewBlocking((state, level, pos) -> false)
+                .isSuffocating((state, level, pos) -> false)
+                .lightLevel(state -> state.getValue(MachineBlock.ACTIVE) ? 10 : 3);
+    }
+
     public static final RegistryObject<CreativeModeTab> TAB = TABS.register("alfheimheart", () -> CreativeModeTab.builder()
             .title(Component.translatable("itemGroup.alfheimheart"))
             .icon(() -> new ItemStack(PORTAL_ITEM.get()))
             .displayItems((params, output) -> {
                 output.accept(PORTAL_ITEM.get());
                 output.accept(GREENHOUSE_ITEM.get());
+                output.accept(RUNE_ALTAR_ITEM.get());
+                output.accept(TERRA_PLATE_ITEM.get());
+                output.accept(MANA_INFUSER_ITEM.get());
                 output.accept(GREENHOUSE_HEART.get());
                 output.accept(UPGRADE_BASE.get());
                 output.accept(SPEED_UPGRADE.get());
@@ -124,5 +181,6 @@ public class AlfheimHeart {
         ModLoadingContext context = ModLoadingContext.get();
         context.registerConfig(ModConfig.Type.COMMON, com.reya.alfheimheart.greenhouse.Config.SPEC, MODID + "-greenhouse.toml");
         context.registerConfig(ModConfig.Type.COMMON, com.reya.alfheimheart.portal.Config.SPEC, MODID + "-portal.toml");
+        context.registerConfig(ModConfig.Type.COMMON, MachineConfig.SPEC, MODID + "-machines.toml");
     }
 }
