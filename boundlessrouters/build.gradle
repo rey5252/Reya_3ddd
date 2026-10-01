@@ -60,11 +60,13 @@ minecraft {
         // runs the mod's game tests (com.reya.boundlessrouters.test) and quits, failing if any does
         gameTestServer {
             property 'forge.enabledGameTestNamespaces', mod_id
+            mods {
+                "${mod_id}" {
+                    source sourceSets.dev
+                }
+            }
         }
     }
-}
-
-repositories {
 }
 
 dependencies {

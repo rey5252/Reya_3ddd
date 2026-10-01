@@ -21,7 +21,7 @@ import net.minecraftforge.items.wrapper.SidedInvWrapper;
 /** Finding the inventory at a place, here or anywhere a module is bound to. */
 public final class Targets {
     /** Keeps a bound target's chunk loaded a while after each use (10 seconds). */
-    public static final TicketType<ChunkPos> TICKET = TicketType.create("boundlessrouters_target", Comparator.comparingLong(ChunkPos::toLong), 200L);
+    public static final TicketType<ChunkPos> TICKET = TicketType.create("boundlessrouters_target", Comparator.comparingLong(ChunkPos::toLong), 200);
 
     /** The inventory at a block, as seen from one of its faces, or null. The chunk must be loaded. */
     @Nullable
