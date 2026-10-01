@@ -1,8 +1,13 @@
 package com.reya.alfheimheart.client;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
+import javax.annotation.Nullable;
 
 import com.reya.alfheimheart.AlfheimHeart;
 import com.reya.alfheimheart.greenhouse.client.GreenhouseScreen;
@@ -28,6 +33,7 @@ import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.registration.IGuiHandlerRegistration;
 import mezz.jei.api.registration.IRecipeCatalystRegistration;
 import mezz.jei.api.registration.IRecipeRegistration;
+import mezz.jei.api.runtime.IJeiRuntime;
 import mezz.jei.api.runtime.IRecipesGui;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.network.chat.Component;
@@ -64,9 +70,18 @@ public class JeiCompat implements IModPlugin {
     private static final RecipeType<MarimorphosisRecipe> MARIMORPHOSIS = RecipeType.create("botania", "marimorphosis",
             MarimorphosisRecipe.class);
 
+    /** JEI's runtime once it has started: the machines' click areas look up in it the recipe pages they open. */
+    @Nullable
+    private static IJeiRuntime runtime;
+
     @Override
     public ResourceLocation getPluginUid() {
         return new ResourceLocation(AlfheimHeart.MODID, "jei");
+    }
+
+    @Override
+    public void onRuntimeAvailable(IJeiRuntime jeiRuntime) {
+        runtime = jeiRuntime;
     }
 
     @Override
@@ -141,11 +156,11 @@ public class JeiCompat implements IModPlugin {
         List<IGuiClickableArea> areas = new ArrayList<>();
         if (types.length > 0) {
             for (int[] a : layout.clickAreas) {
-                IGuiClickableArea basic = IGuiClickableArea.createBasic(a[0], a[1], a[2], a[3], types);
+                Rect2i area = new Rect2i(a[0], a[1], a[2], a[3]);
                 areas.add(new IGuiClickableArea() {
                     @Override
                     public Rect2i getArea() {
-                        return basic.getArea();
+                        return area;
                     }
 
                     @Override
@@ -155,7 +170,7 @@ public class JeiCompat implements IModPlugin {
 
                     @Override
                     public void onClick(IFocusFactory focusFactory, IRecipesGui recipesGui) {
-                        basic.onClick(focusFactory, recipesGui);
+                        showRecipes(recipesGui, types);
                     }
                 });
             }
@@ -171,5 +186,25 @@ public class JeiCompat implements IModPlugin {
                 return areas;
             }
         });
+    }
+
+    /**
+     * Opens JEI on the recipe pages of these types that it has, found by their ids among its own. A click must not
+     * crash the game: JEI throws on a type it has no page for, and anything going wrong here is only logged.
+     */
+    private static void showRecipes(IRecipesGui gui, RecipeType<?>[] types) {
+        IJeiRuntime jei = runtime;
+        if (jei == null) return;
+        try {
+            Set<ResourceLocation> ids = new HashSet<>();
+            for (RecipeType<?> type : types) ids.add(type.getUid());
+            List<RecipeType<?>> pages = new ArrayList<>();
+            jei.getRecipeManager().createRecipeCategoryLookup().get().forEach(category -> {
+                if (ids.contains(category.getRecipeType().getUid())) pages.add(category.getRecipeType());
+            });
+            if (!pages.isEmpty()) gui.showTypes(pages);
+        } catch (RuntimeException | LinkageError e) {
+            AlfheimHeart.LOGGER.error("JEI couldn't show the recipes of {}", Arrays.toString(types), e);
+        }
     }
 }

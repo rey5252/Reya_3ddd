@@ -34,7 +34,8 @@ import org.lwjgl.glfw.GLFW;
 /**
  * Dev-only: with ALFHEIMHEART_AUTOSHOT=true the client makes a flat world and photographs every block of the
  * mod in its own little scene ({@link GreenhouseShots}, {@link PortalShots}, {@link MachineShots}): in the world, its GUI opening,
- * settled, with tooltips, closing, its lexicon pages; then the GUIs and the lexicon in Ukrainian; and quits.
+ * settled, with tooltips, closing, its lexicon pages; then the GUIs and the lexicon in Ukrainian; last, a click on
+ * each machine's heart, which opens its recipes in JEI; and quits.
  * The screenshots land in run/screenshots, named after their scene.
  */
 @Mod.EventBusSubscriber(modid = AlfheimHeart.MODID, value = Dist.CLIENT)
@@ -56,6 +57,7 @@ public final class AutoShot {
         GreenhouseShots.ukSteps(STEPS);
         PortalShots.ukSteps(STEPS);
         MachineShots.ukSteps(STEPS);
+        MachineShots.clickSteps(STEPS);
         STEPS.add(new Step(10, () -> Minecraft.getInstance().stop()));
     }
 
@@ -222,6 +224,30 @@ public final class AutoShot {
         if (!(mc.screen instanceof AbstractContainerScreen<?> screen)) return;
         double scale = mc.getWindow().getGuiScale();
         setMouse((screen.getGuiLeft() + x + 0.5D) * scale, (screen.getGuiTop() + y + 0.5D) * scale);
+    }
+
+    /**
+     * A left click at a point of the open container screen, as the player's would come: through the game's own mouse
+     * handler, so the events mods like JEI act on go out too. What it throws is logged whole.
+     */
+    static void clickAtGui(int x, int y) {
+        Minecraft mc = Minecraft.getInstance();
+        if (!(mc.screen instanceof AbstractContainerScreen<?> screen)) return;
+        mouseAtGui(x, y);
+        String on = screen.getClass().getSimpleName();
+        try {
+            java.lang.reflect.Method press = net.minecraft.client.MouseHandler.class.getDeclaredMethod("onPress", long.class, int.class, int.class,
+                    int.class);
+            press.setAccessible(true);
+            long window = mc.getWindow().getWindow();
+            press.invoke(mc.mouseHandler, window, GLFW.GLFW_MOUSE_BUTTON_LEFT, GLFW.GLFW_PRESS, 0);
+            press.invoke(mc.mouseHandler, window, GLFW.GLFW_MOUSE_BUTTON_LEFT, GLFW.GLFW_RELEASE, 0);
+            AlfheimHeart.LOGGER.info("AutoShot: click at {},{} on {} opened {}", x, y, on, mc.screen == null ? "nothing" : mc.screen.getClass().getName());
+        } catch (java.lang.reflect.InvocationTargetException e) {
+            AlfheimHeart.LOGGER.error("AutoShot: click at {},{} on {} crashed", x, y, on, e.getCause());
+        } catch (ReflectiveOperationException e) {
+            AlfheimHeart.LOGGER.warn("AutoShot: can't click", e);
+        }
     }
 
     static void clickGui(int x, int y) {

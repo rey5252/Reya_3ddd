@@ -7,6 +7,8 @@ import java.util.List;
 import com.reya.alfheimheart.AlfheimHeart;
 import com.reya.alfheimheart.machine.MachineBlock;
 import com.reya.alfheimheart.machine.MachineBlockEntity;
+import com.reya.alfheimheart.machine.MachineLayout;
+import com.reya.alfheimheart.machine.MachineLayouts;
 import com.reya.alfheimheart.machine.altar.RuneAltarBlockEntity;
 import com.reya.alfheimheart.machine.apothecary.PetalApothecaryBlockEntity;
 import com.reya.alfheimheart.machine.farm.PetalFarmBlockEntity;
@@ -169,6 +171,28 @@ final class MachineShots {
         s.add(new Step(20, () -> open(FARM)));
         s.add(new Step(40, () -> mouseAtGui(128, 24)));
         s.add(new Step(10, () -> shot("petal_farm_gui_uk.png")));
+        s.add(new Step(5, AutoShot::closeScreen));
+    }
+
+    /**
+     * A click on each machine's heart, where its JEI click area is, as the player would: JEI opens the machine's
+     * recipes. Last of everything, so that a crash here can't cost the other screenshots.
+     */
+    static void clickSteps(List<Step> s) {
+        click(s, ALTAR, MachineLayouts.RUNE_ALTAR);
+        click(s, PLATE, MachineLayouts.TERRA_PLATE);
+        click(s, INFUSER, MachineLayouts.MANA_INFUSER);
+        click(s, DAISY, MachineLayouts.PURE_DAISY);
+        click(s, APOTHECARY, MachineLayouts.PETAL_APOTHECARY);
+        click(s, MINE, MachineLayouts.ORECHID_MINE);
+    }
+
+    private static void click(List<Step> s, BlockPos pos, MachineLayout layout) {
+        int[] a = layout.clickAreas[0];
+        s.add(new Step(5, () -> eye(pos, 0.5D, 1.9D, 2.6D, 0.5D, 0.6D, 0.5D)));
+        s.add(new Step(20, () -> open(pos)));
+        s.add(new Step(30, () -> clickAtGui(a[0] + a[2] / 2, a[1] + a[3] / 2)));
+        s.add(new Step(30, () -> shot(layout.key + "_jei.png")));
         s.add(new Step(5, AutoShot::closeScreen));
     }
 

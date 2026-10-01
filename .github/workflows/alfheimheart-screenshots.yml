@@ -50,6 +50,9 @@ jobs:
           done
           ls -la run/screenshots || true
           grep -n -i "alfheimheart\|exception\|error" run/logs/latest.log | grep -v -i "narrator\|realms" | tail -n 120 || true
+          # the clicks on the machines' hearts, with the whole stack of any that failed, and any crash report
+          grep -n -A 60 "AutoShot: click" run/logs/latest.log | head -n 500 || true
+          head -n 150 run/crash-reports/*.txt 2>/dev/null || true
       - name: Commit screenshots
         run: |
           ls run/screenshots/*.png >/dev/null 2>&1 || exit 0
