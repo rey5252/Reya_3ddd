@@ -1,6 +1,7 @@
 package com.reya.singularityfusion.client;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
@@ -119,10 +120,10 @@ public class FusionCoreScreen extends AbstractContainerScreen<FusionCoreMenu> {
     private void pylons(GuiGraphics g, FusionCoreBlockEntity core, int x, int y, float time, boolean fusing, float progress) {
         List<BlockPos> at = core == null ? List.of() : core.pylons();
         Level level = Minecraft.getInstance().level;
-        int shown = Math.min(at.size(), Layouts.PYLONS.length);
-        for (int i = 0; i < Layouts.PYLONS.length; i++) {
-            int[] p = Layouts.PYLONS[i];
-            g.blit(PANEL, x + p[0] - 1, y + p[1] - 1, Layouts.SHEET_PYLON[0] + (i < shown ? 18 : 0), Layouts.SHEET_PYLON[1], 18, 18, Layouts.W,
+        int[] shows = frames(at.size());
+        for (int f = 0; f < Layouts.PYLONS.length; f++) {
+            int[] p = Layouts.PYLONS[f];
+            g.blit(PANEL, x + p[0] - 1, y + p[1] - 1, Layouts.SHEET_PYLON[0] + (shows[f] >= 0 ? 18 : 0), Layouts.SHEET_PYLON[1], 18, 18, Layouts.W,
                     Layouts.TEX_H);
         }
         // the lines first (light added under the items)
@@ -135,9 +136,11 @@ public class FusionCoreScreen extends AbstractContainerScreen<FusionCoreMenu> {
         b.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
         Matrix4f m = g.pose().last().pose();
         float cx = x + Layouts.VIEW[0], cy = y + Layouts.VIEW[1];
-        for (int i = 0; i < shown; i++) {
-            int[] p = Layouts.PYLONS[i];
-            boolean left = i < Layouts.PYLONS.length / 2;
+        for (int f = 0; f < Layouts.PYLONS.length; f++) {
+            int i = shows[f];
+            if (i < 0) continue;
+            int[] p = Layouts.PYLONS[f];
+            boolean left = f < Layouts.PYLONS.length / 2;
             float sx = x + p[0] + (left ? 17.0F : -1.0F), sy = y + p[1] + 8.0F;
             float dx = cx - sx, dy = cy - sy, len = Mth.sqrt(dx * dx + dy * dy);
             float ex = cx - dx / len * (Layouts.VIEW_R + 3.0F), ey = cy - dy / len * (Layouts.VIEW_R + 3.0F);
@@ -158,16 +161,32 @@ public class FusionCoreScreen extends AbstractContainerScreen<FusionCoreMenu> {
         RenderSystem.defaultBlendFunc();
         RenderSystem.enableCull();
         // the items on them (gone once they have flown)
-        for (int i = 0; i < shown; i++) {
-            if (level == null || !(level.getBlockEntity(at.get(i)) instanceof GravitonPylonBlockEntity pylon) || pylon.item().isEmpty()) continue;
+        for (int f = 0; f < Layouts.PYLONS.length; f++) {
+            int i = shows[f];
+            if (i < 0 || level == null || !(level.getBlockEntity(at.get(i)) instanceof GravitonPylonBlockEntity pylon) || pylon.item().isEmpty()) continue;
             if (fusing && progress >= FusionGeometry.departure(i, at.size())) continue;
-            int[] p = Layouts.PYLONS[i];
+            int[] p = Layouts.PYLONS[f];
             g.renderItem(pylon.item(), x + p[0], y + p[1]);
         }
         if (at.size() > Layouts.PYLONS.length) {
             Ui.centred(g, font, Component.literal("+" + (at.size() - Layouts.PYLONS.length)), x + Layouts.PYLONS[11][0] + 8,
                     y + Layouts.PYLONS[11][1] + 20, TEXT_DIM);
         }
+    }
+
+    /**
+     * Which pylon each frame shows (-1 for none): the first half of them (in their order round the core) down the
+     * left column, the rest down the right, each column's run centred, so the two sides balance.
+     */
+    static int[] frames(int count) {
+        int half = Layouts.PYLONS.length / 2;
+        int n = Math.min(count, Layouts.PYLONS.length);
+        int left = (n + 1) / 2, right = n - left;
+        int[] out = new int[Layouts.PYLONS.length];
+        Arrays.fill(out, -1);
+        for (int i = 0; i < left; i++) out[(half - left) / 2 + i] = i;
+        for (int i = 0; i < right; i++) out[half + (half - right) / 2 + i] = left + i;
+        return out;
     }
 
     private static void line(BufferBuilder b, Matrix4f m, float x1, float y1, float x2, float y2, float r, float g, float bl) {
@@ -429,11 +448,13 @@ public class FusionCoreScreen extends AbstractContainerScreen<FusionCoreMenu> {
                 if (!core.status().formed()) lines.add(Component.translatable("gui.singularityfusion.unformed").withStyle(ChatFormatting.GRAY));
             }
         } else {
-            for (int i = 0; i < Layouts.PYLONS.length; i++) {
-                int[] at = Layouts.PYLONS[i];
+            int[] shows = frames(core.pylons().size());
+            for (int f = 0; f < Layouts.PYLONS.length; f++) {
+                int[] at = Layouts.PYLONS[f];
                 if (!Ui.in(mouseX, mouseY, x + at[0] - 1, y + at[1] - 1, 18, 18)) continue;
                 Level level = Minecraft.getInstance().level;
-                if (i >= core.pylons().size() || level == null) {
+                int i = shows[f];
+                if (i < 0 || level == null) {
                     lines.add(Component.translatable("gui.singularityfusion.pylon.none").withStyle(ChatFormatting.GRAY));
                 } else if (level.getBlockEntity(core.pylons().get(i)) instanceof GravitonPylonBlockEntity pylon && !pylon.item().isEmpty()) {
                     g.renderTooltip(font, pylon.item(), mouseX, mouseY);

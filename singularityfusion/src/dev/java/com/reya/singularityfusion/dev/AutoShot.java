@@ -94,7 +94,7 @@ public final class AutoShot {
         STEPS.add(new Step(40, () -> shot("gui_ready.png")));
         STEPS.add(new Step(5, () -> mouseAtGui(17, 84)));
         STEPS.add(new Step(10, () -> shot("gui_energy_tooltip.png")));
-        STEPS.add(new Step(5, () -> mouseAtGui(35, 32)));
+        STEPS.add(new Step(5, () -> mouseAtGui(37, 52)));
         STEPS.add(new Step(10, () -> shot("gui_pylon_tooltip.png")));
         STEPS.add(new Step(5, () -> mouseAtGui(128, 116)));
         STEPS.add(new Step(10, () -> shot("gui_start_tooltip.png")));
