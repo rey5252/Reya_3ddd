@@ -122,8 +122,8 @@ public class FusionCoreRenderer implements BlockEntityRenderer<FusionCoreBlockEn
         Vec3 from = new Vec3(0.5D, 1.0D, 0.5D), to = new Vec3(0.5D, 1.0D + FusionCoreBlockEntity.HOLE_HEIGHT * rise, 0.5D);
         float length = (float) from.distanceTo(to), scroll = t * 3.0F;
         VertexConsumer beam = buffers.getBuffer(RenderType.eyes(BEAM));
-        Fx.band(beam, m, n, from, to, eye, 0.55F - 0.25F * t, -scroll, length / 2.0F - scroll, 0.6F * fade, 0.35F * fade, fade, 1.0F, 0.35F);
-        Fx.band(beam, m, n, from, to, eye, 0.18F, -scroll * 1.6F, length / 1.5F - scroll * 1.6F, 0.95F * fade, 0.9F * fade, fade, 1.0F, 0.6F);
+        Fx.band(beam, m, n, from, to, eye, 0.9F - 0.4F * t, -scroll, length / 2.0F - scroll, 0.6F * fade, 0.35F * fade, fade, 1.0F, 0.35F);
+        Fx.band(beam, m, n, from, to, eye, 0.3F, -scroll * 1.6F, length / 1.5F - scroll * 1.6F, 0.95F * fade, 0.9F * fade, fade, 1.0F, 0.6F);
         Quaternionf camera = Minecraft.getInstance().getEntityRenderDispatcher().cameraOrientation();
         VertexConsumer glow = buffers.getBuffer(RenderType.eyes(GLOW));
         float k = fade * (0.5F + 0.5F * rise);
@@ -150,11 +150,11 @@ public class FusionCoreRenderer implements BlockEntityRenderer<FusionCoreBlockEn
         for (BlockPos p : be.pylons()) {
             Vec3 foot = FusionGeometry.base(p).subtract(corner), to = from.lerp(foot, head);
             float length = (float) from.distanceTo(to);
-            Fx.band(beam, m, n, from, to, eye, 0.16F, -scroll, length / 1.5F - scroll, 0.6F * fade, 0.32F * fade, fade, 0.35F, 1.0F);
+            Fx.band(beam, m, n, from, to, eye, 0.24F, -scroll, length / 1.5F - scroll, 0.6F * fade, 0.32F * fade, fade, 0.35F, 1.0F);
             if (climb > 0.0F) {
                 Vec3 crystal = FusionGeometry.along(p, pos, FusionGeometry.CRYSTAL).subtract(corner), top = foot.lerp(crystal, climb);
                 length = (float) foot.distanceTo(top);
-                Fx.band(beam, m, n, foot, top, eye, 0.12F, -scroll, length / 1.5F - scroll, 0.8F * fade, 0.6F * fade, fade, 0.5F, 1.0F);
+                Fx.band(beam, m, n, foot, top, eye, 0.18F, -scroll, length / 1.5F - scroll, 0.8F * fade, 0.6F * fade, fade, 0.5F, 1.0F);
             }
         }
         // each foot flares as its thread arrives

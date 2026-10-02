@@ -9,6 +9,7 @@ import com.reya.singularityfusion.SingularityFusion;
 import com.reya.singularityfusion.block.FusionCoreBlockEntity;
 import com.reya.singularityfusion.block.FusionGeometry;
 import com.reya.singularityfusion.block.GravitonPylonBlockEntity;
+import com.reya.singularityfusion.gui.Layouts;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -38,6 +39,9 @@ import org.joml.Vector3f;
  * full; a beam feeds it from the core. In a fusion the pylons beam into it, it spins up, then collapses to a point,
  * and a flash and a shock wave burst from it as the result comes down.
  * <p>
+ * Once it has grown, small planets orbit it, lit on the side toward it, their air glowing, the light of its disk on
+ * their rims; those behind it hidden by its shadow, those in front crossing its disk.
+ * <p>
  * Drawn once the block entities are (the core's renderer queues it): the shadow first, into the depth buffer, then
  * everything that glows, added to what is behind it, so whatever stands in front of it hides it rightly.
  */
@@ -53,6 +57,19 @@ public final class SingularityRenderer {
     /** How fast each of the disk's bands turns (the inner faster): eighths, so the spin can wrap at 8 without a jump. */
     private static final float[] BAND_SPEED = {1.0F, 0.75F, 0.625F, 0.5F, 0.375F, 0.25F};
     private static final float SPIN_WRAP = 8.0F;
+
+    private static final ResourceLocation PLANETS = Fx.effect("planets");
+
+    /**
+     * A planet orbiting the singularity: its picture, its orbit's radius when the core is full (blocks), the orbit's
+     * tilt and which way it is tilted, its period (ticks), its size (half, blocks), where it starts, the colour of its air.
+     */
+    private record Planetoid(int[] body, float orbit, float tilt, float node, float period, float size, float phase, float ar, float ag, float ab) {
+    }
+
+    private static final Planetoid[] PLANETOIDS = {new Planetoid(Layouts.P_LAVA, 5.6F, 0.22F, 0.4F, 300.0F, 0.2F, 0.3F, 1.0F, 0.45F, 0.2F),
+            new Planetoid(Layouts.P_ICE, 7.1F, -0.16F, 2.1F, 470.0F, 0.27F, 2.0F, 0.55F, 0.8F, 1.0F),
+            new Planetoid(Layouts.P_OCEAN, 8.7F, 0.12F, 4.0F, 690.0F, 0.34F, 4.4F, 0.4F, 0.7F, 1.0F)};
 
     private static final List<FusionCoreBlockEntity> QUEUED = new ArrayList<>();
 
@@ -128,6 +145,7 @@ public final class SingularityRenderer {
         Matrix3f n = pose.last().normal();
         if (radius > 0.003F) {
             shadow(buffers.getBuffer(RenderType.entityCutoutNoCull(SHADOW)), m, n, radius);
+            planetoids(buffers, m, n, toEye, c, time, true);
 
             VertexConsumer glow = buffers.getBuffer(RenderType.eyes(GLOW));
             float k = bright * 0.42F;
@@ -150,6 +168,7 @@ public final class SingularityRenderer {
             k = bright * 0.16F;
             Fx.rect(glow, m, n, -3.7F * radius, -0.66F * radius, 3.7F * radius, 0.04F * radius, -1.2F * radius, 0.0F, 0.0F, 1.0F, 1.0F, 0.5F * k,
                     0.33F * k, 0.17F * k, 1.0F);
+            planetoids(buffers, m, n, toEye, c, time, false);
         }
         // the flash as a fusion ends: over everything, the shadow too
         if (sinceDone >= 0.0F && sinceDone < FusionGeometry.FLASH_TICKS) {
@@ -219,6 +238,52 @@ public final class SingularityRenderer {
     }
 
     // ------------------------------------------------------------------ the singularity's parts (facing the eye)
+
+    /**
+     * The planets orbiting it, those beyond it (`far`) or those this side of it, as discs facing the eye in its frame
+     * (x to the eye's left, y up, z away): the glow of their air, their bodies, the night on the side away from the
+     * singularity and its light on their rims. They come as it grows, their orbits widening with it.
+     */
+    private static void planetoids(MultiBufferSource buffers, Matrix4f m, Matrix3f n, Quaternionf toEye, float charge, float time, boolean far) {
+        float appear = Fx.smooth(0.1F, 0.55F, charge);
+        if (appear <= 0.0F) return;
+        Quaternionf fromWorld = new Quaternionf(toEye).conjugate();
+        float lit = 0.3F + 0.7F * charge;
+        for (Planetoid p : PLANETOIDS) {
+            float angle = p.phase + 2.0F * Fx.PI * (time % p.period) / p.period, reach = p.orbit * (0.6F + 0.4F * charge);
+            Vector3f at = new Vector3f(reach * Mth.cos(angle), 0.0F, reach * Mth.sin(angle)).rotateX(p.tilt).rotateY(p.node).rotate(fromWorld);
+            if ((at.z > 0.0F) != far) continue;
+            float half = p.size * appear, turn = (float) Math.atan2(at.y, at.x);
+            float air = lit * appear * 0.8F, rim = lit * appear;
+            disc(buffers.getBuffer(RenderType.eyes(PLANETS)), m, n, at, half * 1.45F, turn, Layouts.P_ATMOS, p.ar * air, p.ag * air, p.ab * air);
+            VertexConsumer body = buffers.getBuffer(RenderType.entityTranslucentEmissive(PLANETS));
+            disc(body, m, n, at, half, 0.0F, p.body, 1.0F, 1.0F, 1.0F);
+            disc(body, m, n, at, half, turn, Layouts.P_SHADE, 1.0F, 1.0F, 1.0F);
+            disc(buffers.getBuffer(RenderType.eyes(PLANETS)), m, n, at, half, turn, Layouts.P_RIM, rim, 0.9F * rim, 0.8F * rim);
+        }
+    }
+
+    /**
+     * A piece of the planets' sheet (its pixels {x, y, w, h}) as a square facing the eye at `at` in the singularity's
+     * frame, `half` either side, turned by `turn` (its left side, where the sheet's shade and rim face the light, turned
+     * toward -at: the singularity), both sides.
+     */
+    private static void disc(VertexConsumer vc, Matrix4f m, Matrix3f n, Vector3f at, float half, float turn, int[] px, float r, float g, float b) {
+        float size = Layouts.PLANETS_TEX;
+        float u1 = (px[0] + 0.5F) / size, v1 = (px[1] + 0.5F) / size, u2 = (px[0] + px[2] - 0.5F) / size, v2 = (px[1] + px[3] - 0.5F) / size;
+        float c = Mth.cos(turn) * half, s = Mth.sin(turn) * half;
+        // the corners (-1, 1) and (-1, -1) turned; the other two are their opposites
+        float ax = -c - s, ay = -s + c, bx = -c + s, by = -s - c;
+        int light = LightTexture.FULL_BRIGHT;
+        Fx.vertex(vc, m, n, at.x + ax, at.y + ay, at.z, u1, v1, r, g, b, 1.0F, light);
+        Fx.vertex(vc, m, n, at.x + bx, at.y + by, at.z, u1, v2, r, g, b, 1.0F, light);
+        Fx.vertex(vc, m, n, at.x - ax, at.y - ay, at.z, u2, v2, r, g, b, 1.0F, light);
+        Fx.vertex(vc, m, n, at.x - bx, at.y - by, at.z, u2, v1, r, g, b, 1.0F, light);
+        Fx.vertex(vc, m, n, at.x - bx, at.y - by, at.z, u2, v1, r, g, b, 1.0F, light);
+        Fx.vertex(vc, m, n, at.x - ax, at.y - ay, at.z, u2, v2, r, g, b, 1.0F, light);
+        Fx.vertex(vc, m, n, at.x + bx, at.y + by, at.z, u1, v2, r, g, b, 1.0F, light);
+        Fx.vertex(vc, m, n, at.x + ax, at.y + ay, at.z, u1, v1, r, g, b, 1.0F, light);
+    }
 
     /** The shadow: a black disc, solid, so what is behind it is hidden. */
     private static void shadow(VertexConsumer vc, Matrix4f m, Matrix3f n, float radius) {
