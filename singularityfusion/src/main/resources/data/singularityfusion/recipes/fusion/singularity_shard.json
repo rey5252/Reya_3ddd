@@ -1,0 +1,21 @@
+{
+  "type": "singularityfusion:fusion",
+  "catalyst": {
+    "item": "minecraft:nether_star"
+  },
+  "ingredients": [
+    {
+      "item": "minecraft:echo_shard",
+      "count": 2
+    },
+    {
+      "item": "minecraft:dragon_breath",
+      "count": 2
+    }
+  ],
+  "result": {
+    "item": "singularityfusion:singularity_shard"
+  },
+  "energy": 64000000,
+  "time": 200
+}

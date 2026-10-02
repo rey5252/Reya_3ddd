@@ -1,0 +1,21 @@
+{
+  "type": "singularityfusion:fusion",
+  "catalyst": {
+    "item": "singularityfusion:singularity_shard"
+  },
+  "ingredients": [
+    {
+      "item": "minecraft:nether_star",
+      "count": 4
+    },
+    {
+      "item": "minecraft:netherite_ingot",
+      "count": 4
+    }
+  ],
+  "result": {
+    "item": "singularityfusion:collapsed_star"
+  },
+  "energy": 256000000,
+  "time": 300
+}

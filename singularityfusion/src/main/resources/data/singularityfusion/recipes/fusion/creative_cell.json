@@ -1,0 +1,21 @@
+{
+  "type": "singularityfusion:fusion",
+  "catalyst": {
+    "item": "singularityfusion:event_horizon_core"
+  },
+  "ingredients": [
+    {
+      "item": "minecraft:nether_star",
+      "count": 4
+    },
+    {
+      "item": "singularityfusion:collapsed_star",
+      "count": 4
+    }
+  ],
+  "result": {
+    "item": "singularityfusion:creative_cell"
+  },
+  "energy": 2000000000,
+  "time": 600
+}

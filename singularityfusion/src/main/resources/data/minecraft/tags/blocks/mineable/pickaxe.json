@@ -1,0 +1,11 @@
+{
+  "replace": false,
+  "values": [
+    "singularityfusion:void_casing",
+    "singularityfusion:void_casing_rune",
+    "singularityfusion:void_casing_seam",
+    "singularityfusion:fusion_core",
+    "singularityfusion:graviton_pylon",
+    "singularityfusion:creative_cell"
+  ]
+}

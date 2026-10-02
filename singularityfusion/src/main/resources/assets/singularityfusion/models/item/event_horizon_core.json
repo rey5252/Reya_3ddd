@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "singularityfusion:item/event_horizon_core"
+  }
+}

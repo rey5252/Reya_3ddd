@@ -36,6 +36,8 @@ jobs:
             dir: alfheimheart
           - mod: boundlessrouters
             dir: boundlessrouters
+          - mod: singularityfusion
+            dir: singularityfusion
     defaults:
       run:
         working-directory: ${{ matrix.dir }}
@@ -50,7 +52,7 @@ jobs:
         if: matrix.mod == 'alfheimheart'
         run: for f in tools/*/check_layout.py; do python3 "$f" || exit 1; done
       - name: Check the layouts, textures and languages
-        if: matrix.mod == 'boundlessrouters'
+        if: matrix.mod == 'boundlessrouters' || matrix.mod == 'singularityfusion'
         run: python3 tools/check.py
       - name: Build mod
         run: |

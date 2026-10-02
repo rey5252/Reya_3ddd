@@ -1,0 +1,31 @@
+{
+  "conditions": [
+    {
+      "type": "forge:mod_loaded",
+      "modid": "draconicevolution"
+    }
+  ],
+  "type": "singularityfusion:fusion",
+  "catalyst": {
+    "item": "draconicevolution:chaotic_core"
+  },
+  "ingredients": [
+    {
+      "item": "draconicevolution:chaos_shard",
+      "count": 4
+    },
+    {
+      "item": "draconicevolution:dragon_heart",
+      "count": 2
+    },
+    {
+      "item": "singularityfusion:collapsed_star",
+      "count": 2
+    }
+  ],
+  "result": {
+    "item": "singularityfusion:event_horizon_core"
+  },
+  "energy": 1024000000,
+  "time": 400
+}

@@ -1,0 +1,38 @@
+{
+  "conditions": [
+    {
+      "type": "forge:not",
+      "value": {
+        "type": "forge:mod_loaded",
+        "modid": "draconicevolution"
+      }
+    }
+  ],
+  "type": "singularityfusion:fusion",
+  "catalyst": {
+    "item": "singularityfusion:collapsed_star"
+  },
+  "ingredients": [
+    {
+      "item": "minecraft:nether_star",
+      "count": 2
+    },
+    {
+      "item": "minecraft:echo_shard",
+      "count": 2
+    },
+    {
+      "item": "minecraft:netherite_block",
+      "count": 2
+    },
+    {
+      "item": "minecraft:totem_of_undying",
+      "count": 2
+    }
+  ],
+  "result": {
+    "item": "singularityfusion:event_horizon_core"
+  },
+  "energy": 1024000000,
+  "time": 400
+}
