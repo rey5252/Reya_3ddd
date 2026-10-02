@@ -323,7 +323,8 @@ public final class Cosmos2D {
         float turn = (float) Math.atan2(ly - cy, lx - cx) - Fx.PI;
         float air = alpha * dim * (0.3F + 0.7F * lit);
         light(g, PLANETS);
-        sprite(Layouts.PLANETS_TEX, Layouts.P_ATMOS, cx, cy, size * 1.45F, size * 1.45F, turn, ar * air, ag * air, ab * air);
+        // the air's glow peaks just outside the planet's edge (the sheet's ring of it at 0.78 of its half, drawn 1.3 times the planet)
+        sprite(Layouts.PLANETS_TEX, Layouts.P_ATMOS, cx, cy, size * 1.3F, size * 1.3F, turn, ar * air, ag * air, ab * air);
         paint(g, PLANETS, dim, dim, dim, alpha);
         sprite(Layouts.PLANETS_TEX, body, cx, cy, size, size, 0.0F, 1.0F);
         sprite(Layouts.PLANETS_TEX, Layouts.P_SHADE, cx, cy, size, size, turn, 1.0F);

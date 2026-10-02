@@ -255,7 +255,7 @@ public final class SingularityRenderer {
             if ((at.z > 0.0F) != far) continue;
             float half = p.size * appear, turn = (float) Math.atan2(at.y, at.x);
             float air = lit * appear * 0.8F, rim = lit * appear;
-            disc(buffers.getBuffer(RenderType.eyes(PLANETS)), m, n, at, half * 1.45F, turn, Layouts.P_ATMOS, p.ar * air, p.ag * air, p.ab * air);
+            disc(buffers.getBuffer(RenderType.eyes(PLANETS)), m, n, at, half * 1.3F, turn, Layouts.P_ATMOS, p.ar * air, p.ag * air, p.ab * air);
             VertexConsumer body = buffers.getBuffer(RenderType.entityTranslucentEmissive(PLANETS));
             disc(body, m, n, at, half, 0.0F, p.body, 1.0F, 1.0F, 1.0F);
             disc(body, m, n, at, half, turn, Layouts.P_SHADE, 1.0F, 1.0F, 1.0F);
