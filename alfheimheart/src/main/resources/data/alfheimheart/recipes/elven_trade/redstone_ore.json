@@ -1,0 +1,14 @@
+{
+  "type": "botania:elven_trade",
+  "ingredients": [
+    {
+      "tag": "forge:ores/redstone"
+    }
+  ],
+  "output": [
+    {
+      "item": "minecraft:redstone",
+      "count": 8
+    }
+  ]
+}

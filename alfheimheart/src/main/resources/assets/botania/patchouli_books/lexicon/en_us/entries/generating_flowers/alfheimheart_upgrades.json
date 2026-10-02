@@ -1,0 +1,37 @@
+{
+  "name": "alfheimheart.lexicon.upgrades",
+  "category": "botania:generating_flowers",
+  "icon": "alfheimheart:speed_upgrade",
+  "advancement": "botania:main/runic_altar_pickup",
+  "pages": [
+    {
+      "type": "text",
+      "text": "alfheimheart.lexicon.upgrades0"
+    },
+    {
+      "type": "crafting",
+      "recipe": "alfheimheart:upgrade_base",
+      "text": "alfheimheart.lexicon.upgrades1"
+    },
+    {
+      "type": "botania:runic_altar",
+      "recipe": "alfheimheart:speed_upgrade",
+      "text": "alfheimheart.lexicon.upgrades2"
+    },
+    {
+      "type": "botania:runic_altar",
+      "recipe": "alfheimheart:capacity_upgrade",
+      "text": "alfheimheart.lexicon.upgrades3"
+    },
+    {
+      "type": "botania:runic_altar",
+      "recipe": "alfheimheart:luck_upgrade",
+      "text": "alfheimheart.lexicon.upgrades4"
+    },
+    {
+      "type": "botania:runic_altar",
+      "recipe": "alfheimheart:yield_upgrade",
+      "text": "alfheimheart.lexicon.upgrades5"
+    }
+  ]
+}

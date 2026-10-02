@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "alfheimheart:item/luck_upgrade"
+  }
+}

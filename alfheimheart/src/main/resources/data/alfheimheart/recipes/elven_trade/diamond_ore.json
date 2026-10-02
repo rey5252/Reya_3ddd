@@ -1,0 +1,14 @@
+{
+  "type": "botania:elven_trade",
+  "ingredients": [
+    {
+      "tag": "forge:ores/diamond"
+    }
+  ],
+  "output": [
+    {
+      "item": "minecraft:diamond",
+      "count": 2
+    }
+  ]
+}

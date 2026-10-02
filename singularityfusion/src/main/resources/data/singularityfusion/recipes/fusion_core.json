@@ -1,0 +1,36 @@
+{
+  "conditions": [
+    {
+      "type": "forge:not",
+      "value": {
+        "type": "forge:mod_loaded",
+        "modid": "draconicevolution"
+      }
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "VCV",
+    "CSC",
+    "VNV"
+  ],
+  "key": {
+    "V": {
+      "item": "singularityfusion:void_casing"
+    },
+    "C": {
+      "item": "singularityfusion:graviton_crystal"
+    },
+    "S": {
+      "item": "minecraft:nether_star"
+    },
+    "N": {
+      "item": "minecraft:netherite_ingot"
+    }
+  },
+  "result": {
+    "item": "singularityfusion:fusion_core",
+    "count": 1
+  }
+}

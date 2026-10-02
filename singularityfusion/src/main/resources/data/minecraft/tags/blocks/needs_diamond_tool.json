@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    "singularityfusion:fusion_core",
+    "singularityfusion:graviton_pylon"
+  ]
+}

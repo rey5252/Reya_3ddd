@@ -1,0 +1,30 @@
+{
+  "type": "botania:runic_altar",
+  "ingredients": [
+    {
+      "item": "alfheimheart:upgrade_base"
+    },
+    {
+      "item": "botania:rune_water"
+    },
+    {
+      "item": "botania:rune_mana"
+    },
+    {
+      "item": "botania:rune_winter"
+    },
+    {
+      "item": "botania:mana_tablet"
+    },
+    {
+      "tag": "botania:mana_diamond_gems"
+    },
+    {
+      "tag": "botania:mana_diamond_gems"
+    }
+  ],
+  "mana": 20000,
+  "output": {
+    "item": "alfheimheart:capacity_upgrade"
+  }
+}

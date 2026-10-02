@@ -1,0 +1,209 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "alfheimheart:block/mana_infuser_rim",
+    "bricks": "alfheimheart:block/machine_bricks",
+    "planks": "alfheimheart:block/machine_planks",
+    "column": "alfheimheart:block/mana_infuser_column",
+    "side": "alfheimheart:block/petal_apothecary_side",
+    "inner": "alfheimheart:block/petal_apothecary_inner",
+    "rim": "alfheimheart:block/mana_infuser_rim"
+  },
+  "elements": [
+    {
+      "from": [
+        3,
+        0,
+        3
+      ],
+      "to": [
+        13,
+        2,
+        13
+      ],
+      "faces": {
+        "north": {
+          "texture": "#bricks"
+        },
+        "south": {
+          "texture": "#bricks"
+        },
+        "east": {
+          "texture": "#bricks"
+        },
+        "west": {
+          "texture": "#bricks"
+        },
+        "up": {
+          "texture": "#bricks"
+        },
+        "down": {
+          "texture": "#bricks",
+          "cullface": "down"
+        }
+      }
+    },
+    {
+      "from": [
+        5,
+        2,
+        5
+      ],
+      "to": [
+        11,
+        7,
+        11
+      ],
+      "faces": {
+        "north": {
+          "texture": "#column"
+        },
+        "south": {
+          "texture": "#column"
+        },
+        "east": {
+          "texture": "#column"
+        },
+        "west": {
+          "texture": "#column"
+        }
+      }
+    },
+    {
+      "from": [
+        1,
+        7,
+        1
+      ],
+      "to": [
+        15,
+        8,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#side"
+        },
+        "south": {
+          "texture": "#side"
+        },
+        "east": {
+          "texture": "#side"
+        },
+        "west": {
+          "texture": "#side"
+        },
+        "up": {
+          "texture": "#inner"
+        },
+        "down": {
+          "texture": "#bricks"
+        }
+      }
+    },
+    {
+      "from": [
+        1,
+        8,
+        1
+      ],
+      "to": [
+        15,
+        13,
+        2
+      ],
+      "faces": {
+        "north": {
+          "texture": "#side"
+        },
+        "south": {
+          "texture": "#inner"
+        },
+        "up": {
+          "texture": "#rim"
+        },
+        "east": {
+          "texture": "#side"
+        },
+        "west": {
+          "texture": "#side"
+        }
+      }
+    },
+    {
+      "from": [
+        1,
+        8,
+        14
+      ],
+      "to": [
+        15,
+        13,
+        15
+      ],
+      "faces": {
+        "south": {
+          "texture": "#side"
+        },
+        "north": {
+          "texture": "#inner"
+        },
+        "up": {
+          "texture": "#rim"
+        },
+        "east": {
+          "texture": "#side"
+        },
+        "west": {
+          "texture": "#side"
+        }
+      }
+    },
+    {
+      "from": [
+        1,
+        8,
+        2
+      ],
+      "to": [
+        2,
+        13,
+        14
+      ],
+      "faces": {
+        "west": {
+          "texture": "#side"
+        },
+        "east": {
+          "texture": "#inner"
+        },
+        "up": {
+          "texture": "#rim"
+        }
+      }
+    },
+    {
+      "from": [
+        14,
+        8,
+        2
+      ],
+      "to": [
+        15,
+        13,
+        14
+      ],
+      "faces": {
+        "east": {
+          "texture": "#side"
+        },
+        "west": {
+          "texture": "#inner"
+        },
+        "up": {
+          "texture": "#rim"
+        }
+      }
+    }
+  ]
+}

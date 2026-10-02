@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "DDD",
+    "DCD",
+    "DDD"
+  ],
+  "key": {
+    "D": {
+      "item": "minecraft:polished_deepslate"
+    },
+    "C": {
+      "item": "singularityfusion:graviton_crystal"
+    }
+  },
+  "result": {
+    "item": "singularityfusion:void_casing",
+    "count": 8
+  }
+}

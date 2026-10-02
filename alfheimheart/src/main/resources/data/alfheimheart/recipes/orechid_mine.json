@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "GOG",
+    "LPL",
+    "WWW"
+  ],
+  "key": {
+    "G": {"item": "botania:terrasteel_ingot"},
+    "O": {"item": "botania:orechid"},
+    "L": {"item": "botania:livingrock_bricks"},
+    "P": {"item": "minecraft:diamond_pickaxe"},
+    "W": {"item": "botania:livingwood_planks"}
+  },
+  "result": {"item": "alfheimheart:orechid_mine"}
+}

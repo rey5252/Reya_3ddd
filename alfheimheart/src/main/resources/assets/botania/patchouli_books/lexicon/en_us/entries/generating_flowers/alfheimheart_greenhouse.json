@@ -1,0 +1,34 @@
+{
+  "name": "alfheimheart.lexicon.greenhouse",
+  "category": "botania:generating_flowers",
+  "icon": "alfheimheart:mana_greenhouse",
+  "advancement": "botania:main/runic_altar_pickup",
+  "pages": [
+    {
+      "type": "text",
+      "text": "alfheimheart.lexicon.greenhouse0"
+    },
+    {
+      "type": "text",
+      "text": "alfheimheart.lexicon.greenhouse1"
+    },
+    {
+      "type": "text",
+      "text": "alfheimheart.lexicon.greenhouse2"
+    },
+    {
+      "type": "text",
+      "text": "alfheimheart.lexicon.greenhouse3"
+    },
+    {
+      "type": "botania:terrasteel",
+      "recipe": "alfheimheart:greenhouse_heart",
+      "text": "alfheimheart.lexicon.greenhouse4"
+    },
+    {
+      "type": "crafting",
+      "recipe": "alfheimheart:mana_greenhouse",
+      "text": "alfheimheart.lexicon.greenhouse5"
+    }
+  ]
+}

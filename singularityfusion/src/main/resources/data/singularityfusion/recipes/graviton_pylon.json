@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " C ",
+    "ERE",
+    "VVV"
+  ],
+  "key": {
+    "C": {
+      "item": "singularityfusion:graviton_crystal"
+    },
+    "E": {
+      "item": "minecraft:ender_eye"
+    },
+    "R": {
+      "item": "minecraft:end_rod"
+    },
+    "V": {
+      "item": "singularityfusion:void_casing"
+    }
+  },
+  "result": {
+    "item": "singularityfusion:graviton_pylon",
+    "count": 1
+  }
+}

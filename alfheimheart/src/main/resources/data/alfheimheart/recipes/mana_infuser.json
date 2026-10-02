@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "S S",
+    "LPL",
+    "WGW"
+  ],
+  "key": {
+    "S": {"item": "botania:manasteel_ingot"},
+    "L": {"item": "botania:livingrock_bricks"},
+    "P": {"item": "botania:mana_pool"},
+    "G": {"item": "botania:mana_glass"},
+    "W": {"item": "botania:livingwood_planks"}
+  },
+  "result": {"item": "alfheimheart:mana_infuser"}
+}

@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "lit=false": {
+      "model": "singularityfusion:block/fusion_core"
+    },
+    "lit=true": {
+      "model": "singularityfusion:block/fusion_core_lit"
+    }
+  }
+}

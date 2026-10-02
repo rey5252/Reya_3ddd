@@ -1,0 +1,6 @@
+{
+  "parent": "alfheimheart:block/elven_portal",
+  "textures": {
+    "gem": "alfheimheart:block/gate_gem_lit"
+  }
+}

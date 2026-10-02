@@ -1,0 +1,103 @@
+{
+  "parent": "minecraft:block/block",
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "particle": "singularityfusion:block/creative_cell",
+    "b_north": "singularityfusion:block/creative_cell",
+    "g_north": "singularityfusion:block/creative_cell_glow",
+    "b_south": "singularityfusion:block/creative_cell",
+    "g_south": "singularityfusion:block/creative_cell_glow",
+    "b_east": "singularityfusion:block/creative_cell",
+    "g_east": "singularityfusion:block/creative_cell_glow",
+    "b_west": "singularityfusion:block/creative_cell",
+    "g_west": "singularityfusion:block/creative_cell_glow",
+    "b_up": "singularityfusion:block/creative_cell",
+    "g_up": "singularityfusion:block/creative_cell_glow",
+    "b_down": "singularityfusion:block/creative_cell",
+    "g_down": "singularityfusion:block/creative_cell_glow"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#b_north",
+          "cullface": "north"
+        },
+        "south": {
+          "texture": "#b_south",
+          "cullface": "south"
+        },
+        "east": {
+          "texture": "#b_east",
+          "cullface": "east"
+        },
+        "west": {
+          "texture": "#b_west",
+          "cullface": "west"
+        },
+        "up": {
+          "texture": "#b_up",
+          "cullface": "up"
+        },
+        "down": {
+          "texture": "#b_down",
+          "cullface": "down"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "shade": false,
+      "forge_data": {
+        "block_light": 15,
+        "sky_light": 15,
+        "ambient_occlusion": false
+      },
+      "faces": {
+        "north": {
+          "texture": "#g_north",
+          "cullface": "north"
+        },
+        "south": {
+          "texture": "#g_south",
+          "cullface": "south"
+        },
+        "east": {
+          "texture": "#g_east",
+          "cullface": "east"
+        },
+        "west": {
+          "texture": "#g_west",
+          "cullface": "west"
+        },
+        "up": {
+          "texture": "#g_up",
+          "cullface": "up"
+        },
+        "down": {
+          "texture": "#g_down",
+          "cullface": "down"
+        }
+      }
+    }
+  ]
+}

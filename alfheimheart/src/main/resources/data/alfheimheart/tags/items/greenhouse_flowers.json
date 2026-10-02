@@ -1,0 +1,62 @@
+{
+  "replace": false,
+  "values": [
+    "#botania:generating_special_flowers",
+    {
+      "id": "#botania:generating_floating_flowers",
+      "required": false
+    },
+    {
+      "id": "botania:floating_dandelifeon",
+      "required": false
+    },
+    {
+      "id": "botania:floating_endoflame",
+      "required": false
+    },
+    {
+      "id": "botania:floating_entropinnyum",
+      "required": false
+    },
+    {
+      "id": "botania:floating_gourmaryllis",
+      "required": false
+    },
+    {
+      "id": "botania:floating_hydroangeas",
+      "required": false
+    },
+    {
+      "id": "botania:floating_kekimurus",
+      "required": false
+    },
+    {
+      "id": "botania:floating_munchdew",
+      "required": false
+    },
+    {
+      "id": "botania:floating_narslimmus",
+      "required": false
+    },
+    {
+      "id": "botania:floating_rafflowsia",
+      "required": false
+    },
+    {
+      "id": "botania:floating_rosa_arcana",
+      "required": false
+    },
+    {
+      "id": "botania:floating_shulk_me_not",
+      "required": false
+    },
+    {
+      "id": "botania:floating_spectrolus",
+      "required": false
+    },
+    {
+      "id": "botania:floating_thermalily",
+      "required": false
+    }
+  ]
+}

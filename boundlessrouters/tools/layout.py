@@ -1,0 +1,143 @@
+"""Where everything is in the mod's two GUIs: the router's and a module's.
+
+    python3 tools/layout.py
+
+The menus (slots), the screens (buttons, readouts) and the textures (gen_textures.py) all read these numbers; this
+writes them into src/main/java/com/reya/boundlessrouters/gui/Layouts.java, and check_layout.py makes sure the Java
+file is current and nothing overlaps. Coordinates are in GUI pixels from the panel's top left corner.
+"""
+import os
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.dirname(HERE)
+JAVA_OUT = os.path.join(ROOT, "src", "main", "java", "com", "reya", "boundlessrouters", "gui", "Layouts.java")
+
+FRAME = 6          # the panel's metal border
+HEADER = (6, 6, 226, 21)   # the title strip: x1, y1, x2, y2 (shared by both GUIs, which are equally wide)
+W = 232
+INV_W = 176        # the player's inventory panel under the machine
+
+
+def inventory(mh):
+    """The player inventory panel under a machine area mh tall: its x, the slots' x and y, the hotbar's y, height."""
+    px = (W - INV_W) // 2
+    inv_y = mh + 12
+    hot_y = inv_y + 58
+    return px, px + 8, inv_y, hot_y, hot_y + 18 + 8
+
+
+class Router:
+    MH = 124
+    PANEL_X, INV_X, INV_Y, HOTBAR_Y, H = inventory(MH)
+    BUFFER = (108, 36)                          # the buffer slot: its frame (107..124) is centred on CORE
+    CORE = (116, 44)                            # the middle of the buffer's socket and its tick ring
+    CORE_R = 19
+    MODULES = [(24 + 18 * i, 86) for i in range(9)]
+    GEAR = 8                                    # the little gear under each module slot opening its settings
+    GEARS = [(x + 5, 106) for (x, _) in MODULES]
+    UPGRADES = [(206, 24 + 18 * i) for i in range(5)]
+    REDSTONE = (10, 26)                         # the redstone mode button, 16 square
+    INFO = [(10, 46), (10, 56), (10, 66)]       # the readouts: interval, items per run, range (icon then text)
+    BUS_Y = 79                                  # the trace from the buffer to the modules runs along here
+    LEDS = [(156 + 6 * c, 52 + 6 * r) for r in range(3) for c in range(3)]   # a light for each module, 4 square
+    LED = 4
+    GAUGE = (164, 31)                           # a pressure gauge's middle pixel (its needle shows the router's speed)
+    GAUGE_R = 9
+    TITLE = (46, 186)                           # the title's window in the header
+
+
+class Module:
+    MH = 136
+    PANEL_X, INV_X, INV_Y, HOTBAR_Y, H = inventory(MH)
+    BACK = (9, 7)                               # back to the router, 12 square, in the header
+    ICON = (24, 6)                              # the module's icon in the header, before its name
+    DIR_CELL = 16
+    DIRS = {                                    # the direction picker, an unfolded cube round the front
+        "UP": (30, 26), "BACK": (48, 26),
+        "LEFT": (12, 44), "FRONT": (30, 44), "RIGHT": (48, 44),
+        "DOWN": (30, 62), "NONE": (48, 62),
+    }
+    DIR_LABEL = (39, 83)                        # the chosen direction's name, centred here
+    FILTER = [(78 + 18 * c, 28 + 18 * r) for r in range(3) for c in range(3)]
+    TOGGLE = 14
+    TOGGLES = [(142 + 16 * c, 28 + 16 * r) for r in range(2) for c in range(4)]
+    # what the toggles are, in order: list mode, damage, NBT, tags, mod, termination, module redstone, (spare)
+    INFO = (142, 62, 222, 88)                   # a readout of what the module will do
+    PANEL = (10, 98, 222, 128)                  # the module's own settings
+    TITLE = (42, 214)                           # the title's window in the header (after the icon)
+
+
+class Sheet:
+    """The widget sheet (widgets.png): the pieces the screens draw over the panels, each row a strip of states."""
+    W, H = 128, 128
+    BUTTON = (0, 0)          # 16 square: normal, hover, selected, disabled
+    TOGGLE = (64, 0)         # 14 square: off, off hovered, on, on hovered
+    GEAR = (0, 16)           # 8 square: normal, hover, disabled (opens a module's settings from the router)
+    BACK = (24, 16)          # 12 square: normal, hover
+    SMALL = (48, 16)         # 10 square: normal, hover, pressed (the little +/- buttons)
+    REDSTONE = (0, 30)       # 12 square glyphs: always, high, low, never, pulse
+    INFO = (60, 30)          # 10 square glyphs: interval, items a run, range
+    DIRS = (0, 44)           # 10 square glyphs in RelativeDirection's order: none, front, back, up, down, left, right
+    OPTS = (0, 56)           # 10 square glyphs: whitelist, blacklist, damage, nbt, tags, mod, terminate, rs always, rs high, rs low
+    MISC = (0, 68)           # 10 square glyphs: plus, minus, cycle, clear, silk, fortune, strong, weak, player, target, sneak
+    REGIONS = [("button", 0, 0, 64, 16), ("toggle", 64, 0, 56, 14), ("gear", 0, 16, 24, 8), ("back", 24, 16, 24, 12),
+               ("small", 48, 16, 30, 10), ("redstone", 0, 30, 60, 12), ("info", 60, 30, 30, 10), ("dirs", 0, 44, 70, 10),
+               ("opts", 0, 56, 100, 10), ("misc", 0, 68, 110, 10)]
+
+
+def slot_rect(x, y):
+    return (x - 1, y - 1, 18, 18)
+
+
+def java():
+    r, m = Router, Module
+
+    def pts(name, points):
+        inner = ", ".join("{%d, %d}" % p for p in points)
+        return "        public static final int[][] %s = {%s};\n" % (name, inner)
+
+    out = ["package com.reya.boundlessrouters.gui;\n\n",
+           "/** Generated by tools/layout.py: where everything is in the GUIs. Edit that file, not this one. */\n",
+           "public final class Layouts {\n",
+           "    public static final int W = %d, FRAME = %d;\n" % (W, FRAME),
+           "    public static final int[] HEADER = {%d, %d, %d, %d};\n\n" % HEADER,
+           "    public static final class Router {\n",
+           "        public static final int MH = %d, H = %d, PANEL_X = %d, INV_X = %d, INV_Y = %d, HOTBAR_Y = %d;\n"
+           % (r.MH, r.H, r.PANEL_X, r.INV_X, r.INV_Y, r.HOTBAR_Y),
+           "        public static final int[] BUFFER = {%d, %d}, CORE = {%d, %d}, REDSTONE = {%d, %d};\n"
+           % (r.BUFFER + r.CORE + r.REDSTONE),
+           "        public static final int CORE_R = %d, GEAR = %d, BUS_Y = %d, LED = %d, GAUGE_R = %d;\n"
+           % (r.CORE_R, r.GEAR, r.BUS_Y, r.LED, r.GAUGE_R),
+           "        public static final int[] GAUGE = {%d, %d};\n" % r.GAUGE,
+           pts("MODULES", r.MODULES), pts("GEARS", r.GEARS), pts("UPGRADES", r.UPGRADES), pts("INFO", r.INFO), pts("LEDS", r.LEDS),
+           "\n        private Router() {\n        }\n    }\n\n",
+           "    public static final class Module {\n",
+           "        public static final int MH = %d, H = %d, PANEL_X = %d, INV_X = %d, INV_Y = %d, HOTBAR_Y = %d;\n"
+           % (m.MH, m.H, m.PANEL_X, m.INV_X, m.INV_Y, m.HOTBAR_Y),
+           "        public static final int[] BACK = {%d, %d}, DIR_LABEL = {%d, %d}, ICON = {%d, %d};\n"
+           % (m.BACK + m.DIR_LABEL + m.ICON),
+           "        public static final int[] PANEL = {%d, %d, %d, %d}, INFO = {%d, %d, %d, %d};\n" % (m.PANEL + m.INFO),
+           "        public static final int DIR_CELL = %d, TOGGLE = %d;\n" % (m.DIR_CELL, m.TOGGLE),
+           "        /** The direction picker's buttons, in RelativeDirection's order: none, front, back, up, down, left, right. */\n",
+           pts("DIRS", [m.DIRS[k] for k in ("NONE", "FRONT", "BACK", "UP", "DOWN", "LEFT", "RIGHT")]),
+           pts("FILTER", m.FILTER), pts("TOGGLES", m.TOGGLES),
+           "\n        private Module() {\n        }\n    }\n\n",
+           "    /** Where the widget sheet's pieces are (widgets.png). */\n",
+           "    public static final class Sheet {\n",
+           "        public static final int W = %d, H = %d;\n" % (Sheet.W, Sheet.H),
+           "".join("        public static final int[] %s = {%d, %d};\n" % ((k,) + getattr(Sheet, k))
+                   for k in ("BUTTON", "TOGGLE", "GEAR", "BACK", "SMALL", "REDSTONE", "INFO", "DIRS", "OPTS", "MISC")),
+           "\n        private Sheet() {\n        }\n    }\n\n",
+           "    private Layouts() {\n    }\n}\n"]
+    return "".join(out)
+
+
+def main():
+    os.makedirs(os.path.dirname(JAVA_OUT), exist_ok=True)
+    with open(JAVA_OUT, "w", encoding="utf-8") as f:
+        f.write(java())
+    print("wrote " + os.path.relpath(JAVA_OUT, ROOT))
+
+
+if __name__ == "__main__":
+    main()

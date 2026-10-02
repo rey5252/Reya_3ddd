@@ -1,0 +1,14 @@
+{
+  "type": "botania:elven_trade",
+  "ingredients": [
+    {
+      "tag": "forge:ores/emerald"
+    }
+  ],
+  "output": [
+    {
+      "item": "minecraft:emerald",
+      "count": 2
+    }
+  ]
+}

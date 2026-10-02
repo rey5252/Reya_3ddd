@@ -1,0 +1,14 @@
+{
+  "type": "botania:elven_trade",
+  "ingredients": [
+    {
+      "tag": "forge:ores/copper"
+    }
+  ],
+  "output": [
+    {
+      "item": "minecraft:raw_copper",
+      "count": 6
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "botania:runic_altar",
+  "ingredients": [
+    {
+      "item": "alfheimheart:upgrade_base"
+    },
+    {
+      "item": "botania:rune_autumn"
+    },
+    {
+      "item": "botania:rune_earth"
+    },
+    {
+      "item": "botania:rune_gluttony"
+    },
+    {
+      "item": "botania:fertilizer"
+    },
+    {
+      "item": "botania:fertilizer"
+    },
+    {
+      "tag": "botania:mana_diamond_gems"
+    },
+    {
+      "item": "minecraft:golden_carrot"
+    }
+  ],
+  "mana": 20000,
+  "output": {
+    "item": "alfheimheart:yield_upgrade"
+  }
+}
