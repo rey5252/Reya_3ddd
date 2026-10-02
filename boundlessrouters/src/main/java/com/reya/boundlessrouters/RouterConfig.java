@@ -3,14 +3,15 @@ package com.reya.boundlessrouters;
 import net.minecraftforge.common.ForgeConfigSpec;
 
 /**
- * config/boundlessrouters-common.toml. Out of the box nothing is limited; a server can set limits here.
+ * config/boundlessrouters-common.toml: how fast routers run, how far modules reach (and how far each range upgrade
+ * takes them), and a few rules a server may want otherwise.
  */
 public final class RouterConfig {
     public static final ForgeConfigSpec SPEC;
     public static final ForgeConfigSpec.IntValue BASE_TICKS, SPEED_STEP, MIN_TICKS;
-    public static final ForgeConfigSpec.IntValue BASE_RANGE, RANGE_STEP;
+    public static final ForgeConfigSpec.IntValue REACH, RANGE_1, RANGE_2, RANGE_3, SCAN_LIMIT;
     public static final ForgeConfigSpec.IntValue MAX_RADIUS;
-    public static final ForgeConfigSpec.BooleanValue CROSS_DIMENSION, LOAD_TARGETS, BREAK_ANY_TOOL;
+    public static final ForgeConfigSpec.BooleanValue INFINITE_OTHER_DIMENSIONS, LOAD_TARGETS, BREAK_ANY_TOOL;
 
     static {
         ForgeConfigSpec.Builder b = new ForgeConfigSpec.Builder();
@@ -22,16 +23,24 @@ public final class RouterConfig {
         MIN_TICKS = b.comment("The fastest a router runs, in ticks between runs (1 = every tick).")
                 .defineInRange("minTicks", 1, 1, 1200);
         b.pop();
+        b.push("range");
+        REACH = b.comment("How far, in blocks, a router's modules reach without a range upgrade: the places they are bound to,",
+                        "the player a player module is bound to, how far a sender looks and an extruder builds, a vacuum's radius.")
+                .defineInRange("reach", 8, 1, 4096);
+        RANGE_1 = b.comment("How far modules reach with a Range Upgrade I (range upgrades don't add up: the best one counts).")
+                .defineInRange("rangeUpgrade1", 16, 1, 4096);
+        RANGE_2 = b.comment("With a Range Upgrade II.")
+                .defineInRange("rangeUpgrade2", 32, 1, 4096);
+        RANGE_3 = b.comment("With a Range Upgrade III.")
+                .defineInRange("rangeUpgrade3", 64, 1, 4096);
+        SCAN_LIMIT = b.comment("The farthest a sender looks along its direction and an extruder builds, even with an infinite range upgrade.")
+                .defineInRange("scanLimit", 64, 1, 4096);
+        INFINITE_OTHER_DIMENSIONS = b.comment("Whether a router with an Infinite Range Upgrade reaches places and players in other dimensions.")
+                .define("infiniteReachesOtherDimensions", true);
+        b.pop();
         b.push("modules");
-        BASE_RANGE = b.comment("How far, in blocks, a sender looks along its direction for an inventory, and how far an extruder reaches,",
-                        "without range upgrades.")
-                .defineInRange("baseRange", 16, 1, 1024);
-        RANGE_STEP = b.comment("Blocks each range upgrade adds.")
-                .defineInRange("rangeStep", 4, 0, 1024);
-        MAX_RADIUS = b.comment("The largest radius a vacuum module can be set to.")
+        MAX_RADIUS = b.comment("The largest radius a vacuum module can be set to (it never reaches past its router's range).")
                 .defineInRange("maxVacuumRadius", 64, 1, 256);
-        CROSS_DIMENSION = b.comment("Whether modules bound to a place reach it in another dimension.")
-                .define("crossDimension", true);
         LOAD_TARGETS = b.comment("Whether modules bound to a place load its chunk when it isn't loaded (it stays loaded",
                         "a few seconds after each use).")
                 .define("loadTargetChunks", true);

@@ -1,6 +1,8 @@
 package com.reya.boundlessrouters.router;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 import javax.annotation.Nonnull;
@@ -15,6 +17,8 @@ import com.reya.boundlessrouters.module.ModuleItem;
 import com.reya.boundlessrouters.module.ModuleSettings;
 import com.reya.boundlessrouters.upgrade.UpgradeItem;
 import com.reya.boundlessrouters.upgrade.UpgradeKind;
+import com.reya.boundlessrouters.network.Net;
+import com.reya.boundlessrouters.network.TransferFxPacket;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -37,6 +41,7 @@ import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
+import net.minecraftforge.network.PacketDistributor;
 
 /**
  * The Item Router: a one-item buffer, nine module slots and five upgrade slots. Every so often (twenty ticks,
@@ -193,10 +198,21 @@ public class RouterBlockEntity extends BlockEntity implements MenuProvider {
         return stacks >= 6 ? 64 : 1 << stacks;
     }
 
-    /** How far modules reach along their direction. */
+    /** A range with no limit (an infinite range upgrade). */
+    public static final int INFINITE = -1;
+
+    /**
+     * How far the modules reach, in blocks: eight, or as far as the best range upgrade in the router takes them (they
+     * don't add up); INFINITE with an infinite range upgrade.
+     */
     public int range() {
-        long range = RouterConfig.BASE_RANGE.get() + (long) RouterConfig.RANGE_STEP.get() * upgradeCount(UpgradeKind.RANGE);
-        return (int) Math.min(Integer.MAX_VALUE / 2, range);
+        int best = RouterConfig.REACH.get();
+        for (UpgradeKind kind : UpgradeKind.values()) {
+            if (!kind.isRange() || upgradeCount(kind) == 0) continue;
+            if (kind.reach() < 0) return INFINITE;
+            best = Math.max(best, kind.reach());
+        }
+        return best;
     }
 
     // ------------------------------------------------------------------ running
@@ -233,13 +249,15 @@ public class RouterBlockEntity extends BlockEntity implements MenuProvider {
         int[] newWeak = new int[6], newStrong = new int[6];
         int perRun = itemsPerRun(), range = range();
         boolean quiet = upgradeCount(UpgradeKind.MUFFLER) > 0;
+        List<TransferFxPacket.Flight> flights = new ArrayList<>();
         int ran = 0;
         for (int i = 0; i < MODULE_SLOTS; i++) {
             ItemStack stack = modules.getStackInSlot(i);
             if (!(stack.getItem() instanceof ModuleItem)) continue;
             ModuleSettings settings = new ModuleSettings(stack);
             if (!settings.redstone().allows(powered)) continue;
-            ModuleContext ctx = new ModuleContext(this, level, pos, facing, i, stack, settings, perRun, range, powered, quiet, newWeak, newStrong);
+            ModuleContext ctx = new ModuleContext(this, level, pos, facing, i, stack, settings, perRun, range, powered, quiet, newWeak, newStrong,
+                    flights);
             boolean did;
             try {
                 did = ModuleBehaviours.run(ctx);
@@ -253,6 +271,10 @@ public class RouterBlockEntity extends BlockEntity implements MenuProvider {
             }
         }
         setSignals(level, pos, newWeak, newStrong);
+        // the players near it see the items go: a line to where each went, the item flying along it
+        if (!flights.isEmpty()) {
+            Net.CHANNEL.send(PacketDistributor.TRACKING_CHUNK.with(() -> level.getChunkAt(pos)), new TransferFxPacket(flights));
+        }
         if (ran != 0) {
             lastRun = ran;
             sinceRun = 0;

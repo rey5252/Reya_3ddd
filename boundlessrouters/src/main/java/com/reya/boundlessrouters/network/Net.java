@@ -6,9 +6,9 @@ import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.simple.SimpleChannel;
 
-/** The mod's packets, all from a player's screen to the server. */
+/** The mod's packets: from a player's screen to the server, and the server's transfer lines to players near a router. */
 public final class Net {
-    private static final String VERSION = "1";
+    private static final String VERSION = "2";
 
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             new ResourceLocation(BoundlessRouters.MODID, "main"), () -> VERSION, VERSION::equals, VERSION::equals);
@@ -25,10 +25,15 @@ public final class Net {
                 .decoder(OpenModulePacket::decode)
                 .consumerMainThread(OpenModulePacket::handle)
                 .add();
-        CHANNEL.messageBuilder(OpenRouterPacket.class, id, NetworkDirection.PLAY_TO_SERVER)
+        CHANNEL.messageBuilder(OpenRouterPacket.class, id++, NetworkDirection.PLAY_TO_SERVER)
                 .encoder(OpenRouterPacket::encode)
                 .decoder(OpenRouterPacket::decode)
                 .consumerMainThread(OpenRouterPacket::handle)
+                .add();
+        CHANNEL.messageBuilder(TransferFxPacket.class, id, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(TransferFxPacket::encode)
+                .decoder(TransferFxPacket::decode)
+                .consumerMainThread(TransferFxPacket::handle)
                 .add();
     }
 

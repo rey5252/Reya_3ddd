@@ -19,6 +19,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.level.block.Block;
@@ -79,7 +80,10 @@ public class BoundlessRouters {
             MODULES.put(kind, ITEMS.register(kind.id() + "_module", () -> new ModuleItem(kind, new Item.Properties().stacksTo(1))));
         }
         for (UpgradeKind kind : UpgradeKind.values()) {
-            UPGRADES.put(kind, ITEMS.register(kind.id() + "_upgrade", () -> new UpgradeItem(kind, new Item.Properties())));
+            // a range upgrade is one to a slot (the best in a router counts); the infinite one is rare
+            Item.Properties properties = kind == UpgradeKind.INFINITE_RANGE ? new Item.Properties().stacksTo(1).rarity(Rarity.EPIC)
+                    : kind.isRange() ? new Item.Properties().stacksTo(1) : new Item.Properties();
+            UPGRADES.put(kind, ITEMS.register(kind.id() + "_upgrade", () -> new UpgradeItem(kind, properties)));
         }
     }
 

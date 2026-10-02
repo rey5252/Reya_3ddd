@@ -13,7 +13,7 @@ MOD = "boundlessrouters"
 
 MODULES = ["sender", "puller", "distributor", "dropper", "flinger", "placer", "breaker", "vacuum", "void", "player", "detector",
            "extruder"]
-UPGRADES = ["speed", "stack", "range", "muffler"]
+UPGRADES = ["speed", "stack", "range", "range_2", "range_3", "infinite_range", "muffler"]
 
 
 def write(rel, data):
@@ -76,8 +76,14 @@ def recipes():
         shapeless(m + "_module", [blank] + keys[m], m + "_module")
     ub = MOD + ":blank_upgrade"
     ukeys = {"speed": ["sugar", "redstone"], "stack": ["chest"], "range": ["spyglass"], "muffler": [{"tag": "minecraft:wool"}]}
-    for u in UPGRADES:
+    for u in ukeys:
         shapeless(u + "_upgrade", [ub] + ukeys[u], u + "_upgrade")
+    # each range tier is made from the one before it; the infinite one is hard to come by
+    shapeless("range_2_upgrade", [MOD + ":range_upgrade", "ender_pearl", "ender_pearl", "gold_ingot", "gold_ingot"], "range_2_upgrade")
+    shapeless("range_3_upgrade", [MOD + ":range_2_upgrade", "ender_eye", "ender_eye", "diamond", "diamond"], "range_3_upgrade")
+    shaped("infinite_range_upgrade", ["ESE", "YRY", "ENE"],
+           {"E": "echo_shard", "S": "nether_star", "Y": "ender_eye", "R": MOD + ":range_3_upgrade", "N": "netherite_ingot"},
+           "infinite_range_upgrade")
 
 
 def loot_and_tags():

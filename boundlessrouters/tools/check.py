@@ -21,7 +21,7 @@ RES = os.path.join(ROOT, "src", "main", "resources")
 ASSETS = os.path.join(RES, "assets", "boundlessrouters")
 MODULES = ["sender", "puller", "distributor", "dropper", "flinger", "placer", "breaker", "vacuum", "void", "player", "detector",
            "extruder"]
-UPGRADES = ["speed", "stack", "range", "muffler"]
+UPGRADES = ["speed", "stack", "range", "range_2", "range_3", "infinite_range", "muffler"]
 
 
 def png_size(path):

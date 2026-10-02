@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    "ESE",
+    "YRY",
+    "ENE"
+  ],
+  "key": {
+    "E": {
+      "item": "minecraft:echo_shard"
+    },
+    "S": {
+      "item": "minecraft:nether_star"
+    },
+    "Y": {
+      "item": "minecraft:ender_eye"
+    },
+    "R": {
+      "item": "boundlessrouters:range_3_upgrade"
+    },
+    "N": {
+      "item": "minecraft:netherite_ingot"
+    }
+  },
+  "result": {
+    "item": "boundlessrouters:infinite_range_upgrade",
+    "count": 1
+  }
+}

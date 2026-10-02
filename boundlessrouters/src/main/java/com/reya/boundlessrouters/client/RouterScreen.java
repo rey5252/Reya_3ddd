@@ -212,7 +212,7 @@ public class RouterScreen extends AbstractContainerScreen<RouterMenu> {
         Component[] lines = {
                 interval <= 1 ? Component.translatable("gui.boundlessrouters.every_tick") : Ui.count("gui.boundlessrouters.interval", interval),
                 Component.translatable("gui.boundlessrouters.items", menu.itemsPerRun()),
-                Ui.count("gui.boundlessrouters.range", menu.range())};
+                menu.range() < 0 ? Component.translatable("gui.boundlessrouters.range_infinite") : Ui.count("gui.boundlessrouters.range", menu.range())};
         for (int k = 0; k < lines.length; k++) {
             int tx = Router.INFO[k][0] + 13;
             Ui.fit(g, font, lines[k], tx, Router.INFO[k][1] + 1, 86 - tx, Ui.TEXT_LCD, 1.0F);
@@ -225,6 +225,16 @@ public class RouterScreen extends AbstractContainerScreen<RouterMenu> {
         super.render(g, mouseX, mouseY, partialTick);
         renderTooltip(g, mouseX, mouseY);
         ownTooltips(g, mouseX, mouseY);
+    }
+
+    /** The name of the best range upgrade in the router, or "none". */
+    private Component bestRange() {
+        UpgradeKind best = null;
+        for (UpgradeKind kind : UpgradeKind.values()) {
+            if (kind.isRange() && menu.upgradeCount(kind) > 0) best = kind;
+        }
+        return best == null ? Component.translatable("gui.boundlessrouters.none")
+                : Component.translatable("item.boundlessrouters." + best.id() + "_upgrade");
     }
 
     private void ownTooltips(GuiGraphics g, int mouseX, int mouseY) {
@@ -245,8 +255,9 @@ public class RouterScreen extends AbstractContainerScreen<RouterMenu> {
         for (int k = 0; k < Router.INFO.length; k++) {
             if (Ui.in(mouseX, mouseY, x + Router.INFO[k][0], y + Router.INFO[k][1], 78, 10)) {
                 tip.add(Component.translatable("gui.boundlessrouters.info." + infos[k]).withStyle(ChatFormatting.AQUA));
-                tip.add(Component.translatable("gui.boundlessrouters.info." + infos[k] + ".tip",
-                        menu.upgradeCount(k == 0 ? UpgradeKind.SPEED : k == 1 ? UpgradeKind.STACK : UpgradeKind.RANGE)).withStyle(ChatFormatting.GRAY));
+                Object value = k == 0 ? menu.upgradeCount(UpgradeKind.SPEED) : k == 1 ? menu.upgradeCount(UpgradeKind.STACK) : bestRange();
+                tip.add(Component.translatable("gui.boundlessrouters.info." + infos[k] + ".tip", value).withStyle(ChatFormatting.GRAY));
+                if (k == 2) tip.add(Component.translatable("gui.boundlessrouters.info.range.tiers").withStyle(ChatFormatting.DARK_GRAY));
             }
         }
         if (hoveredSlot != null && !hoveredSlot.hasItem() && menu.getCarried().isEmpty()) {

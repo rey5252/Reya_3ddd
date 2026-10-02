@@ -40,12 +40,13 @@ public final class Targets {
 
     /**
      * The level a bound target is in, its chunk loaded if it wasn't (when the config lets it), or null: its
-     * dimension is gone, or another dimension's targets are off, or its chunk isn't loaded and mustn't be.
+     * dimension is gone, or its chunk isn't loaded and mustn't be. (Whether the router reaches it is the module's
+     * to ask first: ModuleContext.reaches.)
      */
     @Nullable
     public static ServerLevel levelOf(ServerLevel from, Target target) {
         ServerLevel level = from.dimension().equals(target.dim()) ? from : from.getServer().getLevel(target.dim());
-        if (level == null || (level != from && !RouterConfig.CROSS_DIMENSION.get())) return null;
+        if (level == null) return null;
         BlockPos pos = target.pos();
         if (!level.isInWorldBounds(pos)) return null;
         ChunkPos chunk = new ChunkPos(pos);

@@ -68,6 +68,10 @@ public final class AutoShot {
         STEPS.add(new Step(60, () -> shot("router_block.png")));
         STEPS.add(new Step(5, () -> eye(1.7D, 1.35D, 2.3D, 0.5D, 0.5D, 0.5D)));
         STEPS.add(new Step(30, () -> shot("router_front.png")));
+        // from the side: the line from the router to the chest it sends to, items flying along it
+        STEPS.add(new Step(5, () -> eye(4.6D, 1.5D, 2.0D, 0.5D, 0.55D, 2.0D)));
+        STEPS.add(new Step(30, () -> shot("router_lines.png")));
+        STEPS.add(new Step(3, () -> shot("router_lines_2.png")));
         // the router's GUI, at work
         STEPS.add(new Step(5, AutoShot::beforeGui));
         STEPS.add(new Step(5, AutoShot::openRouter));
@@ -237,7 +241,7 @@ public final class AutoShot {
             for (int i = 0; i < modules.length; i++) router.modules().setStackInSlot(i, modules[i]);
             router.upgrades().setStackInSlot(0, new ItemStack(BoundlessRouters.upgrade(UpgradeKind.SPEED), 7));
             router.upgrades().setStackInSlot(1, new ItemStack(BoundlessRouters.upgrade(UpgradeKind.STACK), 3));
-            router.upgrades().setStackInSlot(2, new ItemStack(BoundlessRouters.upgrade(UpgradeKind.RANGE), 2));
+            router.upgrades().setStackInSlot(2, new ItemStack(BoundlessRouters.upgrade(UpgradeKind.RANGE_2), 1));
         });
     }
 

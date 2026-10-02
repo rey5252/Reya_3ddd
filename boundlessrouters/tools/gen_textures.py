@@ -30,8 +30,10 @@ MODULES = ["sender", "puller", "distributor", "dropper", "flinger", "placer", "b
 MODULE_COLOURS = {"sender": 0x5FD45F, "puller": 0x4FA8FF, "distributor": 0x3FE0D0, "dropper": 0xC9C9C9, "flinger": 0xFF9A3C,
                   "placer": 0x9BE15D, "breaker": 0xFF5A4F, "vacuum": 0xC07CFF, "void": 0x8A5CD0, "player": 0xFFD24A,
                   "detector": 0xFF3B3B, "extruder": 0xD29A5C}
-UPGRADES = ["speed", "stack", "range", "muffler"]
-UPGRADE_COLOURS = {"speed": 0xFFD84A, "stack": 0xE8E8F0, "range": 0x4FE3FF, "muffler": 0x9A8F86}
+UPGRADES = ["speed", "stack", "range", "range_2", "range_3", "infinite_range", "muffler"]
+UPGRADE_COLOURS = {"speed": 0xFFD84A, "stack": 0xE8E8F0, "range": 0x4FE3FF, "range_2": 0x4F86FF, "range_3": 0xA66BFF,
+                   "infinite_range": 0xFF4FD8, "muffler": 0x9A8F86}
+RANGE_TIERS = {"range": 1, "range_2": 2, "range_3": 3}
 
 
 def out(*parts):
@@ -553,7 +555,9 @@ UPGRADE_GLYPHS = {
     "stack": ["######", "#....#", "######", "######", "#....#", "######"],
     "range": ["#.##.#", ".#..#.", "#....#", "#....#", ".#..#.", "#.##.#"],
     "muffler": ["#...#.", ".#.#..", "..#...", ".#.#..", "#...#.", "......"],
+    "infinite_range": ["......", ".#..#.", "#.##.#", "#.##.#", ".#..#.", "......"],
 }
+UPGRADE_GLYPHS["range_2"] = UPGRADE_GLYPHS["range_3"] = UPGRADE_GLYPHS["range"]
 
 
 def module_item(name, colour):
@@ -645,6 +649,13 @@ def upgrade_item(name, colour):
     else:
         cv.set(7, 9, (70, 76, 88))
         cv.set(8, 9, (70, 76, 88))
+    # a range upgrade's tier: one, two or three white marks on its band
+    tier = RANGE_TIERS.get(name, 0)
+    for x in {1: [7], 2: [5, 9], 3: [4, 7, 10]}.get(tier, []):
+        cv.set(x, 3, WHITE)
+        cv.set(x + 1, 3, WHITE)
+        cv.set(x, 4, mix(WHITE, c, 0.5))
+        cv.set(x + 1, 4, mix(WHITE, c, 0.5))
     cv.save(out("item", (name + "_upgrade.png") if name else "blank_upgrade.png"))
 
 

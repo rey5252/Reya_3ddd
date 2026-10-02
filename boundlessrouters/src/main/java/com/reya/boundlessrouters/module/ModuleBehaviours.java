@@ -72,35 +72,50 @@ public final class ModuleBehaviours {
 
     private static boolean send(ModuleContext ctx) {
         if (buffered(ctx).isEmpty()) return false;
+        ItemStack what = buffered(ctx).copy();
         IItemHandler to = null;
+        BlockPos where = null;
         List<Target> targets = ctx.settings.targets();
         if (!targets.isEmpty()) {
-            to = other(ctx, Targets.inventoryAt(ctx.level, targets.get(0)));
+            Target target = targets.get(0);
+            if (!ctx.reaches(target)) return false;
+            to = other(ctx, Targets.inventoryAt(ctx.level, target));
+            if (target.dim().equals(ctx.level.dimension())) where = target.pos();
         } else {
             Direction dir = ctx.direction();
             if (dir == null) return false;
             // the first inventory along the module's direction, through whatever stands between
-            for (int k = 1; k <= ctx.range && to == null; k++) {
+            for (int k = 1; k <= ctx.reach() && to == null; k++) {
                 BlockPos at = ctx.pos.relative(dir, k);
                 if (!ctx.level.isLoaded(at)) break;
                 to = other(ctx, Targets.inventoryAt(ctx.level, at, dir.getOpposite()));
+                where = at;
             }
         }
-        return to != null && Transfer.move(ctx.buffer(), to, ctx.itemsPerRun, ctx.filter) > 0;
+        if (to == null || Transfer.move(ctx.buffer(), to, ctx.itemsPerRun, ctx.filter) <= 0) return false;
+        if (where != null) ctx.showTo(where, what);
+        return true;
     }
 
     private static boolean pull(ModuleContext ctx) {
         IItemHandler from;
+        BlockPos where = null;
         List<Target> targets = ctx.settings.targets();
         if (!targets.isEmpty()) {
-            from = Targets.inventoryAt(ctx.level, targets.get(0));
+            Target target = targets.get(0);
+            if (!ctx.reaches(target)) return false;
+            from = Targets.inventoryAt(ctx.level, target);
+            if (target.dim().equals(ctx.level.dimension())) where = target.pos();
         } else {
             Direction dir = ctx.direction();
             if (dir == null) return false;
-            from = Targets.inventoryAt(ctx.level, ctx.pos.relative(dir), dir.getOpposite());
+            where = ctx.pos.relative(dir);
+            from = Targets.inventoryAt(ctx.level, where, dir.getOpposite());
         }
         from = other(ctx, from);
-        return from != null && Transfer.move(from, ctx.buffer(), ctx.itemsPerRun, ctx.filter) > 0;
+        if (from == null || Transfer.move(from, ctx.buffer(), ctx.itemsPerRun, ctx.filter) <= 0) return false;
+        if (where != null) ctx.showFrom(where, ctx.buffer().getStackInSlot(0));
+        return true;
     }
 
     private static boolean distribute(ModuleContext ctx) {
@@ -108,10 +123,14 @@ public final class ModuleBehaviours {
         List<Target> targets = ctx.settings.targets();
         if (targets.isEmpty()) return false;
         Strategy strategy = ctx.settings.strategy();
+        ItemStack what = buffered(ctx).copy();
         for (int i : order(ctx, targets, strategy)) {
-            IItemHandler to = other(ctx, Targets.inventoryAt(ctx.level, targets.get(i)));
+            Target target = targets.get(i);
+            if (!ctx.reaches(target)) continue;
+            IItemHandler to = other(ctx, Targets.inventoryAt(ctx.level, target));
             if (to == null) continue;
             if (Transfer.move(ctx.buffer(), to, ctx.itemsPerRun, ctx.filter) > 0) {
+                if (target.dim().equals(ctx.level.dimension())) ctx.showTo(target.pos(), what);
                 if (strategy == Strategy.ROUND_ROBIN) {
                     ctx.settings.setNext((i + 1) % targets.size());
                     ctx.changed();
@@ -180,8 +199,10 @@ public final class ModuleBehaviours {
         Direction dir = ctx.direction();
         ItemStack stack = buffered(ctx);
         if (dir == null || !(stack.getItem() instanceof BlockItem)) return false;
+        ItemStack what = stack.copy();
         if (!Blocks.place(ctx.level, ctx.pos, dir, ctx.facing, ctx.pos.relative(dir), stack)) return false;
         ctx.buffer().extractItem(0, 1, false);
+        ctx.showTo(ctx.pos.relative(dir), what);
         return true;
     }
 
@@ -209,6 +230,7 @@ public final class ModuleBehaviours {
         List<ItemStack> drops = breaking.drops();
         if (!drops.isEmpty() && drops.stream().noneMatch(drop -> Transfer.accepts(ctx.buffer(), drop))) return false;
         Blocks.doBreak(ctx.level, ctx.pos, dir, ctx.facing, at, tool, breaking.exp(), ctx.quiet);
+        if (!drops.isEmpty()) ctx.showFrom(at, drops.get(0));
         for (ItemStack drop : drops) {
             ItemStack left = Transfer.insert(ctx.buffer(), drop);
             if (!left.isEmpty()) Block.popResource(ctx.level, at, left);
@@ -217,7 +239,7 @@ public final class ModuleBehaviours {
     }
 
     private static boolean vacuum(ModuleContext ctx) {
-        int radius = ctx.settings.radius();
+        int radius = Math.min(ctx.settings.radius(), ctx.reach());
         Direction dir = ctx.direction();
         Vec3 centre = Vec3.atCenterOf(dir == null ? ctx.pos : ctx.pos.relative(dir, radius + 1));
         AABB box = AABB.ofSize(centre, radius * 2 + 1, radius * 2 + 1, radius * 2 + 1);
@@ -229,6 +251,7 @@ public final class ModuleBehaviours {
             ItemStack left = Transfer.insert(ctx.buffer(), stack.copy());
             if (left.getCount() == stack.getCount()) continue;
             took = true;
+            ctx.show(item.position().add(0.0D, 0.25D, 0.0D), ModuleContext.faceTowards(ctx.pos, item.blockPosition()), stack);
             if (left.isEmpty()) item.discard();
             else item.setItem(left);
         }
@@ -249,17 +272,28 @@ public final class ModuleBehaviours {
         UUID id = ctx.settings.playerId();
         if (id == null) return false;
         ServerPlayer player = ctx.level.getServer().getPlayerList().getPlayer(id);
-        if (player == null || (player.level() != ctx.level && !RouterConfig.CROSS_DIMENSION.get())) return false;
+        if (player == null) return false;
+        boolean here = player.level() == ctx.level;
+        if (here ? !ctx.reaches(player.position()) : !(ctx.infinite() && RouterConfig.INFINITE_OTHER_DIMENSIONS.get())) return false;
         IItemHandler inventory = switch (ctx.settings.section()) {
             case MAIN -> new PlayerMainInvWrapper(player.getInventory());
             case ARMOR -> new PlayerArmorInvWrapper(player.getInventory());
             case OFFHAND -> new PlayerOffhandInvWrapper(player.getInventory());
             case ENDER -> new InvWrapper(player.getEnderChestInventory());
         };
-        int moved = ctx.settings.operation() == Operation.EXTRACT
+        boolean extract = ctx.settings.operation() == Operation.EXTRACT;
+        ItemStack what = buffered(ctx).copy();
+        int moved = extract
                 ? Transfer.move(inventory, ctx.buffer(), ctx.itemsPerRun, ctx.filter)
                 : Transfer.move(ctx.buffer(), inventory, ctx.itemsPerRun, ctx.filter);
-        return moved > 0;
+        if (moved <= 0) return false;
+        if (here) {
+            Vec3 at = player.position().add(0.0D, player.getBbHeight() * 0.6D, 0.0D);
+            Vec3 face = ModuleContext.faceTowards(ctx.pos, player.blockPosition());
+            if (extract) ctx.show(at, face, ctx.buffer().getStackInSlot(0));
+            else ctx.show(face, at, what);
+        }
+        return true;
     }
 
     // ------------------------------------------------------------------ redstone and blocks
@@ -276,11 +310,13 @@ public final class ModuleBehaviours {
         if (dir == null) return false;
         int extended = ctx.settings.extended();
         if (ctx.powered) {
-            if (extended >= ctx.range) return false;
+            if (extended >= ctx.reach()) return false;
             ItemStack stack = buffered(ctx);
             if (!(stack.getItem() instanceof BlockItem)) return false;
+            ItemStack what = stack.copy();
             if (!Blocks.place(ctx.level, ctx.pos, dir, ctx.facing, ctx.pos.relative(dir, extended + 1), stack)) return false;
             ctx.buffer().extractItem(0, 1, false);
+            ctx.showTo(ctx.pos.relative(dir, extended + 1), what);
             ctx.settings.setExtended(extended + 1);
             ctx.changed();
             return true;

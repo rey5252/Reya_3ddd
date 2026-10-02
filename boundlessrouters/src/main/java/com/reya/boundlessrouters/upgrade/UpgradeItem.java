@@ -26,6 +26,15 @@ public class UpgradeItem extends Item {
 
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
+        if (kind.isRange() && kind.reach() > 0) {
+            tooltip.add(Component.translatable("tooltip.boundlessrouters.reach", kind.reach()).withStyle(ChatFormatting.AQUA));
+        }
         tooltip.add(Component.translatable(getDescriptionId() + ".desc").withStyle(ChatFormatting.GRAY));
+    }
+
+    /** The infinite range upgrade shimmers. */
+    @Override
+    public boolean isFoil(ItemStack stack) {
+        return kind == UpgradeKind.INFINITE_RANGE || super.isFoil(stack);
     }
 }

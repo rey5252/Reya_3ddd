@@ -133,14 +133,33 @@ public class RouterTests {
         nether.setBlockAndUpdate(far, Blocks.CHEST.defaultBlockState());
         router.modules().setStackInSlot(0, module(ModuleKind.SENDER, s -> s.toggleTarget(new Target(Level.NETHER, far, Direction.UP))));
         router.upgrades().setStackInSlot(0, upgrades(UpgradeKind.STACK, 2));
+        router.upgrades().setStackInSlot(1, upgrades(UpgradeKind.RANGE_3, 1));
         router.buffer().setStackInSlot(0, new ItemStack(Items.DIAMOND, 3));
         run(h, router);
         IItemHandler there = Targets.inventoryAt(nether, far, Direction.UP);
         h.assertTrue(there != null, "the chest in the nether");
+        expect(h, count(there, Items.DIAMOND), 0, "another dimension is out of reach without an infinite range upgrade");
+        router.upgrades().setStackInSlot(1, upgrades(UpgradeKind.INFINITE_RANGE, 1));
+        run(h, router);
         expect(h, count(there, Items.DIAMOND), 3, "diamonds sent to the nether");
         expect(h, buffered(router), 0, "the buffer after sending");
         for (int i = 0; i < there.getSlots(); i++) there.extractItem(i, 64, false);
         nether.setBlockAndUpdate(far, Blocks.AIR.defaultBlockState());
+        h.succeed();
+    }
+
+    @GameTest(template = ROOM)
+    public static void boundPlacesOutOfRangeWaitForARangeUpgrade(GameTestHelper h) {
+        BlockPos at = new BlockPos(1, 2, 1), chest = new BlockPos(8, 5, 8);
+        RouterBlockEntity router = router(h, at, Direction.SOUTH);
+        h.setBlock(chest, Blocks.CHEST);
+        router.modules().setStackInSlot(0, module(ModuleKind.SENDER, s -> s.toggleTarget(new Target(h.getLevel().dimension(), h.absolutePos(chest), Direction.UP))));
+        router.buffer().setStackInSlot(0, new ItemStack(Items.IRON_INGOT, 4));
+        run(h, router);
+        expect(h, count(h, chest, Items.IRON_INGOT), 0, "a chest ten blocks off is out of the router's eight");
+        router.upgrades().setStackInSlot(0, upgrades(UpgradeKind.RANGE, 1));
+        run(h, router);
+        expect(h, count(h, chest, Items.IRON_INGOT), 1, "within sixteen with a range upgrade I");
         h.succeed();
     }
 
@@ -334,7 +353,7 @@ public class RouterTests {
     // ------------------------------------------------------------------ the router itself
 
     @GameTest(template = ROOM)
-    public static void upgradesHaveNoCap(GameTestHelper h) {
+    public static void upgradesSpeedStackAndRange(GameTestHelper h) {
         RouterBlockEntity router = router(h, new BlockPos(4, 2, 4), Direction.SOUTH);
         expect(h, router.interval(), 20, "ticks between runs without upgrades");
         router.upgrades().setStackInSlot(0, upgrades(UpgradeKind.SPEED, 9));
@@ -344,9 +363,15 @@ public class RouterTests {
         expect(h, router.itemsPerRun(), 1, "items a run without upgrades");
         router.upgrades().setStackInSlot(1, upgrades(UpgradeKind.STACK, 6));
         expect(h, router.itemsPerRun(), 64, "a full stack");
-        router.upgrades().setStackInSlot(2, upgrades(UpgradeKind.RANGE, 64));
-        router.upgrades().setStackInSlot(3, upgrades(UpgradeKind.RANGE, 64));
-        expect(h, router.range(), 16 + 4 * 128, "range keeps growing");
+        expect(h, router.range(), 8, "how far modules reach without a range upgrade");
+        router.upgrades().setStackInSlot(2, upgrades(UpgradeKind.RANGE, 1));
+        expect(h, router.range(), 16, "range upgrade I");
+        router.upgrades().setStackInSlot(3, upgrades(UpgradeKind.RANGE_3, 1));
+        expect(h, router.range(), 64, "range upgrades don't add up: III counts");
+        router.upgrades().setStackInSlot(3, upgrades(UpgradeKind.RANGE_2, 1));
+        expect(h, router.range(), 32, "II");
+        router.upgrades().setStackInSlot(4, upgrades(UpgradeKind.INFINITE_RANGE, 1));
+        expect(h, router.range(), RouterBlockEntity.INFINITE, "the infinite one");
         h.succeed();
     }
 
