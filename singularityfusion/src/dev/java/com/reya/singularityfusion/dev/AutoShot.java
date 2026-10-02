@@ -90,13 +90,15 @@ public final class AutoShot {
         STEPS.add(new Step(5, () -> time(18000L)));
         // the core's screen, ready
         STEPS.add(new Step(20, AutoShot::openCore));
-        STEPS.add(new Step(2, AutoShot::mouseAway));
+        STEPS.add(new Step(1, AutoShot::mouseAway));
+        STEPS.add(new Step(4, () -> shot("gui_opening_1.png")));
+        STEPS.add(new Step(5, () -> shot("gui_opening_2.png")));
         STEPS.add(new Step(40, () -> shot("gui_ready.png")));
         STEPS.add(new Step(5, () -> mouseAtGui(17, 84)));
         STEPS.add(new Step(10, () -> shot("gui_energy_tooltip.png")));
         STEPS.add(new Step(5, () -> mouseAtGui(37, 52)));
         STEPS.add(new Step(10, () -> shot("gui_pylon_tooltip.png")));
-        STEPS.add(new Step(5, () -> mouseAtGui(128, 116)));
+        STEPS.add(new Step(5, () -> mouseAtGui(128, 115)));
         STEPS.add(new Step(10, () -> shot("gui_start_tooltip.png")));
         STEPS.add(new Step(5, AutoShot::closeScreen));
         // a fusion, from the world
@@ -105,9 +107,9 @@ public final class AutoShot {
         STEPS.add(new Step(5, AutoShot::start));
         STEPS.add(new Step(5, () -> progress() >= 0.22F, () -> shot("fusion_beams.png")));
         STEPS.add(new Step(5, () -> progress() >= 0.5F, () -> shot("fusion_inject.png")));
-        STEPS.add(new Step(5, () -> progress() >= 0.58F, AutoShot::openCore));
+        STEPS.add(new Step(5, () -> progress() >= 0.5F, AutoShot::openCore));
         STEPS.add(new Step(2, AutoShot::mouseAway));
-        STEPS.add(new Step(10, () -> shot("gui_fusing.png")));
+        STEPS.add(new Step(24, () -> shot("gui_fusing.png")));
         STEPS.add(new Step(2, AutoShot::closeScreen));
         STEPS.add(new Step(1, () -> eye(11.0D, 2.6D, 9.5D, 0.5D, 4.2D, 0.5D)));
         STEPS.add(new Step(2, AutoShot::worldView));

@@ -3,7 +3,7 @@
     python3 tools/check.py
 
 - gui/Layouts.java is what layout.py makes now;
-- nothing in the screen's layout overlaps what it shouldn't, and the widget sheet's pieces fit and don't overlap;
+- nothing in the screen's layout overlaps what it shouldn't, and the sheets' pieces fit and don't overlap;
 - every texture a model, the renderers or the screen name is there, at the size it is drawn at (animated ones in frames);
 - the pylon's texture regions in gen_textures.py are the renderer's;
 - every translation key the code uses is in all three languages, and the three have the same keys.
@@ -48,30 +48,60 @@ def java_sources():
 def check_layouts():
     if read(L.JAVA_OUT) != L.java():
         problem("gui/Layouts.java is out of date: run tools/layout.py")
+    # the screen's widgets as boxes (x, y, w, h): none may overlap another, all inside the window but the title
+    half = L.PORTHOLE / 2.0
     boxes = [("title", (L.TITLE[0], L.TITLE[1], L.TITLE[2] - L.TITLE[0], L.TITLE[3] - L.TITLE[1])),
-             ("viewport", (L.VIEW[0] - L.VIEW_R - 4, L.VIEW[1] - L.VIEW_R - 4, 2 * L.VIEW_R + 8, 2 * L.VIEW_R + 8)),
-             ("catalyst", (L.CATALYST[0] - 1, L.CATALYST[1] - 1, 18, 18)), ("start", (L.START[0], L.START[1], 18, 18)),
-             ("output", (L.OUTPUT[0] - 1, L.OUTPUT[1] - 1, 18, 18)),
-             ("energy", (L.ENERGY[0] - 1, L.ENERGY[1] - 1, L.ENERGY[2] + 2, L.ENERGY[3] + 2)),
-             ("progress", (L.PROGRESS[0] - 1, L.PROGRESS[1] - 1, L.PROGRESS[2] + 2, L.PROGRESS[3] + 2)),
-             ("status", (50, 128, 156, 25))]
-    for i, (x, y) in enumerate(L.PYLONS_LEFT + L.PYLONS_RIGHT):
-        boxes.append(("pylon %d" % i, (x - 1, y - 1, 18, 18)))
+             ("catalyst", (L.CATALYST[0] + 8 - half, L.CATALYST[1] + 8 - half, L.PORTHOLE, L.PORTHOLE)),
+             ("start", (L.START[0], L.START[1], L.ORB, L.ORB)),
+             ("output", (L.OUTPUT[0] + 8 - half, L.OUTPUT[1] + 8 - half, L.PORTHOLE, L.PORTHOLE)),
+             ("energy", (L.ENERGY[0] - 2, L.ENERGY[1] - 2, L.ENERGY[2] + 4, L.ENERGY[3] + 4)),
+             ("progress", (L.PROGRESS[0] - 2, L.PROGRESS[1] - 2, L.PROGRESS[2] + 4, L.PROGRESS[3] + 4)),
+             ("status", (L.STATUS[0], L.STATUS[1], L.STATUS[2] - L.STATUS[0], L.STATUS[3] - L.STATUS[1]))]
+    pylons = L.PYLONS_LEFT + L.PYLONS_RIGHT
+    for i, (x, y) in enumerate(pylons):
+        boxes.append(("pylon %d" % i, (x + 8 - half, y + 8 - half, L.PORTHOLE, L.PORTHOLE)))
     for i in range(len(boxes)):
         for j in range(i + 1, len(boxes)):
-            if overlap(boxes[i][1], boxes[j][1]):
-                problem("the screen's %s and %s overlap" % (boxes[i][0], boxes[j][0]))
+            a_, b_ = boxes[i], boxes[j]
+            if a_[0].startswith("pylon") and b_[0].startswith("pylon"):
+                continue
+            if overlap(a_[1], b_[1]):
+                problem("the screen's %s and %s overlap" % (a_[0], b_[0]))
+    # the pylons' portholes in a column may just touch, no more
+    for i in range(len(pylons)):
+        for j in range(i + 1, len(pylons)):
+            d = ((pylons[i][0] - pylons[j][0]) ** 2 + (pylons[i][1] - pylons[j][1]) ** 2) ** 0.5
+            if d < L.PORTHOLE - 3:
+                problem("the screen's pylons %d and %d are too close (%.1f)" % (i, j, d))
+    wx1, wy1, wx2, wy2 = L.WINDOW
     for name, (x, y, w, h) in boxes:
-        if x < L.FRAME and name != "title" or x + w > L.W - L.FRAME or y + h > L.MH - L.FRAME:
-            problem("the screen's %s runs into the frame" % name)
-    regions = L.Sheet.REGIONS
-    for name, x, y, w, h in regions:
-        if x + w > L.W or y + h > L.Sheet.TEX_H or y < L.H:
-            problem("the sheet's %s doesn't fit under the panel" % name)
-    for i in range(len(regions)):
-        for j in range(i + 1, len(regions)):
-            if overlap(regions[i][1:], regions[j][1:]):
-                problem("the sheet's %s and %s overlap" % (regions[i][0], regions[j][0]))
+        if name != "title" and (x < wx1 or y < wy1 or x + w > wx2 or y + h > wy2):
+            problem("the screen's %s is outside the window" % name)
+    if not (wx1 <= L.HOLE[0] < wx2 and wy1 <= L.HOLE[1] < wy2):
+        problem("the singularity is outside the window")
+    for x, y, r in L.lights():
+        if not (0 <= x - r and x + r <= L.W and 0 <= y - r and y + r <= L.H):
+            problem("a gem at (%g, %g) is off the panel" % (x, y))
+    # the sheets: every piece on its sheet, none on another
+    sheets = [("space", L.Space.SIZE, [("base", ) + tuple(L.Space.BASE), ("wisps", ) + tuple(L.Space.WISPS)]),
+              ("widgets", L.Widgets.SIZE, L.Widgets.REGIONS), ("planets", L.Planets.SIZE, L.Planets.REGIONS)]
+    for sheet, size, regions in sheets:
+        for name, x, y, w, h in regions:
+            if x < 0 or y < 0 or x + w > size or y + h > size:
+                problem("the %s sheet's %s doesn't fit on it" % (sheet, name))
+        for i in range(len(regions)):
+            for j in range(i + 1, len(regions)):
+                if overlap(regions[i][1:], regions[j][1:]):
+                    problem("the %s sheet's %s and %s overlap" % (sheet, regions[i][0], regions[j][0]))
+    bw, bh = L.Space.BASE[2:]
+    if (bw, bh) != (2 * (wx2 - wx1), 2 * (wy2 - wy1)):
+        problem("the space picture isn't the window at twice size")
+    jw, jh = L.Jei.SIZE
+    sx, sy = L.HOLE[0] - wx1 - L.Jei.CENTER[0], L.HOLE[1] - wy1 - L.Jei.CENTER[1]
+    if sx < 0 or sy < 0 or sx + jw > wx2 - wx1 or sy + jh > wy2 - wy1:
+        problem("JEI's page reaches past the space picture")
+    if L.Widgets.JEI_FRAME[2:] != (2 * jw, 2 * jh):
+        problem("JEI's frame isn't the page at twice size")
 
 
 def png_size(path):
@@ -114,7 +144,14 @@ def check_textures():
             texture(("effect/" if kind == "effect" else "entity/") + name)
     texture("entity/pylon", (64, 64))
     texture("entity/pylon_glow", (64, 64))
-    texture("gui/fusion_core", (L.W, L.Sheet.TEX_H))
+    for path, src in java_sources():
+        for name in re.findall(r'\bgui\("([a-z_]+)"\)', src):
+            texture("gui/" + name)
+    for rel, size in (("gui/fusion_frame", L.Frame.SIZE), ("gui/fusion_space", L.Space.SIZE), ("gui/fusion_widgets", L.Widgets.SIZE),
+                      ("effect/planets", L.Planets.SIZE)):
+        texture(rel, (size, size))
+        if not os.path.exists(os.path.join(ASSETS, "textures", rel + ".png.mcmeta")):
+            problem("%s isn't smoothed (no .mcmeta)" % rel)
     if not os.path.exists(os.path.join(ROOT, "src", "main", "resources", "singularityfusion_logo.png")):
         problem("missing the logo")
 
