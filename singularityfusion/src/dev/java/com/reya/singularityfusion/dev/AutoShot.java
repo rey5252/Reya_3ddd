@@ -39,11 +39,12 @@ import net.minecraftforge.network.NetworkHooks;
 import org.lwjgl.glfw.GLFW;
 
 /**
- * Dev-only: with SINGULARITYFUSION_AUTOSHOT=true the client makes a flat world, builds the structure (a core on its
- * casing floor, eight pylons round it holding the event horizon core's ingredients) and photographs it at night: empty,
- * half full and full (the singularity growing), close up and from below, by day; the core's screen; a fusion from its
- * beams to its flash and shock wave and the singularity shrinking after; the screen in Ukrainian; and quits. The
- * screenshots land in run/screenshots.
+ * Dev-only: with SINGULARITYFUSION_AUTOSHOT=true the client makes a flat world and builds the structure on camera at
+ * night: the core's casing floor going down, sparkling; eight pylons unfolding round it, holding the event horizon
+ * core's ingredients; the core waking, light running out to the pylons as the structure comes whole, the pylons
+ * swivelling to it. Then it photographs it empty, half full and full (the singularity growing), close up and from
+ * below, by day; the core's screen opening and open; a fusion from its beams to its flash and shock wave and the
+ * singularity shrinking after; the screen in Ukrainian; JEI's page; and quits. The screenshots land in run/screenshots.
  */
 @Mod.EventBusSubscriber(modid = SingularityFusion.MODID, value = Dist.CLIENT)
 public final class AutoShot {
@@ -66,10 +67,29 @@ public final class AutoShot {
     static {
         STEPS.add(new Step(20, AutoShot::setUp));
         STEPS.add(new Step(30, () -> time(18000L)));
+        // the core's casing floor going down, sparkling
+        STEPS.add(new Step(5, () -> eye(4.2D, 1.4D, 3.6D, 0.5D, -0.6D, 0.5D)));
+        STEPS.add(new Step(5, AutoShot::worldView));
+        STEPS.add(new Step(30, AutoShot::foundation));
+        STEPS.add(new Step(4, () -> shot("build_casing.png")));
+        // the pylons unfolding as they are placed
+        STEPS.add(new Step(30, () -> eye(9.5D, 1.6D, 6.2D, 4.4D, 2.2D, 2.0D)));
+        STEPS.add(new Step(20, AutoShot::pylons));
+        STEPS.add(new Step(16, () -> shot("build_pylon_1.png")));
+        STEPS.add(new Step(16, () -> shot("build_pylon_2.png")));
+        STEPS.add(new Step(12, () -> shot("build_pylon_3.png")));
+        STEPS.add(new Step(30, () -> shot("build_pylon_4.png")));
+        // the core: it wakes, light runs out to the pylons as the structure comes whole, and they swivel to it
+        STEPS.add(new Step(10, () -> eye(9.0D, 3.4D, 8.0D, 0.5D, 2.8D, 0.5D)));
+        STEPS.add(new Step(20, AutoShot::core));
+        STEPS.add(new Step(6, () -> shot("build_core_1.png")));
+        STEPS.add(new Step(10, () -> shot("build_core_2.png")));
+        STEPS.add(new Step(12, () -> shot("build_core_3.png")));
+        STEPS.add(new Step(5, () -> eye(9.5D, 1.6D, 6.2D, 4.4D, 2.2D, 2.0D)));
+        STEPS.add(new Step(60, () -> shot("build_pylons_aimed.png")));
         // empty: the structure stands, no singularity over it
         STEPS.add(new Step(5, () -> eye(11.0D, 2.6D, 9.5D, 0.5D, 4.2D, 0.5D)));
-        STEPS.add(new Step(5, AutoShot::worldView));
-        STEPS.add(new Step(80, () -> shot("structure_empty.png")));
+        STEPS.add(new Step(60, () -> shot("structure_empty.png")));
         // half full: it has grown to half its size; full: all of it, and all that goes on round it
         STEPS.add(new Step(5, () -> energy(0.5D)));
         STEPS.add(new Step(150, () -> shot("structure_half.png")));
@@ -179,10 +199,7 @@ public final class AutoShot {
 
     // ------------------------------------------------------------------ the scene
 
-    /**
-     * A floor of polished deepslate with a ring of seamed casing; the core on its casing floor; eight pylons on
-     * casing pedestals round it, each holding one of the event horizon core's ingredients; a collapsed star in the core.
-     */
+    /** A floor of polished deepslate with a ring of seamed casing, and the pylons' pedestals of runed casing. */
     private static void setUp() {
         MinecraftServer server = server();
         server.execute(() -> {
@@ -194,6 +211,15 @@ public final class AutoShot {
                     level.setBlockAndUpdate(CORE.offset(x, -2, z), floor.defaultBlockState());
                 }
             }
+            for (int[] p : PYLONS) level.setBlockAndUpdate(CORE.offset(p[0], -1, p[1]), SingularityFusion.VOID_CASING_RUNE.get().defaultBlockState());
+        });
+    }
+
+    /** The core's 3x3 floor of casing (each block sparkling as it is set). */
+    private static void foundation() {
+        MinecraftServer server = server();
+        server.execute(() -> {
+            ServerLevel level = server.overworld();
             for (int dx = -1; dx <= 1; dx++) {
                 for (int dz = -1; dz <= 1; dz++) {
                     Block casing = dx == 0 && dz == 0 ? SingularityFusion.VOID_CASING_RUNE.get()
@@ -201,15 +227,27 @@ public final class AutoShot {
                     level.setBlockAndUpdate(CORE.offset(dx, -1, dz), casing.defaultBlockState());
                 }
             }
-            level.setBlockAndUpdate(CORE, SingularityFusion.FUSION_CORE.get().defaultBlockState());
+        });
+    }
+
+    /** The eight pylons on their pedestals (each unfolding), each holding one of the event horizon core's ingredients. */
+    private static void pylons() {
+        MinecraftServer server = server();
+        server.execute(() -> {
+            ServerLevel level = server.overworld();
             for (int i = 0; i < PYLONS.length; i++) {
                 BlockPos at = CORE.offset(PYLONS[i][0], 0, PYLONS[i][1]);
-                level.setBlockAndUpdate(at.below(), SingularityFusion.VOID_CASING_RUNE.get().defaultBlockState());
                 level.setBlockAndUpdate(at, SingularityFusion.GRAVITON_PYLON.get().defaultBlockState());
                 if (level.getBlockEntity(at) instanceof GravitonPylonBlockEntity pylon) pylon.setItem(new ItemStack(INGREDIENTS[i]));
             }
-            onCore(core -> core.items().setStackInSlot(FusionCoreBlockEntity.CATALYST, new ItemStack(SingularityFusion.COLLAPSED_STAR.get())));
         });
+    }
+
+    /** The core on its floor (it wakes), a collapsed star in it. */
+    private static void core() {
+        MinecraftServer server = server();
+        server.execute(() -> server.overworld().setBlockAndUpdate(CORE, SingularityFusion.FUSION_CORE.get().defaultBlockState()));
+        onCore(core -> core.items().setStackInSlot(FusionCoreBlockEntity.CATALYST, new ItemStack(SingularityFusion.COLLAPSED_STAR.get())));
     }
 
     private static void onCore(Consumer<FusionCoreBlockEntity> action) {

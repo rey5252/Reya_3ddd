@@ -27,10 +27,15 @@ import org.joml.Quaternionf;
 
 /**
  * A graviton pylon. From a socket on its plinth a dark engraved shaft rises, aimed at its core's singularity (straight
- * up while it serves none), its glyphs glowing brighter the fuller the core; five rings float round its upper shaft,
- * tilted and turning, a wave of light running up them; a crystal at its point, and its ingredient floating beyond. In
- * a fusion the rings spread and spin fast, and the ingredient trembles, then leaves for the singularity in its turn
- * (the core's renderer flies it there).
+ * up while it serves none, swivelling smoothly when that changes), its glyphs glowing brighter the fuller the core;
+ * five rings float round its upper shaft, tilted and turning, a wave of light running up them; a crystal at its point,
+ * and its ingredient floating beyond. Now and then a gleam runs up it. In a fusion the rings spread and spin fast, the
+ * gleams come quickly, and the ingredient trembles, then leaves for the singularity in its turn (the core's renderer
+ * flies it there).
+ * <p>
+ * Placed, it unfolds: its collar rises out of the socket, the shaft's pieces slide out one out of the other, the neck,
+ * the crystal; the rings open out of the shaft one after another and start to turn; the crystal lights with a flash,
+ * a gleam races up it and its ingredient rises to its place. Only then does it swivel to its singularity.
  */
 public class GravitonPylonRenderer implements BlockEntityRenderer<GravitonPylonBlockEntity> {
     private static final ResourceLocation TEXTURE = Fx.entity("pylon"), GLOW_TEXTURE = Fx.entity("pylon_glow"), GLOW = Fx.effect("glow");
@@ -43,15 +48,23 @@ public class GravitonPylonRenderer implements BlockEntityRenderer<GravitonPylonB
             CRYSTAL = Fx.uv(REGIONS[6], SIZE), RING_FACE = Fx.uv(REGIONS[7], SIZE), RING_WALL = Fx.uv(REGIONS[8], SIZE),
             RING_INNER = Fx.uv(REGIONS[9], SIZE);
     /** The shaft's pieces along the pylon: half their width, from, to (blocks from the plinth's top). */
-    private static final float[][] SHAFT = {{0.27F, 0.22F, 0.98F}, {0.235F, 1.04F, 1.72F}, {0.2F, 1.78F, 2.4F}};
-    private static final float COLLAR_HALF = 0.31F, COLLAR_FROM = -0.08F, COLLAR_TO = 0.2F, NECK_HALF = 0.11F, NECK_TO = 2.62F;
+    private static final float[][] SHAFT = {{0.27F, 0.22F, FusionGeometry.PIECES[1]}, {0.235F, 1.04F, FusionGeometry.PIECES[2]},
+            {0.2F, 1.78F, FusionGeometry.PIECES[3]}};
+    private static final float COLLAR_HALF = 0.31F, COLLAR_FROM = -0.08F, COLLAR_TO = FusionGeometry.PIECES[0], NECK_HALF = 0.11F,
+            NECK_TO = FusionGeometry.PIECES[4];
+    /** Which piece of the shaft each ring rides on as it slides out (1 to 3: the shaft's pieces). */
+    private static final int[] RING_PIECE = {2, 2, 3, 3, 3};
+    private static final Vec3 UP = new Vec3(0.0D, 1.0D, 0.0D);
     private static final float SOCKET_HALF = 0.4F, SOCKET_HEIGHT = 0.12F;
     /** The rings round the upper shaft: where along it, their outer radius. */
     private static final float[][] RINGS = {{1.22F, 0.5F}, {1.48F, 0.47F}, {1.74F, 0.44F}, {2.0F, 0.41F}, {2.26F, 0.38F}};
     private static final float RING_WIDTH = 0.075F, RING_THICKNESS = 0.05F;
     private static final float CRYSTAL_HALF = 0.17F, CRYSTAL_HEIGHT = FusionGeometry.TIP - FusionGeometry.CRYSTAL;
-    /** How a pylon looks this frame. */
-    private record Look(float time, float spin, float lit, float spread, float charge) {
+    /**
+     * How a pylon looks this frame; `deploy` how far it has unfolded (0 to 1), `gleam` where along it a gleam is
+     * (blocks; far off it when there is none) and how bright.
+     */
+    private record Look(float time, float spin, float lit, float spread, float charge, float deploy, float gleam, float gleamK) {
     }
 
     private final ItemRenderer items;
@@ -63,7 +76,7 @@ public class GravitonPylonRenderer implements BlockEntityRenderer<GravitonPylonB
     @Override
     public void render(GravitonPylonBlockEntity be, float partialTick, PoseStack pose, MultiBufferSource buffers, int packedLight, int overlay) {
         Level level = be.getLevel();
-        if (level == null) return;
+        if (level == null || be.waiting()) return;
         BlockPos pos = be.getBlockPos();
         FusionCoreBlockEntity core = be.core() != null && level.getBlockEntity(be.core()) instanceof FusionCoreBlockEntity c ? c : null;
         BlockPos corePos = core == null ? null : core.getBlockPos();
@@ -87,41 +100,82 @@ public class GravitonPylonRenderer implements BlockEntityRenderer<GravitonPylonB
         float departure = index < 0 ? 2.0F : FusionGeometry.departure(index, core.pylons().size());
         boolean holding = !be.item().isEmpty() && !(fusing && progress >= departure);
 
-        Vec3 aim = FusionGeometry.aim(pos, corePos);
-        float scale = FusionGeometry.scale(pos, corePos);
+        // where it points swivels smoothly to its singularity, once it has unfolded far enough
+        float deploy = be.deploy(partialTick);
+        Vec3 goal = FusionGeometry.aim(pos, corePos);
+        float goalScale = FusionGeometry.scale(pos, corePos);
+        if (be.shownAim == null) {
+            be.shownAim = deploy < 1.0F ? UP : goal;
+            be.shownScale = deploy < 1.0F ? 1.0F : goalScale;
+        }
+        float follow = deploy < 0.9F ? 0.0F : 1.0F - (float) Math.exp(-dt * 2.2F);
+        Vec3 turned = be.shownAim.lerp(goal, follow);
+        double length = turned.length();
+        be.shownAim = length < 1.0E-3D ? goal : turned.scale(1.0D / length);
+        be.shownScale += (goalScale - be.shownScale) * follow;
+        Vec3 aim = be.shownAim;
+        float scale = be.shownScale;
         int light = LevelRenderer.getLightColor(level, pos.above());
-        Look look = new Look(time, be.spin, lit, spread, charge);
+
+        // a gleam runs up it now and then (quickly in a fusion), and once as it finishes unfolding
+        float gleam = -9.0F, gleamK = 0.0F;
+        if (deploy < 1.0F) {
+            float t = (deploy - FusionGeometry.DEPLOY_ITEM) / (1.0F - FusionGeometry.DEPLOY_ITEM);
+            if (t > 0.0F) {
+                gleam = -0.3F + 3.4F * t;
+                gleamK = 1.0F;
+            }
+        } else {
+            float period = fusing ? 26.0F : 96.0F, t = (time + Math.floorMod(pos.getX() * 7 + pos.getZ() * 13, 40)) % period / 30.0F;
+            if (t < 1.0F) {
+                gleam = -0.3F + 3.4F * t;
+                gleamK = 0.35F + 0.65F * lit;
+            }
+        }
+        // its glyphs light as it unfolds; the crystal flashes as it lights
+        float flash = Fx.smooth(FusionGeometry.DEPLOY_CRYSTAL - 0.02F, FusionGeometry.DEPLOY_CRYSTAL + 0.04F, deploy)
+                * (1.0F - Fx.smooth(FusionGeometry.DEPLOY_CRYSTAL + 0.04F, FusionGeometry.DEPLOY_CRYSTAL + 0.2F, deploy));
+        lit = lit * Fx.smooth(0.15F, 0.9F, deploy) + 0.8F * flash;
+        Look look = new Look(time, be.spin, lit, spread, charge, deploy, gleam, gleamK);
 
         // the socket on the plinth, then the pylon in a frame of its own (y along it): solid, and its glow over it
         VertexConsumer solid = buffers.getBuffer(RenderType.entityCutoutNoCull(TEXTURE));
         socket(pose, solid, false, look, light);
-        pylon(pose, solid, aim, scale, false, look, light);
+        pylon(pose, solid, aim, scale, false, look, light, false);
         VertexConsumer glyphs = buffers.getBuffer(RenderType.eyes(GLOW_TEXTURE));
         socket(pose, glyphs, true, look, light);
-        pylon(pose, glyphs, aim, scale, true, look, light);
+        pylon(pose, glyphs, aim, scale, true, look, light, false);
 
-        // light round the crystal and the socket
+        // the gleam running up it
+        if (gleamK > 0.0F) pylon(pose, buffers.getBuffer(RenderType.eyes(GLOW)), aim, scale, true, look, light, true);
+
+        // light round the crystal and the socket (the socket flaring as it starts to unfold)
         Vec3 base = new Vec3(0.5D, 1.0D, 0.5D);
         Quaternionf camera = Minecraft.getInstance().getEntityRenderDispatcher().cameraOrientation();
         VertexConsumer glow = buffers.getBuffer(RenderType.eyes(GLOW));
         float pulse = 0.85F + 0.15F * Mth.sin(time * 0.31F);
-        float k = lit * pulse;
-        billboard(pose, glow, camera, base.add(aim.scale(FusionGeometry.CRYSTAL * scale)), (0.32F + 0.5F * lit) * scale, 0.5F * k, 0.2F * k,
-                0.95F * k);
-        billboard(pose, glow, camera, base.add(0.0D, 0.1D, 0.0D), 0.62F, 0.22F * k, 0.08F * k, 0.42F * k);
+        float k = lit * pulse * Fx.smooth(FusionGeometry.DEPLOY_CRYSTAL - 0.06F, FusionGeometry.DEPLOY_CRYSTAL, deploy);
+        float crystalAt = FusionGeometry.CRYSTAL - drop(deploy, 5);
+        billboard(pose, glow, camera, base.add(aim.scale(crystalAt * scale)), (0.32F + 0.5F * lit + 0.9F * flash) * scale, 0.5F * k + flash,
+                0.2F * k + 0.8F * flash, 0.95F * k + flash);
+        float foot = Fx.smooth(0.0F, 0.06F, deploy) * (1.0F - Fx.smooth(0.12F, 0.4F, deploy));
+        k = lit * pulse + 1.2F * foot;
+        billboard(pose, glow, camera, base.add(0.0D, 0.1D, 0.0D), 0.62F + 0.5F * foot, 0.22F * k, 0.08F * k, 0.42F * k);
 
-        // the ingredient, floating beyond the point (trembling just before it leaves)
-        if (holding) {
-            Vec3 at = base.add(aim.scale((FusionGeometry.ITEM + 0.05F * Mth.sin(time / 9.0F)) * scale));
+        // the ingredient, floating beyond the point (trembling just before it leaves; rising to it as the pylon unfolds)
+        float rise = out(deploy, FusionGeometry.DEPLOY_ITEM, 1.0F);
+        if (holding && rise > 0.0F) {
+            Vec3 at = base.add(aim.scale((FusionGeometry.ITEM - 0.6F * (1.0F - rise) + 0.05F * Mth.sin(time / 9.0F)) * scale));
             float shake = fusing ? Fx.smooth(departure - 0.1F, departure, progress) * 0.05F : 0.0F;
             if (shake > 0.0F) {
                 at = at.add(Mth.sin(time * 3.7F) * shake, Mth.sin(time * 4.3F + 1.0F) * shake, Mth.sin(time * 3.1F + 2.0F) * shake);
             }
             billboard(pose, glow, camera, at, 0.34F, 0.3F * k, 0.13F * k, 0.5F * k);
+            float size = 1.1F * Math.min(1.0F, rise);
             pose.pushPose();
-            pose.translate(at.x, at.y - 0.125D * 1.1D, at.z);
+            pose.translate(at.x, at.y - 0.125D * size, at.z);
             pose.mulPose(Axis.YP.rotationDegrees(time * 4.0F % 360.0F));
-            pose.scale(1.1F, 1.1F, 1.1F);
+            pose.scale(size, size, size);
             items.renderStatic(be.item(), ItemDisplayContext.GROUND, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, pose, buffers, level,
                     (int) pos.asLong());
             pose.popPose();
@@ -135,11 +189,36 @@ public class GravitonPylonRenderer implements BlockEntityRenderer<GravitonPylonB
                 1.0F + SOCKET_HEIGHT + e, 0.5F + SOCKET_HALF + e, SOCKET_SIDE, COLLAR_END, k, k, k, 1.0F, glow ? LightTexture.FULL_BRIGHT : light);
     }
 
+    /** How far a part has come out by `d`, through its window from `from` to `to`: eased, overshooting a little as it stops. */
+    private static float out(float d, float from, float to) {
+        float t = Mth.clamp((d - from) / (to - from), 0.0F, 1.0F);
+        float u = t - 1.0F;
+        return 1.0F + 2.2F * u * u * u + 1.2F * u * u;
+    }
+
+    /**
+     * How far down a piece still is as the pylon unfolds (0 once it is out): the collar (0) rises out of the socket, each
+     * of the shaft's pieces (1 to 3) slides out of the one below it, the neck (4) out of the last, the crystal (5) up
+     * from the neck; each carries the ones still inside it.
+     */
+    private static float drop(float d, int piece) {
+        if (d >= 1.0F) return 0.0F;
+        float total = 0.0F;
+        for (int i = 0; i <= Math.min(piece, 4); i++) {
+            float from = FusionGeometry.DEPLOY_PIECES[i];
+            float length = i == 0 ? 0.3F : FusionGeometry.PIECES[i] - FusionGeometry.PIECES[i - 1];
+            total += (1.0F - out(d, from, from + FusionGeometry.DEPLOY_PART)) * length;
+        }
+        if (piece == 5) total += (1.0F - out(d, FusionGeometry.DEPLOY_CRYSTAL - 0.12F, FusionGeometry.DEPLOY_CRYSTAL + 0.06F)) * 0.45F;
+        return total;
+    }
+
     /**
      * The pylon from its foot to its crystal, turned to point along `aim`: its collar, shaft and neck, the rings and the
-     * crystal. Drawn twice: solid, lit by the world, then its glow (the same pieces a hair bigger, in what glows).
+     * crystal, each as far out as it has unfolded. Drawn twice: solid, lit by the world, then its glow (the same pieces
+     * a hair bigger, in what glows); and, for `gleam`, the band of light running up it.
      */
-    private static void pylon(PoseStack pose, VertexConsumer vc, Vec3 aim, float scale, boolean glow, Look look, int light) {
+    private static void pylon(PoseStack pose, VertexConsumer vc, Vec3 aim, float scale, boolean glow, Look look, int light, boolean gleam) {
         pose.pushPose();
         pose.translate(0.5D, 1.0D, 0.5D);
         pose.mulPose(Axis.YP.rotation((float) Math.atan2(aim.x, aim.z)));
@@ -147,29 +226,41 @@ public class GravitonPylonRenderer implements BlockEntityRenderer<GravitonPylonB
         pose.scale(scale, scale, scale);
         Matrix4f m = pose.last().pose();
         Matrix3f n = pose.last().normal();
+        float d = look.deploy;
+        if (gleam) {
+            gleam(vc, m, n, look, d);
+            pose.popPose();
+            return;
+        }
         float e = glow ? 0.004F : 0.0F;
         int lightHere = glow ? LightTexture.FULL_BRIGHT : light;
 
         float k = glow ? look.lit * 0.8F : 1.0F;
-        Fx.box(vc, m, n, -COLLAR_HALF - e, COLLAR_FROM - e, -COLLAR_HALF - e, COLLAR_HALF + e, COLLAR_TO + e, COLLAR_HALF + e, COLLAR_SIDE, COLLAR_END,
-                k, k, k, 1.0F, lightHere);
+        float y = -drop(d, 0);
+        Fx.box(vc, m, n, -COLLAR_HALF - e, COLLAR_FROM + y - e, -COLLAR_HALF - e, COLLAR_HALF + e, COLLAR_TO + y + e, COLLAR_HALF + e, COLLAR_SIDE,
+                COLLAR_END, k, k, k, 1.0F, lightHere);
         for (int i = 0; i < SHAFT.length; i++) {
             // the glyphs' light rises up the shaft in a slow wave
             k = glow ? look.lit * (0.68F + 0.32F * Mth.sin(look.time * 0.2F - i * 1.1F)) : 1.0F;
             float h = SHAFT[i][0] + e;
-            Fx.box(vc, m, n, -h, SHAFT[i][1] - e, -h, h, SHAFT[i][2] + e, h, SHAFT_SIDE, SHAFT_END, k, k, k, 1.0F, lightHere);
+            y = -drop(d, i + 1);
+            Fx.box(vc, m, n, -h, SHAFT[i][1] + y - e, -h, h, SHAFT[i][2] + y + e, h, SHAFT_SIDE, SHAFT_END, k, k, k, 1.0F, lightHere);
         }
         k = glow ? look.lit : 1.0F;
         float neck = NECK_HALF + e;
-        Fx.box(vc, m, n, -neck, SHAFT[2][2] - 0.02F, -neck, neck, NECK_TO + e, neck, NECK_SIDE, SHAFT_END, k, k, k, 1.0F, lightHere);
+        y = -drop(d, 4);
+        Fx.box(vc, m, n, -neck, SHAFT[2][2] - 0.02F + y, -neck, neck, NECK_TO + y + e, neck, NECK_SIDE, SHAFT_END, k, k, k, 1.0F, lightHere);
 
         for (int i = 0; i < RINGS.length; i++) {
+            // each opens out of the shaft in its turn, flat, and tilts and turns as it opens
+            float from = FusionGeometry.DEPLOY_RINGS + i * FusionGeometry.DEPLOY_RING_STEP, open = out(d, from, from + FusionGeometry.DEPLOY_PART);
             float wave = 0.5F + 0.5F * Mth.sin(look.time * 0.22F - i * 0.9F);
-            k = glow ? look.lit * (0.4F + 0.6F * wave) : 1.0F;
-            float along = RINGS[i][0] + (i - 2) * 0.08F * look.spread + 0.02F * Mth.sin(look.time * 0.09F + i * 1.7F);
-            float ro = RINGS[i][1] + e, ri = RINGS[i][1] - RING_WIDTH - e, half = RING_THICKNESS * 0.5F + e;
+            k = glow ? look.lit * (0.4F + 0.6F * wave) * Math.min(1.0F, open) : 1.0F;
+            float along = RINGS[i][0] - drop(d, RING_PIECE[i]) + (i - 2) * 0.08F * look.spread + 0.02F * Mth.sin(look.time * 0.09F + i * 1.7F);
+            float size = 0.3F + 0.7F * open;
+            float ro = RINGS[i][1] * size + e, ri = Math.max(0.02F, RINGS[i][1] * size - RING_WIDTH) - e, half = RING_THICKNESS * 0.5F + e;
             float precess = look.spin * (i % 2 == 0 ? 1.0F : -1.25F) + i * 1.3F;
-            float tilt = (0.09F + 0.13F * look.charge + 0.2F * look.spread) * (0.7F + 0.075F * ((i * 37) % 5));
+            float tilt = (0.09F + 0.13F * look.charge + 0.2F * look.spread) * (0.7F + 0.075F * ((i * 37) % 5)) * Mth.clamp(open, 0.0F, 1.0F);
             pose.pushPose();
             pose.translate(0.0F, along, 0.0F);
             pose.mulPose(Axis.YP.rotation(precess));
@@ -180,14 +271,34 @@ public class GravitonPylonRenderer implements BlockEntityRenderer<GravitonPylonB
             pose.popPose();
         }
 
-        // the crystal glows on its own
+        // the crystal glows on its own, popping out as it lights
+        float grown = 0.25F + 0.75F * out(d, FusionGeometry.DEPLOY_CRYSTAL - 0.1F, FusionGeometry.DEPLOY_CRYSTAL + 0.1F);
         k = glow ? 0.35F + 0.65F * look.lit : 1.0F;
         pose.pushPose();
+        pose.translate(0.0F, -drop(d, 5), 0.0F);
         pose.mulPose(Axis.YP.rotation(look.time * 0.05F % (Fx.PI * 2.0F)));
-        Fx.crystal(vc, pose.last().pose(), pose.last().normal(), FusionGeometry.CRYSTAL, CRYSTAL_HALF + e, CRYSTAL_HEIGHT + e, CRYSTAL, k, k, k, 1.0F,
+        Fx.crystal(vc, pose.last().pose(), pose.last().normal(), FusionGeometry.CRYSTAL, (CRYSTAL_HALF + e) * grown, (CRYSTAL_HEIGHT + e) * grown,
+                CRYSTAL, k, k, k, 1.0F, LightTexture.FULL_BRIGHT);
+        pose.popPose();
+        pose.popPose();
+    }
+
+    /**
+     * A gleam: a band of light round the pylon at `look.gleam` along it, a little wider than the piece it is on
+     * (drawn with the soft glow, its middle column, so it fades up and down the pylon and not round it).
+     */
+    private static void gleam(VertexConsumer vc, Matrix4f m, Matrix3f n, Look look, float d) {
+        float at = look.gleam, reach = 0.16F;
+        float from = Math.max(COLLAR_FROM, at - reach), to = Math.min(NECK_TO - drop(d, 4), at + reach);
+        if (to <= from) return;
+        float half = at < COLLAR_TO ? COLLAR_HALF : at < SHAFT[0][2] ? SHAFT[0][0] : at < SHAFT[1][2] ? SHAFT[1][0] : at < SHAFT[2][2] ? SHAFT[2][0] : NECK_HALF;
+        half += 0.02F;
+        float v1 = (from - (at - reach)) / (2.0F * reach), v2 = (to - (at - reach)) / (2.0F * reach);
+        float k = look.gleamK * Fx.smooth(-0.3F, 0.1F, at) * (1.0F - Fx.smooth(NECK_TO - 0.2F, NECK_TO + 0.3F, at));
+        if (k <= 0.004F) return;
+        // the sides' v runs from the top down
+        Fx.box(vc, m, n, -half, from, -half, half, to, half, 0.5F, 1.0F - v2, 0.5F, 1.0F - v1, 0.0F, 0.0F, 0.0F, 0.0F, 0.85F * k, 0.7F * k, k, 1.0F,
                 LightTexture.FULL_BRIGHT);
-        pose.popPose();
-        pose.popPose();
     }
 
     /** A glow facing the camera at a point (block coordinates), `size` either side, of colour (r, g, b) added. */

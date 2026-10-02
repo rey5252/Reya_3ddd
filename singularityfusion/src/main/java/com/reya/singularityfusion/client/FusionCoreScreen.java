@@ -49,6 +49,8 @@ public class FusionCoreScreen extends AbstractContainerScreen<FusionCoreMenu> {
     private static final int TEX = Layouts.WIDGETS_TEX;
     /** The singularity: its shadow's radius when the core is full (pixels), its middle. */
     private static final float HOLE_R = 13.0F, HX = Layouts.HOLE[0], HY = Layouts.HOLE[1];
+    /** How far in front of the slots' items the glass over them is drawn (they are drawn 250 in front, and a little deep). */
+    private static final float OVER_ITEMS = 300.0F;
 
     /** A planet on its orbit round the singularity: the orbit's half width and height, its tilt, its period (seconds). */
     private record Orbit(int[] body, float a, float b, float tilt, float period, float size, float phase, float ar, float ag, float ab, boolean moon) {
@@ -219,6 +221,7 @@ public class FusionCoreScreen extends AbstractContainerScreen<FusionCoreMenu> {
         int[] w = Layouts.WINDOW;
         float mid = (w[1] + w[3]) * 0.5F, half = (w[3] - w[1]) * 0.5F * easeOut(open / 0.6F);
         int top = Mth.floor(mid - half), bottom = Mth.ceil(mid + half);
+        if (bottom - top < w[3] - w[1]) shutters(g, w, top, bottom);
         if (bottom - top < 1) return;
         g.enableScissor(leftPos + w[0], topPos + top, leftPos + w[2], topPos + bottom);
         float c = shownCharge, appear = Fx.smooth(0.2F, 0.85F, open);
@@ -260,6 +263,35 @@ public class FusionCoreScreen extends AbstractContainerScreen<FusionCoreMenu> {
             Cosmos2D.beam(w[0], bottom, w[2], bottom, 6.0F, 0.75F * edge, 0.55F * edge, edge);
             Cosmos2D.end();
         }
+    }
+
+    /** The window's shutters, drawing back from its middle as it opens: plates of dark metal, seams across them. */
+    private static void shutters(GuiGraphics g, int[] w, int top, int bottom) {
+        Cosmos2D.shade(g);
+        float mid = (w[1] + w[3]) * 0.5F;
+        shutter(w[0], w[1], w[2], top, 0.16F, 0.14F, 0.23F, 0.06F, 0.05F, 0.09F);
+        shutter(w[0], bottom, w[2], w[3], 0.06F, 0.05F, 0.09F, 0.13F, 0.11F, 0.19F);
+        for (int k = 1; k < 12; k++) {
+            float up = top - 9.0F * k, down = bottom + 9.0F * k;
+            if (up > w[1]) {
+                Cosmos2D.rect(w[0], up - 1.0F, w[2], up, 0.02F, 0.015F, 0.04F, 0.9F);
+                Cosmos2D.rect(w[0], up, w[2], up + 1.0F, 0.3F, 0.27F, 0.4F, 0.5F);
+            }
+            if (down < w[3] && down > mid) {
+                Cosmos2D.rect(w[0], down - 1.0F, w[2], down, 0.02F, 0.015F, 0.04F, 0.9F);
+                Cosmos2D.rect(w[0], down, w[2], down + 1.0F, 0.3F, 0.27F, 0.4F, 0.5F);
+            }
+        }
+        Cosmos2D.end();
+    }
+
+    /** A shutter's plate from (x1, y1) to (x2, y2), its colour from (r1, g1, b1) at the top to (r2, g2, b2) at the bottom. */
+    private static void shutter(float x1, float y1, float x2, float y2, float r1, float g1, float b1, float r2, float g2, float b2) {
+        if (y2 <= y1) return;
+        Cosmos2D.point(x1, y1, r1, g1, b1, 1.0F);
+        Cosmos2D.point(x1, y2, r2, g2, b2, 1.0F);
+        Cosmos2D.point(x2, y2, r2, g2, b2, 1.0F);
+        Cosmos2D.point(x2, y1, r1, g1, b1, 1.0F);
     }
 
     /** The orbits, faint, pulses of light running round them the way the planets go (brighter on their near halves). */
@@ -321,7 +353,7 @@ public class FusionCoreScreen extends AbstractContainerScreen<FusionCoreMenu> {
                 if (progress >= leaves + FusionGeometry.FLIGHT) continue;
                 k = progress < FusionGeometry.BEAMS_IN ? 0.3F : 1.0F;
             } else {
-                k = 0.32F * Fx.smooth(0.05F, 0.6F, shownCharge);
+                k = 0.45F * Fx.smooth(0.05F, 0.6F, shownCharge);
             }
             float[] s = rim(f);
             boolean left = f < Layouts.PYLONS.length / 2;
@@ -490,7 +522,7 @@ public class FusionCoreScreen extends AbstractContainerScreen<FusionCoreMenu> {
             }
         }
         float[] cat = centre(Layouts.CATALYST), out = centre(Layouts.OUTPUT);
-        float catPop = pop((open - 0.42F) / 0.35F), outPop = pop((open - 0.5F) / 0.35F);
+        float catPop = pop((open - 0.12F) / 0.35F), outPop = pop((open - 0.17F) / 0.35F);
         boolean hasCatalyst = !menu.getSlot(FusionCoreMenu.CATALYST).getItem().isEmpty(), hasOutput = !menu.getSlot(FusionCoreMenu.OUTPUT).getItem().isEmpty();
 
         Cosmos2D.light(g, Cosmos2D.WIDGETS);
@@ -547,7 +579,7 @@ public class FusionCoreScreen extends AbstractContainerScreen<FusionCoreMenu> {
     /** The start orb: its ring turning round it (fast in a fusion), its glow breathing; it swells under the mouse and ripples when pressed. */
     private void orb(GuiGraphics g, float time, float open) {
         float cx = Layouts.START[0] + Layouts.ORB * 0.5F, cy = Layouts.START[1] + Layouts.ORB * 0.5F;
-        float scale = pop((open - 0.45F) / 0.4F) * (1.0F + 0.07F * hover);
+        float scale = pop((open - 0.2F) / 0.4F) * (1.0F + 0.07F * hover);
         if (scale <= 0.0F) return;
         int state = Math.max(0, orbState);
         float pulse = 0.5F + 0.5F * Mth.sin(time * 3.0F);
@@ -670,7 +702,11 @@ public class FusionCoreScreen extends AbstractContainerScreen<FusionCoreMenu> {
         FusionCoreBlockEntity core = menu.core();
         float time = clock(), open = sinceOpen();
         float partialTick = minecraft == null ? 0.0F : minecraft.getFrameTime();
+        // over the slots' items: they leave the depth test on, so this goes in front of them
+        g.pose().pushPose();
+        g.pose().translate(0.0F, 0.0F, OVER_ITEMS);
         glass(g, core, time, open, partialTick);
+        g.pose().popPose();
         title(g, time, open);
         int a = alpha(Fx.smooth(0.3F, 0.6F, open));
         if (a >= 8) g.drawString(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, a << 24 | TEXT_DIM, false);
@@ -706,7 +742,7 @@ public class FusionCoreScreen extends AbstractContainerScreen<FusionCoreMenu> {
             float s = Layouts.PORTHOLE * portPop(f, open);
             Cosmos2D.sprite(TEX, Layouts.W_PORT_GLOSS, c[0], c[1], s, s, 0.0F, 1.0F);
         }
-        float catPop = pop((open - 0.42F) / 0.35F) * Layouts.PORTHOLE, outPop = pop((open - 0.5F) / 0.35F) * Layouts.PORTHOLE;
+        float catPop = pop((open - 0.12F) / 0.35F) * Layouts.PORTHOLE, outPop = pop((open - 0.17F) / 0.35F) * Layouts.PORTHOLE;
         Cosmos2D.sprite(TEX, Layouts.W_PORT_GLOSS, cat[0], cat[1], catPop, catPop, 0.0F, 1.0F);
         Cosmos2D.sprite(TEX, Layouts.W_PORT_GLOSS, out[0], out[1], outPop, outPop, 0.0F, 1.0F);
         Cosmos2D.light(g, Cosmos2D.WIDGETS);
@@ -724,7 +760,7 @@ public class FusionCoreScreen extends AbstractContainerScreen<FusionCoreMenu> {
         if (a < 8) return;
         int[] t = Layouts.TITLE;
         String text = title.getString();
-        int width = font.width(text), max = t[2] - t[0] - 26;
+        int width = font.width(text), max = t[2] - t[0] - 16;
         float scale = width > max ? Math.max(0.5F, max / (float) width) : 1.0F;
         float cx = (t[0] + t[2]) * 0.5F, y = t[1] + (t[3] - t[1] - 8) / 2.0F + 1.0F;
         Cosmos2D.light(g, Cosmos2D.WIDGETS);

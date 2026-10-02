@@ -64,8 +64,8 @@ public class FusionCoreBlockEntity extends BlockEntity implements MenuProvider {
     public static final int CLEAR_HEIGHT = 7;
     /** What a core must stand on: the void casings (data/singularityfusion/tags/blocks/foundation.json). */
     public static final TagKey<Block> FOUNDATION = BlockTags.create(new ResourceLocation(SingularityFusion.MODID, "foundation"));
-    /** Block events the clients see (BlockEntity.triggerEvent). */
-    public static final int EVENT_START = 1, EVENT_DONE = 2, EVENT_ABORT = 3;
+    /** Block events the clients see (BlockEntity.triggerEvent): a fusion starts, ends, stops; the core is placed and wakes. */
+    public static final int EVENT_START = 1, EVENT_DONE = 2, EVENT_ABORT = 3, EVENT_AWAKEN = 4;
 
     private final ItemStackHandler items = new ItemStackHandler(2) {
         @Override
@@ -97,10 +97,12 @@ public class FusionCoreBlockEntity extends BlockEntity implements MenuProvider {
     private long capacity = -1;
 
     // the client's own: when it last saw a fusion start and end, how far its picture of the charge has caught up, and
-    // how far the singularity's disk has turned
+    // how far the singularity's disk has turned; when it woke (placed) and when its structure last came whole
     public long startedAt = Long.MIN_VALUE, doneAt = Long.MIN_VALUE, abortedAt = Long.MIN_VALUE;
     public float shownCharge, spin;
     public long lastFrameNanos;
+    public long awakenedAt = Long.MIN_VALUE, formedAt = Long.MIN_VALUE;
+    private boolean synced;
 
     public FusionCoreBlockEntity(BlockPos pos, BlockState state) {
         super(SingularityFusion.FUSION_CORE_BE.get(), pos, state);
@@ -230,6 +232,23 @@ public class FusionCoreBlockEntity extends BlockEntity implements MenuProvider {
             Vec3 d = direction(random);
             level.addParticle(ParticleTypes.REVERSE_PORTAL, holeX() + d.x * r, holeY() + d.y * r, holeZ() + d.z * r, d.x * 0.6D, d.y * 0.6D,
                     d.z * 0.6D);
+        }
+    }
+
+    /** The core waking as it is placed: a deep hum, light pouring up out of it, void rushing out across the floor. */
+    private void awaken(Level level) {
+        RandomSource random = level.random;
+        double x = worldPosition.getX() + 0.5D, y = worldPosition.getY(), z = worldPosition.getZ() + 0.5D;
+        level.playLocalSound(x, y + 1.0D, z, SoundEvents.BEACON_ACTIVATE, SoundSource.BLOCKS, 0.9F, 1.2F, false);
+        level.playLocalSound(x, y + 1.0D, z, SoundEvents.RESPAWN_ANCHOR_CHARGE, SoundSource.BLOCKS, 0.6F, 1.35F, false);
+        for (int i = 0; i < 28; i++) {
+            double a = 2.0D * Math.PI * i / 28.0D;
+            level.addParticle(ParticleTypes.REVERSE_PORTAL, x + 0.6D * Math.cos(a), y + 0.05D, z + 0.6D * Math.sin(a), 0.16D * Math.cos(a), 0.01D,
+                    0.16D * Math.sin(a));
+        }
+        for (int i = 0; i < 16; i++) {
+            level.addParticle(ParticleTypes.END_ROD, x + (random.nextDouble() - 0.5D) * 0.5D, y + 1.05D, z + (random.nextDouble() - 0.5D) * 0.5D,
+                    (random.nextDouble() - 0.5D) * 0.04D, 0.12D + random.nextDouble() * 0.2D, (random.nextDouble() - 0.5D) * 0.04D);
         }
     }
 
@@ -446,10 +465,14 @@ public class FusionCoreBlockEntity extends BlockEntity implements MenuProvider {
 
     @Override
     public boolean triggerEvent(int id, int param) {
-        if (id != EVENT_START && id != EVENT_DONE && id != EVENT_ABORT) return super.triggerEvent(id, param);
+        if (id != EVENT_START && id != EVENT_DONE && id != EVENT_ABORT && id != EVENT_AWAKEN) return super.triggerEvent(id, param);
         if (level != null && level.isClientSide) {
             long now = level.getGameTime();
-            if (id == EVENT_START) {
+            if (id == EVENT_AWAKEN) {
+                awakenedAt = now;
+                if (status.formed()) formedAt = now;
+                awaken(level);
+            } else if (id == EVENT_START) {
                 startedAt = now;
                 craftTicks = 0;
             } else if (id == EVENT_DONE) {
@@ -492,7 +515,17 @@ public class FusionCoreBlockEntity extends BlockEntity implements MenuProvider {
     private void readShared(CompoundTag tag) {
         energy = tag.getLong("Energy");
         capacity = tag.getLong("Cap");
+        boolean wasFormed = status.formed();
         status = FusionStatus.byId(tag.getByte("Status"));
+        // the structure has just come whole (not merely come into view whole): light runs out to its pylons
+        boolean justPlaced = awakenedAt != Long.MIN_VALUE && level != null && level.getGameTime() - awakenedAt < 40L;
+        if ((synced || justPlaced) && !wasFormed && status.formed() && level != null && level.isClientSide) {
+            formedAt = level.getGameTime();
+            double x = worldPosition.getX() + 0.5D, y = worldPosition.getY() + 1.0D, z = worldPosition.getZ() + 0.5D;
+            level.playLocalSound(x, y, z, SoundEvents.BEACON_POWER_SELECT, SoundSource.BLOCKS, 0.7F, 1.4F, false);
+            level.playLocalSound(x, y, z, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.BLOCKS, 1.2F, 0.6F, false);
+        }
+        synced = true;
         pylons.clear();
         for (long at : tag.getLongArray("Pylons")) pylons.add(BlockPos.of(at));
         craftTicks = tag.getInt("Craft");

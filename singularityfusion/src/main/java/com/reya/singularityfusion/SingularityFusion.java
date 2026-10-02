@@ -1,6 +1,7 @@
 package com.reya.singularityfusion;
 
 import com.mojang.logging.LogUtils;
+import com.reya.singularityfusion.block.CasingBlock;
 import com.reya.singularityfusion.block.CreativeCellBlock;
 import com.reya.singularityfusion.block.CreativeCellBlockEntity;
 import com.reya.singularityfusion.block.FusionCoreBlock;
@@ -63,11 +64,11 @@ public class SingularityFusion {
     }
 
     /** The foundation and the build: dark engraved tiles, one with a glowing rune, one with a glowing seam. */
-    public static final RegistryObject<Block> VOID_CASING = BLOCKS.register("void_casing", () -> new Block(voidStone()));
+    public static final RegistryObject<Block> VOID_CASING = BLOCKS.register("void_casing", () -> new CasingBlock(voidStone()));
     public static final RegistryObject<Block> VOID_CASING_RUNE = BLOCKS.register("void_casing_rune",
-            () -> new Block(voidStone().lightLevel(s -> 7)));
+            () -> new CasingBlock(voidStone().lightLevel(s -> 7)));
     public static final RegistryObject<Block> VOID_CASING_SEAM = BLOCKS.register("void_casing_seam",
-            () -> new Block(voidStone().lightLevel(s -> 5)));
+            () -> new CasingBlock(voidStone().lightLevel(s -> 5)));
     public static final RegistryObject<Block> FUSION_CORE = BLOCKS.register("fusion_core",
             () -> new FusionCoreBlock(voidStone().strength(25.0F, 3600.0F).lightLevel(s -> s.getValue(FusionCoreBlock.LIT) ? 15 : 6)));
     public static final RegistryObject<Block> GRAVITON_PYLON = BLOCKS.register("graviton_pylon",

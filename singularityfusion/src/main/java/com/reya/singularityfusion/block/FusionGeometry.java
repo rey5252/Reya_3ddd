@@ -15,6 +15,18 @@ public final class FusionGeometry {
     public static final float HOLE_RADIUS = 1.5F;
     /** A pylon's parts, in blocks along it from its plinth's top: its crystal's middle and tip, and its ingredient. */
     public static final float CRYSTAL = 2.93F, TIP = 3.26F, ITEM = 3.70F;
+    /** Where a pylon's telescoping pieces end along it: its collar, its shaft's three pieces, its neck. */
+    public static final float[] PIECES = {0.2F, 0.98F, 1.72F, 2.4F, 2.62F};
+    /**
+     * A pylon unfolding as it is placed, as how far through it is (0 to 1; it takes DEPLOY_TICKS): when each piece
+     * starts sliding out (each taking DEPLOY_PART), when the first ring opens out (each next DEPLOY_RING_STEP later),
+     * when the crystal lights, when the ingredient rises to its place.
+     */
+    public static final float DEPLOY_TICKS = 56.0F, DEPLOY_PART = 0.22F, DEPLOY_RINGS = 0.5F, DEPLOY_RING_STEP = 0.06F, DEPLOY_CRYSTAL = 0.72F,
+            DEPLOY_ITEM = 0.86F;
+    public static final float[] DEPLOY_PIECES = {0.0F, 0.08F, 0.22F, 0.36F, 0.48F};
+    /** A core waking as it is placed, and its structure coming whole: how long their light lasts (ticks). */
+    public static final float AWAKEN_TICKS = 50.0F, FORMED_TICKS = 44.0F;
     /** A fusion's stages, as its progress (0 to 1): the beams light, the core's catalyst rises into the singularity... */
     public static final float BEAMS_IN = 0.12F, CATALYST_RISES = 0.18F, CATALYST_GONE = 0.34F;
     /** ...the pylons let go of their items one after another (each flying for FLIGHT), and the singularity collapses. */

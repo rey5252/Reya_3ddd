@@ -24,7 +24,7 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraftforge.network.NetworkHooks;
 
-/** The fusion core's block: lit while its singularity is there. Use it to open its screen. */
+/** The fusion core's block: lit while its singularity is there. Use it to open its screen. Placed, it wakes (the clients round it are told). */
 public class FusionCoreBlock extends BaseEntityBlock {
     public static final BooleanProperty LIT = BlockStateProperties.LIT;
 
@@ -54,6 +54,13 @@ public class FusionCoreBlock extends BaseEntityBlock {
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
         BlockEntityTicker<FusionCoreBlockEntity> ticker = level.isClientSide ? FusionCoreBlockEntity::clientTick : FusionCoreBlockEntity::serverTick;
         return createTickerHelper(type, SingularityFusion.FUSION_CORE_BE.get(), ticker);
+    }
+
+    @Override
+    @SuppressWarnings("deprecation")
+    public void onPlace(BlockState state, Level level, BlockPos pos, BlockState old, boolean moving) {
+        super.onPlace(state, level, pos, old, moving);
+        if (!level.isClientSide && !old.is(this)) level.blockEvent(pos, this, FusionCoreBlockEntity.EVENT_AWAKEN, 0);
     }
 
     @Override

@@ -48,7 +48,7 @@ public final class FusionPage {
         for (int i = 0; i < ingredients; i++) {
             int[] at = slot(i, ingredients);
             float ix = at[0] + 8.0F, iy = at[1] + 8.0F, dx = cx - ix, dy = cy - iy, len = Math.max(1.0F, Mth.sqrt(dx * dx + dy * dy));
-            Cosmos2D.stream(g, ix + dx / len * 11.0F, iy + dy / len * 11.0F, cx, cy, 0.25F, radius * charge * 1.15F, clock + i * 0.37F, 0.35F, i, 4, 0.75F,
+            Cosmos2D.stream(g, ix + dx / len * 11.0F, iy + dy / len * 11.0F, cx, cy, 0.25F, radius * charge * 1.15F, clock + i * 0.37F, 0.35F, i, 5, 1.0F,
                     0.72F, 0.48F, 1.0F);
         }
         g.disableScissor();

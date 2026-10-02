@@ -2,6 +2,7 @@ package com.reya.singularityfusion.block;
 
 import javax.annotation.Nullable;
 
+import com.reya.singularityfusion.SingularityFusion;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -14,12 +15,14 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 
 /**
  * A graviton pylon's plinth. Use it with an item to put one on it (an ingredient for the fusion), with an empty hand to
- * take it back.
+ * take it back. Placed, its pylon unfolds out of it (the clients round it are told).
  */
 public class GravitonPylonBlock extends BaseEntityBlock {
     public GravitonPylonBlock(Properties properties) {
@@ -35,6 +38,20 @@ public class GravitonPylonBlock extends BaseEntityBlock {
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new GravitonPylonBlockEntity(pos, state);
+    }
+
+    /** Only the client's ticks: the sounds and sparks of unfolding. */
+    @Nullable
+    @Override
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
+        return level.isClientSide ? createTickerHelper(type, SingularityFusion.GRAVITON_PYLON_BE.get(), GravitonPylonBlockEntity::clientTick) : null;
+    }
+
+    @Override
+    @SuppressWarnings("deprecation")
+    public void onPlace(BlockState state, Level level, BlockPos pos, BlockState old, boolean moving) {
+        super.onPlace(state, level, pos, old, moving);
+        if (!level.isClientSide && !old.is(this)) level.blockEvent(pos, this, GravitonPylonBlockEntity.EVENT_DEPLOY, 0);
     }
 
     @Override

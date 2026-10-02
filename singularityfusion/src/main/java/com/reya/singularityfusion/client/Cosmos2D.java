@@ -522,7 +522,7 @@ public final class Cosmos2D {
         for (int j = 1; j <= pieces; j++) {
             float t = end * j / pieces;
             float[] at = along(sx, sy, hx, hy, bend, t);
-            float k0 = 0.22F * k * Fx.smooth(0.0F, 0.15F, end * (j - 1) / pieces), k1 = 0.22F * k * Fx.smooth(0.0F, 0.15F, t);
+            float k0 = 0.28F * k * Fx.smooth(0.0F, 0.15F, end * (j - 1) / pieces), k1 = 0.28F * k * Fx.smooth(0.0F, 0.15F, t);
             line(last[0], last[1], at[0], at[1], 1.0F, r, gr, b, k0, k1);
             last = at;
         }
