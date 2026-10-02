@@ -48,8 +48,21 @@ class Sheet:
     BAR = (120, 272)            # the bars' fills: energy (10 x 122), progress (10 x 122)
     MASK = (144, 272)           # the viewport's ring and what is round it, its inside clear: drawn over the singularity
     MASK_SIZE = 2 * (VIEW_R + 4)
+    JEI = (0, 394)              # JEI's fusion page background (Jei.SIZE), under the bars
     REGIONS = [("start", 0, 272, 72, 18), ("pylon", 80, 272, 36, 18), ("bars", 120, 272, 20, 122),
-               ("mask", 144, 272, 2 * (VIEW_R + 4), 2 * (VIEW_R + 4))]
+               ("mask", 144, 272, 2 * (VIEW_R + 4), 2 * (VIEW_R + 4)), ("jei", 0, 394, 168, 118)]
+
+
+class Jei:
+    """JEI's page for a fusion: the ingredients on a ring round the catalyst (in a little viewport with the
+    singularity), an arrow to the output, the energy and time along the bottom."""
+    SIZE = (168, 118)
+    CENTER = (62, 54)           # the catalyst's middle, and the ring's
+    RING_R = 40                 # the ingredients' middles sit on this ring
+    VIEW_R = 22                 # the little viewport round the catalyst
+    ARROW = (118, 47)           # 22 x 15
+    OUTPUT = (146, 46)          # the output's item, top left
+    TEXT_Y = 106
 
 
 def java():
@@ -71,6 +84,9 @@ def java():
            "    public static final int[] SHEET_START = {%d, %d}, SHEET_PYLON = {%d, %d}, SHEET_BAR = {%d, %d}, SHEET_MASK = {%d, %d};\n"
            % (Sheet.START + Sheet.PYLON_FRAME + Sheet.BAR + Sheet.MASK),
            "    public static final int MASK_SIZE = %d;\n" % Sheet.MASK_SIZE,
+           "    public static final int[] SHEET_JEI = {%d, %d}, JEI = {%d, %d}, JEI_CENTER = {%d, %d}, JEI_OUTPUT = {%d, %d};\n"
+           % (Sheet.JEI + Jei.SIZE + Jei.CENTER + Jei.OUTPUT),
+           "    public static final int JEI_RING_R = %d, JEI_TEXT_Y = %d;\n" % (Jei.RING_R, Jei.TEXT_Y),
            "\n    private Layouts() {\n    }\n}\n"]
     return "".join(out)
 

@@ -24,7 +24,13 @@ final class Fx {
 
     static void vertex(VertexConsumer vc, Matrix4f m, Matrix3f n, float x, float y, float z, float u, float v, float r, float g, float b, float a,
                        int light) {
-        vc.vertex(m, x, y, z).color(r, g, b, a).uv(u, v).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(light).normal(n, 0.0F, 1.0F, 0.0F).endVertex();
+        vc.vertex(m, x, y, z).color(c(r), c(g), c(b), c(a)).uv(u, v).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(light).normal(n, 0.0F, 1.0F, 0.0F)
+                .endVertex();
+    }
+
+    /** A colour channel kept within 0 to 1: the vertex format packs it into a byte, and 1.05 would wrap round to nearly nothing. */
+    static float c(float v) {
+        return v < 0.0F ? 0.0F : Math.min(v, 1.0F);
     }
 
     /** A square of half-size s round (x, y) in the local x-y plane at z, seen from both sides, full bright. */
@@ -160,7 +166,8 @@ final class Fx {
 
     private static void corner(VertexConsumer vc, Matrix4f m, Matrix3f n, float x, float y, float z, float u, float v, float nx, float ny, float nz,
                                float r, float g, float b, float a, int light) {
-        vc.vertex(m, x, y, z).color(r, g, b, a).uv(u, v).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(light).normal(n, nx, ny, nz).endVertex();
+        vc.vertex(m, x, y, z).color(c(r), c(g), c(b), c(a)).uv(u, v).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(light).normal(n, nx, ny, nz)
+                .endVertex();
     }
 
     /** A region of a texture `size` pixels square, from pixel corners {x1, y1, x2, y2} to {u1, v1, u2, v2}. */
@@ -171,6 +178,10 @@ final class Fx {
     private static void face(VertexConsumer vc, Matrix4f m, Matrix3f n, float ax, float ay, float az, float bx, float by, float bz, float cx, float cy,
                              float cz, float dx, float dy, float dz, float u1, float v1, float u2, float v2, float nx, float ny, float nz, float r, float g,
                              float b, float a, int light) {
+        r = c(r);
+        g = c(g);
+        b = c(b);
+        a = c(a);
         vc.vertex(m, ax, ay, az).color(r, g, b, a).uv(u1, v1).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(light).normal(n, nx, ny, nz).endVertex();
         vc.vertex(m, bx, by, bz).color(r, g, b, a).uv(u1, v2).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(light).normal(n, nx, ny, nz).endVertex();
         vc.vertex(m, cx, cy, cz).color(r, g, b, a).uv(u2, v2).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(light).normal(n, nx, ny, nz).endVertex();

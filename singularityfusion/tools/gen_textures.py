@@ -1221,6 +1221,7 @@ def gui():
             d = math.hypot(i + 0.5 - size / 2, j + 0.5 - size / 2)
             alpha = clamp(d - (L.VIEW_R - 0.5))
             c.set(mx + i, my + j, (r, g, b), int(a * alpha))
+    jei_page(c)
     c.save(out("gui", "fusion_core.png"))
 
 
@@ -1231,6 +1232,117 @@ def sample(img, u, v, wrap=True):
     x = int(math.floor(u * w)) % w if wrap else min(w - 1, max(0, int(u * w)))
     y = min(h - 1, max(0, int(v * h)))
     return img.getpixel((x, y))[:3]
+
+
+def singularity(px, py, R, imgs, col, aura=0.55):
+    """The singularity's light at a point (px, py from its middle, y up) over a background colour, as the renderer
+    composes it: glows behind, the shadow, the tipped disk, the bent arcs and the photon ring."""
+    disk_img, ring_img, glow_img = imgs
+    tilt, din, dout = 0.2, 1.55, 3.3
+    sin_t = math.sin(tilt)
+    col = list(col)
+    rho = math.hypot(px, py)
+    inside = rho < R
+
+    def plus(rgb, k):
+        col[0] += rgb[0] * k
+        col[1] += rgb[1] * k * 0.94
+        col[2] += rgb[2] * k * 0.88
+    if inside:
+        col = [0.0, 0.0, 0.0]
+    else:
+        for gs, tint, kk in ((3.5 * R, (0.45, 0.29, 0.15), 0.42), (5.2 * R, (0.3, 0.09, 0.52), aura)):
+            if abs(px) < gs and abs(py) < gs:
+                g = sample(glow_img, (px / gs + 1) / 2, (1 - py / gs) / 2, False)
+                col[0] += g[0] * tint[0] * kk
+                col[1] += g[1] * tint[1] * kk
+                col[2] += g[2] * tint[2] * kk
+    dy = py / sin_t
+    r = math.hypot(px, dy)
+    if din * R <= r <= dout * R:
+        a = math.atan2(dy, px)
+        if not (math.sin(a) > 0 and inside):
+            t = (r / R - din) / (dout - din)
+            plus(sample(disk_img, (a % (2 * math.pi)) / (2 * math.pi) * 3 + 0.3, t),
+                 (1 + 0.3 * math.cos(a)) * (1 + 0.25 * max(0.0, -math.sin(a))))
+    if not inside:
+        phi = math.atan2(py, px) % (2 * math.pi)
+        if phi <= math.pi:
+            o = R * (1.46 + 0.14 * math.cos(phi) ** 2)
+            if 1.04 * R <= rho <= o:
+                plus(sample(disk_img, phi / math.pi * 1.5 + 0.3, (rho - 1.04 * R) / (o - 1.04 * R) * 0.62), 0.95 * (0.8 + 0.2 * math.sin(phi)))
+        else:
+            o = R * (1.03 + 0.24 * (0.7 + 0.3 * abs(math.sin(phi))))
+            if 1.03 * R <= rho <= o:
+                plus(sample(disk_img, (1 - (phi - math.pi) / math.pi) * 1.5 + 0.3, (rho - 1.03 * R) / (o - 1.03 * R) * 0.4), 0.5)
+        if 0.985 * R <= rho <= 1.1 * R:
+            plus(sample(ring_img, phi / (2 * math.pi) * 4, (rho - 0.985 * R) / (0.115 * R)), 1.05)
+    return col
+
+
+def jei_page(c):
+    """JEI's page for a fusion: void with a frame, an engraved ring the ingredients sit on, a little viewport round
+    the catalyst with the singularity in it, an arrow to the output."""
+    from PIL import Image
+    imgs = tuple(Image.open(out("effect", n + ".png")).convert("RGB") for n in ("disk", "ring", "glow"))
+    x0, y0 = L.Sheet.JEI
+    w, h = L.Jei.SIZE
+    cx, cy = x0 + L.Jei.CENTER[0], y0 + L.Jei.CENTER[1]
+    n = [Noise(4400 + i) for i in range(4)]
+    for y in range(y0, y0 + h):
+        for x in range(x0, x0 + w):
+            k = fbm(n, x / 30.0, y / 30.0, 4)
+            col = mix(VOID_1, VOID_2, k)
+            c.set(x, y, mix(col, PURPLE_DK, 0.12 * smooth(0.55, 0.85, k)))
+    c.frame(x0, y0, w, h, VOID_0)
+    c.bevel(x0 + 1, y0 + 1, w - 2, h - 2, VOID_4, VOID_0)
+    # the ring
+    rr = L.Jei.RING_R
+    for y in range(cy - rr - 3, cy + rr + 4):
+        for x in range(cx - rr - 3, cx + rr + 4):
+            d = math.hypot(x + 0.5 - cx, y + 0.5 - cy)
+            k = clamp(1.0 - abs(d - rr))
+            if k > 0.05:
+                c.set(x, y, mix(c.get(x, y), VOID_0, 0.8 * k))
+            k2 = clamp(1.0 - abs(d - rr - 1.0))
+            if k2 > 0.05:
+                c.set(x, y, mix(c.get(x, y), VOID_4, 0.5 * k2))
+    for t in range(24):
+        a = t / 24.0 * 2 * math.pi
+        c.set(int(cx + (rr - 3) * math.cos(a)), int(cy + (rr - 3) * math.sin(a)), PURPLE if t % 2 == 0 else (40, 26, 66))
+    # the viewport: stars, the singularity, a metal ring
+    vr = L.Jei.VIEW_R
+    stars = rng(91)
+    star_at = {}
+    for _ in range(40):
+        a = stars.random() * 2 * math.pi
+        d = math.sqrt(stars.random()) * (vr - 2)
+        star_at[(int(cx + d * math.cos(a)), int(cy + d * math.sin(a)))] = stars.random() ** 2
+    for y in range(cy - vr - 3, cy + vr + 3):
+        for x in range(cx - vr - 3, cx + vr + 3):
+            d = math.hypot(x + 0.5 - cx, y + 0.5 - cy)
+            if d < vr:
+                base = [3, 2, 8]
+                if (x, y) in star_at:
+                    b = star_at[(x, y)]
+                    base = [40 + 200 * b] * 3
+                col = singularity(x + 0.5 - cx, -(y + 0.5 - cy), 5.6, imgs, base, aura=0.4)
+                col = [v * (1.0 - 0.4 * smooth(vr * 0.7, vr, d)) for v in col]
+                c.set(x, y, tuple(min(255, int(v)) for v in col))
+            elif d < vr + 2.6:
+                ang = math.atan2(y + 0.5 - cy, x + 0.5 - cx)
+                lit = 0.5 + 0.5 * math.cos(ang + 2.35)
+                c.set(x, y, VOID_0 if d < vr + 0.7 or d > vr + 2.0 else mix(VOID_3, STEEL_HI, 0.15 + 0.5 * lit))
+    # the arrow to the output
+    ax, ay = x0 + 118, y0 + 47
+    for j in range(15):
+        for i in range(22):
+            head = i >= 13 and abs(j - 7) <= (21 - i)
+            shaft = i < 14 and 5 <= j <= 9
+            if head or shaft:
+                edge = (head and abs(j - 7) == (21 - i)) or (shaft and j in (5, 9) and i < 13 + (0 if j in (5, 9) else 1))
+                col = mix(PURPLE, PURPLE_HI, i / 21.0)
+                c.set(ax + i, ay + j, VOID_0 if edge else col)
 
 
 def logo():
@@ -1244,49 +1356,12 @@ def logo():
     stars = rng(5)
     neb = [Noise(3100 + i) for i in range(4)]
     cx, cy, R = w / 2, h / 2 - 6, 34.0
-    tilt, din, dout = 0.2, 1.55, 3.3
-    sin_t = math.sin(tilt)
+    imgs = (disk_img, ring_img, glow_img)
     for y in range(h):
         for x in range(w):
             k = fbm(neb, x / 60.0, y / 60.0, 4)
             col = [4 + 30 * smooth(0.5, 0.85, k), 3 + 10 * smooth(0.5, 0.85, k), 9 + 46 * smooth(0.5, 0.85, k)]
-            px, py = x + 0.5 - cx, -(y + 0.5 - cy)
-            rho = math.hypot(px, py)
-            inside = rho < R
-
-            def plus(rgb, k):
-                col[0] += rgb[0] * k
-                col[1] += rgb[1] * k * 0.94
-                col[2] += rgb[2] * k * 0.88
-            if inside:
-                col = [0.0, 0.0, 0.0]
-            else:
-                for gs, tint, kk in ((3.5 * R, (0.45, 0.29, 0.15), 0.42), (5.2 * R, (0.3, 0.09, 0.52), 0.55)):
-                    if abs(px) < gs and abs(py) < gs:
-                        g = sample(glow_img, (px / gs + 1) / 2, (1 - py / gs) / 2, False)
-                        col[0] += g[0] * tint[0] * kk
-                        col[1] += g[1] * tint[1] * kk
-                        col[2] += g[2] * tint[2] * kk
-            dy = py / sin_t
-            r = math.hypot(px, dy)
-            if din * R <= r <= dout * R:
-                a = math.atan2(dy, px)
-                if not (math.sin(a) > 0 and inside):
-                    t = (r / R - din) / (dout - din)
-                    plus(sample(disk_img, (a % (2 * math.pi)) / (2 * math.pi) * 3 + 0.3, t),
-                         (1 + 0.3 * math.cos(a)) * (1 + 0.25 * max(0.0, -math.sin(a))))
-            if not inside:
-                phi = math.atan2(py, px) % (2 * math.pi)
-                if phi <= math.pi:
-                    o = R * (1.46 + 0.14 * math.cos(phi) ** 2)
-                    if 1.04 * R <= rho <= o:
-                        plus(sample(disk_img, phi / math.pi * 1.5 + 0.3, (rho - 1.04 * R) / (o - 1.04 * R) * 0.62), 0.95 * (0.8 + 0.2 * math.sin(phi)))
-                else:
-                    o = R * (1.03 + 0.24 * (0.7 + 0.3 * abs(math.sin(phi))))
-                    if 1.03 * R <= rho <= o:
-                        plus(sample(disk_img, (1 - (phi - math.pi) / math.pi) * 1.5 + 0.3, (rho - 1.03 * R) / (o - 1.03 * R) * 0.4), 0.5)
-                if 0.985 * R <= rho <= 1.1 * R:
-                    plus(sample(ring_img, phi / (2 * math.pi) * 4, (rho - 0.985 * R) / (0.115 * R)), 1.05)
+            col = singularity(x + 0.5 - cx, -(y + 0.5 - cy), R, imgs, col)
             c.set(x, y, tuple(min(255, int(v)) for v in col))
     for _ in range(260):
         x, y = stars.randrange(w), stars.randrange(h)

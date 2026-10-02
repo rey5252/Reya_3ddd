@@ -8,6 +8,7 @@ import java.util.function.Consumer;
 import com.reya.singularityfusion.SingularityFusion;
 import com.reya.singularityfusion.block.FusionCoreBlockEntity;
 import com.reya.singularityfusion.block.GravitonPylonBlockEntity;
+import com.reya.singularityfusion.compat.JeiCompat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -32,6 +33,7 @@ import net.minecraft.world.level.levelgen.presets.WorldPresets;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.network.NetworkHooks;
 import org.lwjgl.glfw.GLFW;
@@ -78,6 +80,8 @@ public final class AutoShot {
         STEPS.add(new Step(30, () -> shot("hole_close.png")));
         STEPS.add(new Step(5, () -> eye(3.0D, 1.6D, 2.2D, 0.5D, 6.0D, 0.5D)));
         STEPS.add(new Step(30, () -> shot("hole_from_below.png")));
+        STEPS.add(new Step(5, () -> eye(-9.0D, 6.6D, 3.5D, 0.5D, 6.0D, 0.5D)));
+        STEPS.add(new Step(30, () -> shot("hole_level.png")));
         STEPS.add(new Step(5, () -> eye(-7.5D, 3.4D, 5.5D, 0.5D, 4.0D, 0.5D)));
         STEPS.add(new Step(30, () -> shot("pylons.png")));
         STEPS.add(new Step(5, () -> time(6000L)));
@@ -105,6 +109,7 @@ public final class AutoShot {
         STEPS.add(new Step(2, AutoShot::mouseAway));
         STEPS.add(new Step(10, () -> shot("gui_fusing.png")));
         STEPS.add(new Step(2, AutoShot::closeScreen));
+        STEPS.add(new Step(1, () -> eye(11.0D, 2.6D, 9.5D, 0.5D, 4.2D, 0.5D)));
         STEPS.add(new Step(2, AutoShot::worldView));
         STEPS.add(new Step(5, () -> progress() >= 0.93F, () -> shot("fusion_collapse.png")));
         STEPS.add(new Step(1, () -> !fusing(), () -> shot("fusion_flash.png")));
@@ -118,6 +123,12 @@ public final class AutoShot {
         STEPS.add(new Step(40, () -> shot("gui_uk.png")));
         STEPS.add(new Step(5, () -> mouseAtGui(17, 84)));
         STEPS.add(new Step(10, () -> shot("gui_uk_energy_tooltip.png")));
+        STEPS.add(new Step(5, AutoShot::closeScreen));
+        // JEI's page for the fusions, when JEI is there
+        STEPS.add(new Step(5, () -> language("en_us")));
+        STEPS.add(new Step(80, AutoShot::jeiPage));
+        STEPS.add(new Step(2, AutoShot::mouseAway));
+        STEPS.add(new Step(30, () -> shot("jei_fusion.png")));
         STEPS.add(new Step(5, AutoShot::closeScreen));
         STEPS.add(new Step(10, () -> Minecraft.getInstance().stop()));
     }
@@ -237,8 +248,15 @@ public final class AutoShot {
         return core != null && core.fusing();
     }
 
+    private static void jeiPage() {
+        beforeGui();
+        if (!ModList.get().isLoaded("jei") || !JeiCompat.showFusions()) SingularityFusion.LOGGER.warn("AutoShot: JEI's page can't be opened");
+    }
+
+    /** Opens the core's screen, standing near it first (a menu closes on a player more than 8 blocks off). */
     private static void openCore() {
         beforeGui();
+        eye(3.4D, 1.7D, 2.8D, 0.5D, 5.5D, 0.5D);
         onCore(core -> NetworkHooks.openScreen(player(), core, CORE));
     }
 

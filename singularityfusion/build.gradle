@@ -23,6 +23,7 @@ sourceSets {
 }
 configurations {
     devImplementation.extendsFrom implementation
+    devCompileOnly.extendsFrom compileOnly
     devRuntimeOnly.extendsFrom runtimeOnly
 }
 
@@ -69,8 +70,21 @@ minecraft {
     }
 }
 
+repositories {
+    maven {
+        // JEI
+        name = 'BlameJared'
+        url = 'https://maven.blamejared.com/'
+    }
+}
+
 dependencies {
     minecraft "net.neoforged:forge:${minecraft_version}-${neo_version}"
+    // JEI is optional: only its API, so the fusions get a page of their own when it is installed
+    compileOnly fg.deobf("mezz.jei:jei-${minecraft_version}-common-api:${jei_version}")
+    compileOnly fg.deobf("mezz.jei:jei-${minecraft_version}-forge-api:${jei_version}")
+    // in the dev game JEI runs, to see the page
+    runtimeOnly fg.deobf("mezz.jei:jei-${minecraft_version}-forge:${jei_version}")
 }
 
 tasks.named('processResources', ProcessResources).configure {

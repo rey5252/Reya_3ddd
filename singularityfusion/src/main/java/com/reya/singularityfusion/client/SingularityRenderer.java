@@ -120,9 +120,10 @@ public final class SingularityRenderer {
         Vec3 hole = new Vec3(0.5D, 1.0D + FusionCoreBlockEntity.HOLE_HEIGHT, 0.5D);
 
         // ---------------------------------------------------------------- facing the eye
+        Quaternionf toEye = toward(eye, hole, facing);
         pose.pushPose();
         pose.translate(hole.x, hole.y, hole.z);
-        pose.mulPose(facing);       // x to the eye's left, y up, z away from it
+        pose.mulPose(toEye);        // x to the eye's left, y up, z straight away from it
         Matrix4f m = pose.last().pose();
         Matrix3f n = pose.last().normal();
         if (radius > 0.003F) {
@@ -192,12 +193,29 @@ public final class SingularityRenderer {
         }
         // lightning: to the pylons' points, and arcing over the singularity's face
         if ((storm > 0.0F || fusing) && radius > 0.05F) {
-            lightning(buffers.getBuffer(RenderType.eyes(BOLT)), m, n, be, hole, r, eye, facing, time, storm, fusing ? 0.25F + 0.5F * collapse : 0.0F);
+            lightning(buffers.getBuffer(RenderType.eyes(BOLT)), m, n, be, hole, r, eye, toEye, time, storm, fusing ? 0.25F + 0.5F * collapse : 0.0F);
         }
         // the shock wave as a fusion ends
         if (sinceDone >= 0.0F && sinceDone < FusionGeometry.SHOCK_TICKS) {
             shock(buffers.getBuffer(RenderType.eyes(SHOCK)), m, n, hole, r, sinceDone / FusionGeometry.SHOCK_TICKS);
         }
+    }
+
+    /**
+     * The turn that faces the singularity to the eye: its z straight away from the eye (so the disk is seen at its
+     * tilt wherever on the screen it is, not flattened when it hangs above where the eye looks), its y as near the
+     * camera's up as that allows, its x to the eye's left.
+     */
+    private static Quaternionf toward(Vec3 eye, Vec3 hole, Quaternionf facing) {
+        Vector3f away = new Vector3f((float) (hole.x - eye.x), (float) (hole.y - eye.y), (float) (hole.z - eye.z));
+        if (away.lengthSquared() < 1.0E-6F) return new Quaternionf(facing);
+        away.normalize();
+        Vector3f up = new Vector3f(0.0F, 1.0F, 0.0F).rotate(facing);
+        Vector3f left = new Vector3f(up).cross(away);
+        if (left.lengthSquared() < 1.0E-6F) left = new Vector3f(1.0F, 0.0F, 0.0F).rotate(facing);
+        left.normalize();
+        Vector3f realUp = new Vector3f(away).cross(left).normalize();
+        return new Quaternionf().setFromNormalized(new Matrix3f(left, realUp, away));
     }
 
     // ------------------------------------------------------------------ the singularity's parts (facing the eye)

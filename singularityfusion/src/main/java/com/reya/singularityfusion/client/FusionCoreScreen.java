@@ -174,6 +174,9 @@ public class FusionCoreScreen extends AbstractContainerScreen<FusionCoreMenu> {
         float dx = x2 - x1, dy = y2 - y1, len = Mth.sqrt(dx * dx + dy * dy);
         if (len < 0.01F) return;
         float nx = -dy / len * 0.6F, ny = dx / len * 0.6F;
+        r = Fx.c(r);
+        g = Fx.c(g);
+        bl = Fx.c(bl);
         b.vertex(m, x1 + nx, y1 + ny, 0.0F).color(r, g, bl, 1.0F).endVertex();
         b.vertex(m, x2 + nx, y2 + ny, 0.0F).color(r, g, bl, 1.0F).endVertex();
         b.vertex(m, x2 - nx, y2 - ny, 0.0F).color(r, g, bl, 1.0F).endVertex();
@@ -181,6 +184,9 @@ public class FusionCoreScreen extends AbstractContainerScreen<FusionCoreMenu> {
     }
 
     private static void dot(BufferBuilder b, Matrix4f m, float x, float y, float s, float r, float g, float bl) {
+        r = Fx.c(r);
+        g = Fx.c(g);
+        bl = Fx.c(bl);
         b.vertex(m, x - s, y - s, 0.0F).color(r, g, bl, 1.0F).endVertex();
         b.vertex(m, x - s, y + s, 0.0F).color(r, g, bl, 1.0F).endVertex();
         b.vertex(m, x + s, y + s, 0.0F).color(r, g, bl, 1.0F).endVertex();
@@ -316,6 +322,9 @@ public class FusionCoreScreen extends AbstractContainerScreen<FusionCoreMenu> {
     }
 
     private static void texQuad(BufferBuilder b, Matrix4f m, float cx, float cy, float s, float r, float g, float bl) {
+        r = Fx.c(r);
+        g = Fx.c(g);
+        bl = Fx.c(bl);
         b.vertex(m, cx - s, cy - s, 0.0F).uv(0.0F, 0.0F).color(r, g, bl, 1.0F).endVertex();
         b.vertex(m, cx - s, cy + s, 0.0F).uv(0.0F, 1.0F).color(r, g, bl, 1.0F).endVertex();
         b.vertex(m, cx + s, cy + s, 0.0F).uv(1.0F, 1.0F).color(r, g, bl, 1.0F).endVertex();
@@ -324,7 +333,7 @@ public class FusionCoreScreen extends AbstractContainerScreen<FusionCoreMenu> {
 
     /** A vertex of the disk's light: white-hot, the texture giving its colour. */
     private static void vertex(BufferBuilder b, Matrix4f m, float x, float y, float u, float v, float k) {
-        b.vertex(m, x, y, 0.0F).uv(u, v).color(k, 0.94F * k, 0.88F * k, 1.0F).endVertex();
+        b.vertex(m, x, y, 0.0F).uv(u, v).color(Fx.c(k), Fx.c(0.94F * k), Fx.c(0.88F * k), 1.0F).endVertex();
     }
 
     /** The start button: ready, hovered, can't start now, or lit while the core fuses. */

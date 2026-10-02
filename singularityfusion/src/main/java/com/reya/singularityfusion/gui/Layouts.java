@@ -13,6 +13,8 @@ public final class Layouts {
     public static final int[] STATUS_Y = {131, 142};
     public static final int[] SHEET_START = {0, 272}, SHEET_PYLON = {80, 272}, SHEET_BAR = {120, 272}, SHEET_MASK = {144, 272};
     public static final int MASK_SIZE = 80;
+    public static final int[] SHEET_JEI = {0, 394}, JEI = {168, 118}, JEI_CENTER = {62, 54}, JEI_OUTPUT = {146, 46};
+    public static final int JEI_RING_R = 40, JEI_TEXT_Y = 106;
 
     private Layouts() {
     }
