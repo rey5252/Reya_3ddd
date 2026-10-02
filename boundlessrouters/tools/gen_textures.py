@@ -26,10 +26,10 @@ ASSETS = os.path.join(ROOT, "src", "main", "resources", "assets", "boundlessrout
 TEX = os.path.join(ASSETS, "textures")
 
 MODULES = ["sender", "puller", "distributor", "dropper", "flinger", "placer", "breaker", "vacuum", "void", "player", "detector",
-           "extruder"]
+           "extruder", "activator"]
 MODULE_COLOURS = {"sender": 0x5FD45F, "puller": 0x4FA8FF, "distributor": 0x3FE0D0, "dropper": 0xC9C9C9, "flinger": 0xFF9A3C,
                   "placer": 0x9BE15D, "breaker": 0xFF5A4F, "vacuum": 0xC07CFF, "void": 0x8A5CD0, "player": 0xFFD24A,
-                  "detector": 0xFF3B3B, "extruder": 0xD29A5C}
+                  "detector": 0xFF3B3B, "extruder": 0xD29A5C, "activator": 0xFF8AC8}
 UPGRADES = ["speed", "stack", "range", "range_2", "range_3", "infinite_range", "muffler"]
 UPGRADE_COLOURS = {"speed": 0xFFD84A, "stack": 0xE8E8F0, "range": 0x4FE3FF, "range_2": 0x4F86FF, "range_3": 0xA66BFF,
                    "infinite_range": 0xFF4FD8, "muffler": 0x9A8F86}
@@ -381,6 +381,9 @@ glyph("d_left", ["...#......", "..##......", ".###......", "##########", "######
                  "...#......", "..........", ".........."], {"#": WHITE})
 glyph("d_right", ["......#...", "......##..", "......###.", "##########", "##########", "......###.", "......##..",
                   "......#...", "..........", ".........."], {"#": WHITE})
+# an activator's sneaking: the shift key
+glyph("m_sneak", ["....##....", "...#..#...", "..#....#..", ".#......#.", "###....###", "..#....#..", "..#....#..", "..#....#..",
+                  "..######..", ".........."], {"#": WHITE})
 # filter and module options, 10 square
 glyph("o_white", ["#########.", "#.......#.", "#.####..#.", "#.......#.", "#.####..#.", "#.....#.#.", "#.###.#.#.",
                   "#...#.#..#", "#....#...#", "#########."], {"#": WHITE})
@@ -460,7 +463,7 @@ def widget_sheet():
         cv.draw(ox + 10 * i, oy, *G[name])
     mx, my = S.MISC
     for i, name in enumerate(["m_plus", "m_minus", "m_cycle", "m_clear", "m_silk", "m_fortune", "m_strong", "m_weak", "m_player",
-                              "m_target"]):
+                              "m_target", "m_sneak"]):
         cv.draw(mx + 10 * i, my, *G[name])
     cv.save(out("gui", "widgets.png"))
     return cv
@@ -548,6 +551,7 @@ MODULE_GLYPHS = {
     "player": ["..####..", "..#..#..", "..####..", "...##...", ".######.", "#.####.#", "..#..#..", "..#..#.."],
     "detector": ["........", "..####..", ".#....#.", "#..##..#", "#..##..#", ".#....#.", "..####..", "........"],
     "extruder": ["#.......", "##......", "########", "########", "##......", "#.......", "........", "........"],
+    "activator": ["##......", "#.#.....", "#..#....", "#...#...", "#....#..", "#..###..", "#.#.....", ".#......"],
 }
 
 UPGRADE_GLYPHS = {

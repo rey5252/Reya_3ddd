@@ -19,12 +19,17 @@ import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.animal.Pig;
+import net.minecraft.world.entity.animal.Sheep;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.LeverBlock;
+import net.minecraft.world.level.block.state.properties.AttachFace;
 import net.minecraft.world.level.block.RedStoneWireBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.AABB;
@@ -347,6 +352,65 @@ public class RouterTests {
         run(h, router);
         h.assertBlockPresent(Blocks.AIR, new BlockPos(4, 2, 4));
         expect(h, buffered(router), 3, "the last one taken back");
+        h.succeed();
+    }
+
+    // ------------------------------------------------------------------ an activator: a player's clicks
+
+    @GameTest(template = ROOM)
+    public static void activatorFlipsALever(GameTestHelper h) {
+        BlockPos at = new BlockPos(4, 2, 4), front = at.south();
+        RouterBlockEntity router = router(h, at, Direction.SOUTH);
+        h.setBlock(front, Blocks.LEVER.defaultBlockState().setValue(LeverBlock.FACE, AttachFace.FLOOR));
+        router.modules().setStackInSlot(0, module(ModuleKind.ACTIVATOR, s -> {
+        }));
+        run(h, router);
+        h.assertTrue(h.getBlockState(front).getValue(LeverBlock.POWERED), "a right click turned the lever on");
+        run(h, router);
+        h.assertTrue(!h.getBlockState(front).getValue(LeverBlock.POWERED), "and off again");
+        h.succeed();
+    }
+
+    @GameTest(template = ROOM)
+    public static void activatorDigsAsLongAsAPlayer(GameTestHelper h) {
+        BlockPos at = new BlockPos(4, 2, 4), front = at.south();
+        RouterBlockEntity router = router(h, at, Direction.SOUTH);
+        h.setBlock(front, Blocks.STONE);
+        router.modules().setStackInSlot(0, module(ModuleKind.ACTIVATOR, s -> s.apply(Setting.ACTION, ModuleSettings.Action.DIG_BLOCK.ordinal())));
+        run(h, router);
+        h.assertBlockPresent(Blocks.STONE, front);
+        h.assertTrue(router.dig(0).progress > 0.0F && router.dig(0).progress < 1.0F, "a bare hand is still digging stone after a run");
+        router.buffer().setStackInSlot(0, new ItemStack(Items.IRON_PICKAXE));
+        run(h, router);
+        h.assertBlockPresent(Blocks.AIR, front);
+        h.assertItemEntityPresent(Items.COBBLESTONE, front, 1.5D);
+        ItemStack pick = router.buffer().getStackInSlot(0);
+        h.assertTrue(pick.is(Items.IRON_PICKAXE) && pick.getDamageValue() == 1, "the pickaxe is back in the buffer, a little worn");
+        h.succeed();
+    }
+
+    @GameTest(template = ROOM)
+    public static void activatorHitsWithASword(GameTestHelper h) {
+        BlockPos at = new BlockPos(4, 2, 2);
+        RouterBlockEntity router = router(h, at, Direction.SOUTH);
+        Pig pig = h.spawn(EntityType.PIG, new BlockPos(4, 2, 4));
+        router.modules().setStackInSlot(0, module(ModuleKind.ACTIVATOR, s -> s.apply(Setting.ACTION, ModuleSettings.Action.ATTACK.ordinal())));
+        router.buffer().setStackInSlot(0, new ItemStack(Items.IRON_SWORD));
+        run(h, router);
+        h.assertTrue(pig.getHealth() <= pig.getMaxHealth() - 5.0F, "an iron sword's full hit: health " + pig.getHealth());
+        h.succeed();
+    }
+
+    @GameTest(template = ROOM)
+    public static void activatorShearsASheep(GameTestHelper h) {
+        BlockPos at = new BlockPos(4, 2, 2);
+        RouterBlockEntity router = router(h, at, Direction.SOUTH);
+        Sheep sheep = h.spawn(EntityType.SHEEP, new BlockPos(4, 2, 3));
+        router.modules().setStackInSlot(0, module(ModuleKind.ACTIVATOR, s -> s.apply(Setting.ACTION, ModuleSettings.Action.USE_ENTITY.ordinal())));
+        router.buffer().setStackInSlot(0, new ItemStack(Items.SHEARS));
+        run(h, router);
+        h.assertTrue(sheep.isSheared(), "a right click with shears sheared the sheep");
+        h.assertTrue(router.buffer().getStackInSlot(0).is(Items.SHEARS), "the shears are back in the buffer");
         h.succeed();
     }
 

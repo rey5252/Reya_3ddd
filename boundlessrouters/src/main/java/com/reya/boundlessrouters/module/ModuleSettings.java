@@ -68,10 +68,30 @@ public final class ModuleSettings {
         }
     }
 
+    /** What an activator does with its click. */
+    public enum Action {
+        /** A right click on the block in front. */
+        USE_BLOCK,
+        /** A right click in the air (throwing, drinking, scooping water with a bucket). */
+        USE_AIR,
+        /** A right click on a creature in front (shearing, milking, feeding). */
+        USE_ENTITY,
+        /** A left click on the block in front: one hit. */
+        HIT_BLOCK,
+        /** The left button held on the block in front: digging it as long as a player would, then breaking it. */
+        DIG_BLOCK,
+        /** A left click on a creature in front: hitting it with the item. */
+        ATTACK;
+
+        public String key() {
+            return name().toLowerCase(Locale.ROOT);
+        }
+    }
+
     /** What a module's screen can change (sent to the server as the setting's ordinal and a number). */
     public enum Setting {
         DIRECTION, BLACKLIST, MATCH_DAMAGE, MATCH_NBT, MATCH_TAGS, MATCH_MOD, TERMINATE, REDSTONE,
-        SPEED, PITCH, YAW, RADIUS, POWER, STRONG, SECTION, OPERATION, STRATEGY, SILK, FORTUNE,
+        SPEED, PITCH, YAW, RADIUS, POWER, STRONG, SECTION, OPERATION, STRATEGY, SILK, FORTUNE, ACTION, SNEAK,
         CLEAR_TARGETS, REMOVE_TARGET, CLEAR_PLAYER;
 
         private static final Setting[] ALL = values();
@@ -280,6 +300,15 @@ public final class ModuleSettings {
         write().putInt("Next", next);
     }
 
+    public Action action() {
+        int i = read().getByte("Act");
+        return Action.values()[Mth.clamp(i, 0, Action.values().length - 1)];
+    }
+
+    public boolean sneak() {
+        return read().getBoolean("Sneak");
+    }
+
     public boolean silk() {
         return read().getBoolean("Silk");
     }
@@ -321,6 +350,8 @@ public final class ModuleSettings {
             case STRATEGY -> strategy().ordinal();
             case SILK -> silk() ? 1 : 0;
             case FORTUNE -> fortune();
+            case ACTION -> action().ordinal();
+            case SNEAK -> sneak() ? 1 : 0;
             case CLEAR_TARGETS, REMOVE_TARGET, CLEAR_PLAYER -> 0;
         };
     }
@@ -348,6 +379,8 @@ public final class ModuleSettings {
             case STRATEGY -> tag.putByte("Strategy", (byte) Mth.clamp(value, 0, Strategy.values().length - 1));
             case SILK -> tag.putBoolean("Silk", value != 0);
             case FORTUNE -> tag.putInt("Fortune", Mth.clamp(value, 0, MAX_FORTUNE));
+            case ACTION -> tag.putByte("Act", (byte) Mth.clamp(value, 0, Action.values().length - 1));
+            case SNEAK -> tag.putBoolean("Sneak", value != 0);
             case CLEAR_TARGETS -> {
                 tag.remove("Targets");
                 tag.remove("Next");

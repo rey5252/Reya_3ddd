@@ -20,7 +20,7 @@ ROOT = os.path.dirname(HERE)
 RES = os.path.join(ROOT, "src", "main", "resources")
 ASSETS = os.path.join(RES, "assets", "boundlessrouters")
 MODULES = ["sender", "puller", "distributor", "dropper", "flinger", "placer", "breaker", "vacuum", "void", "player", "detector",
-           "extruder"]
+           "extruder", "activator"]
 UPGRADES = ["speed", "stack", "range", "range_2", "range_3", "infinite_range", "muffler"]
 
 

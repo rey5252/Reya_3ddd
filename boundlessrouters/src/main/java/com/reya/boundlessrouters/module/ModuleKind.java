@@ -9,9 +9,9 @@ import com.reya.boundlessrouters.router.RelativeDirection;
  * to (a place, many places, a player) and which settings its screen shows.
  */
 public enum ModuleKind {
-    /** Sends items from the buffer into an inventory: the first one along its direction, or the one it is bound to, anywhere. */
+    /** Sends items from the buffer into an inventory: the first one along its direction, or the one it is bound to. */
     SENDER(true, Binding.PLACE, Panel.TARGET, 0x5FD45F),
-    /** Pulls items into the buffer from the inventory in its direction, or the one it is bound to, anywhere. */
+    /** Pulls items into the buffer from the inventory in its direction, or the one it is bound to. */
     PULLER(true, Binding.PLACE, Panel.TARGET, 0x4FA8FF),
     /** Sends items from the buffer to many bound inventories, in turn, at random, nearest or farthest first. */
     DISTRIBUTOR(false, Binding.PLACES, Panel.DISTRIBUTOR, 0x3FE0D0),
@@ -27,12 +27,17 @@ public enum ModuleKind {
     VACUUM(true, Binding.NONE, Panel.VACUUM, 0xC07CFF),
     /** Destroys items in the buffer. */
     VOID(false, Binding.NONE, Panel.INFO, 0x8A5CD0),
-    /** Moves items between the buffer and its bound player's inventory, wherever they are. */
+    /** Moves items between the buffer and its bound player's inventory, while the router reaches them. */
     PLAYER(false, Binding.PLAYER, Panel.PLAYER, 0xFFD24A),
     /** Gives out a redstone signal in its direction while the buffer holds what it looks for. */
     DETECTOR(true, Binding.NONE, Panel.DETECTOR, 0xFF3B3B),
     /** Builds a line of blocks from the buffer in its direction while the router has a signal, and takes it back without. */
-    EXTRUDER(true, Binding.NONE, Panel.EXTRUDER, 0xD29A5C);
+    EXTRUDER(true, Binding.NONE, Panel.EXTRUDER, 0xD29A5C),
+    /**
+     * Does what a player does with a click, holding the buffer's item: right-clicks the block in its direction, the air
+     * or a creature there; left-clicks a block (a hit, or digging it as long as a player would), or hits a creature.
+     */
+    ACTIVATOR(true, Binding.NONE, Panel.ACTIVATOR, 0xFF8AC8);
 
     /** What a module is bound to with a sneaking right-click. */
     public enum Binding {
@@ -45,7 +50,7 @@ public enum ModuleKind {
 
     /** Which settings of its own a module's screen shows under the filter. */
     public enum Panel {
-        INFO, TARGET, DISTRIBUTOR, FLINGER, BREAKER, VACUUM, PLAYER, DETECTOR, EXTRUDER
+        INFO, TARGET, DISTRIBUTOR, FLINGER, BREAKER, VACUUM, PLAYER, DETECTOR, EXTRUDER, ACTIVATOR
     }
 
     private static final ModuleKind[] ALL = values();

@@ -8,10 +8,13 @@ import java.util.UUID;
 
 import javax.annotation.Nullable;
 
+import com.google.common.collect.Multimap;
 import com.reya.boundlessrouters.RouterConfig;
 import com.reya.boundlessrouters.module.ModuleSettings.Operation;
 import com.reya.boundlessrouters.module.ModuleSettings.Strategy;
+import com.reya.boundlessrouters.router.RouterBlockEntity;
 import com.reya.boundlessrouters.util.Blocks;
+import com.reya.boundlessrouters.util.RouterPlayer;
 import com.reya.boundlessrouters.util.Targets;
 import com.reya.boundlessrouters.util.Transfer;
 import net.minecraft.core.BlockPos;
@@ -19,6 +22,13 @@ import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.ExperienceOrb;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
@@ -27,6 +37,7 @@ import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.wrapper.InvWrapper;
@@ -53,6 +64,7 @@ public final class ModuleBehaviours {
             case PLAYER -> player(ctx);
             case DETECTOR -> detect(ctx);
             case EXTRUDER -> extrude(ctx);
+            case ACTIVATOR -> activate(ctx);
         };
     }
 
@@ -335,6 +347,152 @@ public final class ModuleBehaviours {
         if (!breakInto(ctx, dir, at, silk)) return false;
         ctx.settings.setExtended(extended - 1);
         ctx.changed();
+        return true;
+    }
+
+    // ------------------------------------------------------------------ a player's clicks
+
+    /** How far an activator reaches for a block or a creature, as a player's arm does. */
+    private static final int ARM = 3;
+
+    /**
+     * An activator: the router's player stands at the router's face, holding the buffer's item (if the filter lets
+     * it), and clicks. What it holds afterwards goes back into the buffer; anything else it is left with (a filled
+     * bucket from a stack of empty ones) too, or falls in front of the router.
+     */
+    private static boolean activate(ModuleContext ctx) {
+        Direction dir = ctx.direction();
+        if (dir == null) return false;
+        ItemStack inBuffer = ctx.buffer().getStackInSlot(0);
+        ItemStack held = !inBuffer.isEmpty() && ctx.filter.test(inBuffer) ? ctx.buffer().extractItem(0, inBuffer.getCount(), false) : ItemStack.EMPTY;
+        RouterPlayer player = RouterPlayer.get(ctx.level);
+        Vec3 eyes = ModuleContext.faceTowards(ctx.pos, ctx.pos.relative(dir));
+        player.ready(eyes, dir, ctx.facing, held, ctx.settings.sneak());
+        try {
+            return switch (ctx.settings.action()) {
+                case USE_BLOCK -> useOnBlock(ctx, player, dir);
+                case USE_AIR -> useInAir(ctx, player);
+                case USE_ENTITY -> onCreature(ctx, player, dir, false);
+                case HIT_BLOCK -> hitBlock(ctx, player, dir);
+                case DIG_BLOCK -> dig(ctx, player, dir);
+                case ATTACK -> onCreature(ctx, player, dir, true);
+            };
+        } finally {
+            List<ItemStack> back = new ArrayList<>();
+            back.add(player.takeHeld());
+            back.addAll(player.takeRest());
+            for (ItemStack stack : back) {
+                ItemStack left = stack.isEmpty() ? stack : Transfer.insert(ctx.buffer(), stack);
+                if (!left.isEmpty()) {
+                    ItemEntity item = new ItemEntity(ctx.level, eyes.x, eyes.y - 0.2D, eyes.z, left);
+                    item.setDeltaMovement(dir.getStepX() * 0.05D, dir.getStepY() * 0.05D, dir.getStepZ() * 0.05D);
+                    ctx.level.addFreshEntity(item);
+                }
+            }
+        }
+    }
+
+    /** The first block in a direction from the router within an arm's reach, or null. */
+    @Nullable
+    private static BlockPos reachBlock(ModuleContext ctx, Direction dir) {
+        for (int k = 1; k <= ARM; k++) {
+            BlockPos at = ctx.pos.relative(dir, k);
+            if (!ctx.level.isLoaded(at)) return null;
+            if (!ctx.level.getBlockState(at).isAir()) return at;
+        }
+        return null;
+    }
+
+    /** A right click on the near face of the block in front, as a player's: the block first (a lever, a door), then the item. */
+    private static boolean useOnBlock(ModuleContext ctx, RouterPlayer player, Direction dir) {
+        BlockPos at = reachBlock(ctx, dir);
+        if (at == null) return false;
+        Direction face = dir.getOpposite();
+        Vec3 point = Vec3.atCenterOf(at).add(face.getStepX() * 0.5D, face.getStepY() * 0.5D, face.getStepZ() * 0.5D);
+        InteractionResult result = player.gameMode.useItemOn(player, ctx.level, player.getMainHandItem(), InteractionHand.MAIN_HAND,
+                new BlockHitResult(point, face, at, false));
+        player.finishUsing();
+        return result.consumesAction();
+    }
+
+    /** A right click in the air: throwing, scooping water with a bucket, drawing a bow (loosed at full draw). */
+    private static boolean useInAir(ModuleContext ctx, RouterPlayer player) {
+        InteractionResult result = player.gameMode.useItem(player, ctx.level, player.getMainHandItem(), InteractionHand.MAIN_HAND);
+        boolean using = player.isUsingItem();
+        player.finishUsing();
+        return result.consumesAction() || using;
+    }
+
+    /** A click on the nearest creature in front within an arm's reach: a right click (shearing, milking, feeding) or a hit. */
+    private static boolean onCreature(ModuleContext ctx, RouterPlayer player, Direction dir, boolean attack) {
+        BlockPos front = ctx.pos.relative(dir);
+        AABB box = new AABB(front).expandTowards(dir.getStepX() * (ARM - 1.0D), dir.getStepY() * (ARM - 1.0D), dir.getStepZ() * (ARM - 1.0D));
+        Vec3 eyes = player.getEyePosition();
+        Entity target = null;
+        double best = Double.MAX_VALUE;
+        for (Entity e : ctx.level.getEntities(player, box, e -> e.isAlive() && !e.isSpectator() && !(e instanceof ItemEntity)
+                && !(e instanceof ExperienceOrb) && (!attack || e.isAttackable()))) {
+            double d = e.distanceToSqr(eyes);
+            if (d < best) {
+                best = d;
+                target = e;
+            }
+        }
+        if (target == null) return false;
+        if (!attack) {
+            InteractionResult result = player.interactOn(target, InteractionHand.MAIN_HAND);
+            player.finishUsing();
+            return result.consumesAction();
+        }
+        // its hit is as strong as the item makes a player's (a fake player doesn't tick, so wears its item's attributes only now)
+        Multimap<Attribute, AttributeModifier> modifiers = player.getMainHandItem().getAttributeModifiers(EquipmentSlot.MAINHAND);
+        player.getAttributes().addTransientAttributeModifiers(modifiers);
+        try {
+            player.attack(target);
+        } finally {
+            player.getAttributes().removeAttributeModifiers(modifiers);
+        }
+        return true;
+    }
+
+    /** A left click on the block in front: one hit (a note block sounds, redstone ore glows). */
+    private static boolean hitBlock(ModuleContext ctx, RouterPlayer player, Direction dir) {
+        BlockPos at = reachBlock(ctx, dir);
+        if (at == null) return false;
+        ctx.level.getBlockState(at).attack(ctx.level, at, player);
+        return true;
+    }
+
+    /**
+     * The left button held on the block in front: it digs as long as a player holding the buffer's item would (cracks
+     * showing), then breaks it as a player: what it drops falls where it stood, the tool wears.
+     */
+    private static boolean dig(ModuleContext ctx, RouterPlayer player, Direction dir) {
+        RouterBlockEntity.Dig dig = ctx.router.dig(ctx.slot);
+        BlockPos at = reachBlock(ctx, dir);
+        if (at == null) {
+            dig.reset(ctx.level);
+            return false;
+        }
+        BlockState state = ctx.level.getBlockState(at);
+        if (state.getDestroySpeed(ctx.level, at) < 0.0F) {
+            dig.reset(ctx.level);
+            return false;
+        }
+        if (!at.equals(dig.pos) || state != dig.state) {
+            // a new block: the first hit
+            dig.reset(ctx.level);
+            dig.pos = at;
+            dig.state = state;
+            state.attack(ctx.level, at, player);
+        }
+        // as much digging as a player gets done between two of the router's runs
+        dig.progress += state.getDestroyProgress(player, ctx.level, at) * ctx.router.interval();
+        if (dig.progress >= 1.0F) {
+            dig.reset(ctx.level);
+            return player.gameMode.destroyBlock(at);
+        }
+        ctx.level.destroyBlockProgress(dig.id, at, Math.min(9, (int) (dig.progress * 10.0F)));
         return true;
     }
 

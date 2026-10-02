@@ -79,10 +79,10 @@ class Sheet:
     INFO = (60, 30)          # 10 square glyphs: interval, items a run, range
     DIRS = (0, 44)           # 10 square glyphs in RelativeDirection's order: none, front, back, up, down, left, right
     OPTS = (0, 56)           # 10 square glyphs: whitelist, blacklist, damage, nbt, tags, mod, terminate, rs always, rs high, rs low
-    MISC = (0, 68)           # 10 square glyphs: plus, minus, cycle, clear, silk, fortune, strong, weak, player, target
+    MISC = (0, 68)           # 10 square glyphs: plus, minus, cycle, clear, silk, fortune, strong, weak, player, target, sneak
     REGIONS = [("button", 0, 0, 64, 16), ("toggle", 64, 0, 56, 14), ("gear", 0, 16, 24, 8), ("back", 24, 16, 24, 12),
                ("small", 48, 16, 30, 10), ("redstone", 0, 30, 60, 12), ("info", 60, 30, 30, 10), ("dirs", 0, 44, 70, 10),
-               ("opts", 0, 56, 100, 10), ("misc", 0, 68, 100, 10)]
+               ("opts", 0, 56, 100, 10), ("misc", 0, 68, 110, 10)]
 
 
 def slot_rect(x, y):

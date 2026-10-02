@@ -246,6 +246,18 @@ public class ModuleScreen extends AbstractContainerScreen<ModuleMenu> {
                 text(g, Ui.count("gui.boundlessrouters.extended", s.extended()), px, rowA, Ui.TEXT);
                 text(g, Component.translatable("gui.boundlessrouters.extruder_hint"), px, rowB, Ui.TEXT_DIM);
             }
+            case ACTIVATOR -> {
+                // what it does with its click, whether it sneaks; under them, what that does
+                ModuleSettings.Action action = s.action();
+                int cx = cycleButton(g, px, rowA - 1, mouseX, mouseY, Setting.ACTION, action.ordinal(), ModuleSettings.Action.values().length,
+                        "gui.boundlessrouters.action");
+                Component sneak = Component.translatable("gui.boundlessrouters.opt.sneak");
+                int sx = right - 17 - font.width(sneak);
+                Ui.fit(g, font, Component.translatable("gui.boundlessrouters.action." + action.key()), cx, rowA, sx - cx - 4, Ui.TEXT, 1.0F);
+                toggleLabel(g, sx, rowA - 3, mouseX, mouseY, Setting.SNEAK, s.sneak(), "sneak");
+                Ui.fit(g, font, Component.translatable("gui.boundlessrouters.action." + action.key() + ".tip"), px, rowB, right - px, Ui.TEXT_DIM,
+                        1.0F);
+            }
             case INFO -> {
                 List<FormattedCharSequence> lines = font.split(Component.translatable("item.boundlessrouters." + kind.id() + "_module.desc"),
                         Module.PANEL[2] - Module.PANEL[0] - 8);
@@ -302,7 +314,7 @@ public class ModuleScreen extends AbstractContainerScreen<ModuleMenu> {
     private int toggleLabel(GuiGraphics g, int x, int y, int mouseX, int mouseY, Setting setting, boolean on, String key) {
         boolean hover = Ui.in(mouseX, mouseY, x, y, 14, 14);
         Ui.toggle(g, x, y, on, hover);
-        Ui.glyph(g, Sheet.MISC, setting == Setting.SILK ? 4 : on ? 6 : 7, x + 2, y + 2);
+        Ui.glyph(g, Sheet.MISC, setting == Setting.SILK ? 4 : setting == Setting.SNEAK ? 10 : on ? 6 : 7, x + 2, y + 2);
         hits.add(new Hit(x, y, 14, 14, b -> set(setting, on ? 0 : 1), () -> List.of(
                 Component.translatable("gui.boundlessrouters.opt." + key).withStyle(ChatFormatting.AQUA),
                 Component.translatable("gui.boundlessrouters.opt." + key + "." + (on ? "on" : "off")).withStyle(ChatFormatting.WHITE),

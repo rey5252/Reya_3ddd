@@ -12,7 +12,7 @@ RES = os.path.join(ROOT, "src", "main", "resources")
 MOD = "boundlessrouters"
 
 MODULES = ["sender", "puller", "distributor", "dropper", "flinger", "placer", "breaker", "vacuum", "void", "player", "detector",
-           "extruder"]
+           "extruder", "activator"]
 UPGRADES = ["speed", "stack", "range", "range_2", "range_3", "infinite_range", "muffler"]
 
 
@@ -71,7 +71,8 @@ def recipes():
            "blank_upgrade", 4)
     keys = {"sender": ["ender_pearl"], "puller": ["hopper"], "distributor": ["ender_pearl", "comparator"], "dropper": ["dropper"],
             "flinger": ["dispenser"], "placer": ["piston"], "breaker": ["iron_pickaxe"], "vacuum": ["ender_eye"], "void": ["cactus"],
-            "player": ["ender_chest"], "detector": ["observer"], "extruder": ["sticky_piston"]}
+            "player": ["ender_chest"], "detector": ["observer"], "extruder": ["sticky_piston"],
+            "activator": ["lever", "iron_sword"]}
     for m in MODULES:
         shapeless(m + "_module", [blank] + keys[m], m + "_module")
     ub = MOD + ":blank_upgrade"

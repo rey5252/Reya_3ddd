@@ -198,6 +198,38 @@ public class RouterBlockEntity extends BlockEntity implements MenuProvider {
         return stacks >= 6 ? 64 : 1 << stacks;
     }
 
+    // ------------------------------------------------------------------ activators digging
+
+    /** An activator digging a block: where, what stood there, how far along (kept while the router is loaded). */
+    public static final class Dig {
+        /** The id the cracks on the block are shown under (no entity's: those are never negative). */
+        public final int id;
+        @Nullable
+        public BlockPos pos;
+        @Nullable
+        public BlockState state;
+        public float progress;
+
+        Dig(int id) {
+            this.id = id;
+        }
+
+        /** Stops digging: the cracks go. */
+        public void reset(Level level) {
+            if (pos != null) level.destroyBlockProgress(id, pos, -1);
+            pos = null;
+            state = null;
+            progress = 0.0F;
+        }
+    }
+
+    private final Dig[] digs = new Dig[MODULE_SLOTS];
+
+    public Dig dig(int slot) {
+        if (digs[slot] == null) digs[slot] = new Dig(-1 - ((worldPosition.hashCode() * 31 + slot) & 0x3FFFFFFF));
+        return digs[slot];
+    }
+
     /** A range with no limit (an infinite range upgrade). */
     public static final int INFINITE = -1;
 

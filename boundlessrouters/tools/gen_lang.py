@@ -74,6 +74,15 @@ T = {
         "Із редстоун-сигналом висуває лінію блоків із буфера у своєму напрямку, без сигналу — забирає її назад.",
         "С редстоун-сигналом выдвигает линию блоков из буфера в своём направлении, без сигнала — забирает её обратно."),
 
+    "item.%s.activator_module" % P: ("Activator Module", "Модуль-активатор", "Модуль-активатор"),
+    "item.%s.activator_module.desc" % P: (
+        "Clicks as a player does, holding the buffer's item: right-clicks the block, the air or a creature in front; "
+        "left-clicks a block (a hit, or digging it) or hits a creature.",
+        "Клацає, як гравець, тримаючи предмет із буфера: ПКМ по блоку, у повітря чи по істоті попереду; "
+        "ЛКМ по блоку (удар або копання) чи удар по істоті.",
+        "Кликает, как игрок, держа предмет из буфера: ПКМ по блоку, в воздух или по существу впереди; "
+        "ЛКМ по блоку (удар или копание) или удар по существу."),
+
     # ------------------------------------------------------------------ upgrades
     "item.%s.speed_upgrade" % P: ("Speed Upgrade", "Покращення швидкості", "Улучшение скорости"),
     "item.%s.speed_upgrade.desc" % P: ("Each takes two ticks off the time between the router's runs, down to every tick.",
@@ -317,6 +326,33 @@ T = {
     "gui.%s.extended.many" % P: ("Put out: %s blocks", "Висунуто: %s блоків", "Выдвинуто: %s блоков"),
     "gui.%s.extruder_hint" % P: ("Signal: build out · none: take back", "Сигнал: висуває · без: забирає",
                                  "Сигнал: выдвигает · без: забирает"),
+    # an activator
+    "gui.%s.action" % P: ("Click", "Клік", "Клик"),
+    "gui.%s.action.tip" % P: ("What it does as a player: click to change", "Що робить як гравець: клацни, щоб змінити",
+                              "Что делает как игрок: кликни, чтобы сменить"),
+    "gui.%s.action.use_block" % P: ("Right click: block", "ПКМ по блоку", "ПКМ по блоку"),
+    "gui.%s.action.use_block.tip" % P: ("Levers, doors, bone meal, hoes, buckets...", "Важелі, двері, кісткове борошно, мотики, відра…",
+                                        "Рычаги, двери, костная мука, мотыги, вёдра…"),
+    "gui.%s.action.use_air" % P: ("Right click: air", "ПКМ у повітря", "ПКМ в воздух"),
+    "gui.%s.action.use_air.tip" % P: ("Throws, scoops water, shoots a bow", "Кидає, черпає воду, стріляє з лука",
+                                      "Бросает, черпает воду, стреляет из лука"),
+    "gui.%s.action.use_entity" % P: ("Right click: creature", "ПКМ по істоті", "ПКМ по существу"),
+    "gui.%s.action.use_entity.tip" % P: ("Shears, milks, feeds, names", "Стриже, доїть, годує, дає імена",
+                                         "Стрижёт, доит, кормит, даёт имена"),
+    "gui.%s.action.hit_block" % P: ("Left click: hit", "ЛКМ: удар по блоку", "ЛКМ: удар по блоку"),
+    "gui.%s.action.hit_block.tip" % P: ("One hit a run: note blocks, redstone ore", "Один удар за раз: нотні блоки, редстоунова руда",
+                                        "Один удар за раз: нотные блоки, редстоуновая руда"),
+    "gui.%s.action.dig_block" % P: ("Left click: dig", "ЛКМ: копати блок", "ЛКМ: копать блок"),
+    "gui.%s.action.dig_block.tip" % P: ("Digs as long as a player would; drops fall", "Копає стільки, скільки гравець; лут падає",
+                                        "Копает столько, сколько игрок; лут падает"),
+    "gui.%s.action.attack" % P: ("Left click: creature", "ЛКМ по істоті", "ЛКМ по существу"),
+    "gui.%s.action.attack.tip" % P: ("Hits with the item, a full swing each run", "Б'є предметом, повний замах щоразу",
+                                     "Бьёт предметом, полный замах каждый раз"),
+    "gui.%s.opt.sneak" % P: ("Sneak", "Присід", "Присед"),
+    "gui.%s.opt.sneak.on" % P: ("Sneaking", "Присідає", "Приседает"),
+    "gui.%s.opt.sneak.off" % P: ("Standing", "Стоїть", "Стоит"),
+    "gui.%s.opt.sneak.tip" % P: ("Clicks as a player holding Shift", "Клацає, як гравець із затиснутим Shift",
+                                 "Кликает, как игрок с зажатым Shift"),
     "gui.%s.sum.all" % P: ("All items", "Усі предмети", "Все предметы"),
     "gui.%s.sum.none" % P: ("Nothing (empty list)", "Нічого (порожньо)", "Ничего (пусто)"),
     "gui.%s.sum.but" % P: ("All but %s listed", "Усе, крім %s", "Всё, кроме %s"),

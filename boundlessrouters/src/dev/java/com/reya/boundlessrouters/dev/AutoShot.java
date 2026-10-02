@@ -100,6 +100,15 @@ public final class AutoShot {
             STEPS.add(new Step(25, () -> shot("module_" + name + ".png")));
             STEPS.add(new Step(5, AutoShot::closeScreen));
         }
+        // an activator, digging, sneaking
+        STEPS.add(new Step(5, () -> swapIn(8, module(ModuleKind.ACTIVATOR, s -> {
+            s.apply(Setting.ACTION, ModuleSettings.Action.DIG_BLOCK.ordinal());
+            s.apply(Setting.SNEAK, 1);
+        }))));
+        STEPS.add(new Step(5, () -> openModule(8)));
+        STEPS.add(new Step(2, AutoShot::mouseAway));
+        STEPS.add(new Step(25, () -> shot("module_activator.png")));
+        STEPS.add(new Step(5, AutoShot::closeScreen));
         STEPS.add(new Step(5, () -> openModule(0)));
         STEPS.add(new Step(5, () -> mouseAtGui(150, 35)));
         STEPS.add(new Step(10, () -> shot("module_gui_tooltip.png")));
@@ -242,6 +251,14 @@ public final class AutoShot {
             router.upgrades().setStackInSlot(0, new ItemStack(BoundlessRouters.upgrade(UpgradeKind.SPEED), 7));
             router.upgrades().setStackInSlot(1, new ItemStack(BoundlessRouters.upgrade(UpgradeKind.STACK), 3));
             router.upgrades().setStackInSlot(2, new ItemStack(BoundlessRouters.upgrade(UpgradeKind.RANGE_2), 1));
+        });
+    }
+
+    /** Puts a module into one of the router's slots. */
+    private static void swapIn(int slot, ItemStack module) {
+        MinecraftServer server = server();
+        server.execute(() -> {
+            if (server.overworld().getBlockEntity(ROUTER) instanceof RouterBlockEntity router) router.modules().setStackInSlot(slot, module);
         });
     }
 
