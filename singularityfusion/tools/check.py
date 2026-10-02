@@ -8,12 +8,11 @@
 - the pylon's texture regions in gen_textures.py are the renderer's;
 - every translation key the code uses is in all three languages, and the three have the same keys.
 """
+import ast
 import json
 import os
 import re
 import sys
-
-from PIL import Image
 
 import layout as L
 
@@ -75,12 +74,25 @@ def check_layouts():
                 problem("the sheet's %s and %s overlap" % (regions[i][0], regions[j][0]))
 
 
+def png_size(path):
+    """A PNG's width and height, from its header (no image library needed)."""
+    with open(path, "rb") as f:
+        head = f.read(24)
+    if head[:8] != b"\x89PNG\r\n\x1a\n":
+        return None
+    return int.from_bytes(head[16:20], "big"), int.from_bytes(head[20:24], "big")
+
+
 def texture(rel, size=None, frames=False):
     path = os.path.join(ASSETS, "textures", rel + ".png")
     if not os.path.exists(path):
         problem("missing texture " + rel)
         return
-    w, h = Image.open(path).size
+    dims = png_size(path)
+    if dims is None:
+        problem("%s isn't a PNG" % rel)
+        return
+    w, h = dims
     if size and (w, h) != size and not (frames and w == size[0] and h % size[1] == 0):
         problem("%s is %dx%d, not %dx%d" % (rel, w, h, size[0], size[1]))
     if frames and h > w and h % w == 0 and not os.path.exists(path + ".mcmeta"):
@@ -111,9 +123,11 @@ def check_pylon_regions():
     src = read(os.path.join(JAVA, "client", "GravitonPylonRenderer.java"))
     m = re.search(r"REGIONS = \{(.*?)\};", src, re.S)
     java_regions = [tuple(int(v) for v in r.split(",")) for r in re.findall(r"\{(\d+, \d+, \d+, \d+)\}", m.group(1))] if m else []
-    sys.path.insert(0, HERE)
-    import gen_textures
-    py_regions = list(gen_textures.PYLON_REGIONS.values())
+    tree = ast.parse(read(os.path.join(HERE, "gen_textures.py")))
+    py_regions = []
+    for node in tree.body:
+        if isinstance(node, ast.Assign) and any(isinstance(t, ast.Name) and t.id == "PYLON_REGIONS" for t in node.targets):
+            py_regions = list(ast.literal_eval(node.value).values())
     if java_regions != py_regions:
         problem("the pylon's texture regions differ: renderer %s, gen_textures %s" % (java_regions, py_regions))
 

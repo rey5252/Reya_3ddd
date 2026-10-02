@@ -118,7 +118,7 @@ public class FusionCoreBlockEntity extends BlockEntity implements MenuProvider {
 
     /** For the game tests and creative fiddling: sets the energy (within the capacity). */
     public void setEnergy(long energy) {
-        this.energy = Mth.clamp(energy, 0L, capacity());
+        this.energy = Math.max(0L, Math.min(energy, capacity()));
         setChanged();
         recheck = true;
     }
