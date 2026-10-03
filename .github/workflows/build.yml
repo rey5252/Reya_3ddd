@@ -32,6 +32,8 @@ jobs:
             dir: multibrewer
           - mod: chaosspawner
             dir: chaosspawner
+          - mod: starfall
+            dir: starfall
     defaults:
       run:
         working-directory: ${{ matrix.dir }}

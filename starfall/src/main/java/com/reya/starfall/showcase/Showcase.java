@@ -1,0 +1,304 @@
+package com.reya.starfall.showcase;
+
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.Locale;
+import java.util.function.BooleanSupplier;
+
+import com.mojang.logging.LogUtils;
+import com.reya.starfall.Config;
+import com.reya.starfall.Skill;
+import com.reya.starfall.Starfall;
+import com.reya.starfall.client.ClientStrikes;
+import com.reya.starfall.client.Film;
+import com.reya.starfall.client.SkillMenu;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.Screenshot;
+import net.minecraft.world.Difficulty;
+import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.LevelSettings;
+import net.minecraft.world.level.WorldDataConfiguration;
+import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.levelgen.WorldOptions;
+import net.minecraft.world.level.levelgen.presets.WorldPresets;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
+import org.slf4j.Logger;
+
+/**
+ * Development-only recorder (left out of the mod jar): with {@code -Dstarfall.showcase=true} the client makes a
+ * world, fires all three weapons and saves screenshots of the films and the strikes, then quits. CI runs it on a
+ * virtual display so the screenshots can be looked at without a game.
+ */
+@Mod.EventBusSubscriber(modid = Starfall.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
+public final class Showcase {
+    private static final Logger LOGGER = LogUtils.getLogger();
+    private static final boolean ENABLED = Boolean.getBoolean("starfall.showcase");
+    private static final Deque<BooleanSupplier> SCRIPT = new ArrayDeque<>();
+    private static boolean created, scripted;
+    private static int ticks, shots;
+    private static String pendingShot;
+    private static long strikeStart = -1;
+    private static int baseX, baseY, baseZ;
+
+    @SubscribeEvent
+    public static void onClientTick(TickEvent.ClientTickEvent event) {
+        if (!ENABLED || event.phase != TickEvent.Phase.END) return;
+        Minecraft mc = Minecraft.getInstance();
+        ticks++;
+        if (ticks > 20 * 60 * 25) {
+            LOGGER.error("[showcase] took too long, quitting");
+            mc.stop();
+            return;
+        }
+        if (!created) {
+            if (mc.level == null && mc.getOverlay() == null && mc.screen != null && ticks > 60) createWorld(mc);
+            return;
+        }
+        if (mc.player == null || mc.level == null) return;
+        if (!scripted) {
+            scripted = true;
+            script(mc);
+        }
+        while (!SCRIPT.isEmpty() && pendingShot == null) {
+            boolean done;
+            try {
+                done = SCRIPT.peekFirst().getAsBoolean();
+            } catch (RuntimeException e) {
+                LOGGER.error("[showcase] step failed", e);
+                done = true;
+            }
+            if (!done) break;
+            SCRIPT.pollFirst();
+        }
+        if (SCRIPT.isEmpty() && pendingShot == null) {
+            LOGGER.info("[showcase] finished with {} screenshots", shots);
+            mc.stop();
+        }
+    }
+
+    /** Screenshots are taken right after a frame has been drawn, so the film overlay is in them. */
+    @SubscribeEvent
+    public static void onRenderTick(TickEvent.RenderTickEvent event) {
+        if (!ENABLED || event.phase != TickEvent.Phase.END || pendingShot == null) return;
+        Minecraft mc = Minecraft.getInstance();
+        String name = String.format(Locale.ROOT, "%02d_%s.png", ++shots, pendingShot);
+        Screenshot.grab(mc.gameDirectory, name, mc.getMainRenderTarget(), msg -> {
+        });
+        LOGGER.info("[showcase] screenshot {}", name);
+        pendingShot = null;
+    }
+
+    private static void createWorld(Minecraft mc) {
+        created = true;
+        LOGGER.info("[showcase] creating world");
+        GameRules rules = new GameRules();
+        rules.getRule(GameRules.RULE_DAYLIGHT).set(false, null);
+        rules.getRule(GameRules.RULE_WEATHER_CYCLE).set(false, null);
+        rules.getRule(GameRules.RULE_DOMOBSPAWNING).set(false, null);
+        rules.getRule(GameRules.RULE_DOFIRETICK).set(false, null);
+        rules.getRule(GameRules.RULE_SENDCOMMANDFEEDBACK).set(false, null);
+        LevelSettings settings = new LevelSettings("Starfall Showcase", GameType.CREATIVE, false, Difficulty.PEACEFUL, true,
+                rules, WorldDataConfiguration.DEFAULT);
+        mc.createWorldOpenFlows().createFreshLevel("starfall_showcase", settings, new WorldOptions(20261003L, true, false),
+                WorldPresets::createNormalWorldDimensions);
+    }
+
+    // ------------------------------------------------------------------ the script
+
+    private static void step(BooleanSupplier s) {
+        SCRIPT.addLast(s);
+    }
+
+    private static void run(Runnable r) {
+        step(() -> {
+            r.run();
+            return true;
+        });
+    }
+
+    private static void waitTicks(int n) {
+        int[] left = {n};
+        step(() -> --left[0] <= 0);
+    }
+
+    private static void cmd(String command) {
+        run(() -> {
+            LOGGER.info("[showcase] /{}", command);
+            Minecraft.getInstance().player.connection.sendCommand(command);
+        });
+    }
+
+    private static void shot(String name) {
+        run(() -> pendingShot = name);
+    }
+
+    private static void fly() {
+        run(() -> {
+            Minecraft mc = Minecraft.getInstance();
+            mc.player.getAbilities().flying = true;
+            mc.player.onUpdateAbilities();
+        });
+    }
+
+    private static void tp(int dx, int dy, int dz, float yaw, float pitch) {
+        run(() -> {
+            String c = String.format(Locale.ROOT, "tp @s %d %d %d %.1f %.1f", baseX + dx, baseY + dy, baseZ + dz, yaw, pitch);
+            LOGGER.info("[showcase] /{}", c);
+            Minecraft.getInstance().player.connection.sendCommand(c);
+        });
+        fly();
+    }
+
+    /** Fires a skill at ground level at (dx, dz) from the base, then waits for the strike to reach the client. */
+    private static void cast(String skill, int dx, int dz) {
+        run(() -> {
+            Minecraft mc = Minecraft.getInstance();
+            int x = baseX + dx, z = baseZ + dz;
+            int y = mc.level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z) - 1;
+            String c = String.format(Locale.ROOT, "starfall cast %s %d %d %d", skill, x, y, z);
+            LOGGER.info("[showcase] /{}", c);
+            mc.player.connection.sendCommand(c);
+        });
+        long[] before = {-2};
+        step(() -> {
+            if (before[0] == -2) before[0] = ClientStrikes.latestStart();
+            long now = ClientStrikes.latestStart();
+            if (now >= 0 && now != before[0]) {
+                strikeStart = now;
+                return true;
+            }
+            return false;
+        });
+    }
+
+    /** Waits until the current strike is {@code t} ticks old. */
+    private static void at(int t) {
+        step(() -> Minecraft.getInstance().level.getGameTime() - strikeStart >= t);
+    }
+
+    private static void script(Minecraft mc) {
+        baseX = mc.player.blockPosition().getX();
+        baseZ = mc.player.blockPosition().getZ();
+        baseY = mc.level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, baseX, baseZ);
+        LOGGER.info("[showcase] base at {} {} {}", baseX, baseY, baseZ);
+        // smaller than the defaults so each strike fits in the view of a software-rendered client
+        Config.RAILGUN_RADIUS.set(56);
+        Config.GUNGNIR_RADIUS.set(72);
+        Config.GUNGNIR_DEPTH.set(10);
+        Config.SEVEN_SPAN.set(320);
+        Config.SEVEN_CRATER_SCALE.set(2.2D);
+        Config.COOLDOWN.set(0);
+
+        waitTicks(100);
+        cmd("time set 6000");
+        cmd("weather clear 1000000");
+        cmd("give @s starfall:stellar_remote");
+        run(() -> mc.player.getInventory().selected = 0);
+
+        // ---- SS-01 Railgun
+        tp(0, 50, -130, 0.0F, 18.0F);
+        waitTicks(160);
+        shot("world_before");
+        cast("railgun", 0, 0);
+        at(12);
+        shot("ss01_film_ascent");
+        at(38);
+        shot("ss01_film_earth");
+        at(62);
+        shot("ss01_film_saturn");
+        at(94);
+        shot("ss01_film_galaxy");
+        at(128);
+        shot("ss01_film_railgun_charging");
+        at(149);
+        shot("ss01_film_fire");
+        at(Skill.MARK + 34);
+        shot("ss01_beam");
+        at(Skill.MARK + 76);
+        shot("ss01_beam_fading");
+        at(Skill.MARK + 420);
+        tp(0, 95, -110, 0.0F, 42.0F);
+        waitTicks(80);
+        shot("ss01_hole");
+        tp(30, 70, -40, 20.0F, 62.0F);
+        waitTicks(60);
+        shot("ss01_hole_down");
+
+        // ---- SS-03 Gungnir
+        tp(700, 60, -160, 0.0F, 16.0F);
+        waitTicks(260);
+        cast("gungnir", 700, 0);
+        at(10);
+        shot("ss03_film_ascent");
+        at(36);
+        shot("ss03_film_jupiter");
+        at(62);
+        shot("ss03_film_accelerator");
+        at(100);
+        shot("ss03_film_seven_laps");
+        at(118);
+        shot("ss03_film_flung");
+        at(150);
+        shot("ss03_film_descent");
+        run(Film::stop);
+        at(156);
+        shot("ss03_ember_marker");
+        at(Skill.MARK + 5);
+        shot("ss03_needle_falling");
+        at(Skill.GUNGNIR_IMPACT + 12);
+        shot("ss03_shock_ring");
+        at(Skill.GUNGNIR_IMPACT + 34);
+        shot("ss03_shock_ring_wide");
+        at(Skill.GUNGNIR_IMPACT + 420);
+        tp(700, 100, -150, 0.0F, 34.0F);
+        waitTicks(80);
+        shot("ss03_crater_and_needle");
+
+        // ---- SS-04 Seven Stars
+        tp(0, 150, 760, 0.0F, 48.0F);
+        waitTicks(300);
+        cast("seven_stars", 0, 880);
+        at(66);
+        shot("ss04_film_stars_wake");
+        at(112);
+        shot("ss04_film_stellar_array");
+        at(142);
+        shot("ss04_film_fire");
+        run(Film::stop);
+        at(150);
+        shot("ss04_projection");
+        at(Skill.starImpact(0) - 6);
+        shot("ss04_star_falling");
+        at(Skill.starImpact(0) + 2);
+        shot("ss04_first_impact");
+        at(Skill.starImpact(4) + 8);
+        shot("ss04_craters");
+        at(Skill.lineStart(3) + 6);
+        shot("ss04_lines_ignite");
+        at(Skill.FLARE + 6);
+        shot("ss04_flare");
+        at(Skill.FLARE + 400);
+        tp(0, 230, 820, 0.0F, 80.0F);
+        waitTicks(120);
+        shot("ss04_burned_into_the_land");
+
+        // ---- the skill menu
+        tp(0, 230, 820, 0.0F, 0.0F);
+        waitTicks(40);
+        run(SkillMenu::toggle);
+        waitTicks(20);
+        shot("menu");
+        run(() -> SkillMenu.click(false));
+        waitTicks(10);
+        shot("menu_details");
+        run(SkillMenu::close);
+        waitTicks(10);
+    }
+
+    private Showcase() {
+    }
+}

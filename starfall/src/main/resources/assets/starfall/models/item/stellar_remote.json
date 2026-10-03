@@ -1,0 +1,20 @@
+{
+  "parent": "minecraft:item/handheld",
+  "textures": {
+    "layer0": "starfall:item/stellar_remote_railgun"
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "starfall:skill": 0.5
+      },
+      "model": "starfall:item/stellar_remote_gungnir"
+    },
+    {
+      "predicate": {
+        "starfall:skill": 1.0
+      },
+      "model": "starfall:item/stellar_remote_seven_stars"
+    }
+  ]
+}
