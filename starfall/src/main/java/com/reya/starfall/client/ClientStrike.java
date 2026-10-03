@@ -2,6 +2,7 @@ package com.reya.starfall.client;
 
 import com.reya.starfall.BigDipper;
 import com.reya.starfall.Skill;
+import com.reya.starfall.Sounds;
 import com.reya.starfall.network.StrikePacket;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -18,11 +19,17 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.Arrays;
+
 /** One strike as this client sees it: everything is timed from the strike's start in game ticks. */
 final class ClientStrike {
     static final int RED = 0xFF2A2A, RED_SOFT = 0xFF6A6A, PINK = 0xFFE0E0, WHITE = 0xFFFFFF;
     static final int EMBER = 0xFF7A1E, EMBER_HOT = 0xFFD27A;
-    static final int VIOLET = 0xA060FF, VIOLET_HOT = 0xE8D0FF, FIRE = 0xFF6A2A;
+    static final int VIOLET = 0xA060FF, VIOLET_HOT = 0xE8D0FF, FIRE = 0xFF6A2A, BOLT = 0xB8D4FF;
+    /** How long the melted wall of SS-01's shaft keeps glowing after the beam is gone, in ticks. */
+    static final int AFTERGLOW = 1200;
+    /** Points around the shaft's rim where the client looks up how high the land is. */
+    private static final int RIM = 256;
 
     final int id;
     final Skill skill;
@@ -34,6 +41,8 @@ final class ClientStrike {
     final float[] sizes;
     private int lastTick = -1;
     private final RandomSource random = RandomSource.create();
+    private final double[] rim = new double[RIM];
+    private int rimAt = Integer.MIN_VALUE;
 
     ClientStrike(StrikePacket p) {
         id = p.id();
@@ -54,6 +63,7 @@ final class ClientStrike {
             nz[i] = p.nodes()[i * 3 + 2] + 0.5D;
         }
         sizes = p.sizes();
+        Arrays.fill(rim, groundY());
     }
 
     double cx() {
@@ -69,7 +79,9 @@ final class ClientStrike {
     }
 
     boolean expired(long gameTime) {
-        return gameTime - start > skill.duration + 40;
+        int life = skill.duration + 40;
+        if (skill == Skill.RAILGUN) life = Math.max(life, Skill.MARK + 100 + AFTERGLOW);
+        return gameTime - start > life;
     }
 
     /** Gungnir's boom reaches the listener this many ticks after the impact: it outruns its own sound. */
@@ -85,6 +97,28 @@ final class ClientStrike {
         for (int t = Math.max(lastTick + 1, now - 20); t <= now; t++) at(level, listener, t);
         lastTick = Math.max(lastTick, now);
         if (skill == Skill.SEVEN_STARS) refineNodes(level, now);
+        if (skill == Skill.RAILGUN && now >= Skill.MARK - 20 && now - rimAt >= 10) {
+            rimAt = now;
+            refreshRim(level);
+        }
+    }
+
+    /** Takes the height of the land along the shaft's rim from the client's own chunks, so its glow follows it. */
+    private void refreshRim(ClientLevel level) {
+        for (int i = 0; i < RIM; i++) {
+            double a = Math.PI * 2.0D * i / RIM;
+            int x = Mth.floor(cx() + Math.cos(a) * (radius + 1.0D)), z = Mth.floor(cz() + Math.sin(a) * (radius + 1.0D));
+            if (level.getChunkSource().hasChunk(x >> 4, z >> 4)) {
+                rim[i] = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
+            }
+        }
+    }
+
+    /** How hot the shaft's wall still is, 0..1: it takes over from the beam as the beam dies, then cools. */
+    private float wallHeat(float bt) {
+        float rise = Mth.clamp((bt - 50.0F) / 50.0F, 0.0F, 1.0F);
+        float cool = 1.0F - Mth.clamp((bt - 100.0F) / AFTERGLOW, 0.0F, 1.0F);
+        return rise * cool * cool;
     }
 
     /** Takes the ground height of each node from the client's own chunks, until its star has landed. */
@@ -109,24 +143,29 @@ final class ClientStrike {
     private void railgunAt(ClientLevel level, Vec3 l, int t) {
         double d = Math.hypot(l.x - cx(), l.z - cz());
         float near = proximity(d, radius * 3.0D, radius * 25.0D);
-        if (t == 0) {
-            play(SoundEvents.BEACON_ACTIVATE, 0.5F, 1.0F);
-            play(SoundEvents.GUARDIAN_ATTACK, 0.5F, 0.6F * Math.max(0.3F, near));
-        } else if (t == Skill.MARK - 50) {
-            play(SoundEvents.BEACON_POWER_SELECT, 0.5F, 0.8F);
-        } else if (t == Skill.MARK - 25) {
-            play(SoundEvents.WARDEN_SONIC_CHARGE, 0.5F, Math.max(0.3F, near));
-        } else if (t == Skill.MARK) {
+        if (film()) {
+            // the film's own sounds, for whoever pressed the button
+            switch (t) {
+                case 0 -> play(Sounds.FILM_UPLINK.get(), 1.0F, 0.7F);
+                case 4 -> play(Sounds.FILM_LOCK.get(), 1.0F, 0.6F);
+                case 22, 50, 82 -> play(Sounds.FILM_WHOOSH.get(), 0.85F + t * 0.002F, 0.7F);
+                case 112, 141 -> play(Sounds.FILM_WARP.get(), t == 112 ? 0.9F : 1.05F, 0.75F);
+                case 154 -> play(Sounds.FILM_TITLE.get(), 1.0F, 0.9F);
+                case 174 -> play(Sounds.RAILGUN_CHARGE.get(), 1.0F, 1.0F);
+                case 190, 198, 205, 211, 216 -> play(Sounds.RAILGUN_ARC.get(), 0.8F + random.nextFloat() * 0.5F, 0.6F);
+                case 220 -> play(Sounds.RAILGUN_FIRE.get(), 1.0F, 1.0F);
+                case 229 -> play(Sounds.FILM_WARP.get(), 1.3F, 0.8F);
+                default -> {
+                }
+            }
+        }
+        if (t == Skill.MARK) {
             float v = Math.max(0.25F, near);
-            play(SoundEvents.WARDEN_SONIC_BOOM, 0.5F, v);
-            play(SoundEvents.GENERIC_EXPLODE, 0.4F, v);
-            play(SoundEvents.LIGHTNING_BOLT_THUNDER, 0.5F, v);
-            play(SoundEvents.LIGHTNING_BOLT_IMPACT, 0.6F, v);
-        } else if (t == Skill.MARK + 6) {
-            play(SoundEvents.GENERIC_EXPLODE, 0.3F, Math.max(0.2F, near));
-            play(SoundEvents.DRAGON_FIREBALL_EXPLODE, 0.5F, Math.max(0.2F, near));
-        } else if (t == Skill.MARK + 90) {
-            play(SoundEvents.BEACON_DEACTIVATE, 0.5F, 0.8F);
+            play(Sounds.RAILGUN_IMPACT.get(), 1.0F, v);
+            play(Sounds.RAILGUN_BEAM.get(), 1.0F, v * 0.9F);
+            if (!caster) play(Sounds.RAILGUN_FIRE.get(), 0.8F, v * 0.6F);
+        } else if (t == Skill.MARK + 60) {
+            play(Sounds.RAILGUN_BEAM.get(), 0.85F, Math.max(0.2F, near) * 0.6F);
         }
         if (t >= Skill.MARK && t < Skill.MARK + 70 && d < radius + 96.0D) {
             // sparks crawling up the edge of the beam where you can see them
@@ -138,28 +177,41 @@ final class ClientStrike {
                 spark(level, random.nextBoolean() ? ParticleTypes.ELECTRIC_SPARK : ParticleTypes.LAVA, x, y, z);
             }
         }
+        float heat = wallHeat(t - Skill.MARK);
+        if (heat > 0.05F && d < radius + 96.0D) {
+            // melt spitting off the lip and smoke rising from it, near you
+            for (int i = 0; i < 10; i++) {
+                int k = random.nextInt(RIM);
+                double a = Math.PI * 2.0D * k / RIM;
+                double x = cx() + Math.cos(a) * (radius - 0.3D), z = cz() + Math.sin(a) * (radius - 0.3D);
+                if (Math.hypot(x - l.x, z - l.z) > 80.0D || random.nextFloat() > heat) continue;
+                double y = rim[k] - random.nextDouble() * random.nextDouble() * 24.0D;
+                spark(level, i % 3 == 0 ? ParticleTypes.LARGE_SMOKE : i % 3 == 1 ? ParticleTypes.LAVA : ParticleTypes.FLAME, x, y, z);
+            }
+        }
     }
 
     private void gungnirAt(ClientLevel level, Vec3 l, int t) {
         double d = Math.hypot(l.x - cx(), l.z - cz());
         float near = proximity(d, radius * 2.0D, radius * 20.0D);
-        if (t == 0) {
-            play(SoundEvents.BEACON_ACTIVATE, 0.5F, 0.8F);
-            play(SoundEvents.RESPAWN_ANCHOR_CHARGE, 0.6F, 0.8F);
-        } else if (t == Skill.MARK - 30) {
-            play(SoundEvents.TRIDENT_RIPTIDE_3, 0.5F, 0.8F);
+        if (film()) {
+            switch (t) {
+                case 0 -> play(Sounds.FILM_UPLINK.get(), 0.9F, 0.7F);
+                case 4 -> play(Sounds.FILM_LOCK.get(), 0.9F, 0.6F);
+                case 22, 44 -> play(Sounds.FILM_WHOOSH.get(), t == 22 ? 0.8F : 0.95F, 0.7F);
+                case 66 -> play(Sounds.GUNGNIR_SPIN.get(), 1.0F, 0.9F);
+                case 72 -> play(Sounds.FILM_TITLE.get(), 0.9F, 0.8F);
+                case 160 -> play(Sounds.GUNGNIR_LAUNCH.get(), 1.0F, 1.0F);
+                case 169 -> play(Sounds.FILM_WARP.get(), 0.8F, 0.7F);
+                case 226 -> play(Sounds.GUNGNIR_FALL.get(), 1.0F, 0.9F);
+                default -> {
+                }
+            }
         }
+        if (t == Skill.MARK && near > 0.05F) play(Sounds.GUNGNIR_FALL.get(), 1.3F, near * 0.8F);
         // it strikes in silence: only the shock and the boom are heard, and the boom comes late
         int boom = Skill.GUNGNIR_IMPACT + boomDelay(l);
-        if (t == boom) {
-            float v = Math.max(0.25F, near);
-            play(SoundEvents.GENERIC_EXPLODE, 0.3F, v);
-            play(SoundEvents.WARDEN_SONIC_BOOM, 0.4F, v);
-            play(SoundEvents.LIGHTNING_BOLT_THUNDER, 0.6F, v);
-            play(SoundEvents.TRIDENT_THUNDER, 0.5F, v);
-        } else if (t == boom + 5) {
-            play(SoundEvents.GENERIC_EXPLODE, 0.45F, Math.max(0.2F, near));
-        }
+        if (t == boom) play(Sounds.GUNGNIR_BOOM.get(), 1.0F, Math.max(0.25F, near));
         int bt = t - Skill.GUNGNIR_IMPACT;
         float reach = width > 0 ? width : 2.0F;
         if (bt >= 0 && bt < Skill.SHOCK_TIME * 2) {
@@ -175,23 +227,33 @@ final class ClientStrike {
     }
 
     private void sevenAt(ClientLevel level, Vec3 l, int t) {
-        if (t == 0) {
-            play(SoundEvents.BEACON_ACTIVATE, 0.5F, 1.4F);
-            play(SoundEvents.AMETHYST_BLOCK_CHIME, 0.5F, 1.0F);
-        } else if (t == Skill.MARK - 40) {
-            play(SoundEvents.END_PORTAL_FRAME_FILL, 0.5F, 0.7F);
+        if (film()) {
+            switch (t) {
+                case 0 -> play(Sounds.FILM_UPLINK.get(), 1.1F, 0.7F);
+                case 4 -> play(Sounds.FILM_LOCK.get(), 1.1F, 0.6F);
+                case 24, 48 -> play(Sounds.FILM_WHOOSH.get(), t == 24 ? 0.9F : 1.05F, 0.65F);
+                case 64 -> play(Sounds.FILM_TITLE.get(), 1.1F, 0.8F);
+                case 132 -> play(Sounds.SEVEN_ARRAY.get(), 1.0F, 0.9F);
+                case 183 -> play(Sounds.FILM_WHOOSH.get(), 0.75F, 0.7F);
+                default -> {
+                }
+            }
+            for (int i = 0; i < 7; i++) {
+                int wake = Math.round((2.9F + i * 0.42F) * 20.0F), beam = Math.round((9.55F + i * 0.17F) * 20.0F);
+                float pitch = (float) (1.35D - 0.25D * BigDipper.size(i));
+                if (t == wake) play(Sounds.SEVEN_WAKE.get(), pitch, 0.8F);
+                if (t == beam) play(Sounds.SEVEN_BEAM.get(), 0.9F + i * 0.05F, 0.6F);
+                if (t == beam + 7) play(Sounds.SEVEN_IMPACT.get(), 1.1F, 0.35F);
+            }
         }
         for (int i = 0; i < nx.length; i++) {
             int impact = Skill.starImpact(i);
             double d = Math.hypot(l.x - nx[i], l.z - nz[i]);
             float near = proximity(d, sizes[i] * 3.0D, sizes[i] * 40.0D);
             if (t == impact - Skill.STAR_FALL) {
-                play(SoundEvents.FIREWORK_ROCKET_LAUNCH, 0.4F, Math.max(0.3F, near));
+                play(Sounds.SEVEN_BEAM.get(), 1.0F, Math.max(0.3F, near));
             } else if (t == impact) {
-                float v = Math.max(0.2F, near);
-                play(SoundEvents.GENERIC_EXPLODE, 0.6F, v);
-                play(SoundEvents.FIREWORK_ROCKET_LARGE_BLAST, 0.5F, v);
-                play(SoundEvents.AMETHYST_CLUSTER_BREAK, 0.6F, v);
+                play(Sounds.SEVEN_IMPACT.get(), 0.9F + 0.04F * i, Math.max(0.2F, near));
                 if (d < 200.0D) {
                     for (int k = 0; k < 40; k++) {
                         double a = random.nextDouble() * Math.PI * 2.0D, r = random.nextDouble() * sizes[i];
@@ -202,15 +264,14 @@ final class ClientStrike {
             }
         }
         for (int k = 0; k < BigDipper.LINES.length; k++) {
-            if (t == Skill.lineStart(k)) {
-                play(SoundEvents.BLAZE_SHOOT, 0.5F, 0.6F);
-                play(SoundEvents.FIRECHARGE_USE, 0.6F, 0.5F);
-            }
+            if (t == Skill.lineStart(k)) play(Sounds.SEVEN_IGNITE.get(), 0.9F + 0.05F * k, 0.6F);
         }
-        if (t == Skill.FLARE) {
-            play(SoundEvents.END_PORTAL_SPAWN, 0.8F, 0.6F);
-            play(SoundEvents.BEACON_POWER_SELECT, 1.2F, 1.0F);
-        }
+        if (t == Skill.FLARE) play(Sounds.SEVEN_FLARE.get(), 1.0F, 1.0F);
+    }
+
+    /** This client's film is playing for this strike. */
+    private boolean film() {
+        return caster && Film.active();
     }
 
     private void spark(ClientLevel level, ParticleOptions type, double x, double y, double z) {
@@ -343,9 +404,25 @@ final class ClientStrike {
             fx.ring(cx, gy + 0.05D, cz, 0.0D, 2.5D + 3.0D * p, 24, Fx.argb(RED_SOFT, 0.85F), Fx.argb(RED, 0.0F));
             fx.dashedRing(cx, gy + 0.08D, cz, 6.0D + 2.0D * Mth.sin(t * 0.2F), 0.5D, 48, Fx.argb(RED, 0.9F), -t * 0.15D, 6);
             fx.dashedRing(cx, gy + 0.1D, cz, radius, 1.6D, 160, Fx.argb(RED, 0.6F * Math.min(1.0F, t / 20.0F)), t * 0.05D, 32);
+            // where the laser passes your eye it catches the lens like a star
+            Vec3 eye = fx.camera();
+            double dist = Math.hypot(eye.x - cx, eye.z - cz);
+            if (dist > 4.0D) {
+                double fy = Mth.clamp(eye.y, gy + 2.0D, top);
+                float a = 0.7F * pulse * Math.min(1.0F, t / 10.0F) * proximity(dist, 64.0D, 2400.0D);
+                fx.flare(cx, fy, cz, Math.min(dist * 0.9D, 900.0D), Fx.argb(0xFF4040, a));
+            }
             return;
         }
         float bt = t - Skill.MARK;
+        float heat = wallHeat(bt);
+        if (heat > 0.004F) {
+            // the melted wall of the shaft: white-hot at the lip, dying to dark red far down
+            fx.skirt(cx, cz, radius - 0.8D, rim, -150.0D, 0.6D, Fx.argb(RED, 0.0F), Fx.argb(EMBER, 0.6F * heat));
+            fx.skirt(cx, cz, radius - 0.7D, rim, -16.0D, 0.6D, Fx.argb(EMBER, 0.0F), Fx.argb(EMBER_HOT, 0.65F * heat));
+            // and the air shimmering over it
+            fx.skirt(cx, cz, radius - 0.5D, rim, 0.6D, 12.0D, Fx.argb(EMBER, 0.2F * heat), Fx.argb(EMBER, 0.0F));
+        }
         if (bt < 100) {
             double open = easeOut(Math.min(1.0D, bt / 6.0D));
             float fade = bt < 70 ? 1.0F : Math.max(0.0F, 1.0F - (bt - 70) / 30.0F);
@@ -366,11 +443,7 @@ final class ClientStrike {
                 fx.ring(cx, gy, cz, rr * 0.82D, rr, 160, Fx.argb(PINK, 0.0F), Fx.argb(PINK, a));
                 fx.cylinder(cx, cz, gy - 2.0D, gy + 24.0D * (1.0D - bt / 30.0D), rr, 160, Fx.argb(RED_SOFT, a), Fx.argb(RED, 0.0F));
             }
-            return;
         }
-        // afterglow on the rim of the hole
-        float k = Math.max(0.0F, 1.0F - (bt - 100) / (skill.duration - Skill.MARK - 100.0F));
-        fx.cylinder(cx, cz, gy - 60.0D, gy + 40.0D, radius, 160, Fx.argb(RED, 0.3F * k), Fx.argb(RED, 0.0F));
     }
 
     private void gungnirGlow(Fx fx, float t, ClientLevel level) {
@@ -444,6 +517,7 @@ final class ClientStrike {
                 fx.ring(x, y + 0.5D, z, rr * 0.7D, rr, 64, Fx.argb(VIOLET, 0.0F), Fx.argb(VIOLET_HOT, (float) (0.85D * k)));
                 fx.glow(x, y + 8.0D, z, s * 2.5D * k + 4.0D, Fx.argb(WHITE, (float) (0.8D * k)));
             }
+            if (bt >= 0 && bt < 28) impactBolts(fx, i, bt);
             if (bt >= 0) {
                 float f = Math.max(0.0F, 1.0F - (t - impact) / (skill.duration - impact + 1.0F));
                 // the star-core crystal glowing at the bottom of its crater
@@ -451,6 +525,68 @@ final class ClientStrike {
                 fx.glow(x, y - s * 0.4D, z, 6.0D, Fx.argb(VIOLET_HOT, 0.7F * f));
             }
         }
+        if (nx.length < 7) return;
+        for (int k = 0; k < BigDipper.LINES.length; k++) {
+            int a = BigDipper.LINES[k][0], b = BigDipper.LINES[k][1];
+            lineBolts(fx, k, t - Skill.lineStart(k), nx[a], ny[a] + 1.5D, nz[a], nx[b], ny[b] + 1.5D, nz[b]);
+        }
+    }
+
+    /** White-blue lightning crawling out over a fresh crater, and for a moment the strike itself out of the sky. */
+    private void impactBolts(Fx fx, int i, float bt) {
+        double x = nx[i], y = ny[i], z = nz[i], s = sizes[i];
+        int frame = (int) (bt / 2.0F);
+        float k = 1.0F - bt / 28.0F;
+        float flicker = 0.55F + 0.45F * (float) hash(id * 31L + i * 7L + frame);
+        float a = k * flicker;
+        double half = 0.12D + s * 0.006D;
+        int bolts = 5 + Math.min(4, (int) (s / 10.0D));
+        for (int b = 0; b < bolts; b++) {
+            long seed = id * 7919L + i * 131L + b * 17L + frame * 1013L;
+            double ang = Math.PI * 2.0D * (b + 0.7D * hash(seed)) / bolts;
+            double reach = s * (0.75D + 0.6D * hash(seed + 5L)) * (0.6D + 0.4D * Math.min(1.0D, bt / 6.0D));
+            fx.bolt(x, y + 1.0D + s * 0.12D, z, x + Math.cos(ang) * reach, y + 0.6D, z + Math.sin(ang) * reach,
+                    half, reach * 0.18D, seed, Fx.argb(WHITE, 0.95F * a), Fx.argb(BOLT, 0.3F * a));
+        }
+        if (bt < 8) {
+            float f = 1.0F - bt / 8.0F;
+            long seed = id * 104729L + i * 389L + frame;
+            fx.bolt(x + (hash(seed) - 0.5D) * s, y + 260.0D, z + (hash(seed + 1L) - 0.5D) * s, x, y + 0.5D, z,
+                    half * 2.5D, 22.0D, seed, Fx.argb(WHITE, f), Fx.argb(BOLT, 0.45F * f));
+        }
+    }
+
+    /** Arcs racing along a line of the figure as it burns, and jumping off its burning front. */
+    private void lineBolts(Fx fx, int k, float lt, double ax, double ay, double az, double bx, double by, double bz) {
+        float span = Skill.LINE_BURN + 14.0F;
+        if (lt < 0 || lt >= span) return;
+        double p = Math.min(1.0D, lt / Skill.LINE_BURN);
+        double ex = ax + (bx - ax) * p, ey = ay + (by - ay) * p, ez = az + (bz - az) * p;
+        int frame = (int) (lt / 2.0F);
+        float fade = lt < Skill.LINE_BURN ? 1.0F : 1.0F - (lt - Skill.LINE_BURN) / 14.0F;
+        float a = fade * (0.6F + 0.4F * (float) hash(id * 53L + k * 11L + frame));
+        double w = width * 0.5D + 2.0D;
+        long seed = id * 15485863L + k * 977L + frame * 31L;
+        fx.bolt(ax, ay, az, ex, ey, ez, 0.18D + width * 0.01D, w * 0.8D, seed, Fx.argb(WHITE, 0.9F * a), Fx.argb(BOLT, 0.28F * a));
+        if (p >= 1.0D) return;
+        double dx = bx - ax, dz = bz - az, len = Math.sqrt(dx * dx + dz * dz);
+        if (len < 1.0E-6D) return;
+        for (int j = 0; j < 3; j++) {
+            double side = (hash(seed + j * 3L) - 0.5D) * 2.0D;
+            double fwd = hash(seed + j * 3L + 1L) * 0.6D;
+            double reach = w * 1.6D + 6.0D;
+            double tx = ex + (dx * fwd - dz * side) / len * reach, tz = ez + (dz * fwd + dx * side) / len * reach;
+            fx.bolt(ex, ey + 1.0D, ez, tx, ey - 0.5D, tz, 0.12D + width * 0.006D, reach * 0.25D, seed + j * 101L,
+                    Fx.argb(WHITE, 0.85F * a), Fx.argb(BOLT, 0.25F * a));
+        }
+    }
+
+    /** A steady random number in 0..1 for a given seed. */
+    static double hash(long n) {
+        n = (n ^ (n >>> 33)) * 0xFF51AFD7ED558CCDL;
+        n = (n ^ (n >>> 33)) * 0xC4CEB9FE1A85EC53L;
+        n ^= n >>> 33;
+        return (n >>> 11) * 0x1.0p-53;
     }
 
     private void sevenXray(Fx fx, float t) {

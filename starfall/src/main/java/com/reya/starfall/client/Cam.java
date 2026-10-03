@@ -76,20 +76,28 @@ final class Cam {
         return 0.5F * (2.0F * p1 + (-p0 + p2) * u + (2.0F * p0 - 5.0F * p1 + 4.0F * p2 - p3) * u2 + (-p0 + 3.0F * p1 - 3.0F * p2 + p3) * u3);
     }
 
-    /** A smooth path through points reached at the given (ascending) times. */
+    /**
+     * A smooth path through points reached at the given (ascending) times: each key's tangent comes from its
+     * neighbours and the time between them, so the camera's speed changes smoothly however the keys are spaced.
+     */
     static Vector3f keyed(float t, float[] times, Vector3f[] points) {
         int n = times.length;
         if (t <= times[0]) return new Vector3f(points[0]);
         if (t >= times[n - 1]) return new Vector3f(points[n - 1]);
         int i = 0;
         while (i < n - 2 && t > times[i + 1]) i++;
-        float u = (t - times[i]) / (times[i + 1] - times[i]);
-        Vector3f p0 = points[Math.max(0, i - 1)], p1 = points[i], p2 = points[i + 1], p3 = points[Math.min(n - 1, i + 2)];
+        float dt = times[i + 1] - times[i];
+        float u = (t - times[i]) / dt;
+        Vector3f m0 = tangent(i, times, points).mul(dt), m1 = tangent(i + 1, times, points).mul(dt);
         float u2 = u * u, u3 = u2 * u;
-        return new Vector3f(
-                cr(p0.x, p1.x, p2.x, p3.x, u, u2, u3),
-                cr(p0.y, p1.y, p2.y, p3.y, u, u2, u3),
-                cr(p0.z, p1.z, p2.z, p3.z, u, u2, u3));
+        float h00 = 2 * u3 - 3 * u2 + 1, h10 = u3 - 2 * u2 + u, h01 = -2 * u3 + 3 * u2, h11 = u3 - u2;
+        return new Vector3f(points[i]).mul(h00).add(m0.mul(h10)).add(new Vector3f(points[i + 1]).mul(h01)).add(m1.mul(h11));
+    }
+
+    private static Vector3f tangent(int i, float[] times, Vector3f[] points) {
+        int n = times.length;
+        if (i == 0 || i == n - 1) return new Vector3f();
+        return new Vector3f(points[i + 1]).sub(points[i - 1]).div(times[i + 1] - times[i - 1]);
     }
 
     /** A number through key values reached at the given times. */

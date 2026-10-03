@@ -1,0 +1,28 @@
+{
+  "variants": {
+    "heat=0": {
+      "model": "starfall:block/molten_rock_0"
+    },
+    "heat=1": {
+      "model": "starfall:block/molten_rock_1"
+    },
+    "heat=2": {
+      "model": "starfall:block/molten_rock_2"
+    },
+    "heat=3": {
+      "model": "starfall:block/molten_rock_3"
+    },
+    "heat=4": {
+      "model": "starfall:block/molten_rock_4"
+    },
+    "heat=5": {
+      "model": "starfall:block/molten_rock_5"
+    },
+    "heat=6": {
+      "model": "starfall:block/molten_rock_6"
+    },
+    "heat=7": {
+      "model": "starfall:block/molten_rock_7"
+    }
+  }
+}

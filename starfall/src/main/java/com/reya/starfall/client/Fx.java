@@ -9,6 +9,7 @@ import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.Camera;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -63,6 +64,11 @@ final class Fx {
         RenderSystem.disableBlend();
     }
 
+    /** Where the camera is. */
+    Vec3 camera() {
+        return cam;
+    }
+
     void vertex(double x, double y, double z, int argb) {
         double dx = x - cam.x, dy = y - cam.y, dz = z - cam.z;
         double d2 = dx * dx + dy * dy + dz * dz;
@@ -87,6 +93,24 @@ final class Fx {
             vertex(x1, y0, z1, bottom);
             vertex(x1, y1, z1, top);
             vertex(x0, y1, z0, top);
+        }
+    }
+
+    /**
+     * An upright band around (x, z) that follows the land: at each of the {@code ground.length} points spaced
+     * around it, the band runs from {@code ground + y0} to {@code ground + y1}, fading from c0 to c1.
+     */
+    void skirt(double x, double z, double r, double[] ground, double y0, double y1, int c0, int c1) {
+        int n = ground.length;
+        for (int i = 0; i < n; i++) {
+            int j = i + 1 == n ? 0 : i + 1;
+            double a0 = Math.PI * 2.0D * i / n, a1 = Math.PI * 2.0D * (i + 1) / n;
+            double x0 = x + Math.cos(a0) * r, z0 = z + Math.sin(a0) * r;
+            double x1 = x + Math.cos(a1) * r, z1 = z + Math.sin(a1) * r;
+            vertex(x0, ground[i] + y0, z0, c0);
+            vertex(x1, ground[j] + y0, z1, c0);
+            vertex(x1, ground[j] + y1, z1, c1);
+            vertex(x0, ground[i] + y1, z0, c1);
         }
     }
 
@@ -192,6 +216,87 @@ final class Fx {
             vertex(x, y, z, argb);
             vertex(x + left.x() * c0 + up.x() * s0, y + left.y() * c0 + up.y() * s0, z + left.z() * c0 + up.z() * s0, edge);
             vertex(x + left.x() * c1 + up.x() * s1, y + left.y() * c1 + up.y() * s1, z + left.z() * c1 + up.z() * s1, edge);
+        }
+    }
+
+    /** A lens flare facing the camera: a small glow crossed by long thin spikes, the level ones longest. */
+    void flare(double x, double y, double z, double size, int argb) {
+        int edge = argb & 0x00FFFFFF;
+        glow(x, y, z, size * 0.06D, argb);
+        glow(x, y, z, size * 0.18D, scaleAlpha(argb, 0.35F));
+        for (int k = 0; k < 8; k++) {
+            double a = Math.PI * 2.0D * k / 8.0D;
+            double len = size * (k % 4 == 0 ? 1.0D : k % 2 == 0 ? 0.55D : 0.3D);
+            double c = Math.cos(a) * len, s = Math.sin(a) * len;
+            ribbon(x, y, z, x + left.x() * c + up.x() * s, y + left.y() * c + up.y() * s, z + left.z() * c + up.z() * s,
+                    size * (k % 2 == 0 ? 0.006D : 0.004D), argb, edge);
+        }
+    }
+
+    /**
+     * A bolt of lightning from a to b: the line is broken up by midpoint displacement, wandering at most
+     * {@code wander} blocks off it, and forks into thinner branches. The same seed draws the same bolt, so a new
+     * seed every few frames makes it crackle. A white core is drawn inside a wider coloured halo.
+     */
+    void bolt(double ax, double ay, double az, double bx, double by, double bz, double half, double wander,
+              long seed, int core, int halo) {
+        boltPart(RandomSource.create(seed), ax, ay, az, bx, by, bz, half, wander, core, halo, 0);
+    }
+
+    private void boltPart(RandomSource r, double ax, double ay, double az, double bx, double by, double bz,
+                          double half, double wander, int core, int halo, int depth) {
+        double dx = bx - ax, dy = by - ay, dz = bz - az;
+        double len = Math.sqrt(dx * dx + dy * dy + dz * dz);
+        if (len < 1.0E-3D) return;
+        dx /= len;
+        dy /= len;
+        dz /= len;
+        // about one kink every two blocks, as a power of two so the halving below comes out even
+        int n = 8;
+        while (n < 128 && len / n > 2.0D) n <<= 1;
+        if (depth > 0) n = Math.max(4, n >> 1);
+        double[] px = new double[n + 1], py = new double[n + 1], pz = new double[n + 1];
+        px[0] = ax;
+        py[0] = ay;
+        pz[0] = az;
+        px[n] = bx;
+        py[n] = by;
+        pz[n] = bz;
+        double amp = Math.min(len * 0.17D, wander);
+        for (int step = n; step > 1; step >>= 1) {
+            for (int i = 0; i < n; i += step) {
+                int m = i + step / 2;
+                // a random push sideways, never along the bolt
+                double ox = r.nextDouble() * 2.0D - 1.0D, oy = r.nextDouble() * 2.0D - 1.0D, oz = r.nextDouble() * 2.0D - 1.0D;
+                double along = ox * dx + oy * dy + oz * dz;
+                ox -= along * dx;
+                oy -= along * dy;
+                oz -= along * dz;
+                px[m] = (px[i] + px[i + step]) * 0.5D + ox * amp;
+                py[m] = (py[i] + py[i + step]) * 0.5D + oy * amp;
+                pz[m] = (pz[i] + pz[i + step]) * 0.5D + oz * amp;
+            }
+            amp *= 0.5D;
+        }
+        for (int i = 0; i < n; i++) {
+            ribbon(px[i], py[i], pz[i], px[i + 1], py[i + 1], pz[i + 1], half * 4.0D, halo, halo);
+            ribbon(px[i], py[i], pz[i], px[i + 1], py[i + 1], pz[i + 1], half, core, core);
+        }
+        if (depth >= 2 || n < 8) return;
+        int forks = depth == 0 ? 2 + r.nextInt(3) : r.nextInt(2);
+        for (int f = 0; f < forks; f++) {
+            int i = 2 + r.nextInt(n - 4);
+            // a fork carries on roughly the way the bolt was going there, swung off to one side
+            double tx = px[i + 1] - px[i - 1], ty = py[i + 1] - py[i - 1], tz = pz[i + 1] - pz[i - 1];
+            double tl = Math.sqrt(tx * tx + ty * ty + tz * tz);
+            if (tl < 1.0E-6D) continue;
+            tx = tx / tl + (r.nextDouble() * 2.0D - 1.0D) * 0.9D;
+            ty = ty / tl + (r.nextDouble() * 2.0D - 1.0D) * 0.9D;
+            tz = tz / tl + (r.nextDouble() * 2.0D - 1.0D) * 0.9D;
+            double nl = Math.sqrt(tx * tx + ty * ty + tz * tz);
+            double fl = len * (0.22D + 0.25D * r.nextDouble()) / nl;
+            boltPart(r, px[i], py[i], pz[i], px[i] + tx * fl, py[i] + ty * fl, pz[i] + tz * fl, half * 0.55D,
+                    wander * 0.5D, scaleAlpha(core, 0.75F), scaleAlpha(halo, 0.7F), depth + 1);
         }
     }
 

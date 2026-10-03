@@ -68,6 +68,16 @@ public class Starfall {
                     .noOcclusion()
                     .lightLevel(s -> 15)));
 
+    /** The melted wall of SS-01's shaft. */
+    public static final RegistryObject<Block> MOLTEN_ROCK = BLOCKS.register("molten_rock",
+            () -> new MoltenRockBlock(BlockBehaviour.Properties.copy(Blocks.STONE)
+                    .mapColor(MapColor.FIRE)
+                    .strength(2.0F, 9.0F)
+                    .requiresCorrectToolForDrops()
+                    .lightLevel(MoltenRockBlock::light)
+                    .emissiveRendering((state, level, pos) -> state.getValue(MoltenRockBlock.HEAT) >= 2)
+                    .hasPostProcess((state, level, pos) -> state.getValue(MoltenRockBlock.HEAT) >= 2)));
+
     public static final RegistryObject<Item> STAR_NEEDLE_ITEM = ITEMS.register("star_needle",
             () -> new BlockItem(STAR_NEEDLE.get(), new Item.Properties()));
     public static final RegistryObject<Item> SCORCHED_PLATE_ITEM = ITEMS.register("scorched_plate",
@@ -96,6 +106,7 @@ public class Starfall {
         ITEMS.register(bus);
         BLOCKS.register(bus);
         TABS.register(bus);
+        Sounds.SOUNDS.register(bus);
         bus.addListener(this::addToTabs);
         Net.register();
         MinecraftForge.EVENT_BUS.register(new StarfallManager());

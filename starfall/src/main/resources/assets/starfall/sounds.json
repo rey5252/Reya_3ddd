@@ -1,0 +1,218 @@
+{
+  "film.lock": {
+    "sounds": [
+      {
+        "name": "starfall:film/lock",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.starfall.film.lock"
+  },
+  "film.title": {
+    "sounds": [
+      {
+        "name": "starfall:film/title",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.starfall.film.title"
+  },
+  "film.uplink": {
+    "sounds": [
+      {
+        "name": "starfall:film/uplink",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.starfall.film.uplink"
+  },
+  "film.warp": {
+    "sounds": [
+      {
+        "name": "starfall:film/warp",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.starfall.film.warp"
+  },
+  "film.whoosh": {
+    "sounds": [
+      {
+        "name": "starfall:film/whoosh",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.starfall.film.whoosh"
+  },
+  "gungnir.boom": {
+    "sounds": [
+      {
+        "name": "starfall:gungnir/boom",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.starfall.gungnir.boom"
+  },
+  "gungnir.fall": {
+    "sounds": [
+      {
+        "name": "starfall:gungnir/fall",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.starfall.gungnir.fall"
+  },
+  "gungnir.launch": {
+    "sounds": [
+      {
+        "name": "starfall:gungnir/launch",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.starfall.gungnir.launch"
+  },
+  "gungnir.spin": {
+    "sounds": [
+      {
+        "name": "starfall:gungnir/spin",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.starfall.gungnir.spin"
+  },
+  "railgun.arc": {
+    "sounds": [
+      {
+        "name": "starfall:railgun/arc",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.starfall.railgun.arc"
+  },
+  "railgun.beam": {
+    "sounds": [
+      {
+        "name": "starfall:railgun/beam",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.starfall.railgun.beam"
+  },
+  "railgun.charge": {
+    "sounds": [
+      {
+        "name": "starfall:railgun/charge",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.starfall.railgun.charge"
+  },
+  "railgun.fire": {
+    "sounds": [
+      {
+        "name": "starfall:railgun/fire",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.starfall.railgun.fire"
+  },
+  "railgun.impact": {
+    "sounds": [
+      {
+        "name": "starfall:railgun/impact",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.starfall.railgun.impact"
+  },
+  "remote.cover": {
+    "sounds": [
+      {
+        "name": "starfall:remote/cover",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.starfall.remote.cover"
+  },
+  "remote.press": {
+    "sounds": [
+      {
+        "name": "starfall:remote/press",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.starfall.remote.press"
+  },
+  "seven.array": {
+    "sounds": [
+      {
+        "name": "starfall:seven/array",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.starfall.seven.array"
+  },
+  "seven.beam": {
+    "sounds": [
+      {
+        "name": "starfall:seven/beam",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.starfall.seven.beam"
+  },
+  "seven.flare": {
+    "sounds": [
+      {
+        "name": "starfall:seven/flare",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.starfall.seven.flare"
+  },
+  "seven.ignite": {
+    "sounds": [
+      {
+        "name": "starfall:seven/ignite",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.starfall.seven.ignite"
+  },
+  "seven.impact": {
+    "sounds": [
+      {
+        "name": "starfall:seven/impact",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.starfall.seven.impact"
+  },
+  "seven.wake": {
+    "sounds": [
+      {
+        "name": "starfall:seven/wake",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.starfall.seven.wake"
+  },
+  "ui.hover": {
+    "sounds": [
+      {
+        "name": "starfall:ui/hover",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.starfall.ui.hover"
+  },
+  "ui.select": {
+    "sounds": [
+      {
+        "name": "starfall:ui/select",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.starfall.ui.select"
+  }
+}

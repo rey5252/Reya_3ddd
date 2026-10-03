@@ -179,11 +179,14 @@ vec3 shadeEarth(vec3 pb, vec3 n, vec3 v, float lod, float fp) {
     float low = smoothstep(0.35, 0.0, ndl) * smoothstep(-0.1, 0.05, ndl);
     vec3 cloudCol = vec3(1.0) * diff * 0.97 + vec3(1.0, 0.5, 0.25) * low * 0.35;
     vec3 col = mix(lit, cloudCol, cloud);
-    // cities on the night side, along the coasts most of all
-    float cities = smoothstep(0.62, 0.88, fbm(pb * 26.0 + warp * 2.0, lod - 3.0) + 0.5
-                 + 0.2 * exp(-pow((e - sea) / 0.04, 2.0)));
-    cities *= land * (1.0 - ice) * smoothstep(0.1, -0.12, ndl) * (1.0 - cloud * 0.85);
-    col += cities * vec3(1.0, 0.70, 0.36) * 1.4 * Night;
+    // the night side: a little moonlight, and cities in clusters of fine points, along the coasts most of all
+    float dark = smoothstep(0.1, -0.12, ndl);
+    col += ground * vec3(0.010, 0.014, 0.026) * dark * Night * (1.0 - cloud * 0.5) + cloud * vec3(0.012, 0.015, 0.025) * dark * Night;
+    float region = smoothstep(0.45, 0.75, fbm(pb * 9.0 + warp * 1.5, lod - 1.0) + 0.5 + 0.25 * exp(-pow((e - sea) / 0.035, 2.0)));
+    float fineK = clamp(lod - 5.0, 0.0, 1.0);
+    float points = mix(0.12, smoothstep(0.3, 0.5, gnoise(pb * 260.0) + gnoise(pb * 620.0) * 0.5), fineK);
+    float cities = region * points * land * (1.0 - ice) * dark * (1.0 - cloud * 0.85);
+    col += cities * vec3(1.0, 0.72, 0.38) * 1.6 * Night;
     return col;
 }
 

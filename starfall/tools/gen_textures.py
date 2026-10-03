@@ -390,4 +390,29 @@ write_json(f"{ROOT}/models/block/star_core.json", {
 write_json(f"{ROOT}/blockstates/star_core.json", {"variants": {"": {"model": "starfall:block/star_core"}}})
 write_json(f"{ROOT}/models/item/star_core.json", {
     "parent": "minecraft:item/generated", "textures": {"layer0": "starfall:block/star_core"}})
+
+# ================================================================ the molten wall of SS-01's shaft
+# Rock melted by the beam: streaked downwards like it ran, white-hot at heat 7, a dark crust with glowing
+# cracks at heat 0.
+MOLTEN = [((40, 22, 18), (110, 40, 20), (24, 16, 14)), ((85, 25, 12), (150, 50, 20), (45, 16, 10)),
+          ((140, 40, 15), (200, 80, 30), (80, 22, 10)), ((190, 70, 20), (240, 120, 40), (120, 35, 10)),
+          ((230, 110, 30), (255, 170, 70), (170, 60, 15)), ((250, 160, 50), (255, 210, 110), (200, 100, 25)),
+          ((255, 200, 90), (255, 236, 160), (230, 140, 40)), ((255, 236, 170), (255, 252, 230), (255, 190, 90))]
+for h, (base, hot, dark) in enumerate(MOLTEN):
+    g = grid()
+    for y in range(16):
+        for x in range(16):
+            streak = 0.55 + 0.45 * hsh(x, 3, 70) + 0.15 * (hsh(x, y // 3, 71) - 0.5)
+            c = tuple(int(b + (v - b) * min(1.0, max(0.0, streak - 0.35))) for b, v in zip(base, hot))
+            crust = hsh(x // 2 + (y // 3) * 7, h, 72)
+            if crust > 0.55 + h * 0.05:
+                c = dark
+            if h == 0 and hsh(x, y, 73) > 0.9:
+                c = (150, 55, 20)
+            g[y][x] = c
+    png(f"{B}/molten_rock_{h}.png", g)
+    write_json(f"{ROOT}/models/block/molten_rock_{h}.json", {"parent": "minecraft:block/cube_all",
+                                                             "textures": {"all": f"starfall:block/molten_rock_{h}"}})
+write_json(f"{ROOT}/blockstates/molten_rock.json",
+           {"variants": {f"heat={h}": {"model": f"starfall:block/molten_rock_{h}"} for h in range(8)}})
 print("ok")

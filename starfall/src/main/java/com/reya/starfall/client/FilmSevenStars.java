@@ -19,9 +19,14 @@ final class FilmSevenStars {
     private static final float FAR = 1000.0F;
 
     static void draw(Canvas c, float s) {
+        float toStars = ramp(s, 2.4F, 2.7F), toGround = ramp(s, 9.15F, 9.45F);
+        Film.labelScale = 1.0F - toStars;
         if (s < 2.7F) earth(c, s);
-        if (s > 2.4F && s < 9.45F) constellation(c, s, ramp(s, 2.4F, 2.7F));
-        if (s > 9.15F) fire(c, s, ramp(s, 9.15F, 9.45F));
+        Film.labelScale = toStars * (1.0F - toGround);
+        if (s > 2.4F && s < 9.45F) constellation(c, s, toStars);
+        Film.labelScale = toGround;
+        if (s > 9.15F) fire(c, s, toGround);
+        Film.labelScale = 1.0F;
         if (s > 11.85F) {
             c.mode(false);
             c.rect(0, 0, c.w, c.h, Fx.argb(0xF0F4FF, clamp01((s - 11.85F) / 0.15F)));
@@ -43,7 +48,7 @@ final class FilmSevenStars {
         sky.nebulaA = 0x2A1850;
         sky.nebulaB = 0x381444;
         sky.bandStrength = 0.7F;
-        Scene3D sc = Film.opening(c, alt, smoother(s, 0.6F, 1.7F), true, VIOLET, s, 1.0F, sky);
+        Scene3D sc = Film.opening(c, alt, smoother(s, 0.6F, 1.7F), true, VIOLET, s, 1.0F, sky, null);
         Film.label(sc, Film.onEarth(0.0F), 7.0F, "target", VIOLET, ramp(alt, 10.0F, 40.0F));
         sc.end();
     }
@@ -141,7 +146,7 @@ final class FilmSevenStars {
 
     /** The turning glyphs around a star of the array: dashed rings, a hexagon and ticks. */
     private static void sigil(Soft g, Vector3f at, Vector3f right, Vector3f up, float s, int i, float size, float k) {
-        float r0 = FAR * (0.028F + 0.006F * size);
+        float r0 = FAR * (0.042F + 0.01F * size);
         float spin = s * (i % 2 == 0 ? 0.9F : -0.9F) + i;
         int dash = 12;
         for (int d = 0; d < dash; d++) {
@@ -172,8 +177,8 @@ final class FilmSevenStars {
 
     private static void fire(Canvas c, float s, float fade) {
         Vector3f t = Film.onEarth(0.0F);
-        Vector3f eye = Film.onEarth(0.06F).sub(new Vector3f(Film.NORTH).mul(0.9F));
-        float elev = Cam.lerp(0.62F, 0.42F, smoother(s, 9.15F, 11.0F));
+        Vector3f eye = Film.onEarth(0.05F).sub(new Vector3f(Film.NORTH).mul(0.9F));
+        float elev = Cam.lerp(0.42F, 0.2F, smoother(s, 9.15F, 11.0F));
         Vector3f center = new Vector3f(Film.NORTH).mul((float) Math.cos(elev)).add(new Vector3f(Film.TARGET).mul((float) Math.sin(elev))).normalize();
         Vector3f right = new Vector3f(Film.EAST);
         Vector3f up = new Vector3f(right).cross(center).normalize();
@@ -190,7 +195,7 @@ final class FilmSevenStars {
         earth.night = 1.0F;
         sc.planet(earth);
         // the stars stay where they are in the sky while the camera tilts down
-        Vector3f sky0 = new Vector3f(Film.NORTH).mul((float) Math.cos(0.66D)).add(new Vector3f(Film.TARGET).mul((float) Math.sin(0.66D))).normalize();
+        Vector3f sky0 = new Vector3f(Film.NORTH).mul((float) Math.cos(0.5D)).add(new Vector3f(Film.TARGET).mul((float) Math.sin(0.5D))).normalize();
         Vector3f up0 = new Vector3f(right).cross(sky0).normalize();
         Vector3f[] dir = stars(sky0, right, up0, 1.0F / (float) BigDipper.EXTENT * 0.8F);
         Soft g = sc.soft(true);
@@ -204,21 +209,21 @@ final class FilmSevenStars {
             float f = clamp01((s - (9.55F + i * 0.17F)) / 0.35F);
             if (f <= 0.0F) continue;
             // each beam comes down to its own spot on the land, spread out in front of us
-            Vector3f ground = Film.onEarth(0.0F).add(new Vector3f(Film.EAST).mul((i - 3) * 0.16F)).add(new Vector3f(Film.NORTH).mul(0.25F + (i % 3) * 0.12F));
+            Vector3f ground = Film.onEarth(0.0F).add(new Vector3f(Film.EAST).mul((i - 3) * 0.55F)).add(new Vector3f(Film.NORTH).mul(0.9F + (i % 3) * 0.6F));
             Vector3f head = new Vector3f(star).lerp(ground, f);
             g.beam(star, head, 0.9F, 0.05F + 0.04F * f, Fx.argb(BEAM, 0.25F), Fx.argb(BEAM, 0.55F));
             g.beam(star, head, 0.3F, 0.012F + 0.008F * f, Fx.argb(0xFFFFFF, 0.6F), Fx.argb(0xFFFFFF, 0.95F));
             if (f >= 1.0F) {
                 float since = s - (9.55F + i * 0.17F + 0.35F);
                 float q = clamp01(since / 0.8F);
-                g.glow(ground, 0.05F + 0.15F * q, Fx.argb(0xFFFFFF, 0.9F), true);
-                g.glow(ground, 0.4F + 0.4F * q, Fx.argb(BEAM, 0.35F), false);
-                g.ring(ground, Film.EAST, Film.NORTH, 0.05F + 0.35F * q, 0.006F + 0.01F * q, Fx.argb(HOT, 0.8F * (1.0F - q)), 48);
+                g.glow(ground, 0.04F + 0.08F * q, Fx.argb(0xFFFFFF, 0.9F), true);
+                g.glow(ground, 0.15F + 0.25F * q, Fx.argb(BEAM, 0.25F), false);
+                g.ring(ground, Film.EAST, Film.NORTH, 0.05F + 0.45F * q, 0.006F + 0.012F * q, Fx.argb(HOT, 0.8F * (1.0F - q)), 48);
                 dawn += 1.0F / 7.0F;
             }
         }
         // the sky lights up over the horizon as they land
-        g.glowScreen(Film.onEarth(0.0F).add(new Vector3f(Film.NORTH).mul(1.5F)), 0.9F, Fx.argb(0x9AB0FF, 0.35F * dawn), false);
+        g.glowScreen(Film.onEarth(0.0F).add(new Vector3f(Film.NORTH).mul(2.5F)), 0.6F, Fx.argb(0x9AB0FF, 0.22F * dawn), false);
         g.end();
         sc.end();
     }

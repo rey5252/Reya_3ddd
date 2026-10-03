@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import com.reya.starfall.Skill;
+import com.reya.starfall.Sounds;
 import com.reya.starfall.StellarRemoteItem;
 import com.reya.starfall.network.Net;
 import com.reya.starfall.network.SelectSkillPacket;
@@ -13,7 +14,6 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
@@ -54,7 +54,7 @@ public final class SkillScreen extends Screen {
             return;
         }
         mc.setScreen(new SkillScreen());
-        mc.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.BEACON_POWER_SELECT, 1.8F, 0.4F));
+        mc.getSoundManager().play(SimpleSoundInstance.forUI(Sounds.FILM_UPLINK.get(), 1.4F, 0.35F));
     }
 
     @Override
@@ -232,13 +232,13 @@ public final class SkillScreen extends Screen {
         closing = 5;
         details = -1;
         binding = false;
-        Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.4F));
+        Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(Sounds.UI_SELECT.get(), 1.0F, 0.6F));
     }
 
     private void openDetails(int i) {
         details = i;
         binding = false;
-        Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+        Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(Sounds.UI_HOVER.get(), 1.0F, 0.6F));
     }
 
     @Override
@@ -278,7 +278,7 @@ public final class SkillScreen extends Screen {
                 mapping.setKey(InputConstants.getKey(key, scancode));
                 KeyMapping.resetMapping();
                 Minecraft.getInstance().options.save();
-                Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.EXPERIENCE_ORB_PICKUP, 1.4F));
+                Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(Sounds.UI_SELECT.get(), 1.25F, 0.7F));
             }
             return true;
         }

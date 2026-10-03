@@ -13,7 +13,6 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
@@ -54,8 +53,7 @@ public class StellarRemoteItem extends Item {
                 setSkill(stack, skill);
                 player.displayClientMessage(Component.translatable("message.starfall.selected", skill.tag(), skill.title())
                         .withStyle(s -> s.withColor(skill.color)), true);
-                player.level().playSound(null, player.blockPosition(), SoundEvents.UI_BUTTON_CLICK.value(),
-                        SoundSource.PLAYERS, 0.4F, 1.6F);
+                player.level().playSound(null, player.blockPosition(), Sounds.UI_SELECT.get(), SoundSource.PLAYERS, 0.5F, 1.0F);
                 return true;
             }
         }

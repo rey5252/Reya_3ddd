@@ -2,6 +2,7 @@
   "replace": false,
   "values": [
     "starfall:star_core",
-    "starfall:scorched_plate"
+    "starfall:scorched_plate",
+    "starfall:molten_rock"
   ]
 }

@@ -100,6 +100,7 @@ public final class Film {
     private static void film(GuiGraphics g, Skill which, float s, int width, int height) {
         g.flush();
         LABELS.clear();
+        labelScale = 1.0F;
         title = null;
         lapLabel = -1;
         charge = -1.0F;
@@ -124,6 +125,8 @@ public final class Film {
     private static final List<Label> LABELS = new ArrayList<>();
     private static Component title, subtitle;
     private static float titleAlpha;
+    /** How much the labels of the shot being drawn show (it may be fading in or out). */
+    static float labelScale = 1.0F;
     /** Lap of the accelerator ring shown in the corner, and the weapon's charge (0..1), set while drawing. */
     static int lapLabel = -1;
     static float charge = -1.0F;
@@ -133,6 +136,7 @@ public final class Film {
      * {@code box} is the bracket's half-size in GUI units.
      */
     static void label(Scene3D scene, Vector3f world, float box, String key, int color, float alpha) {
+        alpha *= labelScale;
         if (alpha <= 0.02F) return;
         float[] p = scene.project(world);
         if (p == null || p[0] < -40 || p[1] < -40 || p[0] > scene.width + 40 || p[1] > scene.height + 40) return;
@@ -142,6 +146,7 @@ public final class Film {
 
     /** The same with the name given as it is (a star's name). */
     static void labelText(Scene3D scene, Vector3f world, float box, String name, Component sub, int color, float alpha) {
+        alpha *= labelScale;
         if (alpha <= 0.02F) return;
         float[] p = scene.project(world);
         if (p == null || p[0] < -40 || p[1] < -40 || p[0] > scene.width + 40 || p[1] > scene.height + 40) return;
@@ -173,10 +178,10 @@ public final class Film {
             int a = Math.max(4, Math.round(titleAlpha * 255)) << 24;
             g.pose().pushPose();
             g.pose().translate(w / 2.0F, h * 0.42F, 0.0F);
-            g.pose().scale(3.0F, 3.0F, 1.0F);
+            g.pose().scale(2.5F, 2.5F, 1.0F);
             g.drawString(font, title, -font.width(title) / 2, 0, a | (which.color & 0xFFFFFF), true);
             g.pose().popPose();
-            g.drawString(font, subtitle, (w - font.width(subtitle)) / 2, Math.round(h * 0.42F) + 32, a | 0xE0E0E8, true);
+            g.drawString(font, subtitle, (w - font.width(subtitle)) / 2, Math.round(h * 0.42F) + 27, a | 0xE0E0E8, true);
         }
         frame(g, w, h, color);
         g.drawString(font, Component.translatable("film.starfall.uplink", which.tag(), which.title()), 18, 14, color, false);
@@ -276,8 +281,8 @@ public final class Film {
 
     /** A camera above the target: {@code alt} up, hanging off to the side of the laser; {@code look} turns it from up the laser (0) to back at the Earth (1). */
     static Cam above(float alt, float look, float side) {
-        Vector3f eye = onEarth(alt).add(new Vector3f(EAST).mul(side * (0.35F * alt + 0.25F))).sub(new Vector3f(NORTH).mul(0.45F + 0.15F * alt));
-        Vector3f up0 = new Vector3f(NORTH).mul(0.82F).add(new Vector3f(TARGET).mul(0.57F));
+        Vector3f eye = onEarth(alt).add(new Vector3f(EAST).mul(side * (0.35F * alt + 0.25F))).sub(new Vector3f(NORTH).mul(0.85F + 0.15F * alt));
+        Vector3f up0 = new Vector3f(NORTH).mul(0.96F).add(new Vector3f(TARGET).mul(0.28F));
         Vector3f lookUp = new Vector3f(eye).add(new Vector3f(up0).mul(10.0F + alt));
         Vector3f target = Cam.lerp(lookUp, new Vector3f(), look);
         Vector3f up = Cam.lerp(TARGET, NORTH, look).normalize();
@@ -298,7 +303,7 @@ public final class Film {
         p.time = time;
         p.night = night ? 1.0F : 0.6F;
         p.spot = new Vector3f(TARGET);
-        p.spotSize = 0.006F;
+        p.spotSize = 0.0009F;
         p.spotColor = laser;
         p.spotStrength = laserK;
         return p;
@@ -314,16 +319,20 @@ public final class Film {
     }
 
     /** The whole opening shot: up from the ground until the Earth hangs below, {@code look} as in {@link #above}. */
-    static Scene3D opening(Canvas c, float alt, float look, boolean night, int laser, float time, float fade, Scene3D.Sky sky) {
+    static Scene3D opening(Canvas c, float alt, float look, boolean night, int laser, float time, float fade, Scene3D.Sky sky,
+                           Scene3D.Planet behind) {
         Cam cam = above(alt, look, 1.0F);
         Scene3D s = new Scene3D(c.w, c.h, cam);
         s.fade = fade;
-        sky.stars = Math.min(1.0F, 0.15F + alt / 6.0F) * (night ? 1.0F : 0.9F);
+        sky.stars = Math.min(1.0F, (night ? 0.35F : 0.15F) + alt / 6.0F);
         s.sky(sky);
+        // anything further off (the Moon) goes first, so the Earth's air lies over it
+        if (behind != null) s.planet(behind);
         s.planet(earth(night, laser, 1.0F, time));
         Soft light = s.soft(true);
-        laser(light, onEarth(0.0F), TARGET, laser, 1.0F, 0.02F + alt * 0.012F);
-        light.glow(onEarth(0.02F), 0.15F + alt * 0.02F, Fx.argb(laser, 0.9F), true);
+        laser(light, onEarth(0.0F), TARGET, laser, 1.0F, 0.01F + alt * 0.012F);
+        light.glowScreen(onEarth(0.01F), 0.012F, Fx.argb(laser, 0.9F), true);
+        light.glowScreen(onEarth(0.01F), 0.004F, Fx.argb(0xFFFFFF, 0.9F), true);
         light.end();
         return s;
     }

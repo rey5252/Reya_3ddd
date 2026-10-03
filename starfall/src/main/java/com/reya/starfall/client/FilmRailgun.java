@@ -19,12 +19,21 @@ final class FilmRailgun {
     private static final int RED = ClientStrike.RED, CYAN = 0x5FD8EC;
 
     static void draw(Canvas c, float s) {
+        float toSaturn = ramp(s, 2.45F, 2.75F), toSun = ramp(s, 4.05F, 4.35F), toGalaxy = ramp(s, 5.55F, 5.85F);
+        float toGun = ramp(s, 7.3F, 7.6F), toHome = ramp(s, 11.7F, 11.85F);
+        Film.labelScale = 1.0F - toSaturn;
         if (s < 2.75F) earth(c, s);
-        if (s > 2.45F && s < 4.35F) saturn(c, s, ramp(s, 2.45F, 2.75F));
-        if (s > 4.05F && s < 5.85F) solarSystem(c, s, ramp(s, 4.05F, 4.35F));
-        if (s > 5.55F && s < 7.6F) galaxy(c, s, ramp(s, 5.55F, 5.85F));
-        if (s > 7.3F) railgun(c, s, ramp(s, 7.3F, 7.6F));
-        if (s > 11.7F) home(c, s, ramp(s, 11.7F, 11.85F));
+        Film.labelScale = toSaturn * (1.0F - toSun);
+        if (s > 2.45F && s < 4.35F) saturn(c, s, toSaturn);
+        Film.labelScale = toSun * (1.0F - toGalaxy);
+        if (s > 4.05F && s < 5.85F) solarSystem(c, s, toSun);
+        Film.labelScale = toGalaxy * (1.0F - toGun);
+        if (s > 5.55F && s < 7.6F) galaxy(c, s, toGalaxy);
+        Film.labelScale = toGun * (1.0F - toHome);
+        if (s > 7.3F) railgun(c, s, toGun);
+        Film.labelScale = toHome;
+        if (s > 11.7F) home(c, s, toHome);
+        Film.labelScale = 1.0F;
         // the hand-overs: a breath of light while one shot gives way to the next
         float flash = bump(s, 7.45F, 0.18F) * 0.55F + bump(s, 11.05F, 0.12F) * 0.85F;
         if (flash > 0.0F) {
@@ -53,9 +62,8 @@ final class FilmRailgun {
         Scene3D.Sky sky = new Scene3D.Sky();
         sky.nebula = 0.7F;
         sky.bandStrength = 0.55F;
-        Scene3D sc = Film.opening(c, alt, look, false, RED, s, 1.0F, sky);
         Scene3D.Planet moon = moon();
-        sc.planet(moon);
+        Scene3D sc = Film.opening(c, alt, look, false, RED, s, 1.0F, sky, moon);
         float er = sc.screenRadius(new Vector3f(), Film.EARTH);
         Film.label(sc, Film.onEarth(0.0F), 7.0F, "target", RED, ramp(alt, 20.0F, 60.0F) * (1.0F - ramp(alt, 600.0F, 1200.0F)));
         Film.label(sc, new Vector3f(), Math.max(8.0F, er + 4.0F), "earth", CYAN, ramp(alt, 300.0F, 700.0F));
@@ -231,13 +239,13 @@ final class FilmRailgun {
 
     // ------------------------------------------------------------------ 5: the railgun, its charge and the shot
 
-    private static final float[] T_CAM = {7.3F, 8.0F, 8.8F, 9.7F, 10.5F, 11.0F, 11.45F, 12.0F};
+    private static final float[] T_CAM = {7.3F, 8.0F, 8.8F, 9.7F, 10.5F, 11.0F, 11.45F};
     private static final Vector3f[] EYE = {
             v(-210.0F, 80.0F, -480.0F), v(-90.0F, 36.0F, -150.0F), v(-26.0F, 13.0F, -12.0F), v(-18.0F, 9.0F, 66.0F),
-            v(-14.0F, 6.0F, 106.0F), v(-12.5F, 5.0F, 117.0F), v(-8.0F, 3.5F, 124.0F), v(-1.0F, 1.0F, 320.0F)};
+            v(-14.0F, 6.0F, 106.0F), v(-13.0F, 5.0F, 116.0F), v(-9.0F, 3.6F, 121.0F)};
     private static final Vector3f[] LOOK = {
             v(0.0F, 0.0F, 30.0F), v(0.0F, 2.0F, 40.0F), v(0.0F, 3.0F, 60.0F), v(0.0F, 1.0F, 104.0F),
-            v(0.0F, 0.0F, 124.0F), v(0.0F, 0.0F, 131.0F), v(0.0F, 0.0F, 160.0F), v(0.0F, 0.0F, 2400.0F)};
+            v(0.0F, 0.0F, 124.0F), v(0.0F, 0.0F, 132.0F), v(0.0F, 0.0F, 170.0F)};
     static final Vector3f MUZZLE = v(0.0F, 0.0F, 127.0F);
 
     private static void railgun(Canvas c, float s, float fade) {
@@ -245,6 +253,13 @@ final class FilmRailgun {
         float fire = clamp01((s - 11.0F) / 0.45F);
         if (s >= 9.0F && s < 11.0F) Film.charge = charge;
         Vector3f eye = Cam.keyed(s, T_CAM, EYE), look = Cam.keyed(s, T_CAM, LOOK);
+        if (s > 11.45F) {
+            // after the shot the camera swings in behind the muzzle and races down the beam
+            float q = clamp01((s - 11.45F) / 0.55F);
+            float k = q * q * (3.0F - 2.0F * q);
+            eye = v(Cam.lerp(-9.0F, -1.2F, k), Cam.lerp(3.6F, 1.0F, k), 121.0F + 40.0F * q + 2400.0F * q * q * q);
+            look = v(0.0F, 0.0F, eye.z + Cam.lerp(50.0F, 3000.0F, k));
+        }
         // the shot kicks the camera
         if (s > 11.0F && s < 11.6F) {
             float k = (1.0F - clamp01((s - 11.0F) / 0.6F)) * 0.6F;

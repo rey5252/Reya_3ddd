@@ -27,7 +27,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ClipContext;
@@ -66,7 +65,7 @@ public final class StarfallManager {
         BlockPos target = findTarget(player, Config.RANGE.get());
         PRESSES.add(new Press(level, player.getUUID(), skill, target, player.getYRot(), level.getGameTime() + PRESS_FIRE));
         Net.CHANNEL.send(PacketDistributor.TRACKING_ENTITY.with(() -> player), new RemotePressPacket(player.getId()));
-        level.playSound(null, player.blockPosition(), SoundEvents.IRON_TRAPDOOR_OPEN, SoundSource.PLAYERS, 0.6F, 1.8F);
+        level.playSound(null, player.blockPosition(), Sounds.REMOTE_COVER.get(), SoundSource.PLAYERS, 0.8F, 1.0F);
         return target != null;
     }
 
@@ -78,7 +77,7 @@ public final class StarfallManager {
             ServerPlayer player = level.getServer().getPlayerList().getPlayer(press.player());
             BlockPos at = player != null ? player.blockPosition() : press.target();
             if (at != null) {
-                level.playSound(null, at, SoundEvents.STONE_BUTTON_CLICK_ON, SoundSource.PLAYERS, 1.0F, 0.6F);
+                level.playSound(null, at, Sounds.REMOTE_PRESS.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
             }
             if (press.target() == null) {
                 if (player != null) player.displayClientMessage(Component.translatable("message.starfall.no_target"), true);
