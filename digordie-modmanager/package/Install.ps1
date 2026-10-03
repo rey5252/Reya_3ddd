@@ -7,10 +7,13 @@
     Install.ps1                      install
     Install.ps1 -GamePath "D:\Games\Dig or Die"
     Install.ps1 -Uninstall           remove the Mod Manager (BepInEx and other mods stay)
+    Install.ps1 -DisableOtherMods    turn off other mods without asking (-KeepOtherMods: leave them on)
 #>
 param(
     [string]$GamePath,
-    [switch]$Uninstall
+    [switch]$Uninstall,
+    [switch]$DisableOtherMods,
+    [switch]$KeepOtherMods
 )
 
 $ErrorActionPreference = 'Stop'
@@ -110,6 +113,58 @@ function Set-EntrypointType([string]$CfgPath) {
     [IO.File]::WriteAllLines($CfgPath, $lines.ToArray(), (New-Object System.Text.UTF8Encoding($false)))
 }
 
+# Other mods already in the game folder: BepInEx plugins/patchers (except this manager)
+# and MelonLoader (version.dll + Mods). Leftovers of earlier experiments often live there.
+function Find-OtherMods([string]$Game) {
+    $found = @()
+    $hasMelonLoader = Test-Path -LiteralPath (Join-Path $Game 'MelonLoader')
+    $folders = @('BepInEx\plugins', 'BepInEx\patchers')
+    if ($hasMelonLoader) { $folders += 'Mods', 'Plugins' }
+    foreach ($sub in $folders) {
+        $dir = Join-Path $Game $sub
+        if (Test-Path -LiteralPath $dir) {
+            $found += @(Get-ChildItem -LiteralPath $dir -Recurse -File -Force |
+                Where-Object { $_.Extension -ieq '.dll' -and $_.FullName -notmatch '[\\/]DigOrDieModManager[\\/]' })
+        }
+    }
+    $versionDll = Join-Path $Game 'version.dll'
+    if ($hasMelonLoader -and (Test-Path -LiteralPath $versionDll)) {
+        $found += Get-Item -LiteralPath $versionDll
+    }
+    return $found
+}
+
+function Disable-OtherMods([string]$Game) {
+    $others = @(Find-OtherMods $Game)
+    if ($others.Count -eq 0) { return }
+
+    Say ''
+    Say 'Знайдено інші моди (наприклад, залишки тестів іншої моделі):' Yellow
+    foreach ($f in $others) { Say ('  - ' + $f.FullName.Substring($Game.Length).TrimStart('\', '/')) }
+
+    if ($DisableOtherMods) { $answer = 'т' }
+    elseif ($KeepOtherMods) { $answer = 'н' }
+    else { $answer = Read-Host 'Вимкнути їх? Потім їх можна знову увімкнути в менеджері МОДИ. [Т/н]' }
+
+    if ($answer.Trim() -ne '' -and $answer.Trim() -notmatch '^(т|t|y|д|так|да|yes)') {
+        Say 'Інші моди залишено без змін.' Gray
+        return
+    }
+
+    $count = 0
+    foreach ($f in $others) {
+        $target = $f.FullName + '.disabled'
+        try {
+            if (Test-Path -LiteralPath $target) { Remove-Item -LiteralPath $target -Force }
+            Rename-Item -LiteralPath $f.FullName -NewName ($f.Name + '.disabled') -Force
+            $count++
+        } catch {
+            Say ('  Не вдалося вимкнути ' + $f.Name + ': ' + $_.Exception.Message) Red
+        }
+    }
+    Say "Вимкнено модів: $count (файли перейменовано в *.dll.disabled)." Green
+}
+
 try {
     Say ''
     Say '=== Dig or Die Mod Manager ===' Cyan
@@ -161,10 +216,16 @@ try {
         Say 'Оновлено BepInEx.cfg (Entrypoint Type = MonoBehaviour).' Green
     }
 
+    Disable-OtherMods $GamePath
+
     Say ''
-    Say 'Готово! Запускайте Dig or Die ЧЕРЕЗ STEAM - у головному меню з''явиться кнопка МОДИ.' Cyan
+    Say 'Готово! Запускайте Dig or Die ЧЕРЕЗ STEAM - у головному меню між «Настройки» і «Выход» з''явиться кнопка МОДИ.' Cyan
+    Say "Мод встановлено в: $GamePath" Gray
     Say 'Нові моди (.dll) кладіть у: BepInEx\plugins' Gray
     Say 'Перший запуск з BepInEx може тривати трохи довше.' Gray
+    Say ''
+    Say 'Якщо стара кнопка «МОДИ» у правому верхньому куті не зникне: Steam -> Dig or Die -> Властивості ->' Gray
+    Say 'Встановлені файли -> «Перевірити цілісність файлів гри», потім ще раз запустіть Install.bat.' Gray
 }
 catch {
     Say ''
