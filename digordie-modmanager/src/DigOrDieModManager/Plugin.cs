@@ -11,7 +11,7 @@ namespace DigOrDieModManager
     {
         public const string Guid = "reya.digordie.modmanager";
         public const string PluginName = "Mod Manager";
-        public const string PluginVersion = "1.0.0";
+        public const string PluginVersion = "1.0.1";
 
         internal static ManualLogSource Log;
         internal static ConfigEntry<UiLanguage> Language;
@@ -41,7 +41,7 @@ namespace DigOrDieModManager
             var harmony = new Harmony(Guid);
             Patch(harmony, typeof(MainMenuPatches));
             Patch(harmony, typeof(InputLockPatch));
-            Log.LogInfo("Mod Manager loaded");
+            Log.LogInfo("Mod Manager " + PluginVersion + " loaded, waiting for the main menu");
         }
 
         private static void Patch(Harmony harmony, System.Type patches)
