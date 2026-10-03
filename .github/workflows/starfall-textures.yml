@@ -1,0 +1,34 @@
+name: Starfall film textures
+
+# Downloads the film's photographic maps (NASA, ESO) from their publishers and commits them to the mod's
+# resources: the cloud sessions the mod is written in can't reach those sites.
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'starfall/tools/fetch_textures.py'
+      - '.github/workflows/starfall-textures.yml'
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    defaults:
+      run:
+        working-directory: starfall
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download and pack the maps
+        run: |
+          pip install --quiet pillow numpy
+          python3 tools/fetch_textures.py
+      - name: Commit the maps
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/main/resources/assets/starfall/textures/film
+          git diff --cached --quiet && exit 0
+          git commit -m "Starfall film textures from NASA and ESO [skip ci]"
+          for i in 1 2 3; do git pull --rebase && git push && break; sleep 5; done
