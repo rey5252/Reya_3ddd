@@ -21,6 +21,11 @@ public final class ClientConfig {
                     "which takes the stair-steps off every edge; 1 draws them straight, for weak graphics cards.")
             .defineInRange("filmQuality", 2, 1, 2);
 
+    public static final ForgeConfigSpec.BooleanValue GLOW = B
+            .comment("Bloom: a soft glow around bright light in the films and around the strikes in the world.",
+                    "Turn it off for weak graphics cards.")
+            .define("glow", true);
+
     public static final ForgeConfigSpec SPEC = B.build();
 
     static boolean films() {
@@ -53,6 +58,14 @@ public final class ClientConfig {
             return FILM_QUALITY.get();
         } catch (IllegalStateException e) {
             return 2;
+        }
+    }
+
+    static boolean glow() {
+        try {
+            return GLOW.get();
+        } catch (IllegalStateException e) {
+            return true;
         }
     }
 

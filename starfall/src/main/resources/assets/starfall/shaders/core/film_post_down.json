@@ -1,0 +1,33 @@
+{
+    "vertex": "starfall:film_post",
+    "fragment": "starfall:film_post_down",
+    "attributes": [
+        "Position",
+        "UV0"
+    ],
+    "samplers": [
+        {
+            "name": "Sampler0"
+        }
+    ],
+    "uniforms": [
+        {
+            "name": "Texel",
+            "type": "float",
+            "count": 2,
+            "values": [
+                0.0,
+                0.0
+            ]
+        },
+        {
+            "name": "Threshold",
+            "type": "float",
+            "count": 2,
+            "values": [
+                -1.0,
+                0.5
+            ]
+        }
+    ]
+}

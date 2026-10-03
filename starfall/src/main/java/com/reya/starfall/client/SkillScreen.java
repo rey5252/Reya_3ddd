@@ -161,10 +161,11 @@ public final class SkillScreen extends Screen {
         }
         // and under it a line of text running past
         int mx0 = ix + 26, mx1 = px + pw - 8;
-        String sub = Component.translatable("menu.starfall.subtitle").getString() + "   ·   ";
+        Component sub = Component.literal(Component.translatable("menu.starfall.subtitle").getString() + "   ·   ")
+                .withStyle(st -> st.withFont(Film.TEXT_FONT));
         int sw = font.width(sub);
         int off = Math.round(time * 26.0F) % Math.max(1, sw);
-        g.enableScissor(mx0, py + 17, mx1, py + 27);
+        g.enableScissor(mx0, py + 17, mx1, py + 28);
         for (int x = mx0 - off; x < mx1; x += sw) g.drawString(font, sub, x, py + 18, 0xFFB8B2C4, false);
         g.disableScissor();
         // the rule under the header, with a mark in the middle
@@ -202,12 +203,13 @@ public final class SkillScreen extends Screen {
         fitted(g, state, tx, ry + 24, tw, 0.75F, skill == armed ? GREEN : GREY);
 
         int infoY = py + ph - 20 - 34;
-        List<FormattedCharSequence> lines = font.split(Component.translatable("menu.starfall.details." + skill.id), rw);
+        List<FormattedCharSequence> lines = font.split(Component.translatable("menu.starfall.details." + skill.id)
+                .withStyle(st -> st.withFont(Film.TEXT_FONT)), rw);
         int ly = ry + Icons.H + 10;
         for (FormattedCharSequence line : lines) {
-            if (ly + 9 > infoY - 2) break;
+            if (ly + 10 > infoY - 2) break;
             g.drawString(font, line, rx, ly, TEXT, false);
-            ly += 9;
+            ly += 10;
         }
         g.fill(rx, infoY, rx + rw, infoY + 1, RED_DARK);
         // the remote's charge, its key, and whatever else that key does

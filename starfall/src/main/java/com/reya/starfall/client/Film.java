@@ -5,11 +5,13 @@ import java.util.List;
 import java.util.Locale;
 
 import com.reya.starfall.Skill;
+import com.reya.starfall.Starfall;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import org.joml.Vector3f;
 
 /**
@@ -105,6 +107,7 @@ public final class Film {
         lapLabel = -1;
         charge = -1.0F;
         boolean offscreen = FilmTarget.begin();
+        FilmPost.begin();
         Canvas c = new Canvas(g.pose().last().pose(), width, height);
         switch (which) {
             case RAILGUN -> FilmRailgun.draw(c, s);
@@ -112,9 +115,43 @@ public final class Film {
             case SEVEN_STARS -> FilmSevenStars.draw(c, s);
         }
         c.finish();
-        if (offscreen) FilmTarget.end(g);
+        lens(which, s);
+        if (offscreen) FilmTarget.end(g, s);
         hud(g, which, s, width, height);
         g.flush();
+    }
+
+    /** How the film's lens behaves through each film: rushes smear, charges and shots bloom and flash. */
+    private static void lens(Skill which, float s) {
+        switch (which) {
+            case RAILGUN -> {
+                FilmPost.zoom = 0.08F * pulse(s, 2.55F, 3.0F, 3.7F) + 0.38F * pulse(s, 7.0F, 7.45F, 7.7F)
+                        + 0.3F * Cam.ramp(s, 11.4F, 11.9F);
+                FilmPost.bloom = 0.9F + 0.8F * Cam.ramp(s, 9.0F, 11.0F) + 1.4F * pulse(s, 10.95F, 11.08F, 11.6F);
+                FilmPost.aberration += 0.012F * pulse(s, 10.95F, 11.05F, 11.5F);
+                float shot = pulse(s, 10.98F, 11.03F, 11.35F);
+                if (shot > 0.0F) FilmPost.flash = Fx.argb(0xFFF0F0, 0.45F * shot);
+            }
+            case GUNGNIR -> {
+                FilmPost.zoom = 0.32F * pulse(s, 8.0F, 8.2F, 8.7F) + 0.18F * Cam.ramp(s, 11.3F, 11.95F);
+                FilmPost.bloom = 0.9F + 0.6F * Cam.ramp(s, 3.3F, 8.0F) * (1.0F - Cam.ramp(s, 8.2F, 8.8F)) + 0.8F * Cam.ramp(s, 11.0F, 12.0F);
+                float hit = pulse(s, 11.7F, 11.85F, 12.0F);
+                if (hit > 0.0F) FilmPost.flash = Fx.argb(0xFFD8A0, 0.35F * hit);
+            }
+            case SEVEN_STARS -> {
+                FilmPost.bloom = 1.0F + 0.4F * Cam.ramp(s, 2.4F, 5.0F) + 0.8F * Cam.ramp(s, 9.3F, 10.0F);
+                FilmPost.zoom = 0.12F * pulse(s, 9.15F, 9.45F, 9.9F);
+                float hit = pulse(s, 9.55F, 9.65F, 10.1F);
+                if (hit > 0.0F) FilmPost.flash = Fx.argb(0xE8DCFF, 0.25F * hit);
+            }
+        }
+        FilmPost.aberration += FilmPost.zoom * 0.02F;
+    }
+
+    /** 0 before a, rising to 1 at peak, back to 0 at b. */
+    private static float pulse(float s, float a, float peak, float b) {
+        if (s <= a || s >= b) return 0.0F;
+        return s < peak ? (s - a) / (peak - a) : 1.0F - (s - peak) / (b - peak);
     }
 
     // ------------------------------------------------------------------ labels, set while drawing
@@ -123,6 +160,9 @@ public final class Film {
     }
 
     private static final List<Label> LABELS = new ArrayList<>();
+    /** Smooth type for the film's captions and the menu's text (Source Sans Pro, under the SIL Open Font Licence). */
+    static final ResourceLocation CAPTION_FONT = new ResourceLocation(Starfall.MODID, "caption");
+    static final ResourceLocation TEXT_FONT = new ResourceLocation(Starfall.MODID, "text");
     private static Component title, subtitle;
     private static float titleAlpha;
     /** How much the labels of the shot being drawn show (it may be fading in or out). */
@@ -181,7 +221,8 @@ public final class Film {
             g.pose().scale(2.5F, 2.5F, 1.0F);
             g.drawString(font, title, -font.width(title) / 2, 0, a | (which.color & 0xFFFFFF), true);
             g.pose().popPose();
-            g.drawString(font, subtitle, (w - font.width(subtitle)) / 2, Math.round(h * 0.42F) + 27, a | 0xE0E0E8, true);
+            Component sub = subtitle.copy().withStyle(st -> st.withFont(TEXT_FONT));
+            g.drawString(font, sub, (w - font.width(sub)) / 2, Math.round(h * 0.42F) + 26, a | 0xE0E0E8, true);
         }
         frame(g, w, h, color);
         g.drawString(font, Component.translatable("film.starfall.uplink", which.tag(), which.title()), 18, 14, color, false);
@@ -193,8 +234,9 @@ public final class Film {
         g.drawString(font, lock, w - 18 - font.width(lock), h - 30, 0xFFB8B8C4, false);
         Component skip = Component.translatable("film.starfall.skip", Keys.FILM.getTranslatedKeyMessage());
         g.drawString(font, skip, w - 18 - font.width(skip), h - 19, 0xFF8A8A96, false);
-        Component scene = Component.translatable("film.starfall." + which.id + "." + scene(which, s));
-        g.drawString(font, scene, 18, h - 19, 0xFFD8D8E0, false);
+        // the caption, like a film's subtitle, in the smooth type
+        Component scene = Component.translatable("film.starfall." + which.id + "." + scene(which, s)).withStyle(st -> st.withFont(CAPTION_FONT));
+        g.drawString(font, scene, 18, h - 23, 0xFFE4E4EC, true);
         if (charge >= 0) {
             int bw = Math.min(240, w - 80), bx = (w - bw) / 2, by = h - 46;
             Component locked = Component.translatable("film.starfall.locked." + which.id);
@@ -251,6 +293,7 @@ public final class Film {
             case GUNGNIR -> Component.translatable("film.starfall.status.gungnir", String.format(Locale.ROOT, "%04d", Math.round(radius * 2)), height);
             case SEVEN_STARS -> Component.translatable("film.starfall.status.seven_stars");
         };
+        status = status.copy().withStyle(st -> st.withFont(TEXT_FONT));
         g.drawString(font, status, (w - font.width(status)) / 2, Math.round(h * 0.6F) + 24, a | 0xF0F0F4, true);
         Component lock = Component.translatable("film.starfall.lock", target.getX(), target.getY(), target.getZ());
         g.drawString(font, lock, w - 18 - font.width(lock), h - 19, a | 0xB8B8C4, false);
@@ -274,6 +317,16 @@ public final class Film {
     static final Vector3f SUN_NIGHT = new Vector3f(-0.30F, -0.55F, -0.78F).normalize();
     static final Vector3f EAST = new Vector3f(0.0F, 1.0F, 0.0F).cross(TARGET).normalize();
     static final Vector3f NORTH = new Vector3f(TARGET).cross(EAST).normalize();
+    /** On the photographed Earth the target sits on Kyiv, 50.45 N 30.52 E: the Earth's own axes in the world. */
+    static final Vector3f EARTH_X, EARTH_Y, EARTH_Z;
+
+    static {
+        float lat = (float) Math.toRadians(50.45D), lon = (float) Math.toRadians(30.52D);
+        EARTH_Y = new Vector3f(TARGET).mul((float) Math.sin(lat)).add(new Vector3f(NORTH).mul((float) Math.cos(lat))).normalize();
+        Vector3f meridian = new Vector3f(TARGET).mul((float) Math.cos(lat)).sub(new Vector3f(NORTH).mul((float) Math.sin(lat))).normalize();
+        EARTH_X = new Vector3f(meridian).mul((float) Math.cos(lon)).sub(new Vector3f(EAST).mul((float) Math.sin(lon)));
+        EARTH_Z = new Vector3f(meridian).mul((float) Math.sin(lon)).add(new Vector3f(EAST).mul((float) Math.cos(lon)));
+    }
 
     static Vector3f onEarth(float up) {
         return new Vector3f(TARGET).mul(EARTH + up);
@@ -297,6 +350,9 @@ public final class Film {
         p.radius = EARTH;
         p.tilt = 0.41F;
         p.spin = 1.1F;
+        p.bodyX = EARTH_X;
+        p.bodyY = EARTH_Y;
+        p.bodyZ = EARTH_Z;
         p.sun.set(night ? SUN_NIGHT : SUN_DAY);
         p.atmosphere = 0x4D8CFF;
         p.atmosphereHeight = 0.035F;

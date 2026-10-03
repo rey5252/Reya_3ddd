@@ -20,6 +20,11 @@ uniform float Fade;
 uniform vec4 Spot;
 uniform vec3 SpotColor;
 uniform float Night;
+// the photographed maps (Photo 1 when they're there): the Earth's day side in Sampler0 and its city lights,
+// clouds and water in Sampler1's red, green and blue; or the Moon's, or Jupiter's, in Sampler0
+uniform sampler2D Sampler0;
+uniform sampler2D Sampler1;
+uniform float Photo;
 
 in vec2 ndc;
 in vec4 tint;
@@ -108,6 +113,20 @@ float depthOf(vec3 v) {
     return clamp(clip.z / clip.w * 0.5 + 0.5, 0.0, 1.0);
 }
 
+// ---------------------------------------------------------------- the maps
+
+const float TAU = 6.2831853;
+
+// where a point on the body falls on a map of longitude and latitude
+vec2 mapUV(vec3 p) {
+    return vec2(atan(p.z, p.x) / TAU + 0.5, 0.5 - asin(clamp(p.y, -1.0, 1.0)) / 3.1415927);
+}
+
+// the map's mip level for a pixel covering fp of the unit sphere (below 0: closer than the map goes)
+float mapLod(float fp, float width) {
+    return log2(max(fp * width / TAU, 1.0e-7));
+}
+
 // ---------------------------------------------------------------- Earth
 
 float earthHeight(vec3 p, float lod, out vec3 warp) {
@@ -181,6 +200,38 @@ vec3 shadeEarth(vec3 pb, vec3 n, vec3 v, float lod, float fp) {
     ground = mix(ground, vec3(0.90, 0.93, 0.97), ice);
     float water = (1.0 - land) * (1.0 - ice);
 
+    // with the photographed maps: their land and sea, their clouds and their lights, and the noise above only
+    // for what lies closer than the maps go
+    float photoCloud = -1.0, photoLights = -1.0;
+    if (Photo > 0.5) {
+        vec2 uv = mapUV(pb);
+        float ld = mapLod(fp, 4096.0), la = mapLod(fp, 2048.0);
+        vec3 day = textureLod(Sampler0, uv, ld).rgb;
+        vec4 aux = textureLod(Sampler1, uv, la);
+        float closeK = clamp(-la / 3.0, 0.0, 1.0);
+        float m = aux.b + (fbm(pb * 900.0 + warp * 3.0, lod - 9.0) * 0.5 + fbm(pb * 180.0 + warp, lod - 6.5) * 0.35) * closeK;
+        float sea0 = mix(clamp(m, 0.0, 1.0), smoothstep(0.42, 0.58, m), closeK);
+        land = 1.0 - sea0;
+        // the map's colour at the coast is half sea: take the sea back out of it for the land
+        vec3 oceanRef = vec3(0.025, 0.05, 0.12);
+        float mb = clamp(aux.b, 0.0, 0.9);
+        vec3 landCol = clamp((day - oceanRef * mb) / (1.0 - mb), 0.0, 1.0);
+        float d1 = fbm(pb * 160.0 + warp, lod - 7.0), d2 = fbm(pb * 900.0, lod - 9.5);
+        // fields: a patchwork far finer than the map, in the map's own colours
+        float fields = fbm(vec3(pb.x * 2600.0, pb.y * 2600.0 + gnoise(pb * 300.0) * 2.0, pb.z * 2600.0), lod - 11.5);
+        landCol *= mix(1.0, (0.78 + 0.44 * (d1 + 0.5)) * (0.76 + 0.48 * smoothstep(-0.3, 0.3, d2))
+                            * (0.82 + 0.36 * smoothstep(-0.2, 0.2, fields)), closeK);
+        float green = smoothstep(0.0, 0.06, landCol.g - landCol.r);
+        landCol = mix(landCol, landCol * vec3(0.72, 0.9, 0.68), green * smoothstep(0.0, 0.3, d1) * closeK);
+        vec3 seaCol = mix(day, oceanRef * (0.85 + 0.3 * (d1 + 0.5)), clamp(mb * 1.5 - 0.5, 0.0, 1.0) * closeK);
+        ground = mix(seaCol, landCol * 1.08, land);
+        ice = 0.0;
+        water = 1.0 - land;
+        photoCloud = aux.g;
+        photoLights = aux.r;
+        e = mix(sea, e, land);
+    }
+
     // the land's own slopes, lit by the sun; steep ground is bare rock
     vec3 nl = n;
     float reliefK = land * (1.0 - ice) * clamp(lod - 5.0, 0.0, 1.0);
@@ -188,7 +239,7 @@ vec3 shadeEarth(vec3 pb, vec3 n, vec3 v, float lod, float fp) {
         float hs = max(fp * 1.5, 2.0e-6);
         vec3 t1 = normalize(cross(pb, abs(pb.y) < 0.9 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0)));
         vec3 t2 = cross(pb, t1);
-        float amp = 0.25 + 0.9 * clamp((e - sea) / 0.2, 0.0, 1.0);
+        float amp = (0.25 + 0.9 * clamp((e - sea) / 0.2, 0.0, 1.0)) * mix(1.0, 0.35, Photo);
         float r0 = relief(pb, lod);
         vec3 g = (t1 * (relief(pb + t1 * hs, lod) - r0) + t2 * (relief(pb + t2 * hs, lod) - r0)) / hs * amp * reliefK;
         nl = normalize(n - (AxisX * g.x + AxisY * g.y + AxisZ * g.z));
@@ -198,9 +249,23 @@ vec3 shadeEarth(vec3 pb, vec3 n, vec3 v, float lod, float fp) {
 
     float ndl = dot(n, SunDir);
     float diff = clamp(mix(ndl, dot(nl, SunDir), land) * 1.05 + 0.02, 0.0, 1.0) * smoothstep(-0.08, 0.04, ndl);
-    float cloud = earthClouds(pb, lod);
+    float cloud;
+    float shadow;
     vec3 sunBody = vec3(dot(SunDir, AxisX), dot(SunDir, AxisY), dot(SunDir, AxisZ));
-    float shadow = earthClouds(normalize(pb + sunBody * 0.01), lod - 2.0);
+    if (photoCloud >= 0.0) {
+        // the photographed clouds, drifting, with crisp edges and fine wisps once you're close
+        float la = mapLod(fp, 2048.0);
+        float closeK = clamp(-la / 3.0, 0.0, 1.0);
+        vec2 drift = vec2(Time * 0.0004, 0.0);
+        float wisps = fbm(pb * 380.0, lod - 8.0) * 0.5 + fbm(pb * 70.0, lod - 5.5) * 0.4 + fbm(pb * 1900.0, lod - 11.0) * 0.3;
+        float c0 = smoothstep(0.08, 0.95, textureLod(Sampler1, mapUV(pb) + drift, la + 1.2).g * 0.6 + photoCloud * 0.4);
+        cloud = clamp(mix(c0, smoothstep(0.2, 0.8, c0 + wisps * 1.0 - 0.05), closeK), 0.0, 1.0);
+        float cs = textureLod(Sampler1, mapUV(normalize(pb + sunBody * 0.006)) + drift, la + 1.0).g;
+        shadow = smoothstep(0.1, 0.9, cs);
+    } else {
+        cloud = earthClouds(pb, lod);
+        shadow = earthClouds(normalize(pb + sunBody * 0.01), lod - 2.0);
+    }
     vec3 lit = ground * diff * (1.0 - 0.55 * shadow) * vec3(1.0, 0.97, 0.93);
     // the sun's glint on open water, broken into glitter by the waves from low orbit
     vec3 h = normalize(SunDir + v);
@@ -220,7 +285,13 @@ vec3 shadeEarth(vec3 pb, vec3 n, vec3 v, float lod, float fp) {
     float region = smoothstep(0.45, 0.75, fbm(pb * 9.0 + warp * 1.5, lod - 1.0) + 0.5 + 0.25 * exp(-pow((e - sea) / 0.035, 2.0)));
     float fineK = clamp(lod - 5.0, 0.0, 1.0);
     float points = mix(0.12, smoothstep(0.3, 0.5, gnoise(pb * 260.0) + gnoise(pb * 620.0) * 0.5), fineK);
+    // streets and towns once they're close enough to tell apart
+    points = mix(points, smoothstep(0.32, 0.62, gnoise(pb * 2600.0) + 0.5 * gnoise(pb * 6100.0)), clamp(lod - 11.0, 0.0, 1.0));
     float cities = region * points * land * (1.0 - ice) * dark * (1.0 - cloud * 0.85);
+    if (photoLights >= 0.0) {
+        float lit = smoothstep(0.28, 0.85, textureLod(Sampler1, mapUV(pb), mapLod(fp, 2048.0) + 1.5).r * 0.5 + photoLights * 0.5);
+        cities = lit * mix(1.0, points * 1.8, clamp(-mapLod(fp, 2048.0) / 2.0, 0.0, 1.0)) * dark * (1.0 - cloud * 0.85);
+    }
     col += cities * vec3(1.0, 0.72, 0.38) * 1.6 * Night;
     return col;
 }
@@ -402,11 +473,26 @@ void main() {
         if (Kind < 0.5) {
             surf = shadeEarth(pb, N, V, lod, fp);
         } else if (Kind < 1.5) {
-            surf = shadeJupiter(pb, lod) * gasLight(N, V) * 0.9;
+            if (Photo > 0.5) {
+                vec2 uv = mapUV(pb) + vec2(Time * 0.002, 0.0);
+                float closeK = clamp(-mapLod(fp, 2048.0) / 3.0, 0.0, 1.0);
+                vec3 j = textureLod(Sampler0, uv, mapLod(fp, 2048.0)).rgb;
+                float l = dot(j, vec3(0.299, 0.587, 0.114));
+                j = mix(vec3(l), j, 1.2) * mix(1.0, 0.85 + 0.3 * (rough(vec3(pb.x * 40.0, pb.y * 160.0, pb.z * 40.0), lod - 5.0) + 0.5), closeK);
+                surf = j * gasLight(N, V);
+            } else {
+                surf = shadeJupiter(pb, lod) * gasLight(N, V) * 0.9;
+            }
         } else if (Kind < 2.5) {
             surf = shadeSaturn(pb, lod) * gasLight(N, V);
         } else {
-            surf = shadeMoon(pb, lod) * clamp(dot(N, SunDir) * 1.1, 0.0, 1.0);
+            vec3 moon = shadeMoon(pb, lod);
+            if (Photo > 0.5) {
+                float closeK = clamp(-mapLod(fp, 2048.0) / 3.0, 0.0, 1.0);
+                moon = textureLod(Sampler0, mapUV(pb), mapLod(fp, 2048.0)).rgb * 1.1
+                     * mix(1.0, 0.85 + 0.3 * (ridged(pb * 120.0, lod - 6.0) + 0.2), closeK);
+            }
+            surf = moon * clamp(dot(N, SunDir) * 1.1, 0.0, 1.0);
         }
     }
     // the mark of a weapon's laser on the ground

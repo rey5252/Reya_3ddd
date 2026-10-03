@@ -6,6 +6,7 @@ import com.reya.starfall.network.Net;
 import com.reya.starfall.network.SelectSkillPacket;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.Input;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraftforge.api.distmarker.Dist;
@@ -20,8 +21,12 @@ import net.minecraftforge.fml.common.Mod;
 
 @Mod.EventBusSubscriber(modid = Starfall.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
 public final class ClientEvents {
+    private static boolean aimHeld;
+    private static float heldYaw, heldPitch;
+
     @SubscribeEvent
     public static void onClientTick(TickEvent.ClientTickEvent event) {
+        holdAim();
         if (event.phase != TickEvent.Phase.END) return;
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) return;
@@ -42,6 +47,31 @@ public final class ClientEvents {
                 mc.player.displayClientMessage(Component.translatable(on ? "message.starfall.films_on" : "message.starfall.films_off"), true);
             }
         }
+    }
+
+    @SubscribeEvent
+    public static void onRenderTick(TickEvent.RenderTickEvent event) {
+        holdAim();
+    }
+
+    /** While the film plays the view doesn't turn: the aim stays where the strike was marked. */
+    private static void holdAim() {
+        LocalPlayer p = Minecraft.getInstance().player;
+        if (p == null || !Film.active()) {
+            aimHeld = false;
+            return;
+        }
+        if (!aimHeld) {
+            heldYaw = p.getYRot();
+            heldPitch = p.getXRot();
+            aimHeld = true;
+        }
+        p.setYRot(heldYaw);
+        p.setXRot(heldPitch);
+        p.yRotO = heldYaw;
+        p.xRotO = heldPitch;
+        p.yHeadRot = heldYaw;
+        p.yHeadRotO = heldYaw;
     }
 
     private static void select(Minecraft mc, Skill skill) {

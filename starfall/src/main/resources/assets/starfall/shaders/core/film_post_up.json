@@ -1,0 +1,35 @@
+{
+    "vertex": "starfall:film_post",
+    "fragment": "starfall:film_post_up",
+    "attributes": [
+        "Position",
+        "UV0"
+    ],
+    "samplers": [
+        {
+            "name": "Sampler0"
+        },
+        {
+            "name": "Sampler1"
+        }
+    ],
+    "uniforms": [
+        {
+            "name": "Texel",
+            "type": "float",
+            "count": 2,
+            "values": [
+                0.0,
+                0.0
+            ]
+        },
+        {
+            "name": "Radius",
+            "type": "float",
+            "count": 1,
+            "values": [
+                1.0
+            ]
+        }
+    ]
+}

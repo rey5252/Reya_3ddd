@@ -135,6 +135,10 @@ final class Scene3D {
         float bandStrength = 0.6F;
         float seed = 3.0F;
         float stars = 1.0F;
+        /** How strongly the photographed Milky Way (seen from the Sun) shows behind everything, 0 for not at all. */
+        float milky;
+        /** The way to the galaxy's centre, in the world, for the photographed panorama (its north pole is the band's). */
+        final Vector3f galacticCentre = new Vector3f(0.9F, -0.3F, 0.1F);
     }
 
     /** Deep space: the shader's nebulae and the galaxy's band, then the stars over them. */
@@ -158,6 +162,12 @@ final class Scene3D {
             sh.safeGetUniform("Nebula").set(s.nebula);
             sh.safeGetUniform("Seed").set(s.seed);
             sh.safeGetUniform("Fade").set(1.0F);
+            int milky = s.milky > 0.0F ? FilmMaps.milkyWay() : 0;
+            Vector3f gn = new Vector3f(s.band).normalize();
+            Vector3f gc = new Vector3f(s.galacticCentre).sub(new Vector3f(gn).mul(gn.dot(s.galacticCentre))).normalize();
+            sh.safeGetUniform("Milky").set(gn.x, gn.y, gn.z, milky != 0 ? s.milky : 0.0F);
+            sh.safeGetUniform("MilkyCentre").set(gc.x, gc.y, gc.z);
+            RenderSystem.setShaderTexture(0, milky);
             RenderSystem.setShader(() -> sh);
             clipQuad(-1.0F, -1.0F, 1.0F, 1.0F, fade);
         } else {
@@ -199,17 +209,24 @@ final class Scene3D {
         float spotSize = 0.01F;
         int spotColor;
         float spotStrength;
+        /** The body's own axes in the world, when it is turned some exact way (else from tilt and spin). */
+        Vector3f bodyX, bodyY, bodyZ;
+        /** Draw the photographed map of this body if there is one. */
+        boolean photo = true;
 
         Vector3f axisY() {
+            if (bodyY != null) return new Vector3f(bodyY);
             return new Vector3f((float) -Math.sin(tilt), (float) Math.cos(tilt), 0.0F);
         }
 
         Vector3f axisX() {
+            if (bodyX != null) return new Vector3f(bodyX);
             float ct = (float) Math.cos(tilt), st = (float) Math.sin(tilt), cs = (float) Math.cos(spin), ss = (float) Math.sin(spin);
             return new Vector3f(ct * cs, st * cs, -ss);
         }
 
         Vector3f axisZ() {
+            if (bodyZ != null) return new Vector3f(bodyZ);
             float ct = (float) Math.cos(tilt), st = (float) Math.sin(tilt), cs = (float) Math.cos(spin), ss = (float) Math.sin(spin);
             return new Vector3f(ct * ss, st * ss, cs);
         }
@@ -254,6 +271,24 @@ final class Scene3D {
             sh.safeGetUniform("Spot").set(0.0F, 1.0F, 0.0F, 0.01F);
             sh.safeGetUniform("SpotColor").set(0.0F, 0.0F, 0.0F);
         }
+        // the photographed maps: the Earth's day side and its lights, clouds and water; the Moon; Jupiter
+        int map0 = 0, map1 = 0;
+        if (p.photo) {
+            switch (p.kind) {
+                case Planet.EARTH -> {
+                    map0 = FilmMaps.earthDay();
+                    map1 = FilmMaps.earthAux();
+                    if (map1 == 0) map0 = 0;
+                }
+                case Planet.MOON -> map0 = FilmMaps.moon();
+                case Planet.JUPITER -> map0 = FilmMaps.jupiter();
+                default -> {
+                }
+            }
+        }
+        sh.safeGetUniform("Photo").set(map0 != 0 ? 1.0F : 0.0F);
+        RenderSystem.setShaderTexture(0, map0);
+        RenderSystem.setShaderTexture(1, map1);
         RenderSystem.enableBlend();
         RenderSystem.blendFunc(GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
         RenderSystem.enableDepthTest();

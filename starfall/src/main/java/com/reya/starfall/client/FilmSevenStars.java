@@ -45,6 +45,7 @@ final class FilmSevenStars {
         float alt = (float) Math.exp(Cam.keyed1(s, at, (float) Math.log(0.15F), (float) Math.log(1.5F), (float) Math.log(14.0F),
                 (float) Math.log(90.0F), (float) Math.log(600.0F)));
         Scene3D.Sky sky = new Scene3D.Sky();
+        sky.milky = 0.8F;
         sky.nebulaA = 0x2A1850;
         sky.nebulaB = 0x381444;
         sky.bandStrength = 0.7F;
@@ -80,6 +81,7 @@ final class FilmSevenStars {
         Scene3D sc = new Scene3D(c.w, c.h, cam);
         sc.fade = fade;
         Scene3D.Sky sky = new Scene3D.Sky();
+        sky.milky = 0.5F;
         sky.nebulaA = 0x3A1E70;
         sky.nebulaB = 0x501A5A;
         sky.nebula = 1.3F;
@@ -186,6 +188,7 @@ final class FilmSevenStars {
         Scene3D sc = new Scene3D(c.w, c.h, cam);
         sc.fade = fade;
         Scene3D.Sky sky = new Scene3D.Sky();
+        sky.milky = 0.8F;
         sky.nebulaA = 0x2A1850;
         sky.nebulaB = 0x381444;
         sky.bandStrength = 0.6F;

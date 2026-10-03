@@ -81,6 +81,17 @@ public final class ClientStrikes {
         Fx xray = Fx.begin(mat, camera, far, true, true);
         for (ClientStrike s : STRIKES) s.renderXray(xray, age(s, level, partial));
         xray.end();
+
+        // and their light once more into the halo buffer, blurred and laid over the world
+        if (WorldGlow.begin()) {
+            Fx halo = Fx.begin(mat, camera, far, true, false);
+            for (ClientStrike s : STRIKES) s.renderGlow(halo, age(s, level, partial), level);
+            halo.end();
+            Fx haloXray = Fx.begin(mat, camera, far, true, true);
+            for (ClientStrike s : STRIKES) s.renderXray(haloXray, age(s, level, partial));
+            haloXray.end();
+            WorldGlow.end(1.0F);
+        }
     }
 
     /** The strongest flash on screen right now, as ARGB (0 for none). */

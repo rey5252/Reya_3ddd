@@ -49,6 +49,7 @@ final class FilmGungnir {
         float alt = (float) Math.exp(Cam.keyed1(s, at, (float) Math.log(0.15F), (float) Math.log(1.2F), (float) Math.log(12.0F),
                 (float) Math.log(130.0F), (float) Math.log(1500.0F)));
         Scene3D.Sky sky = new Scene3D.Sky();
+        sky.milky = 0.7F;
         sky.nebulaA = 0x30180C;
         sky.nebulaB = 0x101830;
         Scene3D sc = Film.opening(c, alt, smoother(s, 0.5F, 1.5F), false, EMBER, s, 1.0F, sky, null);
@@ -95,6 +96,7 @@ final class FilmGungnir {
         Scene3D sc = new Scene3D(c.w, c.h, cam);
         sc.fade = fade;
         Scene3D.Sky sky = new Scene3D.Sky();
+        sky.milky = 0.9F;
         sky.nebulaA = 0x2A1A10;
         sky.nebulaB = 0x10182E;
         sky.seed = 7.0F;
@@ -194,6 +196,7 @@ final class FilmGungnir {
         Scene3D sc = new Scene3D(c.w, c.h, cam);
         sc.fade = fade;
         Scene3D.Sky sky = new Scene3D.Sky();
+        sky.milky = 0.7F;
         sky.stars = 0.9F;
         sky.nebulaA = 0x30180C;
         sc.sky(sky);

@@ -13,6 +13,11 @@ uniform vec4 Band;
 uniform float Nebula;
 uniform float Seed;
 uniform float Fade;
+// the photographed Milky Way, a panorama in galactic coordinates: Milky.xyz is the galaxy's north pole and
+// Milky.w how strongly it shows; MilkyCentre is the way to the galaxy's centre
+uniform sampler2D Sampler0;
+uniform vec4 Milky;
+uniform vec3 MilkyCentre;
 
 in vec2 ndc;
 in vec4 tint;
@@ -55,6 +60,7 @@ float fbm(vec3 p, int octaves) {
 
 void main() {
     vec3 dir = normalize(ViewX * (ndc.x / ProjMat[0][0]) + ViewY * (ndc.y / ProjMat[1][1]) - ViewZ);
+    float pixAngle = length(fwidth(dir));
     vec3 q = dir * 2.2 + vec3(Seed, Seed * 0.37, -Seed * 0.61);
     vec3 w = vec3(gnoise(q * 1.3), gnoise(q * 1.3 + vec3(5.2, 1.1, 0.4)), gnoise(q * 1.3 + vec3(9.1, 3.7, 6.2)));
     float n1 = fbm(q + w * 1.2, 6);
@@ -72,6 +78,17 @@ void main() {
     vec3 neb = NebulaA * smoothstep(-0.05, 0.45, n1) * (0.6 + 0.4 * n2) + NebulaB * smoothstep(0.08, 0.5, n2) * 0.8;
     neb *= Nebula * (1.0 - 0.6 * dust) * 0.4;
 
-    vec3 col = vec3(0.004, 0.005, 0.012) + (neb + milky) * Fade;
+    vec3 photo = vec3(0.0);
+    if (Milky.w > 0.0) {
+        vec3 ge = cross(Milky.xyz, MilkyCentre);
+        float b = asin(clamp(dot(dir, Milky.xyz), -1.0, 1.0));
+        float l = atan(dot(dir, ge), dot(dir, MilkyCentre));
+        vec2 uv = vec2(0.5 - l / 6.2831853, 0.5 - b / 3.1415927);
+        photo = textureLod(Sampler0, uv, log2(max(pixAngle * 4096.0 / 6.2831853, 1.0e-6))).rgb;
+        photo = photo * (0.6 + 0.9 * photo) * Milky.w * 1.5;
+        milky *= 1.0 - 0.85 * Milky.w;
+        neb *= 1.0 - 0.6 * Milky.w;
+    }
+    vec3 col = vec3(0.004, 0.005, 0.012) + (neb + milky + photo) * Fade;
     fragColor = vec4(col, 1.0) * tint;
 }

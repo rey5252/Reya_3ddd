@@ -22,15 +22,25 @@ import org.slf4j.Logger;
 public final class FilmGfx {
     private static final Logger LOGGER = LogUtils.getLogger();
     static ShaderInstance planet, sky, galaxy, soft, hull;
+    /** The film's lens: down and up the bloom chain, and the last pass onto the screen. */
+    static ShaderInstance postDown, postUp, post;
+    /** The strikes' halo, added over the world. */
+    static ShaderInstance strikeGlow;
 
     @SubscribeEvent
     public static void registerShaders(RegisterShadersEvent event) {
         planet = sky = galaxy = soft = hull = null;
+        postDown = postUp = post = strikeGlow = null;
+        FilmMaps.clear();
         register(event, "film_planet", DefaultVertexFormat.POSITION_TEX_COLOR, s -> planet = s);
         register(event, "film_sky", DefaultVertexFormat.POSITION_TEX_COLOR, s -> sky = s);
         register(event, "film_galaxy", DefaultVertexFormat.POSITION_TEX_COLOR, s -> galaxy = s);
         register(event, "film_soft", DefaultVertexFormat.POSITION_TEX_COLOR, s -> soft = s);
         register(event, "film_hull", DefaultVertexFormat.POSITION_TEX_COLOR_NORMAL, s -> hull = s);
+        register(event, "film_post_down", DefaultVertexFormat.POSITION_TEX, s -> postDown = s);
+        register(event, "film_post_up", DefaultVertexFormat.POSITION_TEX, s -> postUp = s);
+        register(event, "film_post", DefaultVertexFormat.POSITION_TEX, s -> post = s);
+        register(event, "strike_glow", DefaultVertexFormat.POSITION_TEX, s -> strikeGlow = s);
     }
 
     private static void register(RegisterShadersEvent event, String name, VertexFormat format, Consumer<ShaderInstance> set) {

@@ -58,9 +58,10 @@ final class FilmTarget {
         }
     }
 
-    /** Back to the screen, and the film onto it: a quad over the whole GUI. */
-    static void end(GuiGraphics g) {
+    /** Back to the screen, and the film onto it, through the lens if it can be, else as a quad over the GUI. */
+    static void end(GuiGraphics g, float time) {
         Minecraft mc = Minecraft.getInstance();
+        if (FilmPost.apply(target, time)) return;
         mc.getMainRenderTarget().bindWrite(true);
         Window window = mc.getWindow();
         float gw = (float) (window.getWidth() / window.getGuiScale());

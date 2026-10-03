@@ -60,6 +60,7 @@ final class FilmRailgun {
         float alt = (float) Math.exp(Cam.keyed1(s, at, ln(0.15F), ln(0.7F), ln(4.0F), ln(32.0F), ln(230.0F), ln(1500.0F), ln(7000.0F)));
         float look = smoother(s, 0.5F, 1.5F);
         Scene3D.Sky sky = new Scene3D.Sky();
+        sky.milky = 0.7F;
         sky.nebula = 0.7F;
         sky.bandStrength = 0.55F;
         Scene3D.Planet moon = moon();
@@ -102,6 +103,7 @@ final class FilmRailgun {
         Scene3D sc = new Scene3D(c.w, c.h, cam);
         sc.fade = fade;
         Scene3D.Sky sky = new Scene3D.Sky();
+        sky.milky = 0.9F;
         sky.nebulaA = 0x1A2448;
         sky.nebulaB = 0x2A1430;
         sky.seed = 5.0F;
@@ -142,6 +144,7 @@ final class FilmRailgun {
         Scene3D sc = new Scene3D(c.w, c.h, cam);
         sc.fade = fade;
         Scene3D.Sky sky = new Scene3D.Sky();
+        sky.milky = 0.8F;
         sky.seed = 9.0F;
         sky.band.set(0.2F, 0.3F, 1.0F);
         sky.bandStrength = 0.9F;
@@ -390,6 +393,7 @@ final class FilmRailgun {
         Scene3D sc = new Scene3D(c.w, c.h, cam);
         sc.fade = fade;
         Scene3D.Sky sky = new Scene3D.Sky();
+        sky.milky = 0.6F;
         sky.stars = 0.8F;
         sc.sky(sky);
         sc.planet(Film.earth(false, RED, 1.5F, s));
