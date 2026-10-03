@@ -44,11 +44,19 @@ public class Starfall {
 
     /** The kilometre-long needle SS-03 leaves standing: nothing breaks it. */
     public static final RegistryObject<Block> STAR_NEEDLE = BLOCKS.register("star_needle",
-            () -> new Block(BlockBehaviour.Properties.copy(Blocks.OBSIDIAN)
+            () -> new NeedleBlock(BlockBehaviour.Properties.copy(Blocks.OBSIDIAN)
                     .mapColor(MapColor.COLOR_BLACK)
                     .strength(-1.0F, 3_600_000.0F)
                     .sound(SoundType.NETHERITE_BLOCK)
-                    .lightLevel(s -> 3)));
+                    .noOcclusion()
+                    .lightLevel(s -> s.getValue(NeedleBlock.PART) == NeedleBlock.BAND ? 10 : 2)));
+
+    /** The glowing hex plate Gungnir planes its crater into. */
+    public static final RegistryObject<Block> SCORCHED_PLATE = BLOCKS.register("scorched_plate",
+            () -> new PlateBlock(BlockBehaviour.Properties.copy(Blocks.BLACKSTONE)
+                    .mapColor(MapColor.COLOR_BLACK)
+                    .strength(2.0F, 8.0F)
+                    .requiresCorrectToolForDrops()));
 
     /** The glowing star-core crystal SS-04 leaves in each crater. */
     public static final RegistryObject<Block> STAR_CORE = BLOCKS.register("star_core",
@@ -62,6 +70,8 @@ public class Starfall {
 
     public static final RegistryObject<Item> STAR_NEEDLE_ITEM = ITEMS.register("star_needle",
             () -> new BlockItem(STAR_NEEDLE.get(), new Item.Properties()));
+    public static final RegistryObject<Item> SCORCHED_PLATE_ITEM = ITEMS.register("scorched_plate",
+            () -> new BlockItem(SCORCHED_PLATE.get(), new Item.Properties()));
     public static final RegistryObject<Item> STAR_CORE_ITEM = ITEMS.register("star_core",
             () -> new BlockItem(STAR_CORE.get(), new Item.Properties().rarity(Rarity.RARE)));
 
@@ -71,6 +81,7 @@ public class Starfall {
             .displayItems((params, output) -> {
                 output.accept(STELLAR_REMOTE.get());
                 output.accept(STAR_CORE_ITEM.get());
+                output.accept(SCORCHED_PLATE_ITEM.get());
                 output.accept(STAR_NEEDLE_ITEM.get());
             })
             .build());

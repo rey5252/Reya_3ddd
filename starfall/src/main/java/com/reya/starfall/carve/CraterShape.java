@@ -1,5 +1,7 @@
 package com.reya.starfall.carve;
 
+import com.reya.starfall.NeedleBlock;
+import com.reya.starfall.PlateBlock;
 import com.reya.starfall.Starfall;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import net.minecraft.core.BlockPos;
@@ -60,6 +62,17 @@ public final class CraterShape extends CarveShape {
         for (int y = top(chunk, x, z); y > floor; y--) {
             clear(level, chunk, pos.set(x, y, z), false);
         }
+        // the needle stands two by two on the crater's centre, from the bottom of the world to the build limit
+        if (needle && (x == cx || x == cx - 1) && (z == cz || z == cz - 1)) {
+            int quarter = x == cx ? (z == cz ? 0 : 3) : (z == cz ? 1 : 2);
+            BlockState shaft = Starfall.STAR_NEEDLE.get().defaultBlockState().setValue(NeedleBlock.QUARTER, quarter);
+            for (int y = min; y < chunk.getMaxBuildHeight(); y++) {
+                int part = y > floor && y <= floor + 3 ? NeedleBlock.FOOT
+                        : Math.floorMod(y - floor - 4, 6) == 0 ? NeedleBlock.BAND : NeedleBlock.PLAIN;
+                set(level, chunk, pos.set(x, y, z), shaft.setValue(NeedleBlock.PART, part));
+            }
+            return;
+        }
         // level out what lies below the floor, as long as it isn't a canyon
         int solid = floor;
         while (solid > floor - MAX_FILL && solid > min) {
@@ -72,34 +85,22 @@ public final class CraterShape extends CarveShape {
             set(level, chunk, pos.set(x, y, z), fill());
         }
         double n = Noise.patch(x, z, palette.ordinal() * 31 + 7);
-        BlockState surface = surface(t, n);
+        BlockState surface = surface(x, z, t, n);
         set(level, chunk, pos.set(x, floor, z), surface);
-        if (surface.is(Blocks.LAVA)) {
-            set(level, chunk, pos.set(x, floor - 1, z), Blocks.MAGMA_BLOCK.defaultBlockState());
-        } else {
-            BlockState below = chunk.getBlockState(pos.set(x, floor - 1, z));
-            if (!below.isAir() && below.getFluidState().isEmpty()) set(level, chunk, pos, under());
-        }
+        BlockState below = chunk.getBlockState(pos.set(x, floor - 1, z));
+        if (!below.isAir() && below.getFluidState().isEmpty()) set(level, chunk, pos, under());
 
-        if (x == cx && z == cz) {
-            if (core) {
-                set(level, chunk, pos.set(x, floor, z), Blocks.CRYING_OBSIDIAN.defaultBlockState());
-                set(level, chunk, pos.set(x, floor + 1, z), Starfall.STAR_CORE.get().defaultBlockState());
-            }
-            if (needle) {
-                BlockState state = Starfall.STAR_NEEDLE.get().defaultBlockState();
-                for (int y = min; y < chunk.getMaxBuildHeight(); y++) {
-                    set(level, chunk, pos.set(x, y, z), state);
-                }
-            }
+        if (core && x == cx && z == cz) {
+            set(level, chunk, pos.set(x, floor, z), Blocks.CRYING_OBSIDIAN.defaultBlockState());
+            set(level, chunk, pos.set(x, floor + 1, z), Starfall.STAR_CORE.get().defaultBlockState());
         }
     }
 
-    private BlockState surface(double t, double n) {
+    private BlockState surface(int x, int z, double t, double n) {
         if (palette == Palette.MOLTEN) {
-            if (t < 0.3D) return n < 0.25D ? Blocks.LAVA.defaultBlockState() : n < 0.7D ? Blocks.MAGMA_BLOCK.defaultBlockState() : Blocks.OBSIDIAN.defaultBlockState();
-            if (t < 0.6D) return n < 0.35D ? Blocks.MAGMA_BLOCK.defaultBlockState() : n < 0.7D ? Blocks.BLACKSTONE.defaultBlockState() : Blocks.BASALT.defaultBlockState();
-            if (t < 0.85D) return n < 0.15D ? Blocks.MAGMA_BLOCK.defaultBlockState() : n < 0.6D ? Blocks.BLACKSTONE.defaultBlockState() : Blocks.SMOOTH_BASALT.defaultBlockState();
+            // planed flat into plates with a glowing hex grid, scorched at the rim
+            if (t < 0.88D) return ((PlateBlock) Starfall.SCORCHED_PLATE.get()).at(x, z);
+            if (t < 0.95D) return n < 0.5D ? Blocks.BASALT.defaultBlockState() : Blocks.BLACKSTONE.defaultBlockState();
             return n < 0.5D ? Blocks.COARSE_DIRT.defaultBlockState() : Blocks.BLACKSTONE.defaultBlockState();
         }
         if (t < 0.25D) return n < 0.45D ? Blocks.AMETHYST_BLOCK.defaultBlockState() : n < 0.75D ? Blocks.CRYING_OBSIDIAN.defaultBlockState() : Blocks.OBSIDIAN.defaultBlockState();

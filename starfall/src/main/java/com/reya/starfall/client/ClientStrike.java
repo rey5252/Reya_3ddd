@@ -93,7 +93,7 @@ final class ClientStrike {
             if (now >= Skill.starImpact(i)) continue;
             int x = Mth.floor(nx[i]), z = Mth.floor(nz[i]);
             if (level.getChunkSource().hasChunk(x >> 4, z >> 4)) {
-                ny[i] = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
+                ny[i] = level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z);
             }
         }
     }
@@ -313,7 +313,8 @@ final class ClientStrike {
         // the needle coming down, faster than its own sound
         double p = (t - Skill.MARK) / Skill.NEEDLE_FALL;
         double tip = groundY() + (1.0D - p) * (1.0D - p) * 2600.0D;
-        fx.prism(cx(), cz(), tip, tip + 900.0D, 1.3D, 0xFF0A0A0E, 0xFF1C1A22);
+        // the needle stands two by two around the target's corner
+        fx.prism(target.getX(), target.getZ(), tip, tip + 900.0D, 1.0D, 0xFF0A0A0E, 0xFF1C1A22);
     }
 
     void renderGlow(Fx fx, float t, ClientLevel level) {
@@ -373,7 +374,7 @@ final class ClientStrike {
     }
 
     private void gungnirGlow(Fx fx, float t, ClientLevel level) {
-        double cx = cx(), cz = cz(), gy = groundY();
+        double cx = target.getX(), cz = target.getZ(), gy = groundY();
         double top = level.getMaxBuildHeight() + 900.0D;
         if (t < Skill.MARK) {
             // the crosshair marked in ember
@@ -413,7 +414,7 @@ final class ClientStrike {
         // the needle stays standing, hot from the fall
         float heat = Math.max(0.0F, 1.0F - bt / 150.0F);
         if (heat > 0) {
-            fx.cylinder(cx, cz, level.getMinBuildHeight(), level.getMaxBuildHeight(), 1.6D, 8, Fx.argb(EMBER, 0.5F * heat), Fx.argb(EMBER, 0.15F * heat));
+            fx.cylinder(cx, cz, level.getMinBuildHeight(), level.getMaxBuildHeight(), 2.3D, 12, Fx.argb(EMBER, 0.5F * heat), Fx.argb(EMBER, 0.15F * heat));
         }
     }
 
@@ -465,7 +466,7 @@ final class ClientStrike {
             float a = show * (landed ? 0.35F * lit : 0.9F);
             if (a <= 0.01F) continue;
             if (!landed) fx.cylinder(x, z, y, y + 400.0D, 0.7D, 8, Fx.argb(VIOLET, 0.8F * a), Fx.argb(VIOLET, 0.0F));
-            fx.dashedRing(x, y + 0.5D, z, s, 1.2D, 64, Fx.argb(VIOLET_HOT, a), t * 0.06D * (i % 2 == 0 ? 1 : -1), 12);
+            fx.sigil(x, y + 0.5D, z, s, t * 0.01D * (i % 2 == 0 ? 1 : -1), Fx.argb(VIOLET_HOT, a), Fx.argb(VIOLET, 0.25F * a));
             fx.glow(x, y + 2.0D, z, 4.0D + s * 0.15D, Fx.argb(VIOLET_HOT, a));
             if (flare > 0) fx.glow(x, y + 6.0D, z, s * 2.5D, Fx.argb(VIOLET_HOT, 0.9F * flare));
         }

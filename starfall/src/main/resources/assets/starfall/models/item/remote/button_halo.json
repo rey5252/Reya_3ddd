@@ -1,0 +1,31 @@
+{
+  "textures": {
+    "halo": "starfall:item/remote/halo",
+    "particle": "starfall:item/remote/metal"
+  },
+  "elements": [
+    {
+      "from": [
+        6.4,
+        6.5,
+        10.17
+      ],
+      "to": [
+        9.6,
+        10.3,
+        10.175
+      ],
+      "faces": {
+        "north": {
+          "texture": "#halo",
+          "tintindex": 0
+        },
+        "south": {
+          "texture": "#halo",
+          "tintindex": 0
+        }
+      },
+      "shade": false
+    }
+  ]
+}

@@ -1,23 +1,36 @@
 package com.reya.starfall;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
 
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.reya.starfall.client.RemoteAnimation;
+import com.reya.starfall.client.RemoteRenderer;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.extensions.common.IClientItemExtensions;
+import net.minecraftforge.fml.DistExecutor;
 
-/** One red button under a flip cover. Right click fires the selected weapon; sneak + right click steps to the next. */
+/**
+ * One button under a hazard-striped flip cover. Right click flips the cover and presses the button, which fires
+ * the selected weapon; sneak + right click steps to the next.
+ */
 public class StellarRemoteItem extends Item {
     private static final String TAG_SKILL = "Skill";
 
@@ -52,22 +65,44 @@ public class StellarRemoteItem extends Item {
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
-        if (level.isClientSide || !(player instanceof ServerPlayer serverPlayer)) {
-            return InteractionResultHolder.success(stack);
-        }
         if (player.isShiftKeyDown()) {
-            select(serverPlayer, skill(stack).next());
-            return InteractionResultHolder.success(stack);
+            if (player instanceof ServerPlayer serverPlayer) select(serverPlayer, skill(stack).next());
+            return InteractionResultHolder.consume(stack);
         }
-        Skill skill = skill(stack);
-        if (StarfallManager.cast(serverPlayer, skill)) {
-            // the flip cover snaps open and the button goes down
-            level.playSound(null, player.blockPosition(), SoundEvents.IRON_TRAPDOOR_OPEN, SoundSource.PLAYERS, 0.8F, 1.7F);
-            level.playSound(null, player.blockPosition(), SoundEvents.STONE_BUTTON_CLICK_ON, SoundSource.PLAYERS, 1.0F, 0.6F);
-            int cooldown = Config.COOLDOWN.get() * 20;
-            if (cooldown > 0) player.getCooldowns().addCooldown(this, cooldown);
+        // the cooldown also covers the press itself, so the button can't be pressed twice mid-animation
+        int cooldown = Math.max(20, Config.COOLDOWN.get() * 20);
+        if (level.isClientSide) {
+            // the hand comes up and the thumb flips the cover: the server fires when the button is down
+            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> RemoteAnimation::startLocal);
+            player.getCooldowns().addCooldown(this, cooldown);
+            return InteractionResultHolder.consume(stack);
+        }
+        if (player instanceof ServerPlayer serverPlayer) {
+            player.getCooldowns().addCooldown(this, StarfallManager.press(serverPlayer, skill(stack)) ? cooldown : 20);
         }
         return InteractionResultHolder.consume(stack);
+    }
+
+    /** Picking another skill changes the item's tag; that shouldn't drop the remote out of the hand and back. */
+    @Override
+    public boolean shouldCauseReequipAnimation(ItemStack oldStack, ItemStack newStack, boolean slotChanged) {
+        return slotChanged || oldStack.getItem() != newStack.getItem();
+    }
+
+    @Override
+    public void initializeClient(Consumer<IClientItemExtensions> consumer) {
+        consumer.accept(new IClientItemExtensions() {
+            @Override
+            public BlockEntityWithoutLevelRenderer getCustomRenderer() {
+                return RemoteRenderer.get();
+            }
+
+            @Override
+            public boolean applyForgeHandTransform(PoseStack pose, LocalPlayer player, HumanoidArm arm, ItemStack stack,
+                                                   float partialTick, float equipProcess, float swingProcess) {
+                return RemoteRenderer.handTransform(pose, player, arm, partialTick, equipProcess);
+            }
+        });
     }
 
     @Override

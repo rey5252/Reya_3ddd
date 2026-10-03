@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
-    "starfall:star_core"
+    "starfall:star_core",
+    "starfall:scorched_plate"
   ]
 }

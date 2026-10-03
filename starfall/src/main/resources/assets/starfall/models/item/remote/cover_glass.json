@@ -1,0 +1,40 @@
+{
+  "textures": {
+    "glass": "starfall:item/remote/glass",
+    "particle": "starfall:item/remote/metal"
+  },
+  "elements": [
+    {
+      "from": [
+        6.55,
+        6.65,
+        10.2
+      ],
+      "to": [
+        9.45,
+        10.15,
+        10.38
+      ],
+      "faces": {
+        "north": {
+          "texture": "#glass"
+        },
+        "south": {
+          "texture": "#glass"
+        },
+        "east": {
+          "texture": "#glass"
+        },
+        "west": {
+          "texture": "#glass"
+        },
+        "up": {
+          "texture": "#glass"
+        },
+        "down": {
+          "texture": "#glass"
+        }
+      }
+    }
+  ]
+}

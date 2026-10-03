@@ -1,0 +1,117 @@
+{
+  "textures": {
+    "white": "starfall:item/remote/white",
+    "particle": "starfall:item/remote/metal"
+  },
+  "elements": [
+    {
+      "from": [
+        6.85,
+        7.0,
+        9.47
+      ],
+      "to": [
+        9.15,
+        9.8,
+        9.95
+      ],
+      "faces": {
+        "north": {
+          "texture": "#white",
+          "tintindex": 0
+        },
+        "south": {
+          "texture": "#white",
+          "tintindex": 0
+        },
+        "east": {
+          "texture": "#white",
+          "tintindex": 0
+        },
+        "west": {
+          "texture": "#white",
+          "tintindex": 0
+        },
+        "up": {
+          "texture": "#white",
+          "tintindex": 0
+        },
+        "down": {
+          "texture": "#white",
+          "tintindex": 0
+        }
+      }
+    },
+    {
+      "from": [
+        7.1,
+        7.25,
+        9.95
+      ],
+      "to": [
+        8.9,
+        9.55,
+        10.15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#white",
+          "tintindex": 0
+        },
+        "south": {
+          "texture": "#white",
+          "tintindex": 0
+        },
+        "east": {
+          "texture": "#white",
+          "tintindex": 0
+        },
+        "west": {
+          "texture": "#white",
+          "tintindex": 0
+        },
+        "up": {
+          "texture": "#white",
+          "tintindex": 0
+        },
+        "down": {
+          "texture": "#white",
+          "tintindex": 0
+        }
+      }
+    },
+    {
+      "from": [
+        7.3,
+        9.0,
+        10.15
+      ],
+      "to": [
+        7.8,
+        9.3,
+        10.16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#white"
+        },
+        "south": {
+          "texture": "#white"
+        },
+        "east": {
+          "texture": "#white"
+        },
+        "west": {
+          "texture": "#white"
+        },
+        "up": {
+          "texture": "#white"
+        },
+        "down": {
+          "texture": "#white"
+        }
+      },
+      "shade": false
+    }
+  ]
+}

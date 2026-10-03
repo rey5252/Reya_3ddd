@@ -1,20 +1,111 @@
 {
-  "parent": "minecraft:item/handheld",
+  "parent": "builtin/entity",
+  "gui_light": "side",
   "textures": {
-    "layer0": "starfall:item/stellar_remote_railgun"
+    "particle": "starfall:item/remote/metal"
   },
-  "overrides": [
-    {
-      "predicate": {
-        "starfall:skill": 0.5
-      },
-      "model": "starfall:item/stellar_remote_gungnir"
+  "display": {
+    "gui": {
+      "rotation": [
+        12,
+        -28,
+        0
+      ],
+      "translation": [
+        0,
+        -2.6,
+        0
+      ],
+      "scale": [
+        0.62,
+        0.62,
+        0.62
+      ]
     },
-    {
-      "predicate": {
-        "starfall:skill": 1.0
-      },
-      "model": "starfall:item/stellar_remote_seven_stars"
+    "ground": {
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "translation": [
+        0,
+        1,
+        0
+      ],
+      "scale": [
+        0.4,
+        0.4,
+        0.4
+      ]
+    },
+    "fixed": {
+      "rotation": [
+        0,
+        180,
+        0
+      ],
+      "translation": [
+        0,
+        -2.5,
+        0
+      ],
+      "scale": [
+        0.6,
+        0.6,
+        0.6
+      ]
+    },
+    "head": {
+      "rotation": [
+        0,
+        180,
+        0
+      ],
+      "translation": [
+        0,
+        6,
+        7
+      ],
+      "scale": [
+        0.8,
+        0.8,
+        0.8
+      ]
+    },
+    "thirdperson_righthand": {
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "translation": [
+        0,
+        2.5,
+        1.5
+      ],
+      "scale": [
+        0.45,
+        0.45,
+        0.45
+      ]
+    },
+    "firstperson_righthand": {
+      "rotation": [
+        -10,
+        -20,
+        8
+      ],
+      "translation": [
+        1.0,
+        1.0,
+        -0.5
+      ],
+      "scale": [
+        0.8,
+        0.8,
+        0.8
+      ]
     }
-  ]
+  }
 }

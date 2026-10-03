@@ -11,10 +11,13 @@ import com.reya.starfall.Skill;
 import com.reya.starfall.Starfall;
 import com.reya.starfall.client.ClientStrikes;
 import com.reya.starfall.client.Film;
-import com.reya.starfall.client.SkillMenu;
+import com.reya.starfall.client.RemoteAnimation;
+import com.reya.starfall.client.SkillScreen;
+import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
 import net.minecraft.world.Difficulty;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.LevelSettings;
@@ -153,22 +156,55 @@ public final class Showcase {
         fly();
     }
 
+    /** Teleports to (dx, dz) from the base, {@code up} blocks above the ground there (if it's loaded). */
+    private static void tpGround(int dx, int dz, int up, float yaw, float pitch) {
+        run(() -> {
+            Minecraft mc = Minecraft.getInstance();
+            int x = baseX + dx, z = baseZ + dz;
+            int y = mc.level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z) + up;
+            String c = String.format(Locale.ROOT, "tp @s %d %d %d %.1f %.1f", x, y, z, yaw, pitch);
+            LOGGER.info("[showcase] /{}", c);
+            mc.player.connection.sendCommand(c);
+        });
+        fly();
+    }
+
     /** Fires a skill at ground level at (dx, dz) from the base, then waits for the strike to reach the client. */
     private static void cast(String skill, int dx, int dz) {
         run(() -> {
             Minecraft mc = Minecraft.getInstance();
             int x = baseX + dx, z = baseZ + dz;
-            int y = mc.level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z) - 1;
+            int y = mc.level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z) - 1;
             String c = String.format(Locale.ROOT, "starfall cast %s %d %d %d", skill, x, y, z);
             LOGGER.info("[showcase] /{}", c);
             mc.player.connection.sendCommand(c);
         });
+        awaitStrike();
+    }
+
+    /** Presses the remote in hand for real: the cover flips, the button goes down, and the server fires. */
+    private static void pressRemote() {
+        run(() -> {
+            Minecraft mc = Minecraft.getInstance();
+            LOGGER.info("[showcase] pressing the remote");
+            mc.gameMode.useItem(mc.player, InteractionHand.MAIN_HAND);
+        });
+    }
+
+    /** Waits for the next strike to reach the client, giving up after a while so the rest still runs. */
+    private static void awaitStrike() {
         long[] before = {-2};
+        int[] waited = {0};
         step(() -> {
             if (before[0] == -2) before[0] = ClientStrikes.latestStart();
             long now = ClientStrikes.latestStart();
             if (now >= 0 && now != before[0]) {
                 strikeStart = now;
+                return true;
+            }
+            if (++waited[0] > 300) {
+                LOGGER.error("[showcase] the strike never came");
+                strikeStart = Minecraft.getInstance().level.getGameTime();
                 return true;
             }
             return false;
@@ -183,12 +219,11 @@ public final class Showcase {
     private static void script(Minecraft mc) {
         baseX = mc.player.blockPosition().getX();
         baseZ = mc.player.blockPosition().getZ();
-        baseY = mc.level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, baseX, baseZ);
+        baseY = mc.level.getHeight(Heightmap.Types.MOTION_BLOCKING, baseX, baseZ);
         LOGGER.info("[showcase] base at {} {} {}", baseX, baseY, baseZ);
         // smaller than the defaults so each strike fits in the view of a software-rendered client
         Config.RAILGUN_RADIUS.set(56);
         Config.GUNGNIR_RADIUS.set(72);
-        Config.GUNGNIR_DEPTH.set(10);
         Config.SEVEN_SPAN.set(320);
         Config.SEVEN_CRATER_SCALE.set(2.2D);
         Config.COOLDOWN.set(0);
@@ -199,11 +234,54 @@ public final class Showcase {
         cmd("give @s starfall:stellar_remote");
         run(() -> mc.player.getInventory().selected = 0);
 
-        // ---- SS-01 Railgun
+        // ---- the remote itself: idle, the cover flipped by the thumb, the press, and from the front
+        tpGround(-30, -30, 0, 135.0F, 8.0F);
+        waitTicks(80);
+        shot("remote_idle");
+        run(RemoteAnimation::startLocal);
+        waitTicks(3);
+        shot("remote_thumb_on_the_cover");
+        waitTicks(2);
+        shot("remote_cover_flipping");
+        waitTicks(3);
+        shot("remote_thumb_on_the_button");
+        waitTicks(1);
+        shot("remote_button_pressed");
+        waitTicks(30);
+        run(() -> mc.options.setCameraType(CameraType.THIRD_PERSON_FRONT));
+        waitTicks(10);
+        shot("remote_third_person");
+        run(RemoteAnimation::startLocal);
+        waitTicks(7);
+        shot("remote_third_person_cover_open");
+        run(() -> mc.options.setCameraType(CameraType.FIRST_PERSON));
+        waitTicks(60);
+
+        // ---- the strike menu
+        run(SkillScreen::open);
+        waitTicks(14);
+        shot("menu");
+        run(() -> {
+            if (mc.screen instanceof SkillScreen screen) screen.highlight(2);
+        });
+        waitTicks(6);
+        shot("menu_seven_stars");
+        run(() -> {
+            if (mc.screen instanceof SkillScreen screen) screen.showDetails(1);
+        });
+        waitTicks(6);
+        shot("menu_details");
+        run(() -> mc.setScreen(null));
+        waitTicks(20);
+
+        // ---- SS-01 Railgun, fired by pressing the remote
         tp(0, 50, -130, 0.0F, 18.0F);
         waitTicks(160);
         shot("world_before");
-        cast("railgun", 0, 0);
+        pressRemote();
+        waitTicks(4);
+        shot("ss01_press");
+        awaitStrike();
         at(12);
         shot("ss01_film_ascent");
         at(38);
@@ -217,7 +295,7 @@ public final class Showcase {
         at(149);
         shot("ss01_film_fire");
         at(Skill.MARK + 34);
-        shot("ss01_beam");
+        shot("ss01_beam_impact_confirmed");
         at(Skill.MARK + 76);
         shot("ss01_beam_fading");
         at(Skill.MARK + 420);
@@ -252,13 +330,19 @@ public final class Showcase {
         at(Skill.GUNGNIR_IMPACT + 12);
         shot("ss03_shock_ring");
         at(Skill.GUNGNIR_IMPACT + 34);
-        shot("ss03_shock_ring_wide");
+        shot("ss03_impact_confirmed");
         at(Skill.GUNGNIR_IMPACT + 420);
         tp(700, 100, -150, 0.0F, 34.0F);
         waitTicks(80);
         shot("ss03_crater_and_needle");
+        cmd("time set 13800");
+        tpGround(700, -36, 3, 0.0F, -12.0F);
+        waitTicks(80);
+        shot("ss03_needle_at_night");
+        cmd("time set 6000");
 
-        // ---- SS-04 Seven Stars
+        // ---- SS-04 Seven Stars, at night
+        cmd("time set 14500");
         tp(0, 150, 760, 0.0F, 48.0F);
         waitTicks(300);
         cast("seven_stars", 0, 880);
@@ -285,18 +369,9 @@ public final class Showcase {
         tp(0, 230, 820, 0.0F, 80.0F);
         waitTicks(120);
         shot("ss04_burned_into_the_land");
-
-        // ---- the skill menu
-        tp(0, 230, 820, 0.0F, 0.0F);
+        cmd("time set 6000");
         waitTicks(40);
-        run(SkillMenu::toggle);
-        waitTicks(20);
-        shot("menu");
-        run(() -> SkillMenu.click(false));
-        waitTicks(10);
-        shot("menu_details");
-        run(SkillMenu::close);
-        waitTicks(10);
+        shot("ss04_burned_into_the_land_by_day");
     }
 
     private Showcase() {

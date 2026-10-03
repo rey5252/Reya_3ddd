@@ -1,6 +1,0 @@
-{
-  "parent": "minecraft:item/handheld",
-  "textures": {
-    "layer0": "starfall:item/stellar_remote_gungnir"
-  }
-}

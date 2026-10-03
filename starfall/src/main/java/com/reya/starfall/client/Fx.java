@@ -146,6 +146,31 @@ final class Fx {
         vertex(bx - sx, by, bz - sz, cb);
     }
 
+    /** A regular polygon outline lying on the ground, turned by {@code rotation} radians. */
+    void polygon(double x, double y, double z, double r, int sides, double rotation, double width, int argb) {
+        for (int i = 0; i < sides; i++) {
+            double a0 = rotation + Math.PI * 2.0D * i / sides, a1 = rotation + Math.PI * 2.0D * (i + 1) / sides;
+            groundBand(x + Math.cos(a0) * r, y, z + Math.sin(a0) * r, x + Math.cos(a1) * r, y, z + Math.sin(a1) * r,
+                    width * 0.5D, argb, argb);
+        }
+    }
+
+    /** A sigil laid on the ground: rings, a hexagram and tick marks, slowly turning. */
+    void sigil(double x, double y, double z, double r, double turn, int argb, int soft) {
+        ring(x, y, z, 0.0D, r, 48, Fx.scaleAlpha(soft, 0.35F), soft);
+        dashedRing(x, y, z, r, Math.max(0.5D, r * 0.03D), 96, argb, turn * 2.0D, 18);
+        ring(x, y, z, r * 0.9D, r * 0.92D, 64, argb, argb);
+        dashedRing(x, y, z, r * 0.62D, Math.max(0.35D, r * 0.02D), 64, argb, -turn * 3.0D, 6);
+        polygon(x, y, z, r * 0.6D, 3, turn, Math.max(0.35D, r * 0.018D), argb);
+        polygon(x, y, z, r * 0.6D, 3, turn + Math.PI, Math.max(0.35D, r * 0.018D), argb);
+        for (int k = 0; k < 24; k++) {
+            double a = -turn + Math.PI * 2.0D * k / 24.0D;
+            double r0 = r * (k % 3 == 0 ? 0.74D : 0.8D), r1 = r * 0.88D;
+            groundBand(x + Math.cos(a) * r0, y, z + Math.sin(a) * r0, x + Math.cos(a) * r1, y, z + Math.sin(a) * r1,
+                    Math.max(0.2D, r * 0.008D), argb, argb);
+        }
+    }
+
     /** A square that always faces the camera. */
     void billboard(double x, double y, double z, double size, int argb) {
         double lx = left.x() * size, ly = left.y() * size, lz = left.z() * size;

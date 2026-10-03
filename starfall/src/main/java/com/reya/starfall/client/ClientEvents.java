@@ -10,14 +10,13 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
-import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.event.MovementInputUpdateEvent;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
+import net.minecraftforge.client.event.RenderLivingEvent;
 import net.minecraftforge.client.event.ViewportEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import org.lwjgl.glfw.GLFW;
 
 @Mod.EventBusSubscriber(modid = Starfall.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
 public final class ClientEvents {
@@ -27,19 +26,11 @@ public final class ClientEvents {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) return;
         ClientStrikes.tick();
-        SkillMenu.tick();
-        if (SkillMenu.binding()) {
-            // the key being bound must not also fire its old meaning
-            for (var key : Keys.SKILLS) while (key.consumeClick()) ;
-            while (Keys.MENU.consumeClick()) ;
-            while (Keys.FILM.consumeClick()) ;
-            return;
-        }
         for (int i = 0; i < Keys.SKILLS.length; i++) {
             while (Keys.SKILLS[i].consumeClick()) select(mc, Skill.byIndex(i));
         }
         while (Keys.MENU.consumeClick()) {
-            if (mc.screen == null) SkillMenu.toggle();
+            if (mc.screen == null) SkillScreen.open();
         }
         while (Keys.FILM.consumeClick()) {
             if (Film.active()) {
@@ -55,7 +46,7 @@ public final class ClientEvents {
 
     private static void select(Minecraft mc, Skill skill) {
         if (mc.player == null) return;
-        if (SkillMenu.remote(mc.player).isEmpty()) {
+        if (RemoteItems.held(mc.player).isEmpty()) {
             mc.player.displayClientMessage(Component.translatable("message.starfall.hold_remote"), true);
             return;
         }
@@ -64,11 +55,18 @@ public final class ClientEvents {
 
     @SubscribeEvent
     public static void onRenderLevel(RenderLevelStageEvent event) {
-        if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_PARTICLES) {
-            ClientStrikes.render(event);
-        } else if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_WEATHER) {
-            SkillMenu.render(event.getPoseStack(), event.getCamera(), event.getPartialTick());
-        }
+        if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_PARTICLES) ClientStrikes.render(event);
+    }
+
+    /** A remote held by someone else animates their press too: remember whose hand is being drawn. */
+    @SubscribeEvent
+    public static void onRenderLivingPre(RenderLivingEvent.Pre<?, ?> event) {
+        RemoteRenderer.holder = event.getEntity();
+    }
+
+    @SubscribeEvent
+    public static void onRenderLivingPost(RenderLivingEvent.Post<?, ?> event) {
+        RemoteRenderer.holder = null;
     }
 
     @SubscribeEvent
@@ -82,24 +80,10 @@ public final class ClientEvents {
         event.setRoll(event.getRoll() + amp * 0.5F * Mth.sin(t * 3.7F));
     }
 
-    /** While the menu is open, clicks pick skills instead of hitting or using things. */
-    @SubscribeEvent
-    public static void onClick(InputEvent.InteractionKeyMappingTriggered event) {
-        if (!SkillMenu.isOpen()) return;
-        event.setCanceled(true);
-        event.setSwingHand(false);
-        if (event.isAttack() || event.isUseItem()) SkillMenu.click(event.isAttack());
-    }
-
-    @SubscribeEvent
-    public static void onKey(InputEvent.Key event) {
-        if (event.getAction() == GLFW.GLFW_PRESS && SkillMenu.binding()) SkillMenu.key(event.getKey(), event.getScanCode());
-    }
-
-    /** You stand still while the film plays and while the menu floats around you. */
+    /** You stand still while the film plays. */
     @SubscribeEvent
     public static void onMovement(MovementInputUpdateEvent event) {
-        if (!Film.active() && !SkillMenu.isOpen()) return;
+        if (!Film.active()) return;
         Input input = event.getInput();
         input.forwardImpulse = 0.0F;
         input.leftImpulse = 0.0F;
@@ -114,7 +98,7 @@ public final class ClientEvents {
     @SubscribeEvent
     public static void onLogout(ClientPlayerNetworkEvent.LoggingOut event) {
         ClientStrikes.clear();
-        SkillMenu.close();
+        RemoteAnimation.clear();
     }
 
     private ClientEvents() {

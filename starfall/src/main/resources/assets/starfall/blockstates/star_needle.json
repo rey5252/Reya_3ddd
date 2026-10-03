@@ -1,7 +1,49 @@
 {
   "variants": {
-    "": {
-      "model": "starfall:block/star_needle"
+    "part=0,quarter=0": {
+      "model": "starfall:block/needle_plain"
+    },
+    "part=0,quarter=1": {
+      "model": "starfall:block/needle_plain",
+      "y": 90
+    },
+    "part=0,quarter=2": {
+      "model": "starfall:block/needle_plain",
+      "y": 180
+    },
+    "part=0,quarter=3": {
+      "model": "starfall:block/needle_plain",
+      "y": 270
+    },
+    "part=1,quarter=0": {
+      "model": "starfall:block/needle_band"
+    },
+    "part=1,quarter=1": {
+      "model": "starfall:block/needle_band",
+      "y": 90
+    },
+    "part=1,quarter=2": {
+      "model": "starfall:block/needle_band",
+      "y": 180
+    },
+    "part=1,quarter=3": {
+      "model": "starfall:block/needle_band",
+      "y": 270
+    },
+    "part=2,quarter=0": {
+      "model": "starfall:block/needle_base"
+    },
+    "part=2,quarter=1": {
+      "model": "starfall:block/needle_base",
+      "y": 90
+    },
+    "part=2,quarter=2": {
+      "model": "starfall:block/needle_base",
+      "y": 180
+    },
+    "part=2,quarter=3": {
+      "model": "starfall:block/needle_base",
+      "y": 270
     }
   }
 }

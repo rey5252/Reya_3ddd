@@ -22,8 +22,8 @@ public final class Config {
             .comment("SS-03: radius in blocks the shock ring planes flat into a molten crater.")
             .defineInRange("radius", 200, 4, 512);
     public static final ForgeConfigSpec.IntValue GUNGNIR_DEPTH = B
-            .comment("SS-03: how deep the crater bowl is at its centre.")
-            .defineInRange("depth", 14, 0, 64);
+            .comment("SS-03: how far the planed floor dips at the centre (0 is perfectly flat).")
+            .defineInRange("depth", 4, 0, 64);
     public static final ForgeConfigSpec.DoubleValue GUNGNIR_SHOCK = B
             .comment("SS-03: past the crater the shock still throws and hurts, out to this many crater radii.")
             .defineInRange("shockReach", 2.0D, 1.0D, 4.0D);

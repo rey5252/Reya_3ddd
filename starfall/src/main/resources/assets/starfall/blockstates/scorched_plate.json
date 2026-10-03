@@ -1,0 +1,52 @@
+{
+  "variants": {
+    "tile=0": {
+      "model": "starfall:block/scorched_plate_0"
+    },
+    "tile=1": {
+      "model": "starfall:block/scorched_plate_1"
+    },
+    "tile=2": {
+      "model": "starfall:block/scorched_plate_2"
+    },
+    "tile=3": {
+      "model": "starfall:block/scorched_plate_3"
+    },
+    "tile=4": {
+      "model": "starfall:block/scorched_plate_4"
+    },
+    "tile=5": {
+      "model": "starfall:block/scorched_plate_5"
+    },
+    "tile=6": {
+      "model": "starfall:block/scorched_plate_6"
+    },
+    "tile=7": {
+      "model": "starfall:block/scorched_plate_7"
+    },
+    "tile=8": {
+      "model": "starfall:block/scorched_plate_8"
+    },
+    "tile=9": {
+      "model": "starfall:block/scorched_plate_9"
+    },
+    "tile=10": {
+      "model": "starfall:block/scorched_plate_10"
+    },
+    "tile=11": {
+      "model": "starfall:block/scorched_plate_11"
+    },
+    "tile=12": {
+      "model": "starfall:block/scorched_plate_12"
+    },
+    "tile=13": {
+      "model": "starfall:block/scorched_plate_13"
+    },
+    "tile=14": {
+      "model": "starfall:block/scorched_plate_14"
+    },
+    "tile=15": {
+      "model": "starfall:block/scorched_plate_15"
+    }
+  }
+}

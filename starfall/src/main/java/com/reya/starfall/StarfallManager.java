@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import javax.annotation.Nullable;
 
@@ -15,6 +16,8 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.logging.LogUtils;
 import com.reya.starfall.carve.CarveData;
 import com.reya.starfall.carve.CarveEngine;
+import com.reya.starfall.network.Net;
+import com.reya.starfall.network.RemotePressPacket;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
@@ -24,6 +27,8 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.block.state.BlockState;
@@ -35,6 +40,7 @@ import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.server.ServerStoppedEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.network.PacketDistributor;
 import org.slf4j.Logger;
 
 /** Runs the strikes in flight and the carving they leave behind; also the /starfall command. */
@@ -42,7 +48,47 @@ public final class StarfallManager {
     private static final Logger LOGGER = LogUtils.getLogger();
     private static final Map<ServerLevel, List<Strike>> STRIKES = new HashMap<>();
 
-    /** Fires a weapon at whatever the player's crosshair is on. */
+    /** Ticks from pressing the remote to the button bottoming out, when the weapon fires. */
+    public static final int PRESS_FIRE = 9;
+    private static final List<Press> PRESSES = new ArrayList<>();
+
+    /** A press in progress: the cover is flipping open and the thumb is on its way to the button. */
+    private record Press(ServerLevel level, UUID player, Skill skill, @Nullable BlockPos target, float yaw, long fireAt) {
+    }
+
+    /**
+     * The player pressed the remote: their hand comes up, the thumb flips the cover and pushes the button, and
+     * the weapon fires {@link #PRESS_FIRE} ticks later at what the crosshair was on when they pressed.
+     * Returns false if there was nothing to aim at (the button still clicks, but nothing answers).
+     */
+    public static boolean press(ServerPlayer player, Skill skill) {
+        ServerLevel level = player.serverLevel();
+        BlockPos target = findTarget(player, Config.RANGE.get());
+        PRESSES.add(new Press(level, player.getUUID(), skill, target, player.getYRot(), level.getGameTime() + PRESS_FIRE));
+        Net.CHANNEL.send(PacketDistributor.TRACKING_ENTITY.with(() -> player), new RemotePressPacket(player.getId()));
+        level.playSound(null, player.blockPosition(), SoundEvents.IRON_TRAPDOOR_OPEN, SoundSource.PLAYERS, 0.6F, 1.8F);
+        return target != null;
+    }
+
+    private static void tickPresses(ServerLevel level) {
+        for (Iterator<Press> it = PRESSES.iterator(); it.hasNext(); ) {
+            Press press = it.next();
+            if (press.level() != level || level.getGameTime() < press.fireAt()) continue;
+            it.remove();
+            ServerPlayer player = level.getServer().getPlayerList().getPlayer(press.player());
+            BlockPos at = player != null ? player.blockPosition() : press.target();
+            if (at != null) {
+                level.playSound(null, at, SoundEvents.STONE_BUTTON_CLICK_ON, SoundSource.PLAYERS, 1.0F, 0.6F);
+            }
+            if (press.target() == null) {
+                if (player != null) player.displayClientMessage(Component.translatable("message.starfall.no_target"), true);
+                continue;
+            }
+            start(level, press.skill(), press.target(), press.yaw(), player != null && player.level() == level ? player : null);
+        }
+    }
+
+    /** Fires a weapon at whatever the player's crosshair is on, right away. */
     public static boolean cast(ServerPlayer player, Skill skill) {
         BlockPos target = findTarget(player, Config.RANGE.get());
         if (target == null) {
@@ -90,6 +136,7 @@ public final class StarfallManager {
     @SubscribeEvent
     public void onLevelTick(TickEvent.LevelTickEvent event) {
         if (event.phase != TickEvent.Phase.END || !(event.level instanceof ServerLevel level)) return;
+        if (!PRESSES.isEmpty()) tickPresses(level);
         List<Strike> strikes = STRIKES.get(level);
         if (strikes != null) {
             for (Iterator<Strike> it = strikes.iterator(); it.hasNext(); ) {
@@ -102,6 +149,7 @@ public final class StarfallManager {
     @SubscribeEvent
     public void onServerStopped(ServerStoppedEvent event) {
         STRIKES.clear();
+        PRESSES.clear();
     }
 
     @SubscribeEvent

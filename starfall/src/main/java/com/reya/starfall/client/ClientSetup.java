@@ -1,24 +1,27 @@
 package com.reya.starfall.client;
 
 import com.reya.starfall.Starfall;
-import com.reya.starfall.StellarRemoteItem;
-import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.ModelEvent;
+import net.minecraftforge.client.event.RegisterColorHandlersEvent;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
+import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 
 @Mod.EventBusSubscriber(modid = Starfall.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public final class ClientSetup {
+    /** The remote's moving parts, drawn by {@link RemoteRenderer}. */
     @SubscribeEvent
-    public static void onClientSetup(FMLClientSetupEvent event) {
-        event.enqueueWork(() -> ItemProperties.register(Starfall.STELLAR_REMOTE.get(),
-                new ResourceLocation(Starfall.MODID, "skill"),
-                // the button under the cover lights in the selected weapon's colour
-                (stack, level, entity, seed) -> StellarRemoteItem.skill(stack).ordinal() * 0.5F));
+    public static void registerModels(ModelEvent.RegisterAdditional event) {
+        for (ResourceLocation part : RemoteRenderer.PARTS) event.register(part);
+    }
+
+    @SubscribeEvent
+    public static void registerItemColors(RegisterColorHandlersEvent.Item event) {
+        event.register(RemoteRenderer::tint, Starfall.STELLAR_REMOTE.get());
     }
 
     @SubscribeEvent
@@ -32,6 +35,7 @@ public final class ClientSetup {
 
     @SubscribeEvent
     public static void registerOverlays(RegisterGuiOverlaysEvent event) {
+        event.registerAbove(VanillaGuiOverlay.HOTBAR.id(), "remote", (gui, graphics, partial, width, height) -> RemoteHud.render(graphics, partial, width, height));
         event.registerAboveAll("film", (gui, graphics, partial, width, height) -> Film.render(graphics, partial, width, height));
         event.registerAboveAll("flash", (gui, graphics, partial, width, height) -> {
             int flash = ClientStrikes.flash(partial);

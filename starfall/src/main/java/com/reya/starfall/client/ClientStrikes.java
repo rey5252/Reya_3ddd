@@ -22,7 +22,11 @@ public final class ClientStrikes {
         ClientStrike strike = new ClientStrike(packet);
         STRIKES.removeIf(s -> s.id == strike.id);
         STRIKES.add(strike);
-        if (strike.caster && ClientConfig.films()) Film.play(strike.skill, strike.start);
+        if (strike.caster) {
+            // with films off only the impact report shows
+            Film.play(strike.skill, strike.start, strike.target, strike.radius);
+            if (!ClientConfig.films()) Film.stop();
+        }
     }
 
     /** When the newest strike started (level game time), or -1: used by the showcase recorder. */
@@ -50,7 +54,7 @@ public final class ClientStrikes {
 
     static void clear() {
         STRIKES.clear();
-        Film.stop();
+        Film.clear();
     }
 
     private static float age(ClientStrike s, ClientLevel level, float partial) {
