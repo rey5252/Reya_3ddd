@@ -4,12 +4,12 @@ import net.minecraft.network.chat.Component;
 
 /** The weapons the remote is wired to. Timings are in ticks from the moment the button is pressed. */
 public enum Skill {
-    RAILGUN("ss01", "railgun", 0xFF2A2A, 280),
-    GUNGNIR("ss03", "gungnir", 0xFF8A2A, 320),
-    SEVEN_STARS("ss04", "seven_stars", 0xB070FF, 440);
+    RAILGUN("ss01", "railgun", 0xFF2A2A, 360),
+    GUNGNIR("ss03", "gungnir", 0xFF8A2A, 400),
+    SEVEN_STARS("ss04", "seven_stars", 0xB070FF, 520);
 
-    /** The film plays while the target is marked; the weapon lands when it ends. */
-    public static final int MARK = 160;
+    /** The film plays while the target is marked (twelve seconds); the weapon lands when it ends. */
+    public static final int MARK = 240;
     /** Gungnir's needle takes this long to come down after the film. */
     public static final int NEEDLE_FALL = 8;
     public static final int GUNGNIR_IMPACT = MARK + NEEDLE_FALL;
@@ -20,10 +20,10 @@ public enum Skill {
     public static final int STAR_GAP = 20;
     public static final int FIRST_STAR = MARK + 10;
     /** Seven Stars: the lines ignite one after another, then the whole figure flares. */
-    public static final int IGNITE = 320;
+    public static final int IGNITE = MARK + 160;
     public static final int LINE_GAP = 8;
     public static final int LINE_BURN = 16;
-    public static final int FLARE = 392;
+    public static final int FLARE = MARK + 232;
 
     public final String code;
     public final String id;

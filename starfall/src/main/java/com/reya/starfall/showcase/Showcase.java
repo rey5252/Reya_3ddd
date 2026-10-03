@@ -228,6 +228,13 @@ public final class Showcase {
         });
     }
 
+    /** Holds a film at one moment and photographs it. */
+    private static void film(Skill skill, float seconds, String name) {
+        run(() -> Film.hold(skill, seconds));
+        waitTicks(2);
+        shot(name);
+    }
+
     /** Waits until the current strike is {@code t} ticks old. */
     private static void at(int t) {
         step(() -> Minecraft.getInstance().level.getGameTime() - strikeStart >= t);
@@ -292,6 +299,17 @@ public final class Showcase {
         run(() -> mc.setScreen(null));
         waitTicks(20);
 
+        // ---- the three films, frame by frame
+        float[] railgun = {0.3F, 0.9F, 1.5F, 2.2F, 2.65F, 3.3F, 4.6F, 5.4F, 6.1F, 6.7F, 7.25F, 7.7F, 8.4F, 9.3F, 10.2F, 10.8F,
+                11.15F, 11.5F, 11.8F};
+        for (float t : railgun) film(Skill.RAILGUN, t, String.format(Locale.ROOT, "film_ss01_%05.2f", t));
+        float[] gungnir = {0.5F, 1.6F, 2.8F, 4.0F, 5.5F, 7.4F, 8.1F, 8.5F, 9.5F, 11.0F, 11.8F};
+        for (float t : gungnir) film(Skill.GUNGNIR, t, String.format(Locale.ROOT, "film_ss03_%05.2f", t));
+        float[] seven = {0.6F, 1.8F, 3.2F, 4.6F, 5.8F, 7.4F, 8.8F, 9.8F, 10.6F, 11.4F};
+        for (float t : seven) film(Skill.SEVEN_STARS, t, String.format(Locale.ROOT, "film_ss04_%05.2f", t));
+        run(Film::release);
+        waitTicks(10);
+
         // ---- SS-01 Railgun, fired by pressing the remote
         tp(0, 50, -130, 0.0F, 18.0F);
         waitTicks(160);
@@ -300,18 +318,8 @@ public final class Showcase {
         waitTicks(4);
         shot("ss01_press");
         awaitStrike();
-        at(12);
-        shot("ss01_film_ascent");
-        at(38);
-        shot("ss01_film_earth");
-        at(62);
-        shot("ss01_film_saturn");
-        at(94);
-        shot("ss01_film_galaxy");
-        at(128);
-        shot("ss01_film_railgun_charging");
-        at(149);
-        shot("ss01_film_fire");
+        at(120);
+        shot("ss01_film_live");
         at(Skill.MARK + 34);
         shot("ss01_beam_impact_confirmed");
         at(Skill.MARK + 76);
@@ -328,20 +336,10 @@ public final class Showcase {
         tp(700, 60, -160, 0.0F, 16.0F);
         waitTicks(260);
         cast("gungnir", 700, 0);
-        at(10);
-        shot("ss03_film_ascent");
-        at(36);
-        shot("ss03_film_jupiter");
-        at(62);
-        shot("ss03_film_accelerator");
         at(100);
-        shot("ss03_film_seven_laps");
-        at(118);
-        shot("ss03_film_flung");
-        at(150);
-        shot("ss03_film_descent");
+        shot("ss03_film_live");
         run(Film::stop);
-        at(156);
+        at(Skill.MARK - 4);
         shot("ss03_ember_marker");
         at(Skill.MARK + 5);
         shot("ss03_needle_falling");
@@ -365,14 +363,10 @@ public final class Showcase {
         tp(0, 150, 760, 0.0F, 48.0F);
         waitTicks(300);
         cast("seven_stars", 0, 880);
-        at(66);
-        shot("ss04_film_stars_wake");
-        at(112);
-        shot("ss04_film_stellar_array");
-        at(142);
-        shot("ss04_film_fire");
+        at(110);
+        shot("ss04_film_live");
         run(Film::stop);
-        at(150);
+        at(Skill.MARK - 10);
         shot("ss04_projection");
         at(Skill.starImpact(0) - 6);
         shot("ss04_star_falling");

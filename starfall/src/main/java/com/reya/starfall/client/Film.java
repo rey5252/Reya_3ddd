@@ -1,9 +1,9 @@
 package com.reya.starfall.client;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
-import java.util.Random;
 
-import com.reya.starfall.BigDipper;
 import com.reya.starfall.Skill;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -13,8 +13,10 @@ import net.minecraft.network.chat.Component;
 import org.joml.Vector3f;
 
 /**
- * The film that plays for whoever pressed the button, while the target is being marked. Everything in it is
- * drawn here from code: the sky falling away, the Earth, the planets, the galaxy and the weapon out past it.
+ * The film that plays for whoever pressed the button while the target is being marked. Everything in it is drawn
+ * here from code: the sky falling away, the planets, the galaxy and the weapon out past it. The shots live in
+ * {@link FilmRailgun}, {@link FilmGungnir} and {@link FilmSevenStars}; this class keeps the state, the HUD over
+ * them and the opening they share.
  */
 public final class Film {
     private static Skill skill;
@@ -23,41 +25,9 @@ public final class Film {
     private static float radius;
     /** J skips the film; the HUD still reports the impact. */
     private static boolean skipped;
-
-    private static final int STARS = 520;
-    private static final float[] SX = new float[STARS], SY = new float[STARS], SZ = new float[STARS], SB = new float[STARS];
-    private static final int[] SC = new int[STARS];
-    private static final int GALAXY = 1700;
-    private static final float[] GR = new float[GALAXY], GT = new float[GALAXY], GB = new float[GALAXY];
-    private static final int[] GC = new int[GALAXY];
-
-    static {
-        Random r = new Random(1997L);
-        for (int i = 0; i < STARS; i++) {
-            SX[i] = r.nextFloat() * 2 - 1;
-            SY[i] = r.nextFloat() * 2 - 1;
-            SZ[i] = r.nextFloat();
-            SB[i] = 0.3F + r.nextFloat() * 0.7F;
-            float k = r.nextFloat();
-            SC[i] = k < 0.15F ? 0xFFD8B0 : k < 0.35F ? 0xB8CCFF : 0xFFFFFF;
-        }
-        for (int i = 0; i < GALAXY; i++) {
-            float k = r.nextFloat();
-            if (k < 0.22F) {
-                // the bulge
-                GR[i] = (float) Math.abs(r.nextGaussian()) * 0.11F;
-                GT[i] = r.nextFloat() * 6.2832F;
-                GC[i] = 0xFFE6C0;
-            } else {
-                int arm = r.nextInt(2);
-                float rad = 0.08F + (float) Math.pow(r.nextFloat(), 0.8D) * 0.92F;
-                GR[i] = rad;
-                GT[i] = arm * 3.1416F + rad * 6.4F + (float) r.nextGaussian() * (0.28F + 0.2F * rad);
-                GC[i] = r.nextFloat() < 0.06F ? 0xFF9AC8 : r.nextFloat() < 0.5F ? 0xC8D8FF : 0xFFF2E0;
-            }
-            GB[i] = 0.35F + r.nextFloat() * 0.65F;
-        }
-    }
+    /** The showcase recorder can hold the film at a moment of its choosing. */
+    private static Skill heldSkill;
+    private static float heldAt = -1.0F;
 
     static void play(Skill s, long gameTime, BlockPos at, float size) {
         skill = s;
@@ -78,7 +48,18 @@ public final class Film {
         skipped = false;
     }
 
-    /** Game tick (from the start) at which this skill's impact is confirmed, and how long the report stays. */
+    /** Shows one moment of a film (seconds from its start) until {@link #release()}; for the showcase recorder. */
+    public static void hold(Skill s, float seconds) {
+        heldSkill = s;
+        heldAt = seconds;
+    }
+
+    public static void release() {
+        heldSkill = null;
+        heldAt = -1.0F;
+    }
+
+    /** Game tick (from the start) at which this skill's impact is confirmed. */
     private static int impactAt(Skill s) {
         return s == Skill.RAILGUN ? Skill.MARK : s == Skill.GUNGNIR ? Skill.GUNGNIR_IMPACT + Skill.SHOCK_TIME / 2 : Skill.FLARE;
     }
@@ -90,6 +71,7 @@ public final class Film {
     }
 
     public static boolean active() {
+        if (heldSkill != null) return true;
         float t = age(0.0F);
         return !skipped && t >= 0 && t < Skill.MARK;
     }
@@ -97,6 +79,10 @@ public final class Film {
     // ------------------------------------------------------------------ the overlay
 
     static void render(GuiGraphics g, float partial, int width, int height) {
+        if (heldSkill != null) {
+            film(g, heldSkill, heldAt, width, height);
+            return;
+        }
         float t = age(partial);
         if (t < 0) return;
         int report = impactAt(skill);
@@ -104,46 +90,109 @@ public final class Film {
             clear();
             return;
         }
-        float s = t / 20.0F;
         if (t < Skill.MARK && !skipped) {
-            g.flush();
-            Canvas c = new Canvas(g.pose().last().pose(), width, height);
-            switch (skill) {
-                case RAILGUN -> railgun(c, s);
-                case GUNGNIR -> gungnir(c, s);
-                case SEVEN_STARS -> sevenStars(c, s, g);
-            }
-            c.finish();
-            hud(g, s, width, height);
-            g.flush();
+            film(g, skill, t / 20.0F, width, height);
         } else if (t >= report) {
             impact(g, t - report, width, height);
         }
     }
 
-    /** The uplink frame over the film: corner brackets, timers, the lock and the charge. */
-    private static void hud(GuiGraphics g, float s, int w, int h) {
+    private static void film(GuiGraphics g, Skill which, float s, int width, int height) {
+        g.flush();
+        LABELS.clear();
+        title = null;
+        lapLabel = -1;
+        charge = -1.0F;
+        boolean offscreen = FilmTarget.begin();
+        Canvas c = new Canvas(g.pose().last().pose(), width, height);
+        switch (which) {
+            case RAILGUN -> FilmRailgun.draw(c, s);
+            case GUNGNIR -> FilmGungnir.draw(c, s);
+            case SEVEN_STARS -> FilmSevenStars.draw(c, s);
+        }
+        c.finish();
+        if (offscreen) FilmTarget.end(g);
+        hud(g, which, s, width, height);
+        g.flush();
+    }
+
+    // ------------------------------------------------------------------ labels, set while drawing
+
+    private record Label(float x, float y, float box, Component title, Component sub, int color, float alpha) {
+    }
+
+    private static final List<Label> LABELS = new ArrayList<>();
+    private static Component title, subtitle;
+    private static float titleAlpha;
+    /** Lap of the accelerator ring shown in the corner, and the weapon's charge (0..1), set while drawing. */
+    static int lapLabel = -1;
+    static float charge = -1.0F;
+
+    /**
+     * Brackets around a thing in the shot with its name and a line under it, the way a tracking HUD tags things.
+     * {@code box} is the bracket's half-size in GUI units.
+     */
+    static void label(Scene3D scene, Vector3f world, float box, String key, int color, float alpha) {
+        if (alpha <= 0.02F) return;
+        float[] p = scene.project(world);
+        if (p == null || p[0] < -40 || p[1] < -40 || p[0] > scene.width + 40 || p[1] > scene.height + 40) return;
+        LABELS.add(new Label(p[0], p[1], box, Component.translatable("film.starfall.label." + key),
+                Component.translatable("film.starfall.label." + key + ".sub"), color, alpha));
+    }
+
+    /** The same with the name given as it is (a star's name). */
+    static void labelText(Scene3D scene, Vector3f world, float box, String name, Component sub, int color, float alpha) {
+        if (alpha <= 0.02F) return;
+        float[] p = scene.project(world);
+        if (p == null || p[0] < -40 || p[1] < -40 || p[0] > scene.width + 40 || p[1] > scene.height + 40) return;
+        LABELS.add(new Label(p[0], p[1], box, Component.literal(name), sub, color, alpha));
+    }
+
+    /** The big title over a shot. */
+    static void title(String key, float alpha) {
+        if (alpha <= 0.02F) return;
+        title = Component.translatable("film.starfall.title." + key);
+        subtitle = Component.translatable("film.starfall.title." + key + ".sub");
+        titleAlpha = alpha;
+    }
+
+    // ------------------------------------------------------------------ the HUD
+
+    /** The uplink frame over the film: corner brackets, timers, the lock, labels and the charge. */
+    private static void hud(GuiGraphics g, Skill which, float s, int w, int h) {
         Font font = Minecraft.getInstance().font;
-        int color = 0xFF000000 | skill.color;
+        int color = 0xFF000000 | which.color;
+        for (Label l : LABELS) {
+            int a = Math.max(4, Math.round(l.alpha * 255)) << 24;
+            int x = Math.round(l.x), y = Math.round(l.y), b = Math.round(l.box);
+            corners(g, x - b, y - b, x + b, y + b, Math.max(3, b / 2), a | (l.color & 0xFFFFFF));
+            g.drawString(font, l.title, x + b + 4, y - b, a | (l.color & 0xFFFFFF), false);
+            g.drawString(font, l.sub, x + b + 4, y - b + 10, a | 0xB8C0C8, false);
+        }
+        if (title != null) {
+            int a = Math.max(4, Math.round(titleAlpha * 255)) << 24;
+            g.pose().pushPose();
+            g.pose().translate(w / 2.0F, h * 0.42F, 0.0F);
+            g.pose().scale(3.0F, 3.0F, 1.0F);
+            g.drawString(font, title, -font.width(title) / 2, 0, a | (which.color & 0xFFFFFF), true);
+            g.pose().popPose();
+            g.drawString(font, subtitle, (w - font.width(subtitle)) / 2, Math.round(h * 0.42F) + 32, a | 0xE0E0E8, true);
+        }
         frame(g, w, h, color);
-        g.drawString(font, Component.translatable("film.starfall.uplink", skill.tag(), skill.title()), 18, 14, color, false);
+        g.drawString(font, Component.translatable("film.starfall.uplink", which.tag(), which.title()), 18, 14, color, false);
         g.drawString(font, String.format(Locale.ROOT, "T+%05.2f", s), 18, 25, 0xFFB8B8C4, false);
-        float left = Math.max(0.0F, impactAt(skill) / 20.0F - s);
+        float left = Math.max(0.0F, impactAt(which) / 20.0F - s);
         String impact = Component.translatable("film.starfall.impact_in").getString() + String.format(Locale.ROOT, " T-%05.2f", left);
         g.drawString(font, impact, w - 18 - font.width(impact), 14, color, false);
         Component lock = Component.translatable("film.starfall.lock", target.getX(), target.getY(), target.getZ());
         g.drawString(font, lock, w - 18 - font.width(lock), h - 30, 0xFFB8B8C4, false);
         Component skip = Component.translatable("film.starfall.skip", Keys.FILM.getTranslatedKeyMessage());
         g.drawString(font, skip, w - 18 - font.width(skip), h - 19, 0xFF8A8A96, false);
-        Component scene = Component.translatable("film.starfall." + skill.id + "." + scene(s));
+        Component scene = Component.translatable("film.starfall." + which.id + "." + scene(which, s));
         g.drawString(font, scene, 18, h - 19, 0xFFD8D8E0, false);
-        float charge = -1;
-        if (skill == Skill.RAILGUN && s >= 5.4F && s < 7.0F) charge = Math.min(1.0F, (s - 5.4F) / 1.6F * 1.15F);
-        if (skill == Skill.GUNGNIR && s >= 2.2F && s < 5.6F) charge = Math.min(1.0F, (s - 2.2F) / 3.4F);
-        if (skill == Skill.SEVEN_STARS && s >= 2.6F && s < 6.5F) charge = Math.min(1.0F, (s - 2.6F) / 3.9F);
         if (charge >= 0) {
             int bw = Math.min(240, w - 80), bx = (w - bw) / 2, by = h - 46;
-            Component locked = Component.translatable("film.starfall.locked." + skill.id);
+            Component locked = Component.translatable("film.starfall.locked." + which.id);
             g.drawString(font, locked, (w - font.width(locked)) / 2, by - 24, 0xFFC8C8D4, false);
             g.drawString(font, Component.translatable("film.starfall.charge_label"), bx, by - 11, color, false);
             String pct = Math.round(charge * 100) + "%";
@@ -151,22 +200,26 @@ public final class Film {
             g.fill(bx, by, bx + bw, by + 1, 0xFF5A5A66);
             g.fill(bx, by - 1, bx + Math.round(bw * charge), by + 2, color);
         }
-        if (skill == Skill.GUNGNIR && scene(s) == 2 && lapLabel > 0) {
+        if (lapLabel > 0) {
             Component lap = Component.translatable("film.starfall.lap", lapLabel);
             g.drawString(font, lap, w - 18 - font.width(lap), 25, color, false);
         }
     }
 
+    private static void corners(GuiGraphics g, int x0, int y0, int x1, int y1, int l, int color) {
+        g.fill(x0, y0, x0 + l, y0 + 1, color);
+        g.fill(x0, y0, x0 + 1, y0 + l, color);
+        g.fill(x1 - l, y0, x1, y0 + 1, color);
+        g.fill(x1 - 1, y0, x1, y0 + l, color);
+        g.fill(x0, y1 - 1, x0 + l, y1, color);
+        g.fill(x0, y1 - l, x0 + 1, y1, color);
+        g.fill(x1 - l, y1 - 1, x1, y1, color);
+        g.fill(x1 - 1, y1 - l, x1, y1, color);
+    }
+
     private static void frame(GuiGraphics g, int w, int h, int color) {
         int m = 10, l = 22;
-        g.fill(m, m, m + l, m + 1, color);
-        g.fill(m, m, m + 1, m + l, color);
-        g.fill(w - m - l, m, w - m, m + 1, color);
-        g.fill(w - m - 1, m, w - m, m + l, color);
-        g.fill(m, h - m - 1, m + l, h - m, color);
-        g.fill(m, h - m - l, m + 1, h - m, color);
-        g.fill(w - m - l, h - m - 1, w - m, h - m, color);
-        g.fill(w - m - 1, h - m - l, w - m, h - m, color);
+        corners(g, m, m, w - m, h - m, l, color);
     }
 
     /** After the hit: the frame stays a moment longer and the impact is confirmed. */
@@ -198,524 +251,81 @@ public final class Film {
         g.drawString(font, lock, w - 18 - font.width(lock), h - 19, a | 0xB8B8C4, false);
     }
 
-    private static int scene(float s) {
-        if (skill == Skill.RAILGUN) return s < 1 ? 0 : s < 2.4F ? 1 : s < 3.8F ? 2 : s < 5.4F ? 3 : s < 7.0F ? 4 : 5;
-        if (skill == Skill.GUNGNIR) return s < 1 ? 0 : s < 2.2F ? 1 : s < 5.6F ? 2 : s < 6.6F ? 3 : 4;
-        return s < 1 ? 0 : s < 2.4F ? 1 : s < 5.0F ? 2 : s < 6.5F ? 3 : 4;
+    /** Which caption is up at s seconds. */
+    private static int scene(Skill which, float s) {
+        if (which == Skill.RAILGUN) {
+            return s < 1.2F ? 0 : s < 2.6F ? 1 : s < 4.2F ? 2 : s < 5.7F ? 3 : s < 7.4F ? 4 : s < 9.0F ? 5 : s < 11.0F ? 6 : 7;
+        }
+        if (which == Skill.GUNGNIR) return s < 1.2F ? 0 : s < 3.3F ? 1 : s < 8.0F ? 2 : s < 9.2F ? 3 : 4;
+        return s < 1.2F ? 0 : s < 2.6F ? 1 : s < 6.6F ? 2 : s < 9.2F ? 3 : 4;
     }
 
-    // ------------------------------------------------------------------ SS-01
+    // ------------------------------------------------------------------ the opening: up from the target
 
-    private static void railgun(Canvas c, float s) {
-        if (s < 1.0F) {
-            ascent(c, s, ClientStrike.RED);
-        } else if (s < 2.4F) {
-            float p = (s - 1.0F) / 1.4F;
-            space(c, p * 0.5F, 0.0F, 1.0F);
-            earthLeaving(c, p, ClientStrike.RED);
-        } else if (s < 3.8F) {
-            float p = (s - 2.4F) / 1.4F;
-            space(c, 0.5F + p * 0.9F, 0.012F, 1.0F);
-            c.mode(false);
-            planet(c, c.w * 0.5F, c.h * 0.62F, c.h * 0.05F * (1 - p * 0.7F), s, Film::earth, 0x6FA8FF);
-            float e = (float) Math.pow(p, 2.2D);
-            double r = c.h * (0.04D + 0.9D * e);
-            saturn(c, c.w * (0.56D + 0.55D * e), c.h * (0.42D + 0.62D * e), r, s);
-            laserUp(c, c.w * 0.5F, c.h * 0.62F, ClientStrike.RED, 0.8F);
-        } else if (s < 5.4F) {
-            float p = (s - 3.8F) / 1.6F;
-            float rush = Math.max(0.0F, 1.0F - p * 2.2F);
-            space(c, 1.4F + p * 3.0F, 0.01F + 0.06F * rush, 1.0F + rush * 1.5F);
-            double g = c.h * (2.8D - 2.35D * ClientStrike.easeOut(p));
-            galaxy(c, c.w * 0.5D, c.h * 0.58D, g, s * 0.12F, Math.min(1.0F, p * 3.0F));
-        } else if (s < 7.0F) {
-            // the railgun hanging past the galaxy's rim: the camera drifts along it while the coils charge
-            float p = (s - 5.4F) / 1.6F;
-            space(c, 4.4F + p * 0.1F, 0.0F, 1.0F);
-            galaxy(c, c.w * 0.2D, c.h * 0.78D, c.h * 0.32D, s * 0.12F, 1.0F);
-            c.mode(true);
-            c.glow(c.w * 0.62D, c.h * 0.46D, c.h * 0.75D, Fx.argb(0x9A1418, 0.55F));
-            c.finish();
-            double beta = -0.6D + 0.42D * p;
-            float radius = 64.0F - 16.0F * p;
-            Vector3f eye = new Vector3f((float) (Math.cos(beta) * radius), 13.0F - 7.0F * p, 52.0F + (float) (Math.sin(beta) * radius));
-            Scene3D scene = new Scene3D(c.w, c.h, 52.0F, eye, new Vector3f(0.0F, 0.0F, 54.0F + 22.0F * p));
-            Railgun3D.draw(scene, Math.min(1.0F, p * 1.15F), 0.0F, s);
-            scene.end();
-        } else if (s < 7.45F) {
-            // fire: the beam leaves the muzzle
-            float p = (s - 7.0F) / 0.45F;
-            space(c, 4.5F, 0.0F, 1.0F);
-            c.mode(true);
-            c.glow(c.w * 0.5D, c.h * 0.5D, c.h * 0.9D, Fx.argb(0xC02028, 0.6F));
-            c.finish();
-            Vector3f eye = new Vector3f(17.0F - 3.0F * p, 3.5F, Railgun3D.MUZZLE + 10.0F + 4.0F * p);
-            Scene3D scene = new Scene3D(c.w, c.h, 58.0F, eye, new Vector3f(0.0F, 0.0F, Railgun3D.MUZZLE - 2.0F));
-            Railgun3D.draw(scene, 1.0F, p, s);
-            scene.end();
-            c.mode(false);
-            c.rect(0, 0, c.w, c.h, Fx.argb(0xFFE6E6, Math.max(0.0F, 0.85F - p * 2.5F) + p * 0.35F));
-            c.flush();
-        } else {
-            float p = (s - 7.45F) / 0.55F;
-            tunnel(c, p, ClientStrike.RED, 0xFFD0D0);
-            c.mode(false);
-            planet(c, c.w * 0.5F, c.h * 0.5F, c.h * 0.015F * Math.exp(p * 3.4F), s, Film::earth, 0x6FA8FF);
-            if (p < 0.15F) {
-                c.mode(false);
-                c.rect(0, 0, c.w, c.h, Fx.argb(0xFFE6E6, 0.35F * (1.0F - p / 0.15F)));
-            }
-            if (p > 0.7F) {
-                c.mode(false);
-                c.rect(0, 0, c.w, c.h, Fx.argb(0xFFFFFF, (p - 0.7F) / 0.3F));
-            }
-        }
+    static final float EARTH = 100.0F;
+    /** The target's direction from the Earth's centre, and the sun by day and by night. */
+    static final Vector3f TARGET = new Vector3f(0.15F, 0.55F, 0.82F).normalize();
+    static final Vector3f SUN_DAY = new Vector3f(-0.35F, 0.45F, 0.82F).normalize();
+    static final Vector3f SUN_NIGHT = new Vector3f(-0.30F, -0.55F, -0.78F).normalize();
+    static final Vector3f EAST = new Vector3f(0.0F, 1.0F, 0.0F).cross(TARGET).normalize();
+    static final Vector3f NORTH = new Vector3f(TARGET).cross(EAST).normalize();
+
+    static Vector3f onEarth(float up) {
+        return new Vector3f(TARGET).mul(EARTH + up);
     }
 
-    // ------------------------------------------------------------------ SS-03
-
-    private static void gungnir(Canvas c, float s) {
-        int ember = ClientStrike.EMBER;
-        if (s < 1.0F) {
-            ascent(c, s, ember);
-        } else if (s < 2.2F) {
-            float p = (s - 1.0F) / 1.2F;
-            space(c, p * 0.6F, 0.0F, 1.0F);
-            float pan = (float) Math.max(0.0D, (p - 0.55D) / 0.45D);
-            pan = pan * pan * (3 - 2 * pan);
-            c.mode(false);
-            double ex = c.w * 0.5D - c.w * 1.1D * pan;
-            double r = c.h * (1.4D - 1.3D * ClientStrike.easeOut(Math.min(1.0D, p / 0.6D)));
-            planet(c, ex, c.h * 0.6D + r * (1 - Math.min(1.0F, p / 0.6F)), r, s, Film::earth, 0x6FA8FF);
-            laserUp(c, ex, c.h * 0.6D + r * (1 - Math.min(1.0F, p / 0.6F)) - r, ember, 0.9F);
-            c.mode(false);
-            planet(c, c.w * (1.25D - 0.95D * pan), c.h * 0.58D, c.h * (0.05D + 0.37D * pan), s * 0.2F, Film::jupiter, 0xE8C8A0);
-        } else if (s < 5.6F) {
-            float p = (s - 2.2F) / 3.4F;
-            space(c, 0.6F, 0.0F, 1.0F);
-            c.mode(false);
-            planet(c, c.w * 0.3D, c.h * 0.58D, c.h * (0.42D + 0.1D * p), s * 0.2F, Film::jupiter, 0xE8C8A0);
-            accelerator(c, s, p);
-        } else if (s < 6.6F) {
-            float p = (s - 5.6F) / 1.0F;
-            space(c, 0.6F + p * 0.6F, 0.02F * p, 1.0F);
-            if (p < 0.6F) {
-                float q = p / 0.6F;
-                c.mode(false);
-                planet(c, c.w * (0.3D - 0.2D * q), c.h * 0.58D, c.h * 0.52D * (1 - 0.6D * q), s * 0.2F, Film::jupiter, 0xE8C8A0);
-                double[] lp = Canvas.onEllipse(c.w * 0.66D, c.h * 0.47D, c.w * 0.27D, c.h * 0.11D, -0.12D, 7 * Math.PI * 2);
-                double tx = c.w * 0.5D, ty = c.h * 0.5D;
-                double ex = lp[0] + (tx - lp[0]) * q, ey = lp[1] + (ty - lp[1]) * q;
-                double len = 30.0D + q * q * c.w * 1.6D, wid = 3.0D + q * q * q * 110.0D;
-                double ang = Math.atan2(ty - lp[1], tx - lp[0]);
-                double bx = ex - Math.cos(ang) * len, by = ey - Math.sin(ang) * len;
-                c.mode(true);
-                c.taper(bx, by, wid * 0.2D, ex, ey, wid * 1.6D, Fx.argb(ember, 0.0F), Fx.argb(ember, 0.7F));
-                c.mode(false);
-                c.taper(bx, by, wid * 0.1D, ex, ey, wid, 0xFF050506, 0xFF101014);
-            } else {
-                float q = (p - 0.6F) / 0.4F;
-                c.mode(false);
-                planet(c, c.w * 0.5D, c.h * 0.5D, c.h * (0.03D + 0.1D * q), s, Film::earth, 0x6FA8FF);
-                c.mode(true);
-                c.line(c.w * (0.95D - 0.4D * q), c.h * (0.05D + 0.38D * q), c.w * 0.5D, c.h * 0.5D, 2.0D,
-                        Fx.argb(ember, 0.9F), Fx.argb(ember, 0.0F));
-            }
-        } else {
-            float p = (s - 6.6F) / 1.4F;
-            space(c, 1.2F, 0.0F, 1.0F);
-            c.mode(false);
-            double r = c.h * 0.13D * Math.exp(p * 3.4D);
-            planet(c, c.w * 0.5D, c.h * 0.5D + r * 0.15D, r, s, Film::earth, 0x6FA8FF);
-            float sky = Math.max(0.0F, Math.min(1.0F, (p - 0.5F) / 0.25F));
-            if (sky > 0) {
-                c.mode(false);
-                c.gradient(0, 0, c.w, c.h, Fx.argb(0x4A7FD0, sky), Fx.argb(0xA8C8EC, sky));
-                c.rect(0, c.h * 0.82D, c.w, c.h, Fx.argb(0x3A5E2A, sky));
-                c.mode(true);
-                double mx = c.w * 0.5D, my = c.h * 0.86D;
-                c.ellipse(mx, my, 40, 8, 0, 2, 0, Math.PI * 2, Fx.argb(ember, sky));
-                c.ellipse(mx, my, 70, 14, 0, 1.5, 0, Math.PI * 2, Fx.argb(ember, 0.6F * sky));
-                float fall = Math.max(0.0F, Math.min(1.0F, (p - 0.7F) / 0.25F));
-                double tip = -c.h * 0.2D + (my + c.h * 0.2D) * fall * fall;
-                c.mode(true);
-                c.line(mx, tip - c.h * 0.9D, mx, tip, 14.0D, Fx.argb(ember, 0.0F), Fx.argb(ember, 0.6F));
-                c.mode(false);
-                c.line(mx, tip - c.h * 0.9D, mx, tip, 5.0D, 0xFF08080A, 0xFF0C0C10);
-            }
-            if (p > 0.9F) {
-                c.mode(false);
-                c.rect(0, 0, c.w, c.h, Fx.argb(0xFFE6C8, (p - 0.9F) / 0.1F));
-            }
-        }
+    /** A camera above the target: {@code alt} up, hanging off to the side of the laser; {@code look} turns it from up the laser (0) to back at the Earth (1). */
+    static Cam above(float alt, float look, float side) {
+        Vector3f eye = onEarth(alt).add(new Vector3f(EAST).mul(side * (0.35F * alt + 0.25F))).sub(new Vector3f(NORTH).mul(0.45F + 0.15F * alt));
+        Vector3f up0 = new Vector3f(NORTH).mul(0.82F).add(new Vector3f(TARGET).mul(0.57F));
+        Vector3f lookUp = new Vector3f(eye).add(new Vector3f(up0).mul(10.0F + alt));
+        Vector3f target = Cam.lerp(lookUp, new Vector3f(), look);
+        Vector3f up = Cam.lerp(TARGET, NORTH, look).normalize();
+        float fov = Cam.lerp(58.0F, 44.0F, look);
+        return new Cam(eye, target, up).lens(fov, Math.max(0.005F, alt * 0.02F), 1.0E6F);
     }
 
-    private static void accelerator(Canvas c, float s, float p) {
-        int ember = ClientStrike.EMBER;
-        double cx = c.w * 0.66D, cy = c.h * 0.47D, rx = c.w * 0.27D, ry = c.h * 0.11D, tilt = -0.12D;
-        c.mode(false);
-        c.ellipse(cx, cy, rx, ry, tilt, 6.0D, 0, Math.PI * 2, 0xFF2A221E);
-        c.mode(true);
-        c.ellipse(cx, cy, rx, ry, tilt, 1.6D, 0, Math.PI * 2, Fx.argb(ember, 0.55F + 0.3F * p));
-        for (int i = 0; i < 16; i++) {
-            double[] n = Canvas.onEllipse(cx, cy, rx, ry, tilt, i * Math.PI / 8);
-            c.glow(n[0], n[1], 5.0D + 3.0D * Math.sin(s * 12 + i), Fx.argb(0xFFC080, 0.8F));
-        }
-        double q = Math.max(0.0D, Math.min(1.0D, (p - 0.08D) / 0.85D));
-        double laps = 7.0D * Math.pow(q, 1.7D);
-        double a = laps * Math.PI * 2;
-        double speed = 7.0D * 1.7D * Math.pow(Math.max(q, 1.0E-3D), 0.7D);
-        // the trail of the needle spinning up
-        double trail = Math.min(Math.PI * 1.5D, 0.15D + speed * 0.12D);
-        int steps = 24;
-        for (int k = 0; k < steps; k++) {
-            double a0 = a - trail * k / steps, a1 = a - trail * (k + 1) / steps;
-            double[] p0 = Canvas.onEllipse(cx, cy, rx, ry, tilt, a0), p1 = Canvas.onEllipse(cx, cy, rx, ry, tilt, a1);
-            float fade = 1.0F - (float) k / steps;
-            c.line(p0[0], p0[1], p1[0], p1[1], 7.0D * fade + 1.0D, Fx.argb(ember, 0.8F * fade), Fx.argb(ember, 0.8F * fade));
-        }
-        double[] head = Canvas.onEllipse(cx, cy, rx, ry, tilt, a), back = Canvas.onEllipse(cx, cy, rx, ry, tilt, a - 0.12D);
-        c.glow(head[0], head[1], 14.0D, Fx.argb(0xFFD080, 0.9F));
-        c.mode(false);
-        c.line(back[0], back[1], head[0], head[1], 4.0D, 0xFF060608, 0xFF141418);
-        c.flush();
-        int lap = Math.min(7, (int) Math.floor(laps) + 1);
-        lapLabel = q <= 0 ? -1 : lap;
+    /** The Earth for the opening, with the laser's spot on the target. */
+    static Scene3D.Planet earth(boolean night, int laser, float laserK, float time) {
+        Scene3D.Planet p = new Scene3D.Planet();
+        p.kind = Scene3D.Planet.EARTH;
+        p.radius = EARTH;
+        p.tilt = 0.41F;
+        p.spin = 1.1F;
+        p.sun.set(night ? SUN_NIGHT : SUN_DAY);
+        p.atmosphere = 0x4D8CFF;
+        p.atmosphereHeight = 0.035F;
+        p.time = time;
+        p.night = night ? 1.0F : 0.6F;
+        p.spot = new Vector3f(TARGET);
+        p.spotSize = 0.006F;
+        p.spotColor = laser;
+        p.spotStrength = laserK;
+        return p;
     }
 
-    /** Lap of the accelerator ring shown in the corner (set while drawing). */
-    private static int lapLabel = -1;
-
-    // ------------------------------------------------------------------ SS-04
-
-    private static void sevenStars(Canvas c, float s, GuiGraphics g) {
-        int violet = ClientStrike.VIOLET;
-        if (s < 1.0F) {
-            ascent(c, s, violet);
-            return;
-        }
-        if (s < 2.4F) {
-            float p = (s - 1.0F) / 1.4F;
-            space(c, p * 1.2F, 0.02F, 1.0F);
-            nebula(c, s, 0.6F);
-            c.mode(false);
-            planet(c, c.w * 0.5D, c.h * (0.7D + 0.4D * p), c.h * 0.12D * (1 - p), s, Film::earth, 0x6FA8FF);
-            return;
-        }
-        space(c, 1.2F, 0.0F, 0.7F);
-        nebula(c, s, 1.0F);
-        double scale = c.w * 0.62D / BigDipper.EXTENT;
-        double zoom = s < 6.5F ? 1.0D + 0.05D * (s - 2.4F) : 1.2D - 0.55D * RemoteAnimation.smooth((s - 6.5F) / 0.5F);
-        double ox = c.w * 0.5D, oy = s < 6.5F ? c.h * 0.52D : c.h * (0.52D - 0.27D * RemoteAnimation.smooth((s - 6.5F) / 0.5F));
-        double[] px = new double[7], py = new double[7];
-        double mx = 0, my = 0;
-        for (int i = 0; i < 7; i++) {
-            mx += BigDipper.X[i] / 7.0D;
-            my += BigDipper.Y[i] / 7.0D;
-        }
-        for (int i = 0; i < 7; i++) {
-            px[i] = ox - (BigDipper.X[i] - mx) * scale * zoom;
-            py[i] = oy - (BigDipper.Y[i] - my) * scale * zoom;
-        }
-        float[] wake = new float[7];
-        for (int i = 0; i < 7; i++) {
-            float w0 = 2.6F + i * 0.3F;
-            wake[i] = Math.max(0.0F, Math.min(1.0F, (s - w0) / 0.25F));
-        }
-        boolean array = s >= 5.0F;
-        float arrayK = array ? Math.min(1.0F, (s - 5.0F) / 0.4F) : 0.0F;
-        c.mode(true);
-        for (int[] line : BigDipper.LINES) {
-            int a = line[0], b = line[1];
-            float k = Math.min(wake[a], wake[b]);
-            if (k <= 0) continue;
-            c.line(px[a], py[a], px[b], py[b], 1.0D + 1.6D * arrayK, Fx.argb(violet, 0.3F * k + 0.5F * arrayK), Fx.argb(violet, 0.3F * k + 0.5F * arrayK));
-            if (arrayK > 0) c.line(px[a], py[a], px[b], py[b], 9.0D, Fx.argb(violet, 0.18F * arrayK), Fx.argb(violet, 0.18F * arrayK));
-        }
-        for (int i = 0; i < 7; i++) {
-            float k = wake[i];
-            if (k <= 0) {
-                c.glow(px[i], py[i], 3.0D, Fx.argb(0xFFFFFF, 0.6F));
-                continue;
-            }
-            double size = BigDipper.size(i);
-            double core = 2.0D + size * 1.8D;
-            float pulse = 0.85F + 0.15F * (float) Math.sin(s * 9.0F + i);
-            c.glow(px[i], py[i], (10.0D + size * 14.0D) * k * pulse, Fx.argb(violet, 0.6F * k));
-            c.glow(px[i], py[i], core * 2.2D, Fx.argb(0xFFFFFF, 0.95F * k));
-            c.line(px[i] - core * 9 * k, py[i], px[i], py[i], 1.2D, Fx.argb(0xE8D0FF, 0.0F), Fx.argb(0xE8D0FF, 0.8F * k));
-            c.line(px[i], py[i], px[i] + core * 9 * k, py[i], 1.2D, Fx.argb(0xE8D0FF, 0.8F * k), Fx.argb(0xE8D0FF, 0.0F));
-            c.line(px[i], py[i] - core * 7 * k, px[i], py[i], 1.2D, Fx.argb(0xE8D0FF, 0.0F), Fx.argb(0xE8D0FF, 0.8F * k));
-            c.line(px[i], py[i], px[i], py[i] + core * 7 * k, 1.2D, Fx.argb(0xE8D0FF, 0.8F * k), Fx.argb(0xE8D0FF, 0.0F));
-            float wakeAge = s - (2.6F + i * 0.3F);
-            if (wakeAge >= 0 && wakeAge < 0.8F) {
-                double rr = 6.0D + wakeAge * 60.0D;
-                c.ellipse(px[i], py[i], rr, rr, 0, 1.5D, 0, Math.PI * 2, Fx.argb(violet, 0.8F * (1 - wakeAge / 0.8F)));
-            }
-            if (arrayK > 0) {
-                // each star becomes a node of the stellar array
-                double hr = 14.0D + size * 6.0D + 3.0D * Math.sin(s * 4.0F + i);
-                double rot = s * (i % 2 == 0 ? 1.2D : -1.2D);
-                for (int e = 0; e < 6; e++) {
-                    double a0 = rot + e * Math.PI / 3, a1 = rot + (e + 1) * Math.PI / 3;
-                    c.line(px[i] + Math.cos(a0) * hr, py[i] + Math.sin(a0) * hr, px[i] + Math.cos(a1) * hr, py[i] + Math.sin(a1) * hr,
-                            1.4D, Fx.argb(0xE8D0FF, 0.85F * arrayK), Fx.argb(0xE8D0FF, 0.85F * arrayK));
-                }
-            }
-        }
-        if (s >= 6.5F) {
-            // they fire, one after another, down at the land below: the sky lights up towards the horizon
-            float p = (s - 6.5F) / 1.5F;
-            float dawn = Math.min(1.0F, p * 2.5F);
-            c.mode(false);
-            c.gradient(0, 0, c.w, c.h, Fx.argb(0x0C1226, 0.55F * dawn), Fx.argb(0x8CA8DC, 0.85F * dawn));
-            c.mode(true);
-            // each beam lands at its own spot on the ground, spread out towards the viewer in the same
-            // left-to-right order as the stars, so they fan out instead of crossing
-            Integer[] order = {0, 1, 2, 3, 4, 5, 6};
-            java.util.Arrays.sort(order, (a, b) -> Double.compare(px[a], px[b]));
-            for (int slot = 0; slot < 7; slot++) {
-                int i = order[slot];
-                float f = (p - i * 0.07F) / 0.2F;
-                if (f <= 0) continue;
-                float k = Math.min(1.0F, f);
-                double tx = c.w * (-0.2D + 1.4D * (slot + 0.5D) / 7.0D), ty = c.h * 1.05D;
-                double ex = px[i] + (tx - px[i]) * k, ey = py[i] + (ty - py[i]) * k;
-                double wide = 1.5D + 12.0D * k;
-                c.taper(px[i], py[i], 1.0D, ex, ey, wide, Fx.argb(0xE8F0FF, 0.85F), Fx.argb(0xFFFFFF, 0.95F));
-                c.taper(px[i], py[i], 3.0D, ex, ey, wide * 2.4D, Fx.argb(0x9AB0FF, 0.2F), Fx.argb(0xB8C8FF, 0.3F));
-                if (f < 1.4F) c.glow(px[i], py[i], 40.0D * (1.4F - f), Fx.argb(0xFFFFFF, 0.6F));
-            }
-            // long cross flares through every star
-            for (int i = 0; i < 7; i++) {
-                c.line(px[i] - c.w * 0.3D, py[i], px[i], py[i], 1.0D, Fx.argb(0xD8DCFF, 0.0F), Fx.argb(0xD8DCFF, 0.5F * dawn));
-                c.line(px[i], py[i], px[i] + c.w * 0.3D, py[i], 1.0D, Fx.argb(0xD8DCFF, 0.5F * dawn), Fx.argb(0xD8DCFF, 0.0F));
-                c.line(px[i], py[i] - c.h * 0.12D, px[i], py[i], 0.8D, Fx.argb(0xD8DCFF, 0.0F), Fx.argb(0xD8DCFF, 0.45F * dawn));
-                c.glow(px[i], py[i], 6.0D, Fx.argb(0xFFFFFF, 0.95F));
-            }
-            c.glow(c.w * 0.5D, c.h * 1.1D, c.w * 0.6D, Fx.argb(0xE0E8FF, 0.5F * p));
-            if (p > 0.82F) {
-                c.mode(false);
-                c.rect(0, 0, c.w, c.h, Fx.argb(0xF0F4FF, (p - 0.82F) / 0.18F));
-            }
-        }
-        c.flush();
-        // names under the stars that have woken
-        Font font = Minecraft.getInstance().font;
-        c.finish();
-        if (s < 6.5F) {
-            for (int i = 0; i < 7; i++) {
-                if (wake[i] <= 0.3F) continue;
-                int alpha = Math.max(5, Math.min(255, (int) (wake[i] * 220)));
-                String name = BigDipper.NAMES[i];
-                g.drawString(font, name, (int) (px[i] - font.width(name) / 2.0D), (int) (py[i] + 10 + BigDipper.size(i) * 4),
-                        alpha << 24 | 0xD8C8FF, false);
-            }
-        }
+    /** The laser from the target straight up into space, a hot core in a soft glow. */
+    static void laser(Soft light, Vector3f from, Vector3f dir, int color, float k, float glowWidth) {
+        if (k <= 0.0F) return;
+        Vector3f to = new Vector3f(dir).normalize().mul(1.0E5F).add(from);
+        light.beam(from, to, glowWidth, glowWidth * 0.5F, Fx.argb(color, 0.35F * k), Fx.argb(color, 0.0F));
+        light.line(from, to, 0.006F, 0.004F, Fx.argb(color, 0.9F * k), Fx.argb(color, 0.2F * k));
+        light.line(from, to, 0.0022F, 0.0016F, Fx.argb(0xFFFFFF, 0.9F * k), Fx.argb(0xFFE0E0, 0.3F * k));
     }
 
-    private static void nebula(Canvas c, float s, float k) {
-        c.mode(true);
-        Random r = new Random(77L);
-        for (int i = 0; i < 9; i++) {
-            double x = c.w * r.nextDouble(), y = c.h * r.nextDouble();
-            double rr = c.h * (0.25D + r.nextDouble() * 0.35D);
-            x += Math.sin(s * 0.3D + i) * 20.0D;
-            int col = i % 3 == 0 ? 0x6A3AB0 : i % 3 == 1 ? 0x3A2A80 : 0x8A3A90;
-            c.glow(x, y, rr, Fx.argb(col, 0.18F * k));
-        }
-    }
-
-    // ------------------------------------------------------------------ shared pieces
-
-    /** Up the laser from the ground: the sky darkens, the land drops away, the first stars show. */
-    private static void ascent(Canvas c, float p, int laser) {
-        c.mode(false);
-        int top = Fx.mix(0xFF6FA4E0, 0xFF02030A, p * 1.1F);
-        int bottom = Fx.mix(0xFFCFE2F4, 0xFF0A1020, p);
-        c.gradient(0, 0, c.w, c.h, top, bottom);
-        double ground = c.h * (0.72D + p * p * 0.45D);
-        c.gradient(0, ground, c.w, c.h + 2, 0xFF4E7A38, 0xFF2A3E20);
-        c.rect(0, ground, c.w, ground + 2, 0xFF7FA860);
-        c.flush();
-        if (p > 0.35F) space(c, p * 0.3F, 0.0F, (p - 0.35F) / 0.65F, false);
-        laserUp(c, c.w * 0.5D, ground, laser, 1.0F);
-    }
-
-    private static void laserUp(Canvas c, double x, double y, int color, float k) {
-        c.mode(true);
-        c.line(x, y, x, -10, 16.0D, Fx.argb(color, 0.25F * k), Fx.argb(color, 0.1F * k));
-        c.line(x, y, x, -10, 4.0D, Fx.argb(color, 0.9F * k), Fx.argb(color, 0.6F * k));
-        c.line(x, y, x, -10, 1.5D, Fx.argb(0xFFFFFF, 0.9F * k), Fx.argb(0xFFFFFF, 0.5F * k));
-        c.glow(x, y, 18.0D, Fx.argb(color, 0.9F * k));
-        c.flush();
-    }
-
-    private static void space(Canvas c, float travel, float streak, float brightness) {
-        space(c, travel, streak, brightness, true);
-    }
-
-    /** Black space and stars rushing past: {@code travel} is how far we've flown, {@code streak} the blur. */
-    private static void space(Canvas c, float travel, float streak, float brightness, boolean background) {
-        if (background) {
-            c.mode(false);
-            c.rect(0, 0, c.w, c.h, 0xFF02030A);
-        }
-        c.mode(true);
-        double cx = c.w * 0.5D, cy = c.h * 0.5D;
-        for (int i = 0; i < STARS; i++) {
-            float z = SZ[i] - travel;
-            z -= (float) Math.floor(z);
-            if (z < 0.03F) continue;
-            double k = 0.16D / z;
-            double x = cx + SX[i] * c.w * 0.6D * k, y = cy + SY[i] * c.h * 0.6D * k;
-            if (x < -20 || y < -20 || x > c.w + 20 || y > c.h + 20) continue;
-            float a = Math.min(1.0F, SB[i] * Math.min(1.0F, (1.0F - z) * 3.0F) * brightness);
-            double size = Math.min(3.5D, 0.7D + 0.25D * k) * (0.6D + SB[i] * 0.6D);
-            if (streak > 0) {
-                double zp = Math.min(0.999D, z + streak);
-                double kp = 0.16D / zp;
-                double xp = cx + SX[i] * c.w * 0.6D * kp, yp = cy + SY[i] * c.h * 0.6D * kp;
-                c.line(xp, yp, x, y, size, Fx.argb(SC[i], 0.0F), Fx.argb(SC[i], a));
-            } else {
-                c.rect(x - size * 0.5D, y - size * 0.5D, x + size * 0.5D, y + size * 0.5D, Fx.argb(SC[i], a));
-            }
-        }
-        c.flush();
-    }
-
-    /** The beam home: a tunnel of light rushing outward. */
-    private static void tunnel(Canvas c, float p, int color, int hot) {
-        c.mode(false);
-        c.rect(0, 0, c.w, c.h, 0xFF050106);
-        space(c, 6.0F + p * 4.0F, 0.12F, 1.0F, false);
-        c.mode(true);
-        double cx = c.w * 0.5D, cy = c.h * 0.5D;
-        for (int k = 0; k < 8; k++) {
-            double q = (p * 3.0D + k / 8.0D) % 1.0D;
-            double rr = q * q * c.w * 0.9D;
-            c.ellipse(cx, cy, rr, rr * 0.85D, 0, 3.0D + q * 10.0D, 0, Math.PI * 2, Fx.argb(color, 0.6F * (float) (1.0D - q)));
-        }
-        c.glow(cx, cy, c.h * 0.4D, Fx.argb(hot, 0.5F));
-        c.flush();
-    }
-
-    private static void earthLeaving(Canvas c, float p, int laser) {
-        double r = c.h * (1.9D - 1.82D * ClientStrike.easeOut(p));
-        double ex = c.w * 0.5D;
-        double ey = c.h * 0.55D + r - (c.h * 0.55D + r - c.h * 0.6D) * p;
-        c.mode(false);
-        planet(c, ex, ey, r, p * 0.6F, Film::earth, 0x6FA8FF);
-        laserUp(c, ex, ey - r, laser, 1.0F);
-    }
-
-    private static void planet(Canvas c, double x, double y, double r, float spin, Canvas.Surface surface, int atmosphere) {
-        if (!c.glowing()) {
-            c.sphere(x, y, r, spin, 0.4D, -0.55D, -0.35D, 0.75D, surface, atmosphere);
-        }
-        c.mode(true);
-        c.glow(x, y, r * 1.12D, Fx.argb(atmosphere, 0.18F));
-        c.mode(false);
-    }
-
-    private static void saturn(Canvas c, double x, double y, double r, float s) {
-        double tilt = -0.33D, squash = 0.22D;
-        // ring bands (inner, outer radius as planet radii) and their colours, with the Cassini division between
-        double[][] bands = {{1.22D, 1.42D}, {1.42D, 1.62D}, {1.62D, 1.86D}, {1.93D, 2.1D}, {2.1D, 2.3D}};
-        int[] colors = {0x6A5A44, 0xB89A70, 0xD8C090, 0xC8AE80, 0xA88E66};
-        // the far half of the rings goes behind the planet
-        c.mode(false);
-        for (int i = 0; i < bands.length; i++) {
-            c.band(x, y, r * bands[i][0], r * bands[i][1], squash, tilt, Math.PI, Math.PI * 2, Fx.argb(colors[i], 0.85F));
-        }
-        c.sphere(x, y, r, s * 0.3F, tilt, -0.55D, -0.35D, 0.75D, Film::saturnSurface, 0xE8D0A0);
-        c.mode(false);
-        for (int i = 0; i < bands.length; i++) {
-            c.band(x, y, r * bands[i][0], r * bands[i][1], squash, tilt, 0, Math.PI, Fx.argb(colors[i], 0.9F));
-        }
-        c.flush();
-    }
-
-    private static void galaxy(Canvas c, double x, double y, double size, float spin, float alpha) {
-        if (alpha <= 0) return;
-        c.mode(true);
-        c.glow(x, y, size * 0.9D, Fx.argb(0x8090D0, 0.12F * alpha));
-        c.glow(x, y, size * 0.32D, Fx.argb(0xFFE6C8, 0.5F * alpha));
-        double squash = 0.42D;
-        for (int i = 0; i < GALAXY; i++) {
-            double a = GT[i] + spin;
-            double px = x + Math.cos(a) * GR[i] * size, py = y + Math.sin(a) * GR[i] * size * squash;
-            if (px < -4 || py < -4 || px > c.w + 4 || py > c.h + 4) continue;
-            double sz = Math.max(0.8D, Math.min(4.0D, size / c.h * 1.4D)) * (0.6D + GB[i] * 0.6D);
-            c.rect(px - sz * 0.5D, py - sz * 0.5D, px + sz * 0.5D, py + sz * 0.5D, Fx.argb(GC[i], GB[i] * alpha * 0.85F));
-        }
-        c.flush();
-    }
-
-    // ------------------------------------------------------------------ planet surfaces
-
-    private static int earth(double lat, double lon, double x, double y, double z) {
-        if (Math.abs(lat) > 1.22D) return 0xF2F6FA;
-        double land = fbm(x * 1.9D + 3.1D, y * 1.9D, z * 1.9D, 4);
-        int base;
-        if (land > 0.53D) {
-            double dry = fbm(x * 3.5D, y * 3.5D + 7.0D, z * 3.5D, 2);
-            base = Math.abs(lat) < 0.45D && dry > 0.55D ? 0xC8A86A : dry > 0.5D ? 0x5E8A3A : 0x3C6E2E;
-        } else {
-            base = land > 0.48D ? 0x2E6EB0 : 0x1A4A8C;
-        }
-        double cloud = fbm(x * 3.0D + 11.0D, y * 4.5D, z * 3.0D - 5.0D, 4);
-        if (cloud > 0.56D) return Fx.mix(0xFF000000 | base, 0xFFFFFFFF, (float) Math.min(1.0D, (cloud - 0.56D) * 5.0D)) & 0xFFFFFF;
-        return base;
-    }
-
-    private static int jupiter(double lat, double lon, double x, double y, double z) {
-        double turb = fbm(x * 4.0D, y * 1.5D, z * 4.0D, 3) - 0.5D;
-        double b = Math.sin(lat * 11.0D + turb * 2.4D);
-        int col = b > 0.55D ? 0xF0E2CA : b > 0.0D ? 0xD9B88F : b > -0.55D ? 0xB07A50 : 0x9C6B4A;
-        // the Great Red Spot
-        double dl = (lat + 0.38D) / 0.1D, dn = Math.atan2(Math.sin(lon - 1.2D), Math.cos(lon - 1.2D)) / 0.24D;
-        if (dl * dl + dn * dn < 1.0D) col = Fx.mix(0xFFC0583A, 0xFFE0906A, (float) (dl * dl + dn * dn)) & 0xFFFFFF;
-        return col;
-    }
-
-    private static int saturnSurface(double lat, double lon, double x, double y, double z) {
-        double b = Math.sin(lat * 9.0D + (fbm(x * 3, y, z * 3, 2) - 0.5D) * 1.5D);
-        return b > 0.4D ? 0xEAD6A8 : b > -0.3D ? 0xD8BE8A : 0xC4A06A;
-    }
-
-    private static double fbm(double x, double y, double z, int octaves) {
-        double sum = 0, amp = 0.5D, norm = 0;
-        for (int i = 0; i < octaves; i++) {
-            sum += amp * noise(x, y, z);
-            norm += amp;
-            x *= 2.03D;
-            y *= 2.03D;
-            z *= 2.03D;
-            amp *= 0.5D;
-        }
-        return sum / norm;
-    }
-
-    private static double noise(double x, double y, double z) {
-        int x0 = (int) Math.floor(x), y0 = (int) Math.floor(y), z0 = (int) Math.floor(z);
-        double fx = x - x0, fy = y - y0, fz = z - z0;
-        fx = fx * fx * (3 - 2 * fx);
-        fy = fy * fy * (3 - 2 * fy);
-        fz = fz * fz * (3 - 2 * fz);
-        double c000 = h(x0, y0, z0), c100 = h(x0 + 1, y0, z0), c010 = h(x0, y0 + 1, z0), c110 = h(x0 + 1, y0 + 1, z0);
-        double c001 = h(x0, y0, z0 + 1), c101 = h(x0 + 1, y0, z0 + 1), c011 = h(x0, y0 + 1, z0 + 1), c111 = h(x0 + 1, y0 + 1, z0 + 1);
-        double x00 = c000 + (c100 - c000) * fx, x10 = c010 + (c110 - c010) * fx;
-        double x01 = c001 + (c101 - c001) * fx, x11 = c011 + (c111 - c011) * fx;
-        double y0v = x00 + (x10 - x00) * fy, y1v = x01 + (x11 - x01) * fy;
-        return y0v + (y1v - y0v) * fz;
-    }
-
-    private static double h(int x, int y, int z) {
-        long n = x * 73856093L ^ y * 19349663L ^ z * 83492791L;
-        n = (n << 13) ^ n;
-        n = n * (n * n * 15731L + 789221L) + 1376312589L;
-        return ((n >>> 8) & 0xFFFFFFL) / (double) 0x1000000L;
+    /** The whole opening shot: up from the ground until the Earth hangs below, {@code look} as in {@link #above}. */
+    static Scene3D opening(Canvas c, float alt, float look, boolean night, int laser, float time, float fade, Scene3D.Sky sky) {
+        Cam cam = above(alt, look, 1.0F);
+        Scene3D s = new Scene3D(c.w, c.h, cam);
+        s.fade = fade;
+        sky.stars = Math.min(1.0F, 0.15F + alt / 6.0F) * (night ? 1.0F : 0.9F);
+        s.sky(sky);
+        s.planet(earth(night, laser, 1.0F, time));
+        Soft light = s.soft(true);
+        laser(light, onEarth(0.0F), TARGET, laser, 1.0F, 0.02F + alt * 0.012F);
+        light.glow(onEarth(0.02F), 0.15F + alt * 0.02F, Fx.argb(laser, 0.9F), true);
+        light.end();
+        return s;
     }
 
     private Film() {

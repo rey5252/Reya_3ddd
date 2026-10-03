@@ -16,6 +16,11 @@ public final class ClientConfig {
             .comment("Shake the camera when something lands near you.")
             .define("screenShake", true);
 
+    public static final ForgeConfigSpec.IntValue FILM_QUALITY = B
+            .comment("How smooth the films look: 2 draws them at twice the screen's resolution and shrinks them down,",
+                    "which takes the stair-steps off every edge; 1 draws them straight, for weak graphics cards.")
+            .defineInRange("filmQuality", 2, 1, 2);
+
     public static final ForgeConfigSpec SPEC = B.build();
 
     static boolean films() {
@@ -40,6 +45,14 @@ public final class ClientConfig {
             return FLASH.get().floatValue();
         } catch (IllegalStateException e) {
             return 1.0F;
+        }
+    }
+
+    static int filmQuality() {
+        try {
+            return FILM_QUALITY.get();
+        } catch (IllegalStateException e) {
+            return 2;
         }
     }
 

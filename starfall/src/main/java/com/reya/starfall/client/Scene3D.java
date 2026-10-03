@@ -11,81 +11,52 @@ import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexSorting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.ShaderInstance;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL11;
 
 /**
- * A tiny perspective renderer for the films, drawn over the screen: flat-shaded boxes lit by one light, glowing
- * additive shapes, and camera-facing sprites. Its depth is cleared before and after, so the rest of the screen
- * is untouched.
+ * One shot of a film in perspective: the sky, planets, a galaxy, lit machines and soft light. Positions go
+ * through the camera on the CPU, so what reaches the GPU is already in view space under an identity model-view;
+ * depth is cleared before and after, so the shot can be laid over anything.
  */
 final class Scene3D {
-    private final Matrix4f view = new Matrix4f();
-    private final Vector3f light = new Vector3f();
-    private final Vector3f tmp = new Vector3f();
-    private BufferBuilder buf;
-    private float ambient = 0.18F;
+    /** The screen in GUI units, for putting labels on things. */
+    final float width, height;
+    final Matrix4f projection = new Matrix4f();
+    final Matrix4f view = new Matrix4f();
+    final Vector3f eye;
+    final float near, far;
+    /** How much of this shot shows over the one before it (crossfades). */
+    float fade = 1.0F;
 
-    /** Sets up a camera at {@code eye} looking at {@code target}, with a vertical field of view in degrees. */
-    Scene3D(float width, float height, float fov, Vector3f eye, Vector3f target) {
+    Scene3D(float width, float height, Cam cam) {
+        this.width = width;
+        this.height = height;
+        this.eye = new Vector3f(cam.eye);
+        this.near = cam.near;
+        this.far = cam.far;
         RenderSystem.backupProjectionMatrix();
-        Matrix4f projection = new Matrix4f().setPerspective((float) Math.toRadians(fov), width / height, 0.1F, 6000.0F);
+        projection.setPerspective((float) Math.toRadians(cam.fov), width / height, cam.near, cam.far);
         RenderSystem.setProjectionMatrix(projection, VertexSorting.DISTANCE_TO_ORIGIN);
         PoseStack modelView = RenderSystem.getModelViewStack();
         modelView.pushPose();
         modelView.setIdentity();
         RenderSystem.applyModelViewMatrix();
-        view.setLookAt(eye, target, new Vector3f(0.0F, 1.0F, 0.0F));
+        view.setLookAt(cam.eye, cam.target, cam.up);
         RenderSystem.clear(GL11.GL_DEPTH_BUFFER_BIT, Minecraft.ON_OSX);
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
         RenderSystem.disableCull();
-        light(-0.35F, 0.6F, -0.7F, 0.18F);
-    }
-
-    /** The one light: a direction it shines from, and how bright the unlit sides stay. */
-    void light(float x, float y, float z, float ambientLight) {
-        light.set(x, y, z).normalize();
-        ambient = ambientLight;
-    }
-
-    /** Solid, depth-writing shapes. */
-    void solid() {
-        flush();
-        RenderSystem.disableBlend();
-        RenderSystem.enableDepthTest();
-        RenderSystem.depthMask(true);
-        begin();
-    }
-
-    /** Glowing shapes: added on top, hidden behind solid ones, but not hiding anything themselves. */
-    void glow() {
-        flush();
-        RenderSystem.enableBlend();
-        RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
-        RenderSystem.enableDepthTest();
-        RenderSystem.depthMask(false);
-        begin();
-    }
-
-    private void begin() {
-        buf = Tesselator.getInstance().getBuilder();
-        buf.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
-    }
-
-    private void flush() {
-        if (buf == null) return;
-        BufferUploader.drawWithShader(buf.end());
-        buf = null;
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
     void end() {
-        flush();
         PoseStack modelView = RenderSystem.getModelViewStack();
         modelView.popPose();
         RenderSystem.applyModelViewMatrix();
         RenderSystem.restoreProjectionMatrix();
         RenderSystem.clear(GL11.GL_DEPTH_BUFFER_BIT, Minecraft.ON_OSX);
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         RenderSystem.depthMask(true);
         RenderSystem.defaultBlendFunc();
         RenderSystem.disableBlend();
@@ -93,105 +64,280 @@ final class Scene3D {
         RenderSystem.enableDepthTest();
     }
 
-    private void vertex(float x, float y, float z, int argb) {
-        view.transformPosition(x, y, z, tmp);
-        buf.vertex(tmp.x, tmp.y, tmp.z).color((argb >> 16) & 0xFF, (argb >> 8) & 0xFF, argb & 0xFF, (argb >>> 24) & 0xFF).endVertex();
+    // ------------------------------------------------------------------ where things are
+
+    Vector3f toView(Vector3f world) {
+        return view.transformPosition(world, new Vector3f());
     }
 
-    /** A flat quad (a, b, c, d in order) shaded by the light from its normal. */
-    void face(Vector3f a, Vector3f b, Vector3f c, Vector3f d, int rgb, boolean lit) {
-        int color = 0xFF000000 | rgb;
-        if (lit) {
-            Vector3f n = new Vector3f(b).sub(a).cross(new Vector3f(d).sub(a)).normalize();
-            float k = ambient + (1.0F - ambient) * Math.max(0.0F, Math.abs(n.dot(light)));
-            color = 0xFF000000 | Fx.mix(0xFF000000, 0xFF000000 | rgb, k) & 0xFFFFFF;
-        }
-        vertex(a.x, a.y, a.z, color);
-        vertex(b.x, b.y, b.z, color);
-        vertex(c.x, c.y, c.z, color);
-        vertex(d.x, d.y, d.z, color);
+    Vector3f dirToView(Vector3f direction) {
+        return view.transformDirection(direction, new Vector3f()).normalize();
     }
 
-    /** A box between two corners, turned by {@code model}, shaded per face. */
-    void box(Matrix4f model, float x0, float y0, float z0, float x1, float y1, float z1, int rgb, boolean lit) {
-        Vector3f[] p = new Vector3f[8];
+    /** Where a world point lands on the screen, in GUI units (x, y, distance), or null when it's behind. */
+    float[] project(Vector3f world) {
+        Vector3f v = toView(world);
+        if (v.z > -near) return null;
+        float x = projection.m00() * v.x / -v.z, y = projection.m11() * v.y / -v.z;
+        return new float[]{(x * 0.5F + 0.5F) * width, (0.5F - y * 0.5F) * height, -v.z};
+    }
+
+    /** How big a ball of radius r at a world point looks: its radius on screen in GUI units (0 if behind). */
+    float screenRadius(Vector3f world, float r) {
+        Vector3f v = toView(world);
+        if (v.z > -near) return 0.0F;
+        return r / -v.z * projection.m11() * height * 0.5F;
+    }
+
+    /** How big something at view depth z has to be to span {@code frac} of the screen's height. */
+    float viewSize(float frac, float z) {
+        return frac * 2.0F * Math.abs(z) / projection.m11();
+    }
+
+    /** A quad given straight in clip space, for the shaders that trace their own rays. */
+    private static void clipQuad(float x0, float y0, float x1, float y1, float alpha) {
+        int a = Math.max(0, Math.min(255, Math.round(alpha * 255.0F)));
+        BufferBuilder b = Tesselator.getInstance().getBuilder();
+        b.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+        b.vertex(x0, y0, 0.0D).uv(0.0F, 0.0F).color(255, 255, 255, a).endVertex();
+        b.vertex(x1, y0, 0.0D).uv(0.0F, 0.0F).color(255, 255, 255, a).endVertex();
+        b.vertex(x1, y1, 0.0D).uv(0.0F, 0.0F).color(255, 255, 255, a).endVertex();
+        b.vertex(x0, y1, 0.0D).uv(0.0F, 0.0F).color(255, 255, 255, a).endVertex();
+        BufferUploader.drawWithShader(b.end());
+    }
+
+    /** The part of the screen (in clip space) that a ball of radius r around view-space point c can cover. */
+    private float[] bounds(Vector3f c, float r) {
+        if (c.z - r > -near) return null;
+        if (c.z + r > -near * 4.0F) return new float[]{-1.0F, -1.0F, 1.0F, 1.0F};
+        float x0 = 1.0F, y0 = 1.0F, x1 = -1.0F, y1 = -1.0F;
         for (int i = 0; i < 8; i++) {
-            p[i] = model.transformPosition(new Vector3f((i & 1) == 0 ? x0 : x1, (i & 2) == 0 ? y0 : y1, (i & 4) == 0 ? z0 : z1));
+            float x = c.x + ((i & 1) == 0 ? -r : r), y = c.y + ((i & 2) == 0 ? -r : r), z = c.z + ((i & 4) == 0 ? -r : r);
+            float nx = projection.m00() * x / -z, ny = projection.m11() * y / -z;
+            x0 = Math.min(x0, nx);
+            x1 = Math.max(x1, nx);
+            y0 = Math.min(y0, ny);
+            y1 = Math.max(y1, ny);
         }
-        face(p[0], p[1], p[3], p[2], rgb, lit);
-        face(p[4], p[6], p[7], p[5], rgb, lit);
-        face(p[0], p[4], p[5], p[1], rgb, lit);
-        face(p[2], p[3], p[7], p[6], rgb, lit);
-        face(p[0], p[2], p[6], p[4], rgb, lit);
-        face(p[1], p[5], p[7], p[3], rgb, lit);
+        x0 = Math.max(-1.0F, x0 - 0.01F);
+        y0 = Math.max(-1.0F, y0 - 0.01F);
+        x1 = Math.min(1.0F, x1 + 0.01F);
+        y1 = Math.min(1.0F, y1 + 0.01F);
+        return x0 < x1 && y0 < y1 ? new float[]{x0, y0, x1, y1} : null;
     }
 
-    /** A thin beam (box) from a to b with a square cross-section of half-size {@code r}. */
-    void rod(Vector3f a, Vector3f b, float r, int rgb, boolean lit) {
-        Vector3f dir = new Vector3f(b).sub(a);
-        float len = dir.length();
-        if (len < 1.0E-4F) return;
-        Matrix4f m = new Matrix4f().translate(a).rotateTowards(dir.div(len), Math.abs(dir.y) > 0.99F ? new Vector3f(1, 0, 0) : new Vector3f(0, 1, 0));
-        box(m, -r, -r, 0.0F, r, r, len, rgb, lit);
+    // ------------------------------------------------------------------ the sky
+
+    static final class Sky {
+        int nebulaA = 0x1A1F4D, nebulaB = 0x3A0F33;
+        float nebula = 1.0F;
+        final Vector3f band = new Vector3f(0.3F, 0.9F, 0.2F);
+        float bandStrength = 0.6F;
+        float seed = 3.0F;
+        float stars = 1.0F;
     }
 
-    /** A tube along +Z (after {@code model}) from z0 to z1, its colour fading from c0 to c1 (glow pass). */
-    void tube(Matrix4f model, float radius, float z0, float z1, int c0, int c1, int segments) {
-        for (int i = 0; i < segments; i++) {
-            double a0 = Math.PI * 2 * i / segments, a1 = Math.PI * 2 * (i + 1) / segments;
-            Vector3f p0 = model.transformPosition(new Vector3f((float) Math.cos(a0) * radius, (float) Math.sin(a0) * radius, z0));
-            Vector3f p1 = model.transformPosition(new Vector3f((float) Math.cos(a1) * radius, (float) Math.sin(a1) * radius, z0));
-            Vector3f p2 = model.transformPosition(new Vector3f((float) Math.cos(a1) * radius, (float) Math.sin(a1) * radius, z1));
-            Vector3f p3 = model.transformPosition(new Vector3f((float) Math.cos(a0) * radius, (float) Math.sin(a0) * radius, z1));
-            vertex(p0.x, p0.y, p0.z, c0);
-            vertex(p1.x, p1.y, p1.z, c0);
-            vertex(p2.x, p2.y, p2.z, c1);
-            vertex(p3.x, p3.y, p3.z, c1);
+    /** Deep space: the shader's nebulae and the galaxy's band, then the stars over them. */
+    void sky(Sky s) {
+        RenderSystem.disableDepthTest();
+        RenderSystem.depthMask(false);
+        ShaderInstance sh = FilmGfx.sky;
+        if (sh != null) {
+            if (fade < 1.0F) {
+                RenderSystem.enableBlend();
+                RenderSystem.defaultBlendFunc();
+            } else {
+                RenderSystem.disableBlend();
+            }
+            sh.safeGetUniform("ViewX").set(view.m00(), view.m10(), view.m20());
+            sh.safeGetUniform("ViewY").set(view.m01(), view.m11(), view.m21());
+            sh.safeGetUniform("ViewZ").set(view.m02(), view.m12(), view.m22());
+            sh.safeGetUniform("NebulaA").set(r(s.nebulaA), g(s.nebulaA), b(s.nebulaA));
+            sh.safeGetUniform("NebulaB").set(r(s.nebulaB), g(s.nebulaB), b(s.nebulaB));
+            sh.safeGetUniform("Band").set(s.band.x, s.band.y, s.band.z, s.bandStrength);
+            sh.safeGetUniform("Nebula").set(s.nebula);
+            sh.safeGetUniform("Seed").set(s.seed);
+            sh.safeGetUniform("Fade").set(1.0F);
+            RenderSystem.setShader(() -> sh);
+            clipQuad(-1.0F, -1.0F, 1.0F, 1.0F, fade);
+        } else {
+            RenderSystem.disableBlend();
+            RenderSystem.setShader(GameRenderer::getPositionColorShader);
+            BufferBuilder b = Tesselator.getInstance().getBuilder();
+            b.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+            b.vertex(-1.0D, -1.0D, 0.0D).color(2, 3, 10, 255).endVertex();
+            b.vertex(1.0D, -1.0D, 0.0D).color(2, 3, 10, 255).endVertex();
+            b.vertex(1.0D, 1.0D, 0.0D).color(2, 3, 10, 255).endVertex();
+            b.vertex(-1.0D, 1.0D, 0.0D).color(2, 3, 10, 255).endVertex();
+            Matrix4f saved = new Matrix4f(RenderSystem.getProjectionMatrix());
+            RenderSystem.setProjectionMatrix(new Matrix4f(), VertexSorting.DISTANCE_TO_ORIGIN);
+            BufferUploader.drawWithShader(b.end());
+            RenderSystem.setProjectionMatrix(saved, VertexSorting.DISTANCE_TO_ORIGIN);
+        }
+        if (s.stars > 0.0F) Stars.draw(this, s.stars * fade);
+        RenderSystem.enableDepthTest();
+        RenderSystem.depthMask(true);
+    }
+
+    // ------------------------------------------------------------------ planets
+
+    static final class Planet {
+        static final int EARTH = 0, JUPITER = 1, SATURN = 2, MOON = 3;
+        final Vector3f center = new Vector3f();
+        float radius = 1.0F;
+        int kind;
+        /** The axis is tilted about the world's z, then the planet turns about it. */
+        float tilt, spin;
+        /** Towards the sun, in the world. */
+        final Vector3f sun = new Vector3f(-0.6F, 0.35F, 0.7F);
+        int atmosphere = 0x4D8CFF;
+        float atmosphereHeight;
+        boolean ring;
+        float time, fade = 1.0F, night = 1.0F;
+        /** A glowing mark on the ground (a laser's spot): a direction in the world, its angular size, colour. */
+        Vector3f spot;
+        float spotSize = 0.01F;
+        int spotColor;
+        float spotStrength;
+
+        Vector3f axisY() {
+            return new Vector3f((float) -Math.sin(tilt), (float) Math.cos(tilt), 0.0F);
+        }
+
+        Vector3f axisX() {
+            float ct = (float) Math.cos(tilt), st = (float) Math.sin(tilt), cs = (float) Math.cos(spin), ss = (float) Math.sin(spin);
+            return new Vector3f(ct * cs, st * cs, -ss);
+        }
+
+        Vector3f axisZ() {
+            float ct = (float) Math.cos(tilt), st = (float) Math.sin(tilt), cs = (float) Math.cos(spin), ss = (float) Math.sin(spin);
+            return new Vector3f(ct * ss, st * ss, cs);
+        }
+
+        /** A point on the surface in the world, from a direction in the world. */
+        Vector3f surface(Vector3f direction) {
+            return new Vector3f(direction).normalize().mul(radius).add(center);
         }
     }
 
-    /** A ring in the XY plane (after {@code model}) at z, between two radii (glow pass). */
-    void ring(Matrix4f model, float r0, float r1, float z, int inner, int outer, int segments) {
-        for (int i = 0; i < segments; i++) {
-            double a0 = Math.PI * 2 * i / segments, a1 = Math.PI * 2 * (i + 1) / segments;
-            Vector3f p0 = model.transformPosition(new Vector3f((float) Math.cos(a0) * r0, (float) Math.sin(a0) * r0, z));
-            Vector3f p1 = model.transformPosition(new Vector3f((float) Math.cos(a1) * r0, (float) Math.sin(a1) * r0, z));
-            Vector3f p2 = model.transformPosition(new Vector3f((float) Math.cos(a1) * r1, (float) Math.sin(a1) * r1, z));
-            Vector3f p3 = model.transformPosition(new Vector3f((float) Math.cos(a0) * r1, (float) Math.sin(a0) * r1, z));
-            vertex(p0.x, p0.y, p0.z, inner);
-            vertex(p1.x, p1.y, p1.z, inner);
-            vertex(p2.x, p2.y, p2.z, outer);
-            vertex(p3.x, p3.y, p3.z, outer);
+    void planet(Planet p) {
+        Vector3f c = toView(p.center);
+        float reach = p.radius * (p.ring ? 2.36F : 1.0F + p.atmosphereHeight * 3.0F + 0.06F);
+        float[] clip = bounds(c, reach);
+        if (clip == null) return;
+        ShaderInstance sh = FilmGfx.planet;
+        if (sh == null) {
+            plainPlanet(p, c);
+            return;
         }
-    }
-
-    /** A soft glow that always faces the camera (glow pass). */
-    void sprite(Vector3f at, float size, int argb) {
-        Vector3f c = view.transformPosition(new Vector3f(at));
-        int edge = argb & 0x00FFFFFF;
-        int seg = 16;
-        for (int i = 0; i < seg; i++) {
-            double a0 = Math.PI * 2 * i / seg, a1 = Math.PI * 2 * (i + 1) / seg;
-            raw(c.x, c.y, c.z, argb);
-            raw(c.x, c.y, c.z, argb);
-            raw(c.x + (float) Math.cos(a1) * size, c.y + (float) Math.sin(a1) * size, c.z, edge);
-            raw(c.x + (float) Math.cos(a0) * size, c.y + (float) Math.sin(a0) * size, c.z, edge);
+        Vector3f ax = dirToView(p.axisX()), ay = dirToView(p.axisY()), az = dirToView(p.axisZ());
+        Vector3f sun = dirToView(p.sun);
+        sh.safeGetUniform("Center").set(c.x, c.y, c.z);
+        sh.safeGetUniform("Radius").set(p.radius);
+        sh.safeGetUniform("AxisX").set(ax.x, ax.y, ax.z);
+        sh.safeGetUniform("AxisY").set(ay.x, ay.y, ay.z);
+        sh.safeGetUniform("AxisZ").set(az.x, az.y, az.z);
+        sh.safeGetUniform("SunDir").set(sun.x, sun.y, sun.z);
+        sh.safeGetUniform("Kind").set((float) p.kind);
+        sh.safeGetUniform("Time").set(p.time);
+        sh.safeGetUniform("Atmo").set(r(p.atmosphere), g(p.atmosphere), b(p.atmosphere), p.atmosphereHeight);
+        sh.safeGetUniform("Ring").set(1.24F, 2.27F, 1.0F, p.ring ? 1.0F : 0.0F);
+        sh.safeGetUniform("Fade").set(p.fade * fade);
+        sh.safeGetUniform("Night").set(p.night);
+        if (p.spot != null && p.spotStrength > 0.0F) {
+            Vector3f d = new Vector3f(p.spot).normalize();
+            Vector3f wx = p.axisX(), wy = p.axisY(), wz = p.axisZ();
+            sh.safeGetUniform("Spot").set(d.dot(wx), d.dot(wy), d.dot(wz), p.spotSize);
+            float k = p.spotStrength;
+            sh.safeGetUniform("SpotColor").set(r(p.spotColor) * k, g(p.spotColor) * k, b(p.spotColor) * k);
+        } else {
+            sh.safeGetUniform("Spot").set(0.0F, 1.0F, 0.0F, 0.01F);
+            sh.safeGetUniform("SpotColor").set(0.0F, 0.0F, 0.0F);
         }
+        RenderSystem.enableBlend();
+        RenderSystem.blendFunc(GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
+        RenderSystem.enableDepthTest();
+        RenderSystem.depthMask(true);
+        RenderSystem.setShader(() -> sh);
+        clipQuad(clip[0], clip[1], clip[2], clip[3], 1.0F);
+        RenderSystem.defaultBlendFunc();
     }
 
-    /** A thin camera-facing streak through a point, for lens flares (glow pass). */
-    void streak(Vector3f at, float length, float width, float angle, int argb) {
-        Vector3f c = view.transformPosition(new Vector3f(at));
-        float dx = (float) Math.cos(angle), dy = (float) Math.sin(angle);
-        float nx = -dy * width, ny = dx * width;
-        int edge = argb & 0x00FFFFFF;
-        raw(c.x - dx * length, c.y - dy * length, c.z, edge);
-        raw(c.x + nx, c.y + ny, c.z, argb);
-        raw(c.x + dx * length, c.y + dy * length, c.z, edge);
-        raw(c.x - nx, c.y - ny, c.z, argb);
+    /** Without the planet shader: a shaded disc facing the camera, in the planet's main colour. */
+    private void plainPlanet(Planet p, Vector3f c) {
+        int base = switch (p.kind) {
+            case Planet.EARTH -> 0x2E6EB0;
+            case Planet.JUPITER -> 0xD9B88F;
+            case Planet.SATURN -> 0xD8BE8A;
+            default -> 0x9A9A9A;
+        };
+        Soft s = soft(false);
+        float r = p.radius;
+        s.discView(c, r, Fx.argb(base, p.fade), Fx.argb(Fx.mix(0xFF000000 | base, 0xFF000000, 0.6F) & 0xFFFFFF, p.fade));
+        s.end();
     }
 
-    private void raw(float x, float y, float z, int argb) {
-        buf.vertex(x, y, z).color((argb >> 16) & 0xFF, (argb >> 8) & 0xFF, argb & 0xFF, (argb >>> 24) & 0xFF).endVertex();
+    // ------------------------------------------------------------------ a galaxy
+
+    /** A galaxy's disc in the plane of u and v around a centre, drawn as light. */
+    void galaxy(Vector3f center, Vector3f u, Vector3f v, float radius, float spin, float fade) {
+        ShaderInstance sh = FilmGfx.galaxy;
+        if (sh == null || fade <= 0.0F) return;
+        sh.safeGetUniform("Spin").set(spin);
+        sh.safeGetUniform("Fade").set(fade * this.fade);
+        Vector3f eu = new Vector3f(u).normalize().mul(radius), ev = new Vector3f(v).normalize().mul(radius);
+        Vector3f[] corners = {
+                new Vector3f(center).sub(eu).sub(ev), new Vector3f(center).add(eu).sub(ev),
+                new Vector3f(center).add(eu).add(ev), new Vector3f(center).sub(eu).add(ev)};
+        float[][] uv = {{-1.0F, -1.0F}, {1.0F, -1.0F}, {1.0F, 1.0F}, {-1.0F, 1.0F}};
+        RenderSystem.enableBlend();
+        RenderSystem.blendFunc(GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ONE);
+        RenderSystem.enableDepthTest();
+        RenderSystem.depthMask(false);
+        RenderSystem.setShader(() -> sh);
+        BufferBuilder b = Tesselator.getInstance().getBuilder();
+        b.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+        for (int i = 0; i < 4; i++) {
+            Vector3f q = toView(corners[i]);
+            b.vertex(q.x, q.y, q.z).uv(uv[i][0], uv[i][1]).color(255, 255, 255, 255).endVertex();
+        }
+        BufferUploader.drawWithShader(b.end());
+        RenderSystem.depthMask(true);
+        RenderSystem.defaultBlendFunc();
+    }
+
+    // ------------------------------------------------------------------ lit metal and soft light
+
+    static final class Light {
+        /** Towards the sun, in the world. */
+        final Vector3f sun = new Vector3f(-0.4F, 0.5F, -0.7F);
+        int sunColor = 0xFFF6EC;
+        float sunStrength = 1.3F;
+        int fill = 0x282A40;
+        /** The charge's glow: a point light. */
+        final Vector3f glow = new Vector3f();
+        int glowColor = 0xFF3A30;
+        float glowStrength, glowRange = 30.0F;
+        float charge, time;
+    }
+
+    void mesh(Mesh mesh, Matrix4f model, Light light) {
+        mesh.draw(this, model, light);
+    }
+
+    Soft soft(boolean additive) {
+        return new Soft(this, additive);
+    }
+
+    static float r(int rgb) {
+        return ((rgb >> 16) & 0xFF) / 255.0F;
+    }
+
+    static float g(int rgb) {
+        return ((rgb >> 8) & 0xFF) / 255.0F;
+    }
+
+    static float b(int rgb) {
+        return (rgb & 0xFF) / 255.0F;
     }
 }

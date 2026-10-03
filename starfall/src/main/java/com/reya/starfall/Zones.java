@@ -31,7 +31,7 @@ public final class Zones {
             new ResourceLocation(Starfall.MODID, "shockwave"));
 
     public enum Creative {
-        /** Lift creative players into the sky first (SS-01). */
+        /** Keep creative players hovering where they are (SS-01). */
         EVACUATE,
         /** Leave creative players alone (SS-03). */
         IGNORE,
@@ -78,13 +78,14 @@ public final class Zones {
         }
     }
 
+    /** A creative player in the beam stays where they are, hovering, while the ground goes out from under them. */
     private static void evacuate(ServerLevel level, Player player) {
-        if (!(player instanceof ServerPlayer sp)) return;
-        double y = level.getMaxBuildHeight() + 24;
-        sp.teleportTo(level, sp.getX(), y, sp.getZ(), sp.getYRot(), Math.max(sp.getXRot(), 30.0F));
+        if (!(player instanceof ServerPlayer sp) || sp.getAbilities().flying) return;
         sp.getAbilities().flying = true;
         sp.onUpdateAbilities();
-        sp.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING, 400, 0, false, false));
+        sp.setDeltaMovement(sp.getDeltaMovement().multiply(1.0D, 0.0D, 1.0D));
+        sp.hurtMarked = true;
+        sp.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING, 600, 0, false, false));
     }
 
     /** Gungnir's shock past the rim: throws and hurts, less the further out. */
