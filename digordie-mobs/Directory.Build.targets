@@ -1,0 +1,12 @@
+<Project>
+  <Import Project="../digordie-modmanager/Directory.Build.targets" />
+
+  <!-- The DODModAPI package depends on BepInEx.Core, which is not on nuget.org, so the package is
+       unpacked by hand instead of using a PackageReference. -->
+  <Target Name="FetchDODModAPI" BeforeTargets="ResolveAssemblyReferences;CoreCompile"
+          Condition="!Exists('$(DODModAPIDir)lib/net35/dodmodapi.dll')">
+    <DownloadFile SourceUrl="https://api.nuget.org/v3-flatcontainer/digordie.dodmodapi/$(DODModAPIVersion)/digordie.dodmodapi.$(DODModAPIVersion).nupkg"
+                  DestinationFolder="$(DepsDir)" DestinationFileName="digordie.dodmodapi.$(DODModAPIVersion).zip" />
+    <Unzip SourceFiles="$(DepsDir)digordie.dodmodapi.$(DODModAPIVersion).zip" DestinationFolder="$(DODModAPIDir)" />
+  </Target>
+</Project>

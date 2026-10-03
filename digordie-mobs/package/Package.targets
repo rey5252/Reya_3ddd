@@ -1,0 +1,32 @@
+<Project>
+  <!-- Release builds produce dist/DigOrDie-NewMobs.zip, laid out like the Mod Manager package:
+         Install.bat / Uninstall.bat / Install.ps1 (shared with the Mod Manager), README.txt
+         game-files/ - BepInEx, BepInEx.cfg for Dig or Die and the New Mobs plugin.
+       DODModAPI is not bundled (no redistribution license): Install.ps1 downloads it from nuget.org. -->
+  <PropertyGroup>
+    <MobsPackageDir>$(MSBuildThisFileDirectory)</MobsPackageDir>
+    <SharedPackageDir>$(MSBuildThisFileDirectory)../../digordie-modmanager/package/</SharedPackageDir>
+    <MobsDistDir>$(MSBuildThisFileDirectory)../dist/</MobsDistDir>
+    <MobsStageDir>$(MobsDistDir)stage/</MobsStageDir>
+    <MobsZipName>DigOrDie-NewMobs.zip</MobsZipName>
+  </PropertyGroup>
+
+  <Target Name="PackageMobs" AfterTargets="Build" Condition="'$(Configuration)' == 'Release'">
+    <PropertyGroup>
+      <_GameFiles>$(MobsStageDir)game-files/</_GameFiles>
+    </PropertyGroup>
+    <ItemGroup>
+      <_BepInExFiles Include="$(BepInExDir)**/*" />
+    </ItemGroup>
+
+    <RemoveDir Directories="$(MobsStageDir)" />
+    <Copy SourceFiles="@(_BepInExFiles)" DestinationFiles="@(_BepInExFiles->'$(_GameFiles)%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="$(SharedPackageDir)BepInEx.cfg" DestinationFolder="$(_GameFiles)BepInEx/config/" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(_GameFiles)BepInEx/plugins/DigOrDieMobs/" />
+    <Copy SourceFiles="$(SharedPackageDir)Install.bat;$(SharedPackageDir)Uninstall.bat;$(SharedPackageDir)Install.ps1;$(MobsPackageDir)README.txt" DestinationFolder="$(MobsStageDir)" />
+
+    <Delete Files="$(MobsDistDir)$(MobsZipName)" />
+    <ZipDirectory SourceDirectory="$(MobsStageDir)" DestinationFile="$(MobsDistDir)$(MobsZipName)" />
+    <Message Importance="high" Text="Dig or Die New Mobs package: $([System.IO.Path]::GetFullPath('$(MobsDistDir)$(MobsZipName)'))" />
+  </Target>
+</Project>

@@ -21,3 +21,5 @@
 ## Dig or Die — Менеджер модів
 
 У папці [`digordie-modmanager`](digordie-modmanager/README.md) — мод для Dig or Die (BepInEx), що додає в головне меню кнопку **МОДИ** з менеджером модів. Готовий архів з інсталятором: `jars/DigOrDie-ModManager.zip`.
+
+У папці [`digordie-mobs`](digordie-mobs/README.md) — 4 нових монстри для Dig or Die. Архів: `jars/DigOrDie-NewMobs.zip`.

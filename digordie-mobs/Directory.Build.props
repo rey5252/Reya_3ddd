@@ -1,0 +1,13 @@
+<Project>
+  <!-- Same build setup as the Mod Manager (net35, BepInEx references from the official release) -->
+  <Import Project="../digordie-modmanager/Directory.Build.props" />
+
+  <PropertyGroup>
+    <Version>1.0.0</Version>
+    <Product>Dig or Die New Mobs</Product>
+
+    <!-- DODModAPI is referenced from its nuget.org package; at runtime the player installs the real plugin -->
+    <DODModAPIVersion>1.0.3</DODModAPIVersion>
+    <DODModAPIDir>$(DepsDir)DigOrDie.DODModAPI.$(DODModAPIVersion)/</DODModAPIDir>
+  </PropertyGroup>
+</Project>

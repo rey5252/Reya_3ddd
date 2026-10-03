@@ -1,12 +1,13 @@
 ﻿<#
-  Dig or Die Mod Manager - installer.
+  Installer for Reya's Dig or Die mods (Mod Manager, New Mobs). Shared by their packages.
 
-  Copies BepInEx and the Mod Manager into the Dig or Die folder (found through Steam automatically)
-  and sets the BepInEx option Dig or Die needs (Preloader.Entrypoint Type = MonoBehaviour).
+  Copies BepInEx and the mods from game-files\ into the Dig or Die folder (found through Steam automatically),
+  sets the BepInEx option Dig or Die needs (Preloader.Entrypoint Type = MonoBehaviour) and, for New Mobs,
+  downloads its library DODModAPI from nuget.org.
 
     Install.ps1                      install
     Install.ps1 -GamePath "D:\Games\Dig or Die"
-    Install.ps1 -Uninstall           remove the Mod Manager (BepInEx and other mods stay)
+    Install.ps1 -Uninstall           remove the mods of this package (BepInEx and other mods stay)
     Install.ps1 -DisableOtherMods    turn off other mods without asking (-KeepOtherMods: leave them on)
 #>
 param(
@@ -21,6 +22,9 @@ $AppId = 315460
 $ExeName = 'DigOrDie.exe'
 $Here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $Source = Join-Path $Here 'game-files'
+$DODModAPIVersion = '1.0.3'
+# Folders of our own mods: never treated as "other mods"
+$OurModsPattern = '[\\/](DigOrDieModManager|DigOrDieMobs|DODModAPI)[\\/]'
 
 function Say([string]$Text, [string]$Color = 'Gray') { Write-Host $Text -ForegroundColor $Color }
 
@@ -124,7 +128,7 @@ function Find-OtherMods([string]$Game) {
         $dir = Join-Path $Game $sub
         if (Test-Path -LiteralPath $dir) {
             $found += @(Get-ChildItem -LiteralPath $dir -Recurse -File -Force |
-                Where-Object { $_.Extension -ieq '.dll' -and $_.FullName -notmatch '[\\/]DigOrDieModManager[\\/]' })
+                Where-Object { $_.Extension -ieq '.dll' -and $_.FullName -notmatch $OurModsPattern -and $_.Name -ine 'dodmodapi.dll' })
         }
     }
     $versionDll = Join-Path $Game 'version.dll'
@@ -165,9 +169,55 @@ function Disable-OtherMods([string]$Game) {
     Say "Вимкнено модів: $count (файли перейменовано в *.dll.disabled)." Green
 }
 
+# New Mobs needs DODModAPI (https://github.com/ddmitv/dig-or-die-mods). It is not ours to bundle,
+# so it is taken from its official nuget.org package.
+function Ensure-DODModAPI([string]$Game) {
+    $plugins = Join-Path (Join-Path $Game 'BepInEx') 'plugins'
+    $existing = @(Get-ChildItem -LiteralPath $plugins -Recurse -File -Force -ErrorAction SilentlyContinue |
+        Where-Object { $_.Name -ieq 'dodmodapi.dll' -or $_.Name -ieq 'dodmodapi.dll.disabled' })
+    if ($existing | Where-Object { $_.Name -ieq 'dodmodapi.dll' }) {
+        Say 'DODModAPI вже встановлено.' Green
+        return
+    }
+    $disabled = $existing | Select-Object -First 1
+    if ($disabled) {
+        Rename-Item -LiteralPath $disabled.FullName -NewName 'dodmodapi.dll' -Force
+        Say 'DODModAPI знову увімкнено.' Green
+        return
+    }
+
+    Say "Завантажую DODModAPI $DODModAPIVersion (потрібен для нових монстрів) з nuget.org..." Gray
+    $url = "https://api.nuget.org/v3-flatcontainer/digordie.dodmodapi/$DODModAPIVersion/digordie.dodmodapi.$DODModAPIVersion.nupkg"
+    $tmp = Join-Path ([IO.Path]::GetTempPath()) ('dodmodapi-' + [guid]::NewGuid().ToString() + '.zip')
+    try {
+        [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
+        Invoke-WebRequest -UseBasicParsing -Uri $url -OutFile $tmp
+        Add-Type -AssemblyName System.IO.Compression.FileSystem
+        $zip = [IO.Compression.ZipFile]::OpenRead($tmp)
+        try {
+            $entry = $zip.Entries | Where-Object { $_.FullName -ieq 'lib/net35/dodmodapi.dll' } | Select-Object -First 1
+            if (-not $entry) { throw 'у пакеті немає lib/net35/dodmodapi.dll' }
+            $destDir = Join-Path $plugins 'DODModAPI'
+            New-Item -ItemType Directory -Path $destDir -Force | Out-Null
+            [IO.Compression.ZipFileExtensions]::ExtractToFile($entry, (Join-Path $destDir 'dodmodapi.dll'), $true)
+        } finally {
+            $zip.Dispose()
+        }
+        Say 'DODModAPI встановлено.' Green
+    } catch {
+        Say ('Не вдалося завантажити DODModAPI: ' + $_.Exception.Message) Red
+        Say 'Без нього нові монстри не з''являться. Завантажте dodmodapi.dll вручну:' Yellow
+        Say '  https://github.com/ddmitv/dig-or-die-mods/releases  і покладіть його в BepInEx\plugins' Yellow
+    } finally {
+        Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue
+    }
+}
+
 try {
     Say ''
-    Say '=== Dig or Die Mod Manager ===' Cyan
+    Say '=== Dig or Die: моди від Reya ===' Cyan
+    $hasManager = Test-Path -LiteralPath (Join-Path $Source 'BepInEx\plugins\DigOrDieModManager')
+    $hasMobs = Test-Path -LiteralPath (Join-Path $Source 'BepInEx\plugins\DigOrDieMobs')
 
     if (-not $Uninstall -and -not (Test-Path (Join-Path $Source 'BepInEx'))) {
         throw 'Поруч з Install.ps1 немає папки "game-files". Спочатку повністю розпакуйте архів (ПКМ -> Видобути все), потім запускайте Install.bat.'
@@ -189,11 +239,20 @@ try {
     }
 
     if ($Uninstall) {
-        foreach ($dir in @('BepInEx\plugins\DigOrDieModManager', 'BepInEx\patchers\DigOrDieModManager')) {
-            $full = Join-Path $GamePath $dir
-            if (Test-Path $full) { Remove-Item $full -Recurse -Force; Say "Видалено: $dir" }
+        # Remove exactly the mod folders this package installs.
+        $dirs = @()
+        foreach ($sub in @('BepInEx\plugins', 'BepInEx\patchers')) {
+            $packaged = Join-Path $Source $sub
+            if (Test-Path -LiteralPath $packaged) {
+                $dirs += @(Get-ChildItem -LiteralPath $packaged -Directory | ForEach-Object { Join-Path $sub $_.Name })
+            }
         }
-        Say 'Менеджер модів видалено. BepInEx та інші моди залишилися.' Green
+        if ($dirs.Count -eq 0) { $dirs = @('BepInEx\plugins\DigOrDieModManager', 'BepInEx\patchers\DigOrDieModManager') }
+        foreach ($dir in $dirs) {
+            $full = Join-Path $GamePath $dir
+            if (Test-Path -LiteralPath $full) { Remove-Item -LiteralPath $full -Recurse -Force; Say "Видалено: $dir" }
+        }
+        Say 'Готово. BepInEx та інші моди залишилися.' Green
         Say 'Щоб повністю прибрати моди: видаліть папку BepInEx, winhttp.dll, doorstop_config.ini і перевірте цілісність файлів гри в Steam.' Gray
         return
     }
@@ -209,23 +268,33 @@ try {
         if (-not (Test-Path $targetDir)) { New-Item -ItemType Directory -Path $targetDir -Force | Out-Null }
         Copy-Item -LiteralPath $_.FullName -Destination $target -Force
     }
-    Say 'Скопійовано BepInEx і менеджер модів.' Green
+    Say 'Скопійовано BepInEx і моди.' Green
 
     if ($hadCfg) {
         Set-EntrypointType $cfgTarget
         Say 'Оновлено BepInEx.cfg (Entrypoint Type = MonoBehaviour).' Green
     }
 
+    if ($hasMobs) { Ensure-DODModAPI $GamePath }
+
     Disable-OtherMods $GamePath
 
     Say ''
-    Say 'Готово! Запускайте Dig or Die ЧЕРЕЗ STEAM - у головному меню між «Настройки» і «Выход» з''явиться кнопка МОДИ.' Cyan
-    Say "Мод встановлено в: $GamePath" Gray
+    Say 'Готово! Запускайте Dig or Die ЧЕРЕЗ STEAM.' Cyan
+    if ($hasManager) {
+        Say 'У головному меню між «Настройки» і «Выход» з''явиться кнопка МОДИ.' Cyan
+    }
+    if ($hasMobs) {
+        Say 'Нові монстри з''являються самі у своїх місцях. Щоб побачити їх одразу: Enter у грі, команда /mobs' Cyan
+    }
+    Say "Встановлено в: $GamePath" Gray
     Say 'Нові моди (.dll) кладіть у: BepInEx\plugins' Gray
     Say 'Перший запуск з BepInEx може тривати трохи довше.' Gray
-    Say ''
-    Say 'Якщо стара кнопка «МОДИ» у правому верхньому куті не зникне: Steam -> Dig or Die -> Властивості ->' Gray
-    Say 'Встановлені файли -> «Перевірити цілісність файлів гри», потім ще раз запустіть Install.bat.' Gray
+    if ($hasManager) {
+        Say ''
+        Say 'Якщо стара кнопка «МОДИ» у правому верхньому куті не зникне: Steam -> Dig or Die -> Властивості ->' Gray
+        Say 'Встановлені файли -> «Перевірити цілісність файлів гри», потім ще раз запустіть Install.bat.' Gray
+    }
 }
 catch {
     Say ''

@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>DigOrDieMobs</AssemblyName>
+    <RootNamespace>DigOrDieMobs</RootNamespace>
+    <Description>Four new monsters for Dig or Die: Acid Slime, Crystal Spider, Lava Wisp and Deep Jelly.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="DigOrDie.GameLibs" Version="1.11.864" PrivateAssets="all" />
+    <!-- Packs assets/*.png into a unit atlas embedded in the dll and generates the MobAssets class -->
+    <PackageReference Include="DigOrDie.DODModAPI.AssetPacker" Version="0.1.4" PrivateAssets="all" />
+
+    <Reference Include="0Harmony">
+      <HintPath>$(BepInExCoreDir)0Harmony.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="dodmodapi">
+      <HintPath>$(DODModAPIDir)lib/net35/dodmodapi.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+
+    <ModAtlas Include="assets/sprites.cfg" AtlasName="DigOrDieMobs.MobAssets" />
+    <None Remove="assets/**" />
+  </ItemGroup>
+
+  <Import Project="../../package/Package.targets" />
+</Project>
