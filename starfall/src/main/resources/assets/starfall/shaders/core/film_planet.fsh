@@ -476,9 +476,10 @@ void main() {
             if (Photo > 0.5) {
                 vec2 uv = mapUV(pb) + vec2(Time * 0.002, 0.0);
                 float closeK = clamp(-mapLod(fp, 2048.0) / 3.0, 0.0, 1.0);
-                vec3 j = textureLod(Sampler0, uv, mapLod(fp, 2048.0)).rgb;
+                // Cassini's map is pale: deepen the belts against the zones
+                vec3 j = pow(textureLod(Sampler0, uv, mapLod(fp, 2048.0)).rgb, vec3(1.7)) * 1.3;
                 float l = dot(j, vec3(0.299, 0.587, 0.114));
-                j = mix(vec3(l), j, 1.2) * mix(1.0, 0.85 + 0.3 * (rough(vec3(pb.x * 40.0, pb.y * 160.0, pb.z * 40.0), lod - 5.0) + 0.5), closeK);
+                j = mix(vec3(l), j, 1.5) * mix(1.0, 0.85 + 0.3 * (rough(vec3(pb.x * 40.0, pb.y * 160.0, pb.z * 40.0), lod - 5.0) + 0.5), closeK);
                 surf = j * gasLight(N, V);
             } else {
                 surf = shadeJupiter(pb, lod) * gasLight(N, V) * 0.9;

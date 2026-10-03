@@ -52,6 +52,19 @@ final class FilmMaps {
         return get("milky_way.jpg");
     }
 
+    private static final String[] ALL = {"earth_day.jpg", "earth_aux.png", "moon.jpg", "jupiter.jpg", "milky_way.jpg"};
+
+    /** Loads one map that isn't loaded yet, so the first film doesn't stall on them; true once all are in. */
+    static boolean warm() {
+        for (String f : ALL) {
+            if (!LOADED.containsKey(f)) {
+                get(f);
+                return false;
+            }
+        }
+        return true;
+    }
+
     private static int get(String file) {
         Integer id = LOADED.get(file);
         if (id == null) {

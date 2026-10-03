@@ -21,7 +21,7 @@ import net.minecraftforge.fml.common.Mod;
 
 @Mod.EventBusSubscriber(modid = Starfall.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
 public final class ClientEvents {
-    private static boolean aimHeld;
+    private static boolean aimHeld, mapsWarm;
     private static float heldYaw, heldPitch;
 
     @SubscribeEvent
@@ -30,6 +30,7 @@ public final class ClientEvents {
         if (event.phase != TickEvent.Phase.END) return;
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) return;
+        if (!mapsWarm && mc.player.tickCount > 40) mapsWarm = FilmMaps.warm();
         ClientStrikes.tick();
         for (int i = 0; i < Keys.SKILLS.length; i++) {
             while (Keys.SKILLS[i].consumeClick()) select(mc, Skill.byIndex(i));

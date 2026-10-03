@@ -66,4 +66,4 @@ Workflow **Starfall showcase** запускає гру на віртуально
 - Чумацький Шлях: ESO/S. Brunier, https://www.eso.org/public/images/eso0932a/ (CC BY 4.0).
 - Шрифт титрів: Source Sans Pro від Adobe, SIL Open Font License 1.1 (текст ліцензії лежить поруч зі шрифтом).
 
-Подробиці — у `src/main/resources/assets/starfall/textures/film/CREDITS.txt`.
+Подробиці — у `src/main/resources/assets/starfall/textures/film/credits.txt`.

@@ -129,7 +129,7 @@ def main():
            if "solarsystemscope" in jup else "NASA/JPL/Space Science Institute, Cassini (PIA07782) (public domain)")
     if not os.path.exists(f"{OUT}/jupiter.jpg"):
         jup = "(none)"
-    with open(f"{OUT}/CREDITS.txt", "w") as f:
+    with open(f"{OUT}/credits.txt", "w") as f:
         f.write(CREDITS.format(jupiter=jup))
     print("have:", sorted(got))
     for f in sorted(os.listdir(OUT)):

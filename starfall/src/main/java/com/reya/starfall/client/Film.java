@@ -133,7 +133,7 @@ public final class Film {
                 if (shot > 0.0F) FilmPost.flash = Fx.argb(0xFFF0F0, 0.45F * shot);
             }
             case GUNGNIR -> {
-                FilmPost.zoom = 0.32F * pulse(s, 8.0F, 8.2F, 8.7F) + 0.18F * Cam.ramp(s, 11.3F, 11.95F);
+                FilmPost.zoom = 0.2F * pulse(s, 8.0F, 8.2F, 8.7F) + 0.18F * Cam.ramp(s, 11.3F, 11.95F);
                 FilmPost.bloom = 0.9F + 0.6F * Cam.ramp(s, 3.3F, 8.0F) * (1.0F - Cam.ramp(s, 8.2F, 8.8F)) + 0.8F * Cam.ramp(s, 11.0F, 12.0F);
                 float hit = pulse(s, 11.7F, 11.85F, 12.0F);
                 if (hit > 0.0F) FilmPost.flash = Fx.argb(0xFFD8A0, 0.35F * hit);

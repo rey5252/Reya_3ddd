@@ -1,10 +1,28 @@
 {
-    "blend": { "func": "add", "srcrgb": "1", "dstrgb": "1" },
+    "blend": {
+        "func": "add",
+        "srcrgb": "srcalpha",
+        "dstrgb": "1-srcalpha"
+    },
     "vertex": "starfall:film_post",
     "fragment": "starfall:strike_glow",
-    "attributes": [ "Position", "UV0" ],
-    "samplers": [ { "name": "Sampler0" } ],
+    "attributes": [
+        "Position",
+        "UV0"
+    ],
+    "samplers": [
+        {
+            "name": "Sampler0"
+        }
+    ],
     "uniforms": [
-        { "name": "Strength", "type": "float", "count": 1, "values": [ 1.0 ] }
+        {
+            "name": "Strength",
+            "type": "float",
+            "count": 1,
+            "values": [
+                1.0
+            ]
+        }
     ]
 }

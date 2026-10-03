@@ -90,7 +90,7 @@ public final class ClientStrikes {
             Fx haloXray = Fx.begin(mat, camera, far, true, true);
             for (ClientStrike s : STRIKES) s.renderXray(haloXray, age(s, level, partial));
             haloXray.end();
-            WorldGlow.end(1.0F);
+            WorldGlow.finish();
         }
     }
 
