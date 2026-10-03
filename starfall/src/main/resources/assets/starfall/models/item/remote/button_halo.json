@@ -18,10 +18,22 @@
       "faces": {
         "north": {
           "texture": "#halo",
+          "uv": [
+            6.4,
+            5.7,
+            9.6,
+            9.5
+          ],
           "tintindex": 0
         },
         "south": {
           "texture": "#halo",
+          "uv": [
+            6.4,
+            5.7,
+            9.6,
+            9.5
+          ],
           "tintindex": 0
         }
       },

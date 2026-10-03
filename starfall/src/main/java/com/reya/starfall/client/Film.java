@@ -10,6 +10,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import org.joml.Vector3f;
 
 /**
  * The film that plays for whoever pressed the button, while the target is being marked. Everything in it is
@@ -228,79 +229,47 @@ public final class Film {
             double g = c.h * (2.8D - 2.35D * ClientStrike.easeOut(p));
             galaxy(c, c.w * 0.5D, c.h * 0.58D, g, s * 0.12F, Math.min(1.0F, p * 3.0F));
         } else if (s < 7.0F) {
+            // the railgun hanging past the galaxy's rim: the camera drifts along it while the coils charge
             float p = (s - 5.4F) / 1.6F;
             space(c, 4.4F + p * 0.1F, 0.0F, 1.0F);
             galaxy(c, c.w * 0.2D, c.h * 0.78D, c.h * 0.32D, s * 0.12F, 1.0F);
-            railgunCharging(c, s, p);
+            c.mode(true);
+            c.glow(c.w * 0.62D, c.h * 0.46D, c.h * 0.75D, Fx.argb(0x9A1418, 0.55F));
+            c.finish();
+            double beta = -0.6D + 0.42D * p;
+            float radius = 64.0F - 16.0F * p;
+            Vector3f eye = new Vector3f((float) (Math.cos(beta) * radius), 13.0F - 7.0F * p, 52.0F + (float) (Math.sin(beta) * radius));
+            Scene3D scene = new Scene3D(c.w, c.h, 52.0F, eye, new Vector3f(0.0F, 0.0F, 54.0F + 22.0F * p));
+            Railgun3D.draw(scene, Math.min(1.0F, p * 1.15F), 0.0F, s);
+            scene.end();
+        } else if (s < 7.45F) {
+            // fire: the beam leaves the muzzle
+            float p = (s - 7.0F) / 0.45F;
+            space(c, 4.5F, 0.0F, 1.0F);
+            c.mode(true);
+            c.glow(c.w * 0.5D, c.h * 0.5D, c.h * 0.9D, Fx.argb(0xC02028, 0.6F));
+            c.finish();
+            Vector3f eye = new Vector3f(17.0F - 3.0F * p, 3.5F, Railgun3D.MUZZLE + 10.0F + 4.0F * p);
+            Scene3D scene = new Scene3D(c.w, c.h, 58.0F, eye, new Vector3f(0.0F, 0.0F, Railgun3D.MUZZLE - 2.0F));
+            Railgun3D.draw(scene, 1.0F, p, s);
+            scene.end();
+            c.mode(false);
+            c.rect(0, 0, c.w, c.h, Fx.argb(0xFFE6E6, Math.max(0.0F, 0.85F - p * 2.5F) + p * 0.35F));
+            c.flush();
         } else {
-            float p = s - 7.0F;
+            float p = (s - 7.45F) / 0.55F;
             tunnel(c, p, ClientStrike.RED, 0xFFD0D0);
             c.mode(false);
             planet(c, c.w * 0.5F, c.h * 0.5F, c.h * 0.015F * Math.exp(p * 3.4F), s, Film::earth, 0x6FA8FF);
-            if (p < 0.12F) {
+            if (p < 0.15F) {
                 c.mode(false);
-                c.rect(0, 0, c.w, c.h, Fx.argb(0xFFFFFF, 1.0F - p / 0.12F));
+                c.rect(0, 0, c.w, c.h, Fx.argb(0xFFE6E6, 0.35F * (1.0F - p / 0.15F)));
             }
-            if (p > 0.72F) {
+            if (p > 0.7F) {
                 c.mode(false);
-                c.rect(0, 0, c.w, c.h, Fx.argb(0xFFFFFF, (p - 0.72F) / 0.28F));
+                c.rect(0, 0, c.w, c.h, Fx.argb(0xFFFFFF, (p - 0.7F) / 0.3F));
             }
         }
-    }
-
-    private static void railgunCharging(Canvas c, float s, float p) {
-        double vx = c.w * 0.58D, vy = c.h * 0.4D;
-        double nx = c.w * 0.18D, ny = c.h * 1.35D;
-        double spreadNear = c.w * 0.2D, spreadFar = 5.0D;
-        double ax = vx - nx, ay = vy - ny;
-        double len = Math.sqrt(ax * ax + ay * ay);
-        double ux = -ay / len, uy = ax / len;
-        float charge = Math.min(1.0F, p * 1.15F);
-        c.mode(false);
-        for (int side = -1; side <= 1; side += 2) {
-            double x0 = nx + ux * spreadNear * side, y0 = ny + uy * spreadNear * side;
-            double x1 = vx + ux * spreadFar * side, y1 = vy + uy * spreadFar * side;
-            c.taper(x0, y0, c.w * 0.07D, x1, y1, 2.0D, 0xFF262A32, 0xFF181A20);
-            c.taper(x0 - ux * c.w * 0.03D * side, y0 - uy * c.w * 0.03D * side, 3.0D, x1, y1, 0.6D, 0xFF8A94A6, 0xFF4A505C);
-        }
-        // the coils, lighting up from the breech to the muzzle as it charges
-        for (int i = 0; i < 10; i++) {
-            double f = 1.0D - Math.pow(1.0D - (i + 0.5D) / 10.0D, 1.6D);
-            double cx = nx + ax * f, cy = ny + ay * f;
-            double rr = spreadNear * 1.35D * (1.0D - f) + spreadFar * 2.5D * f;
-            double wid = 9.0D * (1.0D - f) + 1.2D;
-            c.mode(false);
-            c.ellipse(cx, cy, rr, rr * 0.45D, Math.atan2(uy, ux), wid, 0, Math.PI * 2, 0xFF30343E);
-            float lit = Math.max(0.0F, Math.min(1.0F, (charge - i / 10.0F) * 6.0F));
-            if (lit > 0) {
-                float pulse = 0.75F + 0.25F * (float) Math.sin(s * 30.0F + i);
-                c.mode(true);
-                c.ellipse(cx, cy, rr, rr * 0.45D, Math.atan2(uy, ux), wid * 0.6D, 0, Math.PI * 2, Fx.argb(0xFF3030, 0.9F * lit * pulse));
-                c.ellipse(cx, cy, rr, rr * 0.45D, Math.atan2(uy, ux), wid * 2.2D, 0, Math.PI * 2, Fx.argb(0xFF2020, 0.25F * lit));
-            }
-        }
-        c.mode(true);
-        if (p > 0.3F) {
-            Random r = new Random((long) (s * 24.0F));
-            for (int k = 0; k < 7; k++) {
-                double f = 0.1D + r.nextDouble() * 0.8D;
-                double cx = nx + ax * f, cy = ny + ay * f;
-                double half = spreadNear * (1.0D - f) + spreadFar * f;
-                double px = cx - ux * half, py = cy - uy * half;
-                for (int seg = 1; seg <= 6; seg++) {
-                    double q = seg / 6.0D;
-                    double jitter = (r.nextDouble() - 0.5D) * half * 0.35D;
-                    double qx = cx + ux * half * (2 * q - 1) + ax / len * jitter, qy = cy + uy * half * (2 * q - 1) + ay / len * jitter;
-                    c.line(px, py, qx, qy, 1.4D, Fx.argb(0xFFE0E0, 0.9F), Fx.argb(0xFF6060, 0.8F));
-                    px = qx;
-                    py = qy;
-                }
-            }
-        }
-        double m = 8.0D + 110.0D * charge * charge;
-        c.glow(vx, vy, m * 2.0D, Fx.argb(0xFF2020, 0.5F * charge));
-        c.glow(vx, vy, m, Fx.argb(0xFFD0D0, 0.9F * charge));
-        c.flush();
     }
 
     // ------------------------------------------------------------------ SS-03
@@ -436,8 +405,8 @@ public final class Film {
         space(c, 1.2F, 0.0F, 0.7F);
         nebula(c, s, 1.0F);
         double scale = c.w * 0.62D / BigDipper.EXTENT;
-        double zoom = s < 6.5F ? 1.0D + 0.05D * (s - 2.4F) : 1.2D + 1.2D * Math.pow((s - 6.5F) / 1.5F, 2.0D);
-        double ox = c.w * 0.5D, oy = c.h * 0.52D;
+        double zoom = s < 6.5F ? 1.0D + 0.05D * (s - 2.4F) : 1.2D - 0.45D * RemoteAnimation.smooth((s - 6.5F) / 0.5F);
+        double ox = c.w * 0.5D, oy = s < 6.5F ? c.h * 0.52D : c.h * (0.52D - 0.32D * RemoteAnimation.smooth((s - 6.5F) / 0.5F));
         double[] px = new double[7], py = new double[7];
         double mx = 0, my = 0;
         for (int i = 0; i < 7; i++) {
@@ -495,21 +464,35 @@ public final class Film {
             }
         }
         if (s >= 6.5F) {
-            // they fire, one after another, down at the Earth
+            // they fire, one after another, down at the land below: the sky lights up towards the horizon
             float p = (s - 6.5F) / 1.5F;
+            float dawn = Math.min(1.0F, p * 2.5F);
+            c.mode(false);
+            c.gradient(0, 0, c.w, c.h, Fx.argb(0x0C1226, 0.55F * dawn), Fx.argb(0x8CA8DC, 0.85F * dawn));
+            c.mode(true);
             for (int i = 0; i < 7; i++) {
-                float f = (p - i * 0.09F) / 0.25F;
+                float f = (p - i * 0.07F) / 0.2F;
                 if (f <= 0) continue;
                 float k = Math.min(1.0F, f);
-                double tx = c.w * 0.5D, ty = c.h * 1.2D;
+                // each beam lands at its own spot on the ground, spread out towards the viewer
+                double tx = c.w * (-0.25D + 1.5D * (i + 0.5D) / 7.0D), ty = c.h * 1.05D;
                 double ex = px[i] + (tx - px[i]) * k, ey = py[i] + (ty - py[i]) * k;
-                c.line(px[i], py[i], ex, ey, 3.0D, Fx.argb(0xFFFFFF, 0.9F), Fx.argb(violet, 0.9F));
-                c.line(px[i], py[i], ex, ey, 12.0D, Fx.argb(violet, 0.3F), Fx.argb(violet, 0.1F));
-                if (f < 1.3F) c.glow(px[i], py[i], 40.0D * (1.3F - f), Fx.argb(0xFFFFFF, 0.6F));
+                double wide = 2.0D + 26.0D * k;
+                c.taper(px[i], py[i], 1.5D, ex, ey, wide, Fx.argb(0xE8F0FF, 0.9F), Fx.argb(0xFFFFFF, 0.95F));
+                c.taper(px[i], py[i], 4.0D, ex, ey, wide * 3.0D, Fx.argb(0x9AB0FF, 0.25F), Fx.argb(0xB8C8FF, 0.35F));
+                if (f < 1.4F) c.glow(px[i], py[i], 46.0D * (1.4F - f), Fx.argb(0xFFFFFF, 0.6F));
             }
-            if (p > 0.8F) {
+            // long cross flares through every star
+            for (int i = 0; i < 7; i++) {
+                c.line(px[i] - c.w * 0.3D, py[i], px[i], py[i], 1.0D, Fx.argb(0xD8DCFF, 0.0F), Fx.argb(0xD8DCFF, 0.5F * dawn));
+                c.line(px[i], py[i], px[i] + c.w * 0.3D, py[i], 1.0D, Fx.argb(0xD8DCFF, 0.5F * dawn), Fx.argb(0xD8DCFF, 0.0F));
+                c.line(px[i], py[i] - c.h * 0.12D, px[i], py[i], 0.8D, Fx.argb(0xD8DCFF, 0.0F), Fx.argb(0xD8DCFF, 0.45F * dawn));
+                c.glow(px[i], py[i], 6.0D, Fx.argb(0xFFFFFF, 0.95F));
+            }
+            c.glow(c.w * 0.5D, c.h * 1.1D, c.w * 0.6D, Fx.argb(0xE0E8FF, 0.5F * p));
+            if (p > 0.82F) {
                 c.mode(false);
-                c.rect(0, 0, c.w, c.h, Fx.argb(0xF0E4FF, (p - 0.8F) / 0.2F));
+                c.rect(0, 0, c.w, c.h, Fx.argb(0xF0F4FF, (p - 0.82F) / 0.18F));
             }
         }
         c.flush();
@@ -632,20 +615,19 @@ public final class Film {
     }
 
     private static void saturn(Canvas c, double x, double y, double r, float s) {
-        double tilt = -0.33D;
-        int[] bands = {0x6A5A44, 0xB89A70, 0xD8C090, 0xC8AE80, 0x000000, 0xBFA478, 0xA88E66, 0x8A7658};
-        double[] radii = {1.25D, 1.4D, 1.55D, 1.72D, 1.9D, 1.97D, 2.12D, 2.28D};
+        double tilt = -0.33D, squash = 0.22D;
+        // ring bands (inner, outer radius as planet radii) and their colours, with the Cassini division between
+        double[][] bands = {{1.22D, 1.42D}, {1.42D, 1.62D}, {1.62D, 1.86D}, {1.93D, 2.1D}, {2.1D, 2.3D}};
+        int[] colors = {0x6A5A44, 0xB89A70, 0xD8C090, 0xC8AE80, 0xA88E66};
         // the far half of the rings goes behind the planet
         c.mode(false);
         for (int i = 0; i < bands.length; i++) {
-            if (bands[i] == 0) continue;
-            c.ellipse(x, y, r * radii[i], r * radii[i] * 0.22D, tilt, r * 0.1D, Math.PI, Math.PI * 2, Fx.argb(bands[i], 0.85F));
+            c.band(x, y, r * bands[i][0], r * bands[i][1], squash, tilt, Math.PI, Math.PI * 2, Fx.argb(colors[i], 0.85F));
         }
         c.sphere(x, y, r, s * 0.3F, tilt, -0.55D, -0.35D, 0.75D, Film::saturnSurface, 0xE8D0A0);
         c.mode(false);
         for (int i = 0; i < bands.length; i++) {
-            if (bands[i] == 0) continue;
-            c.ellipse(x, y, r * radii[i], r * radii[i] * 0.22D, tilt, r * 0.1D, 0, Math.PI, Fx.argb(bands[i], 0.9F));
+            c.band(x, y, r * bands[i][0], r * bands[i][1], squash, tilt, 0, Math.PI, Fx.argb(colors[i], 0.9F));
         }
         c.flush();
     }

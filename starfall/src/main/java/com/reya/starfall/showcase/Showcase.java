@@ -169,8 +169,22 @@ public final class Showcase {
         fly();
     }
 
+    /** Waits until the client has the chunk at (dx, dz) from the base, so its ground height is known. */
+    private static void awaitChunk(int dx, int dz) {
+        int[] waited = {0};
+        step(() -> {
+            Minecraft mc = Minecraft.getInstance();
+            int x = baseX + dx, z = baseZ + dz;
+            boolean ready = mc.level.getChunkSource().hasChunk(x >> 4, z >> 4)
+                    && mc.level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z) > mc.level.getMinBuildHeight();
+            if (!ready && ++waited[0] % 100 == 0) LOGGER.info("[showcase] waiting for the chunk at {} {}", x, z);
+            return ready || waited[0] > 1200;
+        });
+    }
+
     /** Fires a skill at ground level at (dx, dz) from the base, then waits for the strike to reach the client. */
     private static void cast(String skill, int dx, int dz) {
+        awaitChunk(dx, dz);
         run(() -> {
             Minecraft mc = Minecraft.getInstance();
             int x = baseX + dx, z = baseZ + dz;
@@ -235,6 +249,7 @@ public final class Showcase {
         run(() -> mc.player.getInventory().selected = 0);
 
         // ---- the remote itself: idle, the cover flipped by the thumb, the press, and from the front
+        awaitChunk(-30, -30);
         tpGround(-30, -30, 0, 135.0F, 8.0F);
         waitTicks(80);
         shot("remote_idle");
@@ -336,6 +351,7 @@ public final class Showcase {
         waitTicks(80);
         shot("ss03_crater_and_needle");
         cmd("time set 13800");
+        awaitChunk(700, -36);
         tpGround(700, -36, 3, 0.0F, -12.0F);
         waitTicks(80);
         shot("ss03_needle_at_night");

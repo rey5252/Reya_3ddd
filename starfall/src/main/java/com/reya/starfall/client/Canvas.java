@@ -120,6 +120,22 @@ final class Canvas {
         }
     }
 
+    /** A flat elliptical band (like a planet's ring) between radii r0 and r1, squashed vertically, from a0 to a1. */
+    void band(double cx, double cy, double r0, double r1, double squash, double tilt, double a0, double a1, int argb) {
+        int seg = Math.max(24, (int) (Math.abs(a1 - a0) / (Math.PI * 2.0D) * 120.0D));
+        double ct = Math.cos(tilt), st = Math.sin(tilt);
+        for (int i = 0; i < seg; i++) {
+            double t0 = a0 + (a1 - a0) * i / seg, t1 = a0 + (a1 - a0) * (i + 1) / seg;
+            double[][] p = new double[4][];
+            double[][] raw = {{Math.cos(t0) * r0, Math.sin(t0) * r0 * squash}, {Math.cos(t1) * r0, Math.sin(t1) * r0 * squash},
+                    {Math.cos(t1) * r1, Math.sin(t1) * r1 * squash}, {Math.cos(t0) * r1, Math.sin(t0) * r1 * squash}};
+            for (int k = 0; k < 4; k++) {
+                p[k] = new double[]{cx + raw[k][0] * ct - raw[k][1] * st, cy + raw[k][0] * st + raw[k][1] * ct};
+            }
+            quad(p[0][0], p[0][1], argb, p[1][0], p[1][1], argb, p[2][0], p[2][1], argb, p[3][0], p[3][1], argb);
+        }
+    }
+
     /** A point on that ellipse. */
     static double[] onEllipse(double cx, double cy, double rx, double ry, double tilt, double a) {
         double x = Math.cos(a) * rx, y = Math.sin(a) * ry;

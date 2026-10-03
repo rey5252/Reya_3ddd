@@ -44,16 +44,40 @@ def add(c, d):
     return tuple(max(0, min(255, v + d)) for v in c[:3]) + tuple(c[3:])
 
 
+def face_uv(d, f, t):
+    """Minecraft's default UV for a face, moved back inside the texture when the element sticks out of 0..16
+    (otherwise the face samples whatever sits next to the texture in the atlas)."""
+    x0, y0, z0 = f
+    x1, y1, z1 = t
+    uv = {"down": [x0, 16 - z1, x1, 16 - z0], "up": [x0, z0, x1, z1],
+          "north": [16 - x1, 16 - y1, 16 - x0, 16 - y0], "south": [x0, 16 - y1, x1, 16 - y0],
+          "west": [z0, 16 - y1, z1, 16 - y0], "east": [16 - z1, 16 - y1, 16 - z0, 16 - y0]}[d]
+    for a, b in ((0, 2), (1, 3)):
+        lo, hi = min(uv[a], uv[b]), max(uv[a], uv[b])
+        if hi - lo >= 16:
+            uv[a], uv[b] = 0, 16
+            continue
+        shift = 0
+        while lo + shift < 0:
+            shift += 16
+        while hi + shift > 16:
+            shift -= 16
+        if lo + shift < 0:
+            # straddles a texture edge: slide it to start at the edge instead
+            shift = -lo
+        uv[a] += shift
+        uv[b] += shift
+    return [round(v, 3) for v in uv]
+
+
 def el(frm, to, tex, tint=None, shade_=True, skip=(), uv=None, glow=False):
     faces = {}
     for d in ("north", "south", "east", "west", "up", "down"):
         if d in skip:
             continue
-        face = {"texture": "#" + tex}
+        face = {"texture": "#" + tex, "uv": uv if uv is not None else face_uv(d, frm, to)}
         if tint is not None:
             face["tintindex"] = tint
-        if uv is not None:
-            face["uv"] = uv
         faces[d] = face
     e = {"from": [round(v, 3) for v in frm], "to": [round(v, 3) for v in to], "faces": faces}
     if not shade_:
@@ -109,7 +133,7 @@ for y in range(16):
     for x in range(16):
         edge = x in (0, 15) or y in (0, 15)
         streak = 3 <= (x + 15 - y) <= 5 or (x + 15 - y) == 9
-        g[y][x] = (255, 236, 236, 150) if streak else (255, 190, 190, 120) if edge else (230, 210, 216, 64)
+        g[y][x] = (255, 255, 255, 120) if streak else (220, 230, 240, 90) if edge else (210, 225, 235, 34)
 png(f"{R}/glass.png", g)
 
 png(f"{R}/white.png", grid((255, 255, 255)))
@@ -226,8 +250,8 @@ write_json(f"{ROOT}/models/item/stellar_remote.json", {
         "ground": {"rotation": [0, 0, 0], "translation": [0, 1, 0], "scale": [0.4, 0.4, 0.4]},
         "fixed": {"rotation": [0, 180, 0], "translation": [0, -2.5, 0], "scale": [0.6, 0.6, 0.6]},
         "head": {"rotation": [0, 180, 0], "translation": [0, 6, 7], "scale": [0.8, 0.8, 0.8]},
-        "thirdperson_righthand": {"rotation": [0, 0, 0], "translation": [0, 2.5, 1.5], "scale": [0.45, 0.45, 0.45]},
-        "firstperson_righthand": {"rotation": [-10, -20, 8], "translation": [1.0, 1.0, -0.5], "scale": [0.8, 0.8, 0.8]},
+        "thirdperson_righthand": {"rotation": [90, 0, 0], "translation": [0, 1.5, 3.0], "scale": [0.42, 0.42, 0.42]},
+        "firstperson_righthand": {"rotation": [-8, -18, 6], "translation": [-1.2, 3.6, 0.0], "scale": [0.6, 0.6, 0.6]},
     },
 })
 
