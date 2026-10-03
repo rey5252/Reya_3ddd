@@ -1,0 +1,8 @@
+The film's photographic maps, downloaded from their publishers by tools/fetch_textures.py:
+
+earth_day.jpg     NASA Earth Observatory, Blue Marble Next Generation (public domain)
+earth_aux.png     red: NASA Earth Observatory, Earth at Night; green: NASA Blue Marble clouds; blue: water,
+                  worked out from the Blue Marble (public domain)
+moon.jpg          NASA Scientific Visualization Studio, CGI Moon Kit, LRO data (public domain)
+jupiter.jpg       NASA/JPL/Space Science Institute, Cassini (PIA07782) (public domain)
+milky_way.jpg     ESO/S. Brunier, https://www.eso.org/public/images/eso0932a/ (CC BY 4.0)
