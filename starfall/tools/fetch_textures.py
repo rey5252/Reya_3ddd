@@ -43,8 +43,11 @@ SOURCES = {
     ],
     # NASA/JPL/Space Science Institute, Cassini's map of Jupiter (PIA07782), public domain
     "jupiter": [
+        "https://images-assets.nasa.gov/image/PIA07782/PIA07782~orig.jpg",
+        "https://images-assets.nasa.gov/image/PIA07782/PIA07782~large.jpg",
         "https://photojournal.jpl.nasa.gov/jpeg/PIA07782.jpg",
-        "https://photojournal.jpl.nasa.gov/tiff/PIA07782.tif",
+        # Solar System Scope's map, made from NASA's: CC BY 4.0
+        "https://www.solarsystemscope.com/textures/download/2k_jupiter.jpg",
     ],
     # ESO/S. Brunier, the Milky Way panorama (eso0932a), CC BY 4.0
     "milky_way": [
@@ -60,9 +63,12 @@ earth_day.jpg     NASA Earth Observatory, Blue Marble Next Generation (public do
 earth_aux.png     red: NASA Earth Observatory, Earth at Night; green: NASA Blue Marble clouds; blue: water,
                   worked out from the Blue Marble (public domain)
 moon.jpg          NASA Scientific Visualization Studio, CGI Moon Kit, LRO data (public domain)
-jupiter.jpg       NASA/JPL/Space Science Institute, Cassini (PIA07782) (public domain)
+jupiter.jpg       {jupiter}
 milky_way.jpg     ESO/S. Brunier, https://www.eso.org/public/images/eso0932a/ (CC BY 4.0)
 """
+
+
+USED = {}
 
 
 def fetch(name):
@@ -74,6 +80,7 @@ def fetch(name):
             img = Image.open(io.BytesIO(data))
             img.load()
             print(f"{name}: {url} -> {img.size} {img.mode}")
+            USED[name] = url
             return img
         except Exception as e:  # try the next mirror
             print(f"{name}: {url} failed: {e}")
@@ -117,8 +124,13 @@ def main():
         equirect(got["jupiter"], 2048).save(f"{OUT}/jupiter.jpg", quality=92, optimize=True)
     if "milky_way" in got:
         equirect(got["milky_way"], 4096).save(f"{OUT}/milky_way.jpg", quality=88, optimize=True)
+    jup = USED.get("jupiter", "")
+    jup = ("Solar System Scope, https://www.solarsystemscope.com/textures/ (CC BY 4.0), from NASA data"
+           if "solarsystemscope" in jup else "NASA/JPL/Space Science Institute, Cassini (PIA07782) (public domain)")
+    if not os.path.exists(f"{OUT}/jupiter.jpg"):
+        jup = "(none)"
     with open(f"{OUT}/CREDITS.txt", "w") as f:
-        f.write(CREDITS)
+        f.write(CREDITS.format(jupiter=jup))
     print("have:", sorted(got))
     for f in sorted(os.listdir(OUT)):
         print(f, os.path.getsize(f"{OUT}/{f}"))
