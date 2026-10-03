@@ -1,0 +1,71 @@
+name: Starfall API probe
+
+# Prints the signatures of the Minecraft/Forge rendering classes the film renderer relies on, plus a few of
+# the game's own shader files, so the code can be written against the real API.
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/starfall-probe.yml'
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: starfall
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Set up the game
+        run: |
+          chmod +x ./gradlew
+          ./gradlew compileJava --stacktrace
+      - name: Print signatures
+        run: |
+          JAR=$(find ~/.gradle /home/runner -name 'forge-1.20.1-*_mapped_*.jar' 2>/dev/null | grep -v sources | head -n 1)
+          echo "game jar: $JAR"
+          find ~/.gradle -name '*.jar' 2>/dev/null | grep -iE 'client-extra|mapped|recomp' | head -n 20
+          for c in \
+            net.minecraft.client.renderer.ShaderInstance \
+            com.mojang.blaze3d.shaders.Uniform \
+            com.mojang.blaze3d.shaders.AbstractUniform \
+            com.mojang.blaze3d.shaders.BlendMode \
+            com.mojang.blaze3d.pipeline.RenderTarget \
+            com.mojang.blaze3d.pipeline.TextureTarget \
+            com.mojang.blaze3d.vertex.DefaultVertexFormat \
+            com.mojang.blaze3d.vertex.VertexBuffer \
+            com.mojang.blaze3d.vertex.BufferBuilder \
+            com.mojang.blaze3d.vertex.BufferUploader \
+            com.mojang.blaze3d.platform.NativeImage \
+            net.minecraft.client.renderer.texture.DynamicTexture \
+            net.minecraft.client.renderer.texture.AbstractTexture \
+            net.minecraft.client.renderer.texture.TextureManager \
+            net.minecraftforge.client.event.RegisterShadersEvent \
+            net.minecraft.client.gui.GuiGraphics \
+            com.mojang.blaze3d.platform.Window \
+            ; do
+            echo "=================== $c"
+            javap -classpath "$JAR" -public "$c" || true
+          done
+          echo "=================== BlendMode code"
+          javap -classpath "$JAR" -c -p com.mojang.blaze3d.shaders.BlendMode | sed -n '/public void apply/,/return$/p' | head -n 80 || true
+          echo "=================== ShaderInstance.getOrCreate"
+          javap -classpath "$JAR" -c -p net.minecraft.client.renderer.ShaderInstance | grep -n -A60 'getOrCreate(' | head -n 90 || true
+          echo "=================== ShaderInstance.apply"
+          javap -classpath "$JAR" -c -p net.minecraft.client.renderer.ShaderInstance | grep -n -A40 'public void apply()' | head -n 60 || true
+          echo "=================== RenderSystem"
+          javap -classpath "$JAR" -public com.mojang.blaze3d.systems.RenderSystem | grep -iE 'shader|projection|modelview|blend|depth|viewport|clear|cull' || true
+          EXTRA=$(find ~/.gradle -name 'client-1.20.1-*extra*.jar' -o -name 'client-extra*.jar' 2>/dev/null | head -n 1)
+          echo "extra jar: $EXTRA"
+          for f in position_color position_tex_color position_tex blit_screen rendertype_lines; do
+            echo "=================== $f.json"
+            unzip -p "$EXTRA" "assets/minecraft/shaders/core/$f.json" || unzip -p "$JAR" "assets/minecraft/shaders/core/$f.json" || true
+          done
+          echo "=================== position_tex_color.vsh/fsh"
+          unzip -p "$EXTRA" assets/minecraft/shaders/core/position_tex_color.vsh || true
+          unzip -p "$EXTRA" assets/minecraft/shaders/core/position_tex_color.fsh || true
