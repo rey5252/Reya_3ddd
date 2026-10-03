@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>DigOrDieModManager.Preloader</AssemblyName>
+    <RootNamespace>DigOrDieModManager</RootNamespace>
+    <Description>Applies mod enable/disable changes made in the Dig or Die Mod Manager before BepInEx loads plugins.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="../Shared/*.cs" Link="Shared/%(Filename)%(Extension)" />
+  </ItemGroup>
+</Project>

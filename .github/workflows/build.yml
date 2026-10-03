@@ -51,10 +51,26 @@ jobs:
           name: ${{ matrix.mod }}-jar
           path: ${{ matrix.dir }}/build/libs/*.jar
 
+  digordie-modmanager:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: digordie-modmanager
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Build Dig or Die Mod Manager
+        run: dotnet build -c Release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: digordie-modmanager-zip
+          path: digordie-modmanager/dist/DigOrDie-ModManager.zip
 
   # Puts the freshly built jars into jars/ on this branch, so they can be handed out directly.
   publish-jars:
-    needs: build
+    needs: [build, digordie-modmanager]
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     permissions:
@@ -68,11 +84,16 @@ jobs:
           path: artifacts
           pattern: '*-jar'
           merge-multiple: true
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          name: digordie-modmanager-zip
       - name: Commit jars
         run: |
           mkdir -p jars
-          rm -f jars/*.jar
+          rm -f jars/*.jar jars/*.zip
           cp artifacts/*.jar jars/
+          cp artifacts/*.zip jars/
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add jars

@@ -1,0 +1,9 @@
+<Project>
+  <!-- Downloads and unpacks the BepInEx release once; its core assemblies are used as references
+       and the whole release is bundled into the ready-to-install zip. -->
+  <Target Name="FetchBepInEx" BeforeTargets="ResolveAssemblyReferences;CoreCompile"
+          Condition="!Exists('$(BepInExCoreDir)BepInEx.dll')">
+    <DownloadFile SourceUrl="$(BepInExZipUrl)" DestinationFolder="$(DepsDir)" DestinationFileName="BepInEx_win_x86_$(BepInExVersion).zip" />
+    <Unzip SourceFiles="$(DepsDir)BepInEx_win_x86_$(BepInExVersion).zip" DestinationFolder="$(BepInExDir)" />
+  </Target>
+</Project>

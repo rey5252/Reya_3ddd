@@ -1,0 +1,37 @@
+<Project>
+  <PropertyGroup>
+    <!-- Dig or Die runs on Unity 5 Mono (.NET 3.5 profile), so everything targets net35 -->
+    <TargetFramework>net35</TargetFramework>
+    <LangVersion>12.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <Deterministic>true</Deterministic>
+    <DebugType>none</DebugType>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+
+    <Version>1.0.0</Version>
+    <Authors>Reya</Authors>
+    <Product>Dig or Die Mod Manager</Product>
+
+    <!-- BepInEx is not on nuget.org, so its assemblies are taken from the official release zip (downloaded on first build) -->
+    <BepInExVersion>5.4.23.3</BepInExVersion>
+    <BepInExZipUrl>https://github.com/BepInEx/BepInEx/releases/download/v$(BepInExVersion)/BepInEx_win_x86_$(BepInExVersion).zip</BepInExZipUrl>
+    <DepsDir>$(MSBuildThisFileDirectory).deps/</DepsDir>
+    <BepInExDir>$(DepsDir)BepInEx_win_x86_$(BepInExVersion)/</BepInExDir>
+    <BepInExCoreDir>$(BepInExDir)BepInEx/core/</BepInExCoreDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Reference assemblies for .NET Framework 3.5, so the mod builds on any OS -->
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net35" Version="1.0.3" PrivateAssets="all" />
+
+    <Reference Include="BepInEx">
+      <HintPath>$(BepInExCoreDir)BepInEx.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Mono.Cecil">
+      <HintPath>$(BepInExCoreDir)Mono.Cecil.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+</Project>

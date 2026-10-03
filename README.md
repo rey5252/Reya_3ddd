@@ -17,3 +17,7 @@
 ```
 
 Готовий `.jar` — у `build/libs/`. Також GitHub Actions збирає мод при кожному пуші (вкладка **Actions** → артефакт `cursedseed-jar`).
+
+## Dig or Die — Менеджер модів
+
+У папці [`digordie-modmanager`](digordie-modmanager/README.md) — мод для Dig or Die (BepInEx), що додає в головне меню кнопку **МОДИ** з менеджером модів. Готовий архів з інсталятором: `jars/DigOrDie-ModManager.zip`.

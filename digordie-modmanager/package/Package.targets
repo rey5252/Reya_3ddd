@@ -1,0 +1,36 @@
+<Project>
+  <!-- Release builds produce dist/DigOrDie-ModManager.zip:
+         Install.bat / Install.ps1 / README.txt   - installer and instructions
+         game-files/                               - everything that goes into the game folder:
+                                                     BepInEx itself, BepInEx.cfg tuned for Dig or Die,
+                                                     the plugin and the preloader patcher -->
+  <PropertyGroup>
+    <ModPackageDir>$(MSBuildThisFileDirectory)</ModPackageDir>
+    <ModDistDir>$(MSBuildThisFileDirectory)../dist/</ModDistDir>
+    <ModStageDir>$(ModDistDir)stage/</ModStageDir>
+    <ModZipName>DigOrDie-ModManager.zip</ModZipName>
+  </PropertyGroup>
+
+  <Target Name="PackageMod" AfterTargets="Build" Condition="'$(Configuration)' == 'Release'">
+    <PropertyGroup>
+      <_GameFiles>$(ModStageDir)game-files/</_GameFiles>
+      <_PreloaderDll>$(MSBuildThisFileDirectory)../src/DigOrDieModManager.Preloader/bin/$(Configuration)/DigOrDieModManager.Preloader.dll</_PreloaderDll>
+    </PropertyGroup>
+    <ItemGroup>
+      <_BepInExFiles Include="$(BepInExDir)**/*" />
+    </ItemGroup>
+
+    <Error Condition="!Exists('$(_PreloaderDll)')" Text="Preloader not built: $(_PreloaderDll)" />
+
+    <RemoveDir Directories="$(ModStageDir)" />
+    <Copy SourceFiles="@(_BepInExFiles)" DestinationFiles="@(_BepInExFiles->'$(_GameFiles)%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="$(ModPackageDir)BepInEx.cfg" DestinationFolder="$(_GameFiles)BepInEx/config/" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(_GameFiles)BepInEx/plugins/DigOrDieModManager/" />
+    <Copy SourceFiles="$(_PreloaderDll)" DestinationFolder="$(_GameFiles)BepInEx/patchers/DigOrDieModManager/" />
+    <Copy SourceFiles="$(ModPackageDir)Install.bat;$(ModPackageDir)Uninstall.bat;$(ModPackageDir)Install.ps1;$(ModPackageDir)README.txt" DestinationFolder="$(ModStageDir)" />
+
+    <Delete Files="$(ModDistDir)$(ModZipName)" />
+    <ZipDirectory SourceDirectory="$(ModStageDir)" DestinationFile="$(ModDistDir)$(ModZipName)" />
+    <Message Importance="high" Text="Dig or Die Mod Manager package: $([System.IO.Path]::GetFullPath('$(ModDistDir)$(ModZipName)'))" />
+  </Target>
+</Project>

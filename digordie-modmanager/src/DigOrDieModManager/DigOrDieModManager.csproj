@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>DigOrDieModManager</AssemblyName>
+    <RootNamespace>DigOrDieModManager</RootNamespace>
+    <Description>Adds a MODS button to the Dig or Die main menu and an in-game mod manager.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Publicized reference assemblies of Dig or Die 1.11 (Assembly-CSharp, UnityEngine) -->
+    <PackageReference Include="DigOrDie.GameLibs" Version="1.11.864" PrivateAssets="all" />
+
+    <Reference Include="0Harmony">
+      <HintPath>$(BepInExCoreDir)0Harmony.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+
+    <Compile Include="../Shared/*.cs" Link="Shared/%(Filename)%(Extension)" />
+
+    <!-- Only for the build order: the preloader is packed next to the plugin -->
+    <ProjectReference Include="../DigOrDieModManager.Preloader/DigOrDieModManager.Preloader.csproj" ReferenceOutputAssembly="false" Private="false" />
+  </ItemGroup>
+
+  <Import Project="../../package/Package.targets" />
+</Project>

@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{B0C5FEFB-1A50-48A6-95B4-A007FB5661C1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DigOrDieModManager", "src\DigOrDieModManager\DigOrDieModManager.csproj", "{2AA0822F-C324-4078-AF48-0E6916F0F1BF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DigOrDieModManager.Preloader", "src\DigOrDieModManager.Preloader\DigOrDieModManager.Preloader.csproj", "{76428432-33EA-4690-8D76-8881B2DD8FBF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2AA0822F-C324-4078-AF48-0E6916F0F1BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2AA0822F-C324-4078-AF48-0E6916F0F1BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2AA0822F-C324-4078-AF48-0E6916F0F1BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2AA0822F-C324-4078-AF48-0E6916F0F1BF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{76428432-33EA-4690-8D76-8881B2DD8FBF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{76428432-33EA-4690-8D76-8881B2DD8FBF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{76428432-33EA-4690-8D76-8881B2DD8FBF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{76428432-33EA-4690-8D76-8881B2DD8FBF}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{2AA0822F-C324-4078-AF48-0E6916F0F1BF} = {B0C5FEFB-1A50-48A6-95B4-A007FB5661C1}
+		{76428432-33EA-4690-8D76-8881B2DD8FBF} = {B0C5FEFB-1A50-48A6-95B4-A007FB5661C1}
+	EndGlobalSection
+EndGlobal
