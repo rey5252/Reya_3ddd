@@ -88,44 +88,51 @@ def el(frm, to, tex, tint=None, shade_=True, skip=(), uv=None, glow=False):
 
 
 # ================================================================ the remote
-# A tall hand-held uplink: antenna, a radar screen, the skill's code, a hazard-striped flip cover over the
-# one button, and a keypad. Each moving part is its own model so the item renderer can animate it.
+# A tall navy hand-held uplink: a big screen with a grille under it, ribs down the left, a hazard-striped box
+# over the one button on the right, the skill's code under it, a keypad, red trims and a two-tone antenna.
+# Each moving part is its own model so the item renderer can animate it.
 R = f"{ROOT}/textures/item/remote"
 
 g = grid()
 for y in range(16):
     for x in range(16):
-        g[y][x] = add((58, 62, 72), int((hsh(x, 0, 1) - 0.5) * 10 + (hsh(x, y, 2) - 0.5) * 4) - (y // 6))
+        g[y][x] = add((34, 44, 76), int((hsh(x, 0, 1) - 0.5) * 6 + (hsh(x, y, 2) - 0.5) * 4) - (y // 8))
 png(f"{R}/metal.png", g)
 
 g = grid()
 for y in range(16):
     for x in range(16):
-        g[y][x] = (40, 42, 48) if y % 2 == 0 else (28, 29, 34)
+        g[y][x] = add((66, 82, 124), int((hsh(x, y, 4) - 0.5) * 6)) if y not in (0, 15) else (92, 108, 150)
+png(f"{R}/edge.png", g)
+
+g = grid()
+for y in range(16):
+    for x in range(16):
+        g[y][x] = (16, 18, 30) if y % 2 == 0 else (30, 36, 58)
 png(f"{R}/rubber.png", g)
 
 g = grid()
 for y in range(16):
     for x in range(16):
-        g[y][x] = add((26, 28, 34), int((hsh(x, y, 3) - 0.5) * 6))
+        g[y][x] = add((24, 30, 54), int((hsh(x, y, 3) - 0.5) * 5))
 png(f"{R}/panel.png", g)
 
-g = grid((16, 17, 21))
+g = grid((12, 14, 24))
 for i in range(16):
-    for p in ((i, 0), (i, 15), (0, i), (15, i)):
-        put(g, p[0], p[1], (44, 46, 54))
+    for p_ in ((i, 0), (i, 15), (0, i), (15, i)):
+        put(g, p_[0], p_[1], (74, 90, 134))
 png(f"{R}/bezel.png", g)
 
 g = grid()
 for y in range(16):
     for x in range(16):
-        g[y][x] = (206, 212, 222) if y in (0, 1) else (150, 156, 168) if y < 13 else (112, 118, 130)
+        g[y][x] = (214, 220, 230) if y in (0, 1) else (156, 162, 176) if y < 13 else (110, 116, 130)
 png(f"{R}/trim.png", g)
 
 g = grid()
 for y in range(16):
     for x in range(16):
-        g[y][x] = (238, 192, 32) if ((x + y) // 3) % 2 == 0 else (22, 22, 24)
+        g[y][x] = (240, 196, 30) if ((x + y) // 3) % 2 == 0 else (20, 20, 22)
 png(f"{R}/hazard.png", g)
 
 g = grid()
@@ -133,7 +140,7 @@ for y in range(16):
     for x in range(16):
         edge = x in (0, 15) or y in (0, 15)
         streak = 3 <= (x + 15 - y) <= 5 or (x + 15 - y) == 9
-        g[y][x] = (255, 255, 255, 120) if streak else (220, 230, 240, 90) if edge else (210, 225, 235, 34)
+        g[y][x] = (255, 236, 236, 110) if streak else (255, 200, 200, 80) if edge else (255, 150, 150, 40)
 png(f"{R}/glass.png", g)
 
 png(f"{R}/white.png", grid((255, 255, 255)))
@@ -150,21 +157,21 @@ png(f"{R}/halo.png", g)
 g = grid()
 for y in range(16):
     for x in range(16):
-        g[y][x] = (232, 234, 240) if y < 2 else (196, 200, 208) if y < 13 else (138, 142, 150)
+        g[y][x] = (78, 90, 128) if y < 2 else (40, 48, 76) if y < 13 else (22, 26, 42)
 png(f"{R}/key.png", g)
 
-png(f"{R}/label.png", grid((44, 46, 54)))
-png(f"{R}/well.png", grid((6, 6, 8)))
+png(f"{R}/label.png", grid((18, 22, 38)))
+png(f"{R}/well.png", grid((5, 5, 8)))
 g = grid()
 for y in range(16):
     for x in range(16):
-        g[y][x] = (12, 4, 5) if y % 2 else (18, 6, 7)
+        g[y][x] = (5, 7, 12) if y % 2 else (9, 12, 20)
 png(f"{R}/screen.png", g)
-png(f"{R}/metal_dark.png", grid((28, 30, 36)))
+png(f"{R}/metal_dark.png", grid((18, 19, 24)))
 
 TEX = {k: f"starfall:item/remote/{k}" for k in
-       ("metal", "rubber", "panel", "bezel", "trim", "hazard", "glass", "white", "halo", "key", "label", "well",
-        "screen", "metal_dark")}
+       ("metal", "edge", "rubber", "panel", "bezel", "trim", "hazard", "glass", "white", "halo", "key", "label",
+        "well", "screen", "metal_dark")}
 
 
 def part(name, elements, textures):
@@ -174,71 +181,75 @@ def part(name, elements, textures):
 
 
 body = [
-    # shell, rounded with a second, slimmer box over the corners
+    # the shell, its edges a lighter navy, with a slimmer box over the corners to round them
     el((5.5, 0.6, 6.7), (10.5, 15.4, 9.3), "metal"),
-    el((5.25, 0.85, 6.95), (10.75, 15.15, 9.05), "metal"),
-    el((5.75, 15.4, 6.95), (10.25, 15.65, 9.05), "metal"),
-    el((5.75, 0.35, 6.95), (10.25, 0.6, 9.05), "trim"),
+    el((5.25, 0.85, 6.95), (10.75, 15.15, 9.05), "edge"),
+    el((5.75, 15.4, 6.95), (10.25, 15.65, 9.05), "edge"),
+    el((5.75, 0.35, 6.95), (10.25, 0.6, 9.05), "edge"),
     el((5.8, 0.9, 9.3), (10.2, 15.1, 9.42), "panel"),
-    # radar screen and the label under it
-    el((6.0, 11.9, 9.42), (10.0, 14.9, 9.6), "bezel"),
-    el((6.3, 12.2, 9.6), (9.7, 14.6, 9.62), "screen"),
-    el((6.2, 10.85, 9.42), (9.8, 11.65, 9.5), "label"),
-    # the button's well and its rim, with the cover's hinge barrel on top
-    el((6.5, 6.6, 9.42), (9.5, 10.2, 9.47), "well"),
-    el((6.2, 6.3, 9.42), (6.5, 10.5, 9.75), "trim"),
-    el((9.5, 6.3, 9.42), (9.8, 10.5, 9.75), "trim"),
-    el((6.5, 6.3, 9.42), (9.5, 6.6, 9.75), "trim"),
-    el((6.5, 10.2, 9.42), (9.5, 10.5, 9.75), "trim"),
-    el((6.4, 10.45, 9.75), (9.6, 10.85, 10.15), "trim"),
+    # the big screen
+    el((6.0, 11.3, 9.42), (10.0, 14.9, 9.58), "bezel"),
+    el((6.25, 11.55, 9.58), (9.75, 14.65, 9.6), "screen"),
+    # the grille under it
+    el((6.45, 10.25, 9.42), (9.55, 11.1, 9.44), "label"),
+    # the box's dark well on the right, and the plate for the skill's code under it
+    el((7.75, 5.95, 9.42), (10.85, 9.95, 9.47), "well"),
+    el((6.1, 4.85, 9.42), (9.9, 5.65, 9.5), "label"),
     # keypad
-    el((6.0, 1.3, 9.42), (10.0, 5.7, 9.5), "bezel"),
-    # antenna
-    el((6.0, 15.5, 7.35), (7.3, 16.3, 8.65), "rubber"),
-    el((6.4, 16.3, 7.75), (6.9, 24.0, 8.25), "metal_dark"),
-    el((6.3, 18.6, 7.65), (7.0, 18.9, 8.35), "trim"),
-    el((6.3, 21.2, 7.65), (7.0, 21.5, 8.35), "trim"),
+    el((6.0, 1.15, 9.42), (10.0, 4.65, 9.47), "bezel"),
+    # antenna: a rubber foot, a black lower half, a silver upper half and a black tip
+    el((6.0, 15.5, 7.35), (7.4, 16.6, 8.65), "rubber"),
+    el((6.3, 16.6, 7.65), (7.1, 19.8, 8.35), "metal_dark"),
+    el((6.45, 19.8, 7.8), (6.95, 23.6, 8.2), "trim"),
+    el((6.3, 23.6, 7.65), (7.1, 24.2, 8.35), "metal_dark"),
     # battery door on the back
     el((6.0, 1.5, 6.55), (10.0, 9.5, 6.7), "rubber"),
 ]
-for row, y0 in enumerate((3.75, 1.65)):
+for k in range(6):
+    x0 = 6.75 + k * 0.45
+    body.append(el((x0, 10.4, 9.44), (x0 + 0.2, 10.95, 9.45), "well"))
+for k in range(7):
+    y0 = 6.1 + k * 0.55
+    body.append(el((6.05, y0, 9.42), (7.45, y0 + 0.25, 9.48), "rubber"))
+for row, y0 in enumerate((2.95, 1.3)):
     for col in range(3):
         x0 = 6.25 + col * 1.2
-        body.append(el((x0, y0, 9.5), (x0 + 1.05, y0 + 1.6, 9.72), "key"))
+        body.append(el((x0, y0, 9.47), (x0 + 1.05, y0 + 1.5, 9.69), "key"))
 for k in range(11):
     y = 1.4 + k * 0.85
     body.append(el((5.05, y, 7.3), (5.25, y + 0.45, 8.7), "rubber"))
-    body.append(el((10.75, y, 7.3), (10.95, y + 0.45, 8.7), "rubber"))
-part("body", body, ("metal", "rubber", "panel", "bezel", "trim", "label", "well", "screen", "key", "metal_dark"))
+part("body", body, ("metal", "edge", "rubber", "panel", "bezel", "trim", "label", "well", "screen", "key",
+                    "metal_dark"))
 
-# glowing bits, drawn additively: side trims (1, breathing), status LED (2), antenna tip (3, blinking)
+# glowing bits, drawn additively: the red trims (1, breathing), status LED (2), antenna tip (3, blinking)
 part("glow", [
-    el((5.82, 1.2, 9.42), (5.97, 10.6, 9.47), "white", tint=1, shade_=False),
-    el((10.03, 1.2, 9.42), (10.18, 10.6, 9.47), "white", tint=1, shade_=False),
-    el((8.6, 15.65, 7.7), (9.4, 15.75, 8.3), "white", tint=2, shade_=False),
-    el((6.3, 24.0, 7.65), (7.0, 24.6, 8.35), "white", tint=3, shade_=False),
+    el((5.82, 1.0, 9.42), (5.97, 11.1, 9.47), "white", tint=1, shade_=False),
+    el((6.0, 0.95, 9.42), (10.0, 1.08, 9.46), "white", tint=1, shade_=False),
+    el((10.03, 1.0, 9.42), (10.18, 5.8, 9.47), "white", tint=1, shade_=False),
+    el((8.8, 15.65, 7.7), (9.5, 15.75, 8.3), "white", tint=2, shade_=False),
+    el((6.45, 24.2, 7.8), (6.95, 24.5, 8.2), "white", tint=3, shade_=False),
 ], ("white",))
 
 part("button", [
-    el((6.85, 7.0, 9.47), (9.15, 9.8, 9.95), "white", tint=0),
-    el((7.1, 7.25, 9.95), (8.9, 9.55, 10.15), "white", tint=0),
-    el((7.3, 9.0, 10.15), (7.8, 9.3, 10.16), "white", shade_=False),
+    el((8.25, 6.65, 9.47), (10.35, 9.25, 9.95), "white", tint=0),
+    el((8.5, 6.9, 9.95), (10.1, 9.0, 10.15), "white", tint=0),
+    el((8.7, 8.5, 10.15), (9.2, 8.8, 10.16), "white", shade_=False),
 ], ("white",))
 part("button_halo", [
-    el((6.4, 6.5, 10.17), (9.6, 10.3, 10.175), "halo", tint=0, shade_=False,
+    el((7.85, 6.2, 10.17), (10.75, 9.7, 10.175), "halo", tint=0, shade_=False,
        skip=("east", "west", "up", "down")),
 ], ("halo",))
 
-# the flip cover, modelled closed; it turns about its hinge at the top
+# the box over the button, modelled closed; it turns about its hinge along the top of the well
 part("cover_frame", [
-    el((6.15, 6.25, 9.75), (6.55, 10.55, 10.4), "hazard"),
-    el((9.45, 6.25, 9.75), (9.85, 10.55, 10.4), "hazard"),
-    el((6.55, 6.25, 9.75), (9.45, 6.65, 10.4), "hazard"),
-    el((6.55, 10.15, 9.75), (9.45, 10.55, 10.4), "hazard"),
-    el((7.4, 5.85, 9.9), (8.6, 6.25, 10.3), "trim"),
+    el((7.75, 5.95, 9.47), (8.05, 9.95, 10.85), "hazard"),
+    el((10.55, 5.95, 9.47), (10.85, 9.95, 10.85), "hazard"),
+    el((8.05, 5.95, 9.47), (10.55, 6.25, 10.85), "hazard"),
+    el((8.05, 9.65, 9.47), (10.55, 9.95, 10.85), "hazard"),
+    el((8.9, 5.55, 10.4), (9.7, 5.95, 10.8), "trim"),
 ], ("hazard", "trim"))
 part("cover_glass", [
-    el((6.55, 6.65, 10.2), (9.45, 10.15, 10.38), "glass"),
+    el((8.05, 6.25, 10.6), (10.55, 9.65, 10.78), "glass"),
 ], ("glass",))
 
 write_json(f"{ROOT}/models/item/stellar_remote.json", {

@@ -211,7 +211,7 @@ final class FilmGungnir {
         Vector3f tail = Film.onEarth(na + 30.0F + na * 0.4F);
         g.beam(tail, needle, 0.2F + na * 0.002F, 0.6F + na * 0.004F + air * 0.8F, Fx.argb(EMBER, 0.0F), Fx.argb(HOT, 0.6F + 0.4F * air));
         g.glowScreen(needle, 0.012F + 0.03F * air, Fx.argb(HOT, 0.6F + 0.4F * air), true);
-        if (air > 0.0F) g.glowScreen(needle, 0.08F * air, Fx.argb(EMBER, 0.35F * air), false);
+        if (air > 0.0F) g.glowScreen(needle, 0.045F * air, Fx.argb(EMBER, 0.3F * air), false);
         Random r = new Random((long) (s * 30.0F));
         for (int i = 0; i < 24 * air; i++) {
             Vector3f d = v((float) r.nextGaussian(), (float) r.nextGaussian(), (float) r.nextGaussian()).mul(0.4F);

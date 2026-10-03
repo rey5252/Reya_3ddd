@@ -1,10 +1,13 @@
 package com.reya.starfall.client;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.mojang.blaze3d.platform.InputConstants;
+import com.reya.starfall.Config;
 import com.reya.starfall.Skill;
 import com.reya.starfall.Sounds;
+import com.reya.starfall.Starfall;
 import com.reya.starfall.StellarRemoteItem;
 import com.reya.starfall.network.Net;
 import com.reya.starfall.network.SelectSkillPacket;
@@ -20,23 +23,25 @@ import net.minecraft.world.item.ItemStack;
 import org.lwjgl.glfw.GLFW;
 
 /**
- * The strike selection menu (H): the world turns white and the three weapons float up as cards with a live
- * preview each. Left click (or 1/2/3, or the arrows and Enter) arms one; right click opens its details, where
- * its key can be changed.
+ * The Stellar Remote's panel (H): a dark screen with the strikes as pictures on the left and the one under the
+ * mouse (or picked with the keys) described on the right. Left click arms a strike, right click sets its key.
  */
 public final class SkillScreen extends Screen {
-    private static final int GAP = 12;
-    private final Skill armed;
+    static final int RED = 0xFFE0394E, RED_DIM = 0xFF6A1E2C, RED_DARK = 0xFF2C0C16;
+    static final int TEXT = 0xFFE8E4F0, GREY = 0xFF8E889C, GREEN = 0xFF72E496, AMBER = 0xFFE8B04A, ROSE = 0xFFB0405A;
+    private static final int TILE_W = Icons.W + 4, TILE_H = Icons.H + 4, TILE_GAP = 8, LEFT = TILE_W * 2 + TILE_GAP;
+
+    private Skill armed;
     private int hovered = -1;
     private int focus;
-    private int details = -1;
-    private boolean binding;
+    /** The strike whose key is being set, or -1. */
+    private int binding = -1;
     private int age;
-    private int closing = -1;
-    private int chosen = -1;
+    private int flash = -1, flashAt;
+    private boolean mouseMoved;
+    private double lastMouseX = Double.NaN, lastMouseY = Double.NaN;
     // layout, worked out each frame
-    private int cardW, cardH, top, left;
-    private final int[][] buttons = new int[3][4];
+    private int px, py, pw, ph, gridX, gridY;
 
     public SkillScreen() {
         super(Component.translatable("menu.starfall.title"));
@@ -65,26 +70,38 @@ public final class SkillScreen extends Screen {
     @Override
     public void tick() {
         age++;
-        if (closing > 0 && --closing == 0) onClose();
     }
 
     private void layout() {
-        cardW = Math.min(122, (width - 24 - 2 * GAP) / 3);
-        cardH = Math.min(184, height - 74);
-        left = (width - (cardW * 3 + GAP * 2)) / 2;
-        top = Math.max(36, (height - cardH) / 2 + 6);
+        pw = Math.min(344, width - 12);
+        ph = Math.min(252, height - 12);
+        px = (width - pw) / 2;
+        py = (height - ph) / 2;
+        int rows = (Skill.values().length + 1) / 2;
+        int gridH = rows * TILE_H + (rows - 1) * TILE_GAP;
+        gridX = px + 10;
+        gridY = py + 34 + Math.max(0, (ph - 34 - 20 - gridH) / 2);
     }
 
-    private int cardX(int i) {
-        return left + i * (cardW + GAP);
+    private int tileX(int i) {
+        return gridX + (i % 2) * (TILE_W + TILE_GAP);
+    }
+
+    private int tileY(int i) {
+        return gridY + (i / 2) * (TILE_H + TILE_GAP);
     }
 
     private int hit(double mx, double my) {
-        for (int i = 0; i < 3; i++) {
-            int x = cardX(i);
-            if (mx >= x && mx < x + cardW && my >= top && my < top + cardH) return i;
+        for (int i = 0; i < Skill.values().length; i++) {
+            int x = tileX(i), y = tileY(i);
+            if (mx >= x && mx < x + TILE_W && my >= y && my < y + TILE_H) return i;
         }
         return -1;
+    }
+
+    /** The strike described on the right: the one under the mouse once it has moved, else the one picked. */
+    private int shown() {
+        return hovered >= 0 ? hovered : focus;
     }
 
     // ------------------------------------------------------------------ drawing
@@ -92,189 +109,214 @@ public final class SkillScreen extends Screen {
     @Override
     public void render(GuiGraphics g, int mouseX, int mouseY, float partial) {
         layout();
+        if (!Double.isNaN(lastMouseX) && (mouseX != lastMouseX || mouseY != lastMouseY)) mouseMoved = true;
+        lastMouseX = mouseX;
+        lastMouseY = mouseY;
+        hovered = mouseMoved ? hit(mouseX, mouseY) : -1;
         float time = (age + partial) / 20.0F;
-        float open = RemoteAnimation.smooth((age + partial) / 7.0F);
-        // the world turns white
-        g.fillGradient(0, 0, width, height, Fx.argb(0xF7F5FB, 0.90F * open), Fx.argb(0xE8E4F2, 0.94F * open));
-        for (int i = 0; i < 40; i++) {
-            float px = (float) ((i * 97 % width) + Math.sin(time * 0.4F + i) * 12.0F);
-            float py = (float) ((i * 61 % height) + time * 6.0F % height);
-            g.fill((int) px, (int) py % height, (int) px + 1, (int) py % height + 1, Fx.argb(0x8C86A8, 0.35F * open));
-        }
-        int titleY = top - 26;
-        g.drawCenteredString(font, Component.translatable("menu.starfall.title").withStyle(s -> s.withBold(true)), width / 2, titleY, 0xFF2A2638);
-        Component sub = Component.translatable("menu.starfall.subtitle");
-        g.drawString(font, sub, (width - font.width(sub)) / 2, titleY + 11, 0xFF6E6886, false);
+        float open = RemoteAnimation.smooth((age + partial) / 6.0F);
 
-        hovered = details < 0 ? hit(mouseX, mouseY) : -1;
-        for (int i = 0; i < 3; i++) card(g, i, time, open, partial);
-
-        Component hint = Component.translatable("menu.starfall.hint", Keys.MENU.getTranslatedKeyMessage());
-        g.drawString(font, hint, (width - font.width(hint)) / 2, Math.min(height - 12, top + cardH + 10), 0xFF6E6886, false);
-        if (details >= 0) details(g, mouseX, mouseY, time);
-    }
-
-    private void card(GuiGraphics g, int i, float time, float open, float partial) {
-        Skill skill = Skill.byIndex(i);
-        int color = 0xFF000000 | skill.color;
-        boolean hot = i == hovered || (hovered < 0 && i == focus && details < 0);
-        boolean isArmed = skill == armed;
-        float rise = (1.0F - RemoteAnimation.smooth((age + partial - i * 2.0F) / 9.0F)) * 40.0F;
-        int bob = Math.round(Mth.sin(time * 1.6F + i * 1.3F) * 2.0F);
-        int x = cardX(i), y = top + Math.round(rise) + bob - (hot ? 4 : 0);
-        int w = cardW, h = cardH;
-        boolean flash = chosen == i && closing > 0;
-        // shadow and body
-        g.fill(x + 3, y + 5, x + w + 3, y + h + 5, Fx.argb(0x1A1430, 0.22F * open));
-        g.fill(x, y, x + w, y + h, Fx.argb(flash ? Fx.mix(0xFF121018, color, 0.45F) & 0xFFFFFF : 0x121018, 0.96F * open));
-        int edge = hot || isArmed ? color : Fx.argb(skill.color, 0.55F);
-        g.renderOutline(x, y, w, h, edge);
-        if (hot) g.renderOutline(x - 1, y - 1, w + 2, h + 2, Fx.argb(skill.color, 0.45F));
-        brackets(g, x - 3, y - 3, w + 6, h + 6, hot ? color : Fx.argb(skill.color, 0.4F));
-        // header
-        g.drawString(font, skill.tag(), x + 8, y + 7, color, false);
-        g.pose().pushPose();
-        g.pose().translate(x + 8, y + 18, 0);
-        g.pose().scale(1.25F, 1.25F, 1.0F);
-        g.drawString(font, skill.title(), 0, 0, 0xFFFFFFFF, false);
-        g.pose().popPose();
-        // live preview
-        int px0 = x + 6, py0 = y + 34, px1 = x + w - 6, py1 = y + 34 + Math.min(76, (h - 34) / 2);
-        g.flush();
-        g.enableScissor(px0, py0, px1, py1);
-        Canvas c = new Canvas(g.pose().last().pose(), width, height);
-        Previews.draw(c, skill, time + i * 0.7F, px0, py0, px1 - px0, py1 - py0);
-        c.finish();
+        g.fillGradient(0, 0, width, height, Fx.argb(0x000000, 0.35F * open), Fx.argb(0x080206, 0.55F * open));
+        // the panel opens like an old screen warming up: a line, then the whole picture
+        int cy = py + ph / 2, half = Math.max(1, Math.round(ph / 2.0F * open));
+        g.enableScissor(px - 2, cy - half, px + pw + 2, cy + half);
+        panel(g, time);
+        header(g, time);
+        for (int i = 0; i < Skill.values().length; i++) tile(g, i, time);
+        details(g, shown(), time, partial);
+        footer(g);
         g.disableScissor();
-        g.renderOutline(px0, py0, px1 - px0, py1 - py0, Fx.argb(skill.color, 0.6F));
-        // what it does
-        List<FormattedCharSequence> lines = font.split(Component.translatable("tooltip.starfall.skill." + skill.id), w - 14);
-        int ly = py1 + 6;
-        for (FormattedCharSequence line : lines) {
-            if (ly > y + h - 30) break;
-            g.drawString(font, line, x + 7, ly, 0xFFB8B4C8, false);
-            ly += 10;
+        if (open < 1.0F) g.fill(px - 2, cy - half, px + pw + 2, cy - half + 1, Fx.argb(0xFFD0D8, 1.0F - open));
+    }
+
+    private void panel(GuiGraphics g, float time) {
+        g.fillGradient(px, py, px + pw, py + ph, 0xF2120E18, 0xF20A080E);
+        // faint scanlines
+        for (int y = py + 1; y < py + ph; y += 3) g.fill(px + 1, y, px + pw - 1, y + 1, 0x0CFFFFFF);
+        g.renderOutline(px, py, pw, ph, RED);
+        g.renderOutline(px + 2, py + 2, pw - 4, ph - 4, RED_DARK);
+        int[][] corners = {{px - 1, py - 1}, {px + pw - 2, py - 1}, {px - 1, py + ph - 2}, {px + pw - 2, py + ph - 2}};
+        for (int[] c : corners) g.fill(c[0], c[1], c[0] + 3, c[1] + 3, 0xFFFF6A7A);
+        // the column divider
+        int dx = px + 10 + LEFT + 6;
+        g.fill(dx, py + 32, dx + 1, py + ph - 18, RED_DARK);
+    }
+
+    private void header(GuiGraphics g, float time) {
+        int ix = px + 8, iy = py + 7;
+        g.fill(ix, iy, ix + 18, iy + 18, 0xFF0C0810);
+        g.renderOutline(ix, iy, 18, 18, RED);
+        // a little remote in the badge
+        g.fill(ix + 6, iy + 3, ix + 12, iy + 16, 0xFF2A3658);
+        g.fill(ix + 7, iy + 4, ix + 11, iy + 7, 0xFF06070C);
+        g.fill(ix + 9, iy + 9, ix + 11, iy + 12, (age / 10) % 2 == 0 ? 0xFFFF3040 : 0xFFA01828);
+        g.fill(ix + 7, iy + 1, ix + 8, iy + 3, 0xFF9AA0B0);
+        // the title, its letters spread out
+        String title = Component.translatable("menu.starfall.title").getString();
+        int tx = ix + 26;
+        for (int i = 0; i < title.length(); i++) {
+            String c = String.valueOf(title.charAt(i));
+            g.drawString(font, c, tx, py + 7, RED, false);
+            tx += font.width(c) + 3;
         }
-        // key and state at the bottom
-        Component key = Keys.SKILLS[i].getTranslatedKeyMessage();
-        int kw = font.width(key) + 8;
-        g.fill(x + 7, y + h - 18, x + 7 + kw, y + h - 6, Fx.argb(skill.color, 0.25F));
-        g.renderOutline(x + 7, y + h - 18, kw, 12, color);
-        g.drawString(font, key, x + 11, y + h - 16, 0xFFFFFFFF, false);
-        if (isArmed) {
-            Component armedText = Component.translatable("menu.starfall.selected");
-            int aw = font.width(armedText) + 8;
-            g.fill(x + w - 7 - aw, y + h - 18, x + w - 7, y + h - 6, color);
-            g.drawString(font, armedText, x + w - 3 - aw, y + h - 16, 0xFF101014, false);
-        } else if (hot) {
-            Component pick = Component.translatable("menu.starfall.pick");
-            g.drawString(font, pick, x + w - 7 - font.width(pick), y + h - 16, 0xFFE0DCF0, false);
+        // and under it a line of text running past
+        int mx0 = ix + 26, mx1 = px + pw - 8;
+        String sub = Component.translatable("menu.starfall.subtitle").getString() + "   ·   ";
+        int sw = font.width(sub);
+        int off = Math.round(time * 26.0F) % Math.max(1, sw);
+        g.enableScissor(mx0, py + 17, mx1, py + 27);
+        for (int x = mx0 - off; x < mx1; x += sw) g.drawString(font, sub, x, py + 18, 0xFFB8B2C4, false);
+        g.disableScissor();
+        // the rule under the header, with a mark in the middle
+        g.fill(px + 4, py + 29, px + pw - 4, py + 30, RED_DIM);
+        int mid = px + pw / 2;
+        g.fill(mid - 2, py + 28, mid + 3, py + 31, RED);
+    }
+
+    private void tile(GuiGraphics g, int i, float time) {
+        Skill skill = Skill.byIndex(i);
+        int x = tileX(i) + 2, y = tileY(i) + 2;
+        boolean hot = i == hovered || (hovered < 0 && i == focus);
+        boolean isArmed = skill == armed;
+        int frame = isArmed ? RED : hot ? 0xFFFFA8B4 : RED_DIM;
+        if (isArmed || hot) g.renderOutline(x - 3, y - 3, Icons.W + 6, Icons.H + 6, Fx.argb(0xE0394E, hot ? 0.6F : 0.35F));
+        Icons.framed(g, skill, x, y, 1, time + i * 0.4F, frame, RED);
+        // a quick flash when it's armed
+        if (flash == i) {
+            float k = 1.0F - (age - flashAt) / 6.0F;
+            if (k > 0.0F) g.fill(x, y, x + Icons.W, y + Icons.H, Fx.argb(0xFFE0E4, 0.6F * k));
+        }
+        if (binding == i && (age / 4) % 2 == 0) g.renderOutline(x - 2, y - 2, Icons.W + 4, Icons.H + 4, AMBER);
+    }
+
+    private void details(GuiGraphics g, int i, float time, float partial) {
+        Skill skill = Skill.byIndex(i);
+        int rx = px + 10 + LEFT + 14, rw = px + pw - 10 - rx;
+        int ry = py + 36;
+        Icons.framed(g, skill, rx + 2, ry + 2, 1, time, RED, 0);
+        int tx = rx + Icons.W + 10, tw = rx + rw - tx;
+        fitted(g, Component.translatable("menu.starfall.series"), tx, ry + 2, tw, 0.75F, ROSE);
+        fitted(g, Component.translatable("menu.starfall.name", skill.tag(), skill.title()), tx, ry + 11, tw, 1.0F, RED);
+        Component state = skill == armed ? Component.translatable("menu.starfall.selected")
+                : Component.translatable("menu.starfall.pick");
+        fitted(g, state, tx, ry + 24, tw, 0.75F, skill == armed ? GREEN : GREY);
+
+        int infoY = py + ph - 20 - 34;
+        List<FormattedCharSequence> lines = font.split(Component.translatable("menu.starfall.details." + skill.id), rw);
+        int ly = ry + Icons.H + 10;
+        for (FormattedCharSequence line : lines) {
+            if (ly + 9 > infoY - 2) break;
+            g.drawString(font, line, rx, ly, TEXT, false);
+            ly += 9;
+        }
+        g.fill(rx, infoY, rx + rw, infoY + 1, RED_DARK);
+        // the remote's charge, its key, and whatever else that key does
+        g.drawString(font, Component.translatable("menu.starfall.recharge", Config.COOLDOWN.get()), rx, infoY + 4, GREY, false);
+        Minecraft mc = Minecraft.getInstance();
+        float cooling = mc.player == null ? 0.0F : mc.player.getCooldowns().getCooldownPercent(Starfall.STELLAR_REMOTE.get(), partial);
+        Component ready = cooling > 0.0F ? Component.translatable("menu.starfall.recharging", Math.round((1.0F - cooling) * 100.0F))
+                : Component.translatable("menu.starfall.ready");
+        g.drawString(font, ready, rx + rw - font.width(ready), infoY + 4, cooling > 0.0F ? AMBER : GREEN, false);
+        KeyMapping key = Keys.SKILLS[i];
+        if (binding == i) {
+            if ((age / 6) % 2 == 0) fitted(g, Component.translatable("menu.starfall.press_key"), rx, infoY + 14, rw, 1.0F, AMBER);
+        } else {
+            Component by = key.isUnbound() ? Component.translatable("menu.starfall.unbound")
+                    : Component.translatable("menu.starfall.bound", key.getTranslatedKeyMessage());
+            g.drawString(font, by, rx, infoY + 14, GREY, false);
+        }
+        List<Component> also = conflicts(key);
+        if (!also.isEmpty()) {
+            Component joined = also.get(0);
+            for (int k = 1; k < also.size(); k++) joined = Component.translatable("menu.starfall.and", joined, also.get(k));
+            fitted(g, Component.translatable("menu.starfall.also", joined), rx, infoY + 24, rw, 1.0F, RED);
         }
     }
 
-    /** The corner brackets the films use, around a box. */
-    static void brackets(GuiGraphics g, int x, int y, int w, int h, int color) {
-        int l = Math.min(10, Math.min(w, h) / 4);
-        g.fill(x, y, x + l, y + 1, color);
-        g.fill(x, y, x + 1, y + l, color);
-        g.fill(x + w - l, y, x + w, y + 1, color);
-        g.fill(x + w - 1, y, x + w, y + l, color);
-        g.fill(x, y + h - 1, x + l, y + h, color);
-        g.fill(x, y + h - l, x + 1, y + h, color);
-        g.fill(x + w - l, y + h - 1, x + w, y + h, color);
-        g.fill(x + w - 1, y + h - l, x + w, y + h, color);
+    private void footer(GuiGraphics g) {
+        int fy = py + ph - 16;
+        g.fill(px + 4, fy, px + pw - 4, fy + 1, RED_DARK);
+        Component hint = Component.translatable("menu.starfall.hint", Keys.MENU.getTranslatedKeyMessage());
+        int w = font.width(hint);
+        float s = Math.min(1.0F, (pw - 16) / (float) w);
+        g.pose().pushPose();
+        g.pose().translate(px + pw / 2.0F - w * s / 2.0F, fy + 4.5F, 0.0F);
+        g.pose().scale(s, s, 1.0F);
+        g.drawString(font, hint, 0, 0, GREY, false);
+        g.pose().popPose();
     }
 
-    private void details(GuiGraphics g, int mouseX, int mouseY, float time) {
-        Skill skill = Skill.byIndex(details);
-        int color = 0xFF000000 | skill.color;
-        g.fill(0, 0, width, height, Fx.argb(0xF4F2FA, 0.7F));
-        int w = Math.min(300, width - 30);
-        List<FormattedCharSequence> lines = font.split(Component.translatable("menu.starfall.details." + skill.id), w - 24);
-        int h = 52 + lines.size() * 10 + 30;
-        int x = (width - w) / 2, y = (height - h) / 2;
-        g.fill(x, y, x + w, y + h, 0xF6121018);
-        g.renderOutline(x, y, w, h, color);
-        brackets(g, x - 4, y - 4, w + 8, h + 8, color);
-        g.drawString(font, skill.tag(), x + 12, y + 10, color, false);
-        g.drawString(font, skill.title().copy().withStyle(s -> s.withBold(true)), x + 12, y + 22, 0xFFFFFFFF, false);
-        int ly = y + 40;
-        for (FormattedCharSequence line : lines) {
-            g.drawString(font, line, x + 12, ly, 0xFFD0CCE0, false);
-            ly += 10;
+    /** Text squeezed to fit {@code width} if it has to. */
+    private void fitted(GuiGraphics g, Component text, int x, int y, int width, float scale, int color) {
+        int w = font.width(text);
+        float s = Math.min(scale, width / (float) Math.max(1, w));
+        g.pose().pushPose();
+        g.pose().translate(x, y, 0.0F);
+        g.pose().scale(s, s, 1.0F);
+        g.drawString(font, text, 0, 0, color, false);
+        g.pose().popPose();
+    }
+
+    /** Other actions bound to the same key as {@code mine}. */
+    private static List<Component> conflicts(KeyMapping mine) {
+        List<Component> out = new ArrayList<>();
+        if (mine.isUnbound()) return out;
+        for (KeyMapping other : Minecraft.getInstance().options.keyMappings) {
+            if (other != mine && other.same(mine)) out.add(Component.translatable(other.getName()));
         }
-        Component[] labels = {
-                Component.translatable("menu.starfall.choose"),
-                binding ? Component.translatable("menu.starfall.press_key")
-                        : Component.translatable("menu.starfall.change_key", Keys.SKILLS[details].getTranslatedKeyMessage()),
-                Component.translatable("menu.starfall.back")};
-        int bx = x + 12, by = y + h - 24;
-        for (int b = 0; b < 3; b++) {
-            int bw = font.width(labels[b]) + 14;
-            boolean over = mouseX >= bx && mouseX < bx + bw && mouseY >= by && mouseY < by + 16;
-            boolean primary = b == 0 || (b == 1 && binding);
-            int fill = primary ? (over ? Fx.mix(color, 0xFFFFFFFF, 0.25F) : color) : over ? 0xFF2E2A3C : 0xFF1E1B28;
-            if (b == 1 && binding && ((int) (time * 3)) % 2 == 0) fill = Fx.mix(fill, 0xFFFFE070, 0.4F);
-            g.fill(bx, by, bx + bw, by + 16, fill);
-            g.renderOutline(bx, by, bw, 16, color);
-            g.drawString(font, labels[b], bx + 7, by + 4, primary ? 0xFF101014 : 0xFFE8E4F4, false);
-            buttons[b] = new int[]{bx, by, bw, 16};
-            bx += bw + 6;
-        }
+        return out;
     }
 
     // ------------------------------------------------------------------ input
 
     private void choose(int i) {
-        if (closing > 0) return;
         Net.CHANNEL.sendToServer(new SelectSkillPacket(i));
-        chosen = i;
-        closing = 5;
-        details = -1;
-        binding = false;
+        armed = Skill.byIndex(i);
+        focus = i;
+        flash = i;
+        flashAt = age;
+        binding = -1;
         Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(Sounds.UI_SELECT.get(), 1.0F, 0.6F));
     }
 
-    private void openDetails(int i) {
-        details = i;
-        binding = false;
+    private void startBinding(int i) {
+        binding = i;
+        focus = i;
         Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(Sounds.UI_HOVER.get(), 1.0F, 0.6F));
     }
 
     @Override
+    public void mouseMoved(double mx, double my) {
+        mouseMoved = true;
+        super.mouseMoved(mx, my);
+    }
+
+    @Override
     public boolean mouseClicked(double mx, double my, int button) {
-        if (details >= 0) {
-            for (int b = 0; b < 3; b++) {
-                int[] r = buttons[b];
-                if (mx >= r[0] && mx < r[0] + r[2] && my >= r[1] && my < r[1] + r[3]) {
-                    if (b == 0) choose(details);
-                    else if (b == 1) binding = !binding;
-                    else details = -1;
-                    return true;
-                }
-            }
-            if (!binding) details = -1;
-            return true;
-        }
         int i = hit(mx, my);
-        if (i < 0) return super.mouseClicked(mx, my, button);
-        if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) openDetails(i);
+        if (i < 0) {
+            binding = -1;
+            return super.mouseClicked(mx, my, button);
+        }
+        if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) startBinding(i);
         else choose(i);
         return true;
     }
 
     @Override
     public boolean mouseScrolled(double mx, double my, double delta) {
-        if (details < 0) focus = Math.floorMod(focus + (delta < 0 ? 1 : -1), 3);
+        focus = Math.floorMod(focus + (delta < 0 ? 1 : -1), Skill.values().length);
+        mouseMoved = false;
         return true;
     }
 
     @Override
     public boolean keyPressed(int key, int scancode, int modifiers) {
-        if (binding && details >= 0) {
-            binding = false;
+        int n = Skill.values().length;
+        if (binding >= 0) {
+            KeyMapping mapping = Keys.SKILLS[binding];
+            binding = -1;
             if (key != GLFW.GLFW_KEY_ESCAPE) {
-                KeyMapping mapping = Keys.SKILLS[details];
                 mapping.setKey(InputConstants.getKey(key, scancode));
                 KeyMapping.resetMapping();
                 Minecraft.getInstance().options.save();
@@ -282,45 +324,40 @@ public final class SkillScreen extends Screen {
             }
             return true;
         }
-        if (key == GLFW.GLFW_KEY_ESCAPE && details >= 0) {
-            details = -1;
-            return true;
-        }
         if (Keys.MENU.matches(key, scancode)) {
             onClose();
             return true;
         }
-        if (key >= GLFW.GLFW_KEY_1 && key <= GLFW.GLFW_KEY_3) {
+        if (key >= GLFW.GLFW_KEY_1 && key < GLFW.GLFW_KEY_1 + n) {
             choose(key - GLFW.GLFW_KEY_1);
             return true;
         }
-        if (details < 0) {
-            if (key == GLFW.GLFW_KEY_LEFT || key == GLFW.GLFW_KEY_A) {
-                focus = Math.floorMod(focus - 1, 3);
-                return true;
-            }
-            if (key == GLFW.GLFW_KEY_RIGHT || key == GLFW.GLFW_KEY_D) {
-                focus = Math.floorMod(focus + 1, 3);
-                return true;
-            }
-            if (key == GLFW.GLFW_KEY_ENTER || key == GLFW.GLFW_KEY_SPACE || key == GLFW.GLFW_KEY_KP_ENTER) {
-                choose(focus);
-                return true;
-            }
-        } else if (key == GLFW.GLFW_KEY_ENTER || key == GLFW.GLFW_KEY_KP_ENTER) {
-            choose(details);
+        int move = switch (key) {
+            case GLFW.GLFW_KEY_LEFT, GLFW.GLFW_KEY_A, GLFW.GLFW_KEY_UP, GLFW.GLFW_KEY_W -> -1;
+            case GLFW.GLFW_KEY_RIGHT, GLFW.GLFW_KEY_D, GLFW.GLFW_KEY_DOWN, GLFW.GLFW_KEY_S -> 1;
+            default -> 0;
+        };
+        if (move != 0) {
+            focus = Math.floorMod(focus + move, n);
+            mouseMoved = false;
+            return true;
+        }
+        if (key == GLFW.GLFW_KEY_ENTER || key == GLFW.GLFW_KEY_SPACE || key == GLFW.GLFW_KEY_KP_ENTER) {
+            choose(shown());
             return true;
         }
         return super.keyPressed(key, scancode, modifiers);
     }
 
-    /** For the showcase recorder: open the details of a card as if it was right-clicked. */
+    /** For the showcase recorder: describe a strike as if it was picked with the keys. */
     public void showDetails(int i) {
-        openDetails(i);
+        focus = i;
+        mouseMoved = false;
     }
 
-    /** For the showcase recorder: highlight a card as if the mouse was over it. */
+    /** For the showcase recorder: highlight a strike as if the mouse was over it. */
     public void highlight(int i) {
         focus = i;
+        mouseMoved = false;
     }
 }

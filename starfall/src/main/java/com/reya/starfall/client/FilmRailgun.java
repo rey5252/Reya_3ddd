@@ -167,15 +167,18 @@ final class FilmRailgun {
         light.glowScreen(new Vector3f(), 0.012F, Fx.argb(0xFFFFFF, 1.0F), true);
         light.flare(new Vector3f(), 0.3F, 0.0014F, 0.0F, Fx.argb(0xFFE8C8, 0.6F));
         light.flare(new Vector3f(), 0.12F, 0.0012F, (float) (Math.PI / 2), Fx.argb(0xFFE8C8, 0.5F));
-        // the Oort cloud: a faint shell of ice far out
+        // the Oort cloud: a shell of ice far out, thousands of specks with a haze where they crowd at its edge
         float oort = ramp(dist, 2.0E4F, 9.0E4F);
         if (oort > 0.0F) {
             Random r = new Random(31L);
-            for (int i = 0; i < 700; i++) {
+            for (int i = 0; i < 1800; i++) {
                 Vector3f d = v((float) r.nextGaussian(), (float) r.nextGaussian(), (float) r.nextGaussian()).normalize();
-                d.mul(6.0E4F + r.nextFloat() * 6.0E4F);
-                light.glowScreen(d, 0.0025F, Fx.argb(0xB8D8FF, 0.5F * oort), false);
+                d.mul(8.0E4F * (1.0F + 0.07F * (float) r.nextGaussian()));
+                float b = 0.35F + 0.65F * r.nextFloat();
+                light.glowScreen(d, 0.0032F + 0.002F * b, Fx.argb(i % 7 == 0 ? 0xFFFFFF : 0xB8D8FF, 0.85F * b * oort), i % 7 == 0);
             }
+            float shell = (float) Math.atan2(8.0E4F, dist) / (float) Math.toRadians(25.0D);
+            light.glowScreen(new Vector3f(), Math.min(1.2F, shell * 0.55F), Fx.argb(0x6A90C8, 0.07F * oort), false);
         }
         // the laser leaving Earth for the railgun
         if (earth != null) Film.laser(light, earth, v(-0.3F, 0.55F, -0.78F), RED, 1.0F, dist * 0.002F);

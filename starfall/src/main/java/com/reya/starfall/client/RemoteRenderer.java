@@ -35,8 +35,8 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 /**
- * Draws the Stellar Remote in 3D from its parts (see tools/gen_textures.py for the geometry): the body, the
- * glowing trims, the button and its halo, and the flip cover turned about its hinge. The radar on the screen,
+ * Draws the Stellar Remote in 3D from its parts (see tools/gen_textures.py for the geometry): the navy body, the
+ * glowing trims, the button and its halo, and the hazard-striped box over it turned about its hinge. The radar on the screen,
  * the skill code and the keypad digits are drawn live. In first person a thumb flips the cover and presses.
  */
 public final class RemoteRenderer extends BlockEntityWithoutLevelRenderer {
@@ -45,12 +45,13 @@ public final class RemoteRenderer extends BlockEntityWithoutLevelRenderer {
     public static final ResourceLocation[] PARTS = {BODY, GLOW, BUTTON, HALO, COVER_FRAME, COVER_GLASS};
 
     // geometry in model pixels, matching the part models
-    private static final float HINGE_Y = 10.65F, HINGE_Z = 9.95F;
-    private static final float TAB_X = 8.0F, TAB_Y = 6.05F, TAB_Z = 10.1F;
-    private static final float SCREEN_X0 = 6.3F, SCREEN_X1 = 9.7F, SCREEN_Y0 = 12.2F, SCREEN_Y1 = 14.6F, SCREEN_Z = 9.64F;
-    private static final float LABEL_Y = 11.25F, LABEL_Z = 9.51F;
-    private static final float KEYS_Z = 9.73F;
-    private static final float BUTTON_Y = 8.4F, BUTTON_FRONT = 10.15F;
+    private static final float HINGE_Y = 9.95F, HINGE_Z = 9.47F;
+    private static final float TAB_X = 9.3F, TAB_Y = 5.75F, TAB_Z = 10.6F;
+    private static final float SCREEN_X0 = 6.25F, SCREEN_X1 = 9.75F, SCREEN_Y0 = 11.55F, SCREEN_Y1 = 14.65F, SCREEN_Z = 9.61F;
+    private static final float LABEL_Y = 5.25F, LABEL_Z = 9.51F;
+    private static final float KEYS_Z = 9.70F;
+    private static final float BUTTON_X = 9.3F, BUTTON_Y = 7.95F, BUTTON_FRONT = 10.15F;
+    private static final float[] KEY_ROWS = {2.95F, 1.3F};
 
     private static final float TWO_PI = (float) (Math.PI * 2.0D);
 
@@ -150,7 +151,7 @@ public final class RemoteRenderer extends BlockEntityWithoutLevelRenderer {
         Matrix4f m = pose.last().pose();
         int color = skill.color;
         float cx = (SCREEN_X0 + SCREEN_X1) * 0.5F + 0.45F, cy = (SCREEN_Y0 + SCREEN_Y1) * 0.5F, z = SCREEN_Z;
-        float r = 1.02F;
+        float r = 1.25F;
         quad(vc, m, SCREEN_X0, SCREEN_Y0, SCREEN_X1, SCREEN_Y1, z, Fx.argb(color, 0.10F));
         ring(vc, m, cx, cy, z, r, 0.07F, Fx.argb(color, 0.85F));
         ring(vc, m, cx, cy, z, r * 0.55F, 0.05F, Fx.argb(color, 0.5F));
@@ -231,11 +232,11 @@ public final class RemoteRenderer extends BlockEntityWithoutLevelRenderer {
         for (int row = 0; row < 2; row++) {
             for (int col = 0; col < 3; col++) {
                 String digit = String.valueOf(1 + col + row * 3);
-                float x = 6.25F + col * 1.2F + 0.525F, y = (row == 0 ? 3.75F : 1.65F) + 0.8F;
+                float x = 6.25F + col * 1.2F + 0.525F, y = KEY_ROWS[row] + 0.75F;
                 pose.pushPose();
                 pose.translate(x / 16.0F, y / 16.0F, KEYS_Z / 16.0F);
                 pose.scale(k, -k, k);
-                font.drawInBatch(digit, -font.width(digit) / 2.0F, -3.5F, 0xFF22242C, false, pose.last().pose(), buffers,
+                font.drawInBatch(digit, -font.width(digit) / 2.0F, -3.5F, 0xFFE6EAF4, false, pose.last().pose(), buffers,
                         Font.DisplayMode.POLYGON_OFFSET, 0, light);
                 pose.popPose();
             }
@@ -259,9 +260,9 @@ public final class RemoteRenderer extends BlockEntityWithoutLevelRenderer {
                        float press, int light) {
         Vector3f entry = new Vector3f(17.0F, 5.0F, 11.0F);
         Vector3f underTab = tab(0.0F).add(0.4F, -0.45F, 0.3F);
-        Vector3f approach = new Vector3f(8.3F, BUTTON_Y, 11.4F);
-        Vector3f contact = new Vector3f(8.3F, BUTTON_Y, BUTTON_FRONT + 0.06F - press);
-        Vector3f lift = new Vector3f(9.5F, 8.0F, 11.8F);
+        Vector3f approach = new Vector3f(BUTTON_X, BUTTON_Y, 11.6F);
+        Vector3f contact = new Vector3f(BUTTON_X, BUTTON_Y, BUTTON_FRONT + 0.06F - press);
+        Vector3f lift = new Vector3f(BUTTON_X + 1.2F, BUTTON_Y, 12.0F);
         Vector3f exit = new Vector3f(17.5F, 5.5F, 11.5F);
         Vector3f tip;
         if (t < 2.0F) {

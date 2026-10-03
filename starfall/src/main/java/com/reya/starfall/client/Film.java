@@ -309,6 +309,11 @@ public final class Film {
         return p;
     }
 
+    /** The laser's spot (radians on the Earth), small on the screen from any height. */
+    static float spotSize(float alt) {
+        return Math.max(2.0E-5F, Math.min(9.0E-4F, alt * 1.2E-4F));
+    }
+
     /** The laser from the target straight up into space, a hot core in a soft glow. */
     static void laser(Soft light, Vector3f from, Vector3f dir, int color, float k, float glowWidth) {
         if (k <= 0.0F) return;
@@ -326,9 +331,16 @@ public final class Film {
         s.fade = fade;
         sky.stars = Math.min(1.0F, (night ? 0.35F : 0.15F) + alt / 6.0F);
         s.sky(sky);
-        // anything further off (the Moon) goes first, so the Earth's air lies over it
-        if (behind != null) s.planet(behind);
-        s.planet(earth(night, laser, 1.0F, time));
+        // anything further off (the Moon) goes first, so the Earth's air lies over it; by day it only shows
+        // once the sky has gone dark around it
+        float seen = night ? 1.0F : Cam.clamp01((alt - 0.6F) / 2.0F);
+        if (behind != null && seen > 0.0F) {
+            behind.fade *= seen;
+            s.planet(behind);
+        }
+        Scene3D.Planet ground = earth(night, laser, 1.0F, time);
+        ground.spotSize = spotSize(alt);
+        s.planet(ground);
         Soft light = s.soft(true);
         laser(light, onEarth(0.0F), TARGET, laser, 1.0F, 0.01F + alt * 0.012F);
         light.glowScreen(onEarth(0.01F), 0.012F, Fx.argb(laser, 0.9F), true);

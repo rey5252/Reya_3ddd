@@ -132,21 +132,25 @@ vec3 earthLand(vec3 p, float e, vec3 warp, float lod, float sea) {
     col = mix(col, vec3(0.42, 0.40, 0.35), smoothstep(0.72, 0.84, lat));
     col = mix(col, vec3(0.34, 0.30, 0.27), smoothstep(0.35, 0.7, alt));
     col = mix(col, vec3(0.92, 0.94, 0.97), smoothstep(0.75, 0.92, alt + lat * 0.25));
-    // fields, valleys and ridges up close
+    // fields, valleys and ridges up close, and finer still from low orbit
     float detail = fbm(p * 38.0 + warp, lod - 4.0);
-    return col * (0.84 + 0.34 * (detail + 0.5));
+    float fine = fbm(p * 620.0 + warp * 4.0, lod - 9.0);
+    col = mix(col, col * vec3(0.78, 0.92, 0.7), smoothstep(0.0, 0.3, fine) * smoothstep(0.2, 0.45, wet));
+    return col * (0.84 + 0.34 * (detail + 0.5)) * (0.86 + 0.28 * (fine + 0.5));
 }
 
 float earthClouds(vec3 p, float lod) {
     vec3 q = p * 2.6;
     vec3 w = vec3(gnoise(q + vec3(0.0, Time * 0.05, 0.0)), gnoise(q + vec3(3.1, 1.7, 2.2 - Time * 0.04)),
                   gnoise(q + vec3(6.3, 4.4 + Time * 0.03, 0.9)));
-    float c = fbm(p * 4.2 + w * 0.8, lod);
+    float c = fbm(p * 4.2 + w * 0.8, lod) + 0.06 * fbm(p * 380.0 + w * 3.0, lod - 8.0);
     float wisp = fbm(vec3(p.x * 9.0, p.y * 22.0, p.z * 9.0) + w * 1.5, lod - 1.0);
     float lat = abs(p.y);
     float belt = 0.08 * exp(-lat * lat * 50.0) + 0.1 * exp(-pow((lat - 0.75) / 0.16, 2.0))
                - 0.08 * exp(-pow((lat - 0.40) / 0.12, 2.0));
-    float big = smoothstep(-0.02, 0.26, c + belt);
+    // edges that stay crisp however close you come
+    float soft = mix(0.14, 0.05, clamp((lod - 7.0) / 4.0, 0.0, 1.0));
+    float big = smoothstep(0.12 - soft, 0.12 + soft, c + belt);
     float fine = smoothstep(0.05, 0.3, wisp + c * 0.6 + belt) * 0.55;
     return clamp(max(big, fine), 0.0, 1.0);
 }
@@ -155,7 +159,9 @@ vec3 shadeEarth(vec3 pb, vec3 n, vec3 v, float lod, float fp) {
     vec3 warp;
     float sea = 0.03;
     float e = earthHeight(pb, lod, warp);
-    float fw = max(fp * 3.0, 0.0008);
+    // the coast keeps breaking up into smaller bays and spits the lower you go
+    e += 0.004 * fbm(pb * 900.0 + warp * 3.0, lod - 9.0);
+    float fw = max(fp * 5.0, 1.0e-6);
     float land = smoothstep(sea - fw, sea + fw, e);
     float lat = abs(pb.y);
     vec3 ocean = mix(vec3(0.003, 0.02, 0.07), vec3(0.02, 0.15, 0.27), smoothstep(sea - 0.14, sea, e));
@@ -170,10 +176,12 @@ vec3 shadeEarth(vec3 pb, vec3 n, vec3 v, float lod, float fp) {
     vec3 sunBody = vec3(dot(SunDir, AxisX), dot(SunDir, AxisY), dot(SunDir, AxisZ));
     float shadow = earthClouds(normalize(pb + sunBody * 0.01), lod - 2.0);
     vec3 lit = ground * diff * (1.0 - 0.55 * shadow) * vec3(1.0, 0.97, 0.93);
-    // the sun's glint on open water
+    // the sun's glint on open water, broken into glitter by the waves from low orbit
     vec3 h = normalize(SunDir + v);
     float nh = max(dot(n, h), 0.0);
-    lit += water * (1.0 - cloud) * (pow(nh, 220.0) * 3.0 + pow(nh, 24.0) * 0.08) * smoothstep(0.0, 0.1, ndl)
+    float waves = mix(1.0, 0.3 + 1.4 * smoothstep(-0.05, 0.45, gnoise(pb * 3100.0) + 0.5 * gnoise(pb * 7300.0)),
+                      clamp(lod - 9.0, 0.0, 1.0));
+    lit += water * (1.0 - cloud) * (pow(nh, 900.0) * 0.8 * waves + pow(nh, 60.0) * 0.03) * smoothstep(0.0, 0.1, ndl)
          * vec3(1.0, 0.9, 0.75);
     // clouds, warm where the sun is low
     float low = smoothstep(0.35, 0.0, ndl) * smoothstep(-0.1, 0.05, ndl);
@@ -181,7 +189,7 @@ vec3 shadeEarth(vec3 pb, vec3 n, vec3 v, float lod, float fp) {
     vec3 col = mix(lit, cloudCol, cloud);
     // the night side: a little moonlight, and cities in clusters of fine points, along the coasts most of all
     float dark = smoothstep(0.1, -0.12, ndl);
-    col += ground * vec3(0.010, 0.014, 0.026) * dark * Night * (1.0 - cloud * 0.5) + cloud * vec3(0.012, 0.015, 0.025) * dark * Night;
+    col += ground * vec3(0.05, 0.065, 0.11) * dark * Night * (1.0 - cloud * 0.5) + cloud * vec3(0.05, 0.06, 0.085) * dark * Night;
     float region = smoothstep(0.45, 0.75, fbm(pb * 9.0 + warp * 1.5, lod - 1.0) + 0.5 + 0.25 * exp(-pow((e - sea) / 0.035, 2.0)));
     float fineK = clamp(lod - 5.0, 0.0, 1.0);
     float points = mix(0.12, smoothstep(0.3, 0.5, gnoise(pb * 260.0) + gnoise(pb * 620.0) * 0.5), fineK);
@@ -338,6 +346,8 @@ vec4 atmosphere(vec3 rd, float tHit, float hit, out float optical) {
     }
     float phase = 0.8 + 0.6 * pow(max(dot(rd, SunDir), 0.0), 5.0);
     vec3 col = 1.0 - exp(-(Atmo.rgb * scatter * 2.6 + vec3(1.0, 0.42, 0.18) * sunset * 0.25 * Atmo.b) * phase);
+    // the faint glow of the air itself: all a night horizon has
+    col += vec3(0.03, 0.055, 0.085) * (1.0 - exp(-optical * 0.5)) * Night * (1.0 - smoothstep(0.0, 0.25, scatter));
     return vec4(col, clamp(max(col.r, max(col.g, col.b)) * 1.15, 0.0, 1.0));
 }
 
@@ -355,7 +365,7 @@ void main() {
     vec3 N = normalize(P - Center);
     vec3 pb = vec3(dot(N, AxisX), dot(N, AxisY), dot(N, AxisZ));
     float fp = length(fwidth(pb));
-    float lod = clamp(log2(1.0 / max(fp * 2.4, 1.0e-6)) - 0.5, 1.0, 11.0);
+    float lod = clamp(log2(1.0 / max(fp * 2.4, 1.0e-7)) - 0.5, 1.0, 20.0);
     float cover = clamp((Radius - dPerp) / max(fwidth(dPerp), 1.0e-5) + 0.5, 0.0, 1.0) * step(0.0, tS);
     vec3 V = -rd;
 

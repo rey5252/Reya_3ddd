@@ -26,8 +26,10 @@ final class ClientStrike {
     static final int RED = 0xFF2A2A, RED_SOFT = 0xFF6A6A, PINK = 0xFFE0E0, WHITE = 0xFFFFFF;
     static final int EMBER = 0xFF7A1E, EMBER_HOT = 0xFFD27A;
     static final int VIOLET = 0xA060FF, VIOLET_HOT = 0xE8D0FF, FIRE = 0xFF6A2A, BOLT = 0xB8D4FF;
-    /** How long the melted wall of SS-01's shaft keeps glowing after the beam is gone, in ticks. */
-    static final int AFTERGLOW = 1200;
+    /** How long the melted wall of SS-01's shaft takes to cool after the beam is gone, in ticks. */
+    static final int AFTERGLOW = 2400;
+    /** How long this client keeps the shaft dark inside after the beam, in ticks. */
+    static final int SHAFT_LIFE = 6000;
     /** Points around the shaft's rim where the client looks up how high the land is. */
     private static final int RIM = 256;
 
@@ -80,7 +82,7 @@ final class ClientStrike {
 
     boolean expired(long gameTime) {
         int life = skill.duration + 40;
-        if (skill == Skill.RAILGUN) life = Math.max(life, Skill.MARK + 100 + AFTERGLOW);
+        if (skill == Skill.RAILGUN) life = Math.max(life, Skill.MARK + 100 + SHAFT_LIFE);
         return gameTime - start > life;
     }
 
@@ -370,12 +372,28 @@ final class ClientStrike {
     // ------------------------------------------------------------------ rendering
 
     void renderSolid(Fx fx, float t, ClientLevel level) {
+        if (skill == Skill.RAILGUN) shaft(fx, t, level);
         if (skill != Skill.GUNGNIR || t < Skill.MARK || t >= Skill.GUNGNIR_IMPACT) return;
         // the needle coming down, faster than its own sound
         double p = (t - Skill.MARK) / Skill.NEEDLE_FALL;
         double tip = groundY() + (1.0D - p) * (1.0D - p) * 2600.0D;
         // the needle stands two by two around the target's corner
         fx.prism(target.getX(), target.getZ(), tip, tip + 900.0D, 1.0D, 0xFF0A0A0E, 0xFF1C1A22);
+    }
+
+    /**
+     * The shaft goes down to the void, and the void would show the sky's colour: it is darkened instead, black at
+     * the bottom and fading up the walls, so the hole looks as deep as it is.
+     */
+    private void shaft(Fx fx, float t, ClientLevel level) {
+        float bt = t - Skill.MARK;
+        if (bt < 20.0F) return;
+        float k = Mth.clamp((bt - 20.0F) / 50.0F, 0.0F, 1.0F) * (1.0F - Mth.clamp((bt - 100.0F - SHAFT_LIFE + 200.0F) / 200.0F, 0.0F, 1.0F));
+        if (k <= 0.0F) return;
+        double cx = cx(), cz = cz(), gy = groundY();
+        double floor = level.getMinBuildHeight() - 1.0D, r = radius - 0.9D;
+        fx.ring(cx, floor, cz, 0.0D, r, 160, Fx.argb(0x000000, k), Fx.argb(0x000000, k));
+        fx.cylinder(cx, cz, floor, gy - 30.0D, r, 160, Fx.argb(0x050102, 0.97F * k), Fx.argb(0x200404, 0.0F));
     }
 
     void renderGlow(Fx fx, float t, ClientLevel level) {
@@ -428,14 +446,16 @@ final class ClientStrike {
             float fade = bt < 70 ? 1.0F : Math.max(0.0F, 1.0F - (bt - 70) / 30.0F);
             double r = radius * open;
             int seg = 128;
-            fx.cylinder(cx, cz, bottom, top, r * 1.03D, seg, Fx.argb(RED, 0.35F * fade), Fx.argb(RED, 0.18F * fade));
-            fx.cylinder(cx, cz, bottom, top, r * 0.85D, seg, Fx.argb(RED_SOFT, 0.35F * fade), Fx.argb(RED_SOFT, 0.15F * fade));
-            fx.cylinder(cx, cz, bottom, top, r * 0.6D, seg, Fx.argb(PINK, 0.4F * fade), Fx.argb(PINK, 0.2F * fade));
-            fx.cylinder(cx, cz, bottom, top, r * 0.3D, seg / 2, Fx.argb(WHITE, 0.5F * fade), Fx.argb(WHITE, 0.3F * fade));
+            // deep red through and through, with a narrow white-hot core
+            fx.cylinder(cx, cz, bottom, top, r * 1.03D, seg, Fx.argb(RED, 0.32F * fade), Fx.argb(RED, 0.16F * fade));
+            fx.cylinder(cx, cz, bottom, top, r * 0.85D, seg, Fx.argb(RED, 0.24F * fade), Fx.argb(RED, 0.12F * fade));
+            fx.cylinder(cx, cz, bottom, top, r * 0.55D, seg, Fx.argb(RED_SOFT, 0.16F * fade), Fx.argb(RED_SOFT, 0.08F * fade));
+            fx.cylinder(cx, cz, bottom, top, r * 0.2D, seg / 2, Fx.argb(PINK, 0.25F * fade), Fx.argb(PINK, 0.14F * fade));
+            fx.cylinder(cx, cz, bottom, top, r * 0.1D, seg / 2, Fx.argb(WHITE, 0.6F * fade), Fx.argb(WHITE, 0.4F * fade));
             for (int k = 0; k < 18; k++) {
                 double a = k * Math.PI * 2.0D / 18.0D + bt * 0.07D;
                 double x = cx + Math.cos(a) * r * 0.93D, z = cz + Math.sin(a) * r * 0.93D;
-                fx.ribbon(x, bottom, z, x, top, z, 1.5D + r * 0.012D, Fx.argb(WHITE, 0.45F * fade), Fx.argb(RED, 0.15F * fade));
+                fx.ribbon(x, bottom, z, x, top, z, 1.5D + r * 0.012D, Fx.argb(RED_SOFT, 0.35F * fade), Fx.argb(RED, 0.1F * fade));
             }
             if (bt < 30) {
                 double rr = radius * (1.0D + 2.0D * bt / 30.0D);
