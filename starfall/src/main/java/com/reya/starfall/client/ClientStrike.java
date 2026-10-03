@@ -369,6 +369,41 @@ final class ClientStrike {
         }
     }
 
+    // ------------------------------------------------------------------ the evacuation warning
+
+    /** What to tell someone standing where a strike will land: which line, and how many seconds are left. */
+    record Warning(String key, float seconds) {
+    }
+
+    /** The warning for someone at {@code eye} right now, or null when they're clear of it. */
+    Warning warning(float t, Vec3 eye) {
+        switch (skill) {
+            case RAILGUN -> {
+                if (Math.hypot(eye.x - cx(), eye.z - cz()) > radius + 12.0D) return null;
+                if (t >= Skill.MARK - 120 && t < Skill.MARK) return new Warning("hud.starfall.evac.railgun", (Skill.MARK - t) / 20.0F);
+                if (t >= Skill.MARK && t < Skill.MARK + 90) return new Warning("hud.starfall.evac.beam", 0.0F);
+                return null;
+            }
+            case GUNGNIR -> {
+                if (Math.hypot(eye.x - cx(), eye.z - cz()) > radius * Math.max(1.0F, width) + 12.0D) return null;
+                if (t >= Skill.MARK - 120 && t < Skill.GUNGNIR_IMPACT) {
+                    return new Warning("hud.starfall.evac.gungnir", (Skill.GUNGNIR_IMPACT - t) / 20.0F);
+                }
+                return null;
+            }
+            default -> {
+                Warning best = null;
+                for (int i = 0; i < nx.length; i++) {
+                    float left = Skill.starImpact(i) - t;
+                    if (left <= 0.0F || left > 120.0F + i * Skill.STAR_GAP) continue;
+                    if (Math.hypot(eye.x - nx[i], eye.z - nz[i]) > sizes[i] + 12.0D) continue;
+                    if (best == null || left / 20.0F < best.seconds()) best = new Warning("hud.starfall.evac.seven", left / 20.0F);
+                }
+                return best;
+            }
+        }
+    }
+
     // ------------------------------------------------------------------ rendering
 
     void renderSolid(Fx fx, float t, ClientLevel level) {

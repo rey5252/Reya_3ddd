@@ -117,14 +117,19 @@ float earthHeight(vec3 p, float lod, out vec3 warp) {
     return base + 0.07 * ridged(p * 7.0 + warp * 1.5, lod - 2.5) * smoothstep(0.0, 0.1, base);
 }
 
+// mountains and hills: a height field fine enough to be lit, from low orbit down
+float relief(vec3 p, float lod) {
+    return 0.010 * ridged(p * 48.0, lod - 5.5) + 0.0035 * fbm(p * 260.0, lod - 8.0) + 0.0012 * fbm(p * 1400.0, lod - 10.5);
+}
+
 vec3 earthLand(vec3 p, float e, vec3 warp, float lod, float sea) {
     float lat = abs(p.y);
-    float alt = clamp((e - sea) / 0.25, 0.0, 1.0);
+    float alt = clamp((e - sea) / 0.4, 0.0, 1.0);
     float moist = fbm(p * 3.4 + warp * 0.7 + vec3(5.0, 1.0, 3.0), lod - 1.0) * 1.6 + 0.5;
     float dry = exp(-pow((lat - 0.40) / 0.12, 2.0));
-    float wet = clamp(moist + 0.3 * (1.0 - smoothstep(0.0, 0.25, lat)) - dry * 0.6 - alt * 0.25 + 0.12, 0.0, 1.0);
+    float wet = clamp(moist + 0.3 * (1.0 - smoothstep(0.0, 0.25, lat)) - dry * 0.6 - alt * 0.25 + 0.22, 0.0, 1.0);
     float hue = fbm(p * 7.0 + warp * 1.3 + vec3(2.0, 9.0, 4.0), lod - 2.0);
-    vec3 desert = mix(vec3(0.78, 0.62, 0.40), vec3(0.66, 0.42, 0.26), smoothstep(-0.2, 0.25, hue));
+    vec3 desert = mix(vec3(0.80, 0.67, 0.40), vec3(0.62, 0.45, 0.24), smoothstep(-0.2, 0.25, hue));
     vec3 col = mix(desert, vec3(0.50, 0.46, 0.27), smoothstep(0.12, 0.3, wet));
     col = mix(col, mix(vec3(0.20, 0.34, 0.10), vec3(0.30, 0.38, 0.14), smoothstep(-0.2, 0.2, hue)), smoothstep(0.3, 0.5, wet));
     col = mix(col, vec3(0.06, 0.18, 0.06), smoothstep(0.5, 0.78, wet));
@@ -132,6 +137,12 @@ vec3 earthLand(vec3 p, float e, vec3 warp, float lod, float sea) {
     col = mix(col, vec3(0.42, 0.40, 0.35), smoothstep(0.72, 0.84, lat));
     col = mix(col, vec3(0.34, 0.30, 0.27), smoothstep(0.35, 0.7, alt));
     col = mix(col, vec3(0.92, 0.94, 0.97), smoothstep(0.75, 0.92, alt + lat * 0.25));
+    // forests and fields, dunes and bare ground, once they're big enough to see
+    float mosaic = fbm(p * 110.0 + warp * 2.0, lod - 6.5);
+    float near = clamp(lod - 6.5, 0.0, 1.0);
+    vec3 forest = vec3(0.06, 0.14, 0.05), fields = vec3(0.34, 0.37, 0.17);
+    col = mix(col, mix(forest, fields, smoothstep(-0.15, 0.25, mosaic)), smoothstep(0.25, 0.45, wet) * 0.55 * near);
+    col *= mix(1.0, 0.82 + 0.36 * smoothstep(-0.2, 0.3, mosaic), near * (1.0 - smoothstep(0.25, 0.45, wet)));
     // fields, valleys and ridges up close, and finer still from low orbit
     float detail = fbm(p * 38.0 + warp, lod - 4.0);
     float fine = fbm(p * 620.0 + warp * 4.0, lod - 9.0);
@@ -170,8 +181,23 @@ vec3 shadeEarth(vec3 pb, vec3 n, vec3 v, float lod, float fp) {
     ground = mix(ground, vec3(0.90, 0.93, 0.97), ice);
     float water = (1.0 - land) * (1.0 - ice);
 
+    // the land's own slopes, lit by the sun; steep ground is bare rock
+    vec3 nl = n;
+    float reliefK = land * (1.0 - ice) * clamp(lod - 5.0, 0.0, 1.0);
+    if (reliefK > 0.0) {
+        float hs = max(fp * 1.5, 2.0e-6);
+        vec3 t1 = normalize(cross(pb, abs(pb.y) < 0.9 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0)));
+        vec3 t2 = cross(pb, t1);
+        float amp = 0.25 + 0.9 * clamp((e - sea) / 0.2, 0.0, 1.0);
+        float r0 = relief(pb, lod);
+        vec3 g = (t1 * (relief(pb + t1 * hs, lod) - r0) + t2 * (relief(pb + t2 * hs, lod) - r0)) / hs * amp * reliefK;
+        nl = normalize(n - (AxisX * g.x + AxisY * g.y + AxisZ * g.z));
+        float steep = smoothstep(0.7, 1.8, length(g));
+        ground = mix(ground, vec3(0.30, 0.27, 0.24) * (0.75 + 30.0 * r0), steep * 0.55);
+    }
+
     float ndl = dot(n, SunDir);
-    float diff = clamp(ndl * 1.05 + 0.02, 0.0, 1.0);
+    float diff = clamp(mix(ndl, dot(nl, SunDir), land) * 1.05 + 0.02, 0.0, 1.0) * smoothstep(-0.08, 0.04, ndl);
     float cloud = earthClouds(pb, lod);
     vec3 sunBody = vec3(dot(SunDir, AxisX), dot(SunDir, AxisY), dot(SunDir, AxisZ));
     float shadow = earthClouds(normalize(pb + sunBody * 0.01), lod - 2.0);
@@ -179,8 +205,9 @@ vec3 shadeEarth(vec3 pb, vec3 n, vec3 v, float lod, float fp) {
     // the sun's glint on open water, broken into glitter by the waves from low orbit
     vec3 h = normalize(SunDir + v);
     float nh = max(dot(n, h), 0.0);
-    float waves = mix(1.0, 0.3 + 1.4 * smoothstep(-0.05, 0.45, gnoise(pb * 3100.0) + 0.5 * gnoise(pb * 7300.0)),
-                      clamp(lod - 9.0, 0.0, 1.0));
+    float swell = mix(gnoise(pb * 3100.0) + 0.5 * gnoise(pb * 7300.0), gnoise(pb * 26000.0) + 0.5 * gnoise(pb * 61000.0),
+                      clamp(lod - 13.0, 0.0, 1.0));
+    float waves = mix(1.0, 0.3 + 1.4 * smoothstep(-0.05, 0.45, swell), clamp(lod - 9.0, 0.0, 1.0));
     lit += water * (1.0 - cloud) * (pow(nh, 900.0) * 0.8 * waves + pow(nh, 60.0) * 0.03) * smoothstep(0.0, 0.1, ndl)
          * vec3(1.0, 0.9, 0.75);
     // clouds, warm where the sun is low
@@ -189,7 +216,7 @@ vec3 shadeEarth(vec3 pb, vec3 n, vec3 v, float lod, float fp) {
     vec3 col = mix(lit, cloudCol, cloud);
     // the night side: a little moonlight, and cities in clusters of fine points, along the coasts most of all
     float dark = smoothstep(0.1, -0.12, ndl);
-    col += ground * vec3(0.05, 0.065, 0.11) * dark * Night * (1.0 - cloud * 0.5) + cloud * vec3(0.05, 0.06, 0.085) * dark * Night;
+    col += ground * vec3(0.12, 0.15, 0.24) * dark * Night * (1.0 - cloud * 0.5) + cloud * vec3(0.10, 0.12, 0.17) * dark * Night;
     float region = smoothstep(0.45, 0.75, fbm(pb * 9.0 + warp * 1.5, lod - 1.0) + 0.5 + 0.25 * exp(-pow((e - sea) / 0.035, 2.0)));
     float fineK = clamp(lod - 5.0, 0.0, 1.0);
     float points = mix(0.12, smoothstep(0.3, 0.5, gnoise(pb * 260.0) + gnoise(pb * 620.0) * 0.5), fineK);
@@ -223,10 +250,10 @@ vec3 shadeJupiter(vec3 p, float lod) {
     float z = 0.5 + 0.30 * sin(y * 21.0 + 0.5) + 0.16 * sin(y * 9.0 - 0.3) + 0.08 * sin(y * 47.0 + 2.0);
     float shear = 1.0 - abs(sin(y * 21.0 + 0.5));
     z += eddy * 0.6 * (0.3 + 0.7 * shear) + w2.y * 0.3;
-    vec3 col = mix(vec3(0.26, 0.13, 0.07), vec3(0.55, 0.28, 0.14), smoothstep(0.1, 0.36, z));
-    col = mix(col, vec3(0.76, 0.50, 0.30), smoothstep(0.34, 0.5, z));
-    col = mix(col, vec3(0.90, 0.80, 0.64), smoothstep(0.5, 0.66, z));
-    col = mix(col, vec3(0.97, 0.93, 0.85), smoothstep(0.78, 0.97, z));
+    vec3 col = mix(vec3(0.20, 0.09, 0.05), vec3(0.46, 0.21, 0.10), smoothstep(0.1, 0.36, z));
+    col = mix(col, vec3(0.70, 0.42, 0.24), smoothstep(0.34, 0.5, z));
+    col = mix(col, vec3(0.90, 0.79, 0.62), smoothstep(0.52, 0.66, z));
+    col = mix(col, vec3(0.98, 0.95, 0.88), smoothstep(0.76, 0.95, z));
     // the equatorial zone a little ochre, the poles grey-blue and mottled
     col = mix(col, vec3(0.90, 0.72, 0.48), exp(-y * y * 140.0) * 0.4);
     float polar = smoothstep(0.62, 0.92, abs(lat));
@@ -265,8 +292,8 @@ vec3 shadeJupiter(vec3 p, float lod) {
     }
     // a little more colour and contrast than the raw palette
     float luma = dot(col, vec3(0.299, 0.587, 0.114));
-    col = mix(vec3(luma), col, 1.3);
-    return pow(max(col, vec3(0.0)), vec3(1.15));
+    col = mix(vec3(luma), col, 1.45);
+    return pow(max(col, vec3(0.0)), vec3(1.3));
 }
 
 vec3 shadeSaturn(vec3 p, float lod) {
@@ -347,7 +374,7 @@ vec4 atmosphere(vec3 rd, float tHit, float hit, out float optical) {
     float phase = 0.8 + 0.6 * pow(max(dot(rd, SunDir), 0.0), 5.0);
     vec3 col = 1.0 - exp(-(Atmo.rgb * scatter * 2.6 + vec3(1.0, 0.42, 0.18) * sunset * 0.25 * Atmo.b) * phase);
     // the faint glow of the air itself: all a night horizon has
-    col += vec3(0.03, 0.055, 0.085) * (1.0 - exp(-optical * 0.5)) * Night * (1.0 - smoothstep(0.0, 0.25, scatter));
+    col += vec3(0.06, 0.10, 0.16) * (1.0 - exp(-optical * 0.5)) * Night * (1.0 - smoothstep(0.0, 0.25, scatter));
     return vec4(col, clamp(max(col.r, max(col.g, col.b)) * 1.15, 0.0, 1.0));
 }
 

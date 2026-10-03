@@ -156,5 +156,10 @@
   "menu.starfall.bound": "Обирається клавішею %s",
   "menu.starfall.unbound": "Клавішу не призначено",
   "menu.starfall.also": "Також спрацює: %s",
-  "menu.starfall.and": "%s, %s"
+  "menu.starfall.and": "%s, %s",
+  "hud.starfall.evac": "ЕВАКУАЦІЯ",
+  "hud.starfall.evac.railgun": "ЗОНА ПРОМЕНЯ SS-01 · УДАР ЧЕРЕЗ %s с",
+  "hud.starfall.evac.gungnir": "ЗОНА УДАРУ SS-03 · УДАР ЧЕРЕЗ %s с",
+  "hud.starfall.evac.seven": "ЗІРКА SS-04 ПАДАЄ · УДАР ЧЕРЕЗ %s с",
+  "hud.starfall.evac.beam": "ТИ В ПРОМЕНІ"
 }

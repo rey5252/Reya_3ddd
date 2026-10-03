@@ -43,6 +43,8 @@ void main() {
     float hard = 36.0;
 
     if (m >= 0.9) {
+        // gunmetal paint, darker than it looks in the vertex colours
+        albedo *= 0.7;
         vec2 g = vUV / vec2(2.4, 1.2);
         vec2 fw = fwidth(g);
         vec2 cell = floor(g);
@@ -112,6 +114,8 @@ void main() {
     col += (albedo * ndg + pow(max(dot(N, normalize(Lg + V)), 0.0), hard) * shine * ndg) * GlowColor * fall;
     float fres = pow(1.0 - max(dot(N, V), 0.0), 5.0);
     col += FillColor * fres * 0.6 * shine;
-    col += emit;
+    // a soft shoulder, so sunlit plates keep their seams instead of burning out
+    col = 1.0 - exp(-col * 1.2);
+    col += emit * 0.6;
     fragColor = vec4(col, 1.0);
 }

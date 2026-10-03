@@ -93,7 +93,22 @@ public final class CraterShape extends CarveShape {
         if (core && x == cx && z == cz) {
             set(level, chunk, pos.set(x, floor, z), Blocks.CRYING_OBSIDIAN.defaultBlockState());
             set(level, chunk, pos.set(x, floor + 1, z), Starfall.STAR_CORE.get().defaultBlockState());
+        } else if (palette == Palette.STARRY && t < 0.6D) {
+            crystal(level, chunk, x, z, floor, t, pos);
         }
+    }
+
+    /** Star-crystal grown out of a fresh crater's floor: amethyst columns, taller to the middle, some lit. */
+    private static void crystal(ServerLevel level, LevelChunk chunk, int x, int z, int floor, double t,
+                                BlockPos.MutableBlockPos pos) {
+        if (Noise.hash(x, z, 91) > 0.035D * (1.0D - t) + 0.004D) return;
+        int height = 1 + (int) Math.round(Noise.hash(x, z, 92) * 6.0D * (1.15D - t));
+        for (int i = 1; i <= height; i++) {
+            set(level, chunk, pos.set(x, floor + i, z), Blocks.AMETHYST_BLOCK.defaultBlockState());
+        }
+        BlockState cap = Noise.hash(x, z, 93) < 0.35D ? Blocks.PEARLESCENT_FROGLIGHT.defaultBlockState()
+                : Blocks.AMETHYST_CLUSTER.defaultBlockState();
+        set(level, chunk, pos.set(x, floor + height + 1, z), cap);
     }
 
     private BlockState surface(int x, int z, double t, double n) {

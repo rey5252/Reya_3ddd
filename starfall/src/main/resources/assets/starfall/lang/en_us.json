@@ -156,5 +156,10 @@
   "menu.starfall.bound": "Selected by %s",
   "menu.starfall.unbound": "No key set",
   "menu.starfall.also": "Also fires: %s",
-  "menu.starfall.and": "%s, %s"
+  "menu.starfall.and": "%s, %s",
+  "hud.starfall.evac": "EVACUATE",
+  "hud.starfall.evac.railgun": "SS-01 BEAM ZONE · IMPACT IN %ss",
+  "hud.starfall.evac.gungnir": "SS-03 SHOCK ZONE · IMPACT IN %ss",
+  "hud.starfall.evac.seven": "SS-04 STAR INBOUND · IMPACT IN %ss",
+  "hud.starfall.evac.beam": "INSIDE THE BEAM"
 }

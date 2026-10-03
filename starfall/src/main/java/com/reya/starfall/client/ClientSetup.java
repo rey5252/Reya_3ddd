@@ -36,6 +36,7 @@ public final class ClientSetup {
     @SubscribeEvent
     public static void registerOverlays(RegisterGuiOverlaysEvent event) {
         event.registerAbove(VanillaGuiOverlay.HOTBAR.id(), "remote", (gui, graphics, partial, width, height) -> RemoteHud.render(graphics, partial, width, height));
+        event.registerAbove(VanillaGuiOverlay.HOTBAR.id(), "evac", (gui, graphics, partial, width, height) -> Evac.render(graphics, partial, width, height));
         event.registerAboveAll("film", (gui, graphics, partial, width, height) -> Film.render(graphics, partial, width, height));
         event.registerAboveAll("flash", (gui, graphics, partial, width, height) -> {
             int flash = ClientStrikes.flash(partial);

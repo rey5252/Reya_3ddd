@@ -99,6 +99,20 @@ public final class ClientStrikes {
         return Fx.scaleAlpha(best, strength);
     }
 
+    /** The most urgent evacuation warning for where the camera is, or null: the strike's line and its seconds left. */
+    static ClientStrike.Warning warning(float partial) {
+        Minecraft mc = Minecraft.getInstance();
+        ClientLevel level = mc.level;
+        if (level == null || STRIKES.isEmpty()) return null;
+        Vec3 eye = mc.gameRenderer.getMainCamera().getPosition();
+        ClientStrike.Warning best = null;
+        for (ClientStrike s : STRIKES) {
+            ClientStrike.Warning w = s.warning(age(s, level, partial), eye);
+            if (w != null && (best == null || w.seconds() < best.seconds())) best = w;
+        }
+        return best;
+    }
+
     /** Total camera shake right now, in degrees. */
     static float shake(float partial) {
         Minecraft mc = Minecraft.getInstance();

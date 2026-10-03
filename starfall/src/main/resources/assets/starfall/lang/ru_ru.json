@@ -156,5 +156,10 @@
   "menu.starfall.bound": "Выбирается клавишей %s",
   "menu.starfall.unbound": "Клавиша не назначена",
   "menu.starfall.also": "Также сработает: %s",
-  "menu.starfall.and": "%s, %s"
+  "menu.starfall.and": "%s, %s",
+  "hud.starfall.evac": "ЭВАКУАЦИЯ",
+  "hud.starfall.evac.railgun": "ЗОНА ЛУЧА SS-01 · УДАР ЧЕРЕЗ %s с",
+  "hud.starfall.evac.gungnir": "ЗОНА УДАРА SS-03 · УДАР ЧЕРЕЗ %s с",
+  "hud.starfall.evac.seven": "ЗВЕЗДА SS-04 ПАДАЕТ · УДАР ЧЕРЕЗ %s с",
+  "hud.starfall.evac.beam": "ТЫ В ЛУЧЕ"
 }
