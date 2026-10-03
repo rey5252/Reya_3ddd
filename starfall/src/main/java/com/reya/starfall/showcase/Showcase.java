@@ -136,7 +136,10 @@ public final class Showcase {
     }
 
     private static void shot(String name) {
-        run(() -> pendingShot = name);
+        run(() -> {
+            Minecraft.getInstance().getToasts().clear();
+            pendingShot = name;
+        });
     }
 
     private static void fly() {
@@ -249,8 +252,8 @@ public final class Showcase {
         run(() -> mc.player.getInventory().selected = 0);
 
         // ---- the remote itself: idle, the cover flipped by the thumb, the press, and from the front
-        awaitChunk(-30, -30);
-        tpGround(-30, -30, 0, 135.0F, 8.0F);
+        awaitChunk(0, 0);
+        tpGround(0, 0, 0, 135.0F, 8.0F);
         waitTicks(80);
         shot("remote_idle");
         run(RemoteAnimation::startLocal);
@@ -382,7 +385,7 @@ public final class Showcase {
         at(Skill.FLARE + 6);
         shot("ss04_flare");
         at(Skill.FLARE + 400);
-        tp(0, 230, 820, 0.0F, 80.0F);
+        tp(0, 120, 800, 0.0F, 62.0F);
         waitTicks(120);
         shot("ss04_burned_into_the_land");
         cmd("time set 6000");

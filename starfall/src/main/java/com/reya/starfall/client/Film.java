@@ -405,8 +405,8 @@ public final class Film {
         space(c, 1.2F, 0.0F, 0.7F);
         nebula(c, s, 1.0F);
         double scale = c.w * 0.62D / BigDipper.EXTENT;
-        double zoom = s < 6.5F ? 1.0D + 0.05D * (s - 2.4F) : 1.2D - 0.45D * RemoteAnimation.smooth((s - 6.5F) / 0.5F);
-        double ox = c.w * 0.5D, oy = s < 6.5F ? c.h * 0.52D : c.h * (0.52D - 0.32D * RemoteAnimation.smooth((s - 6.5F) / 0.5F));
+        double zoom = s < 6.5F ? 1.0D + 0.05D * (s - 2.4F) : 1.2D - 0.55D * RemoteAnimation.smooth((s - 6.5F) / 0.5F);
+        double ox = c.w * 0.5D, oy = s < 6.5F ? c.h * 0.52D : c.h * (0.52D - 0.27D * RemoteAnimation.smooth((s - 6.5F) / 0.5F));
         double[] px = new double[7], py = new double[7];
         double mx = 0, my = 0;
         for (int i = 0; i < 7; i++) {
@@ -470,17 +470,21 @@ public final class Film {
             c.mode(false);
             c.gradient(0, 0, c.w, c.h, Fx.argb(0x0C1226, 0.55F * dawn), Fx.argb(0x8CA8DC, 0.85F * dawn));
             c.mode(true);
-            for (int i = 0; i < 7; i++) {
+            // each beam lands at its own spot on the ground, spread out towards the viewer in the same
+            // left-to-right order as the stars, so they fan out instead of crossing
+            Integer[] order = {0, 1, 2, 3, 4, 5, 6};
+            java.util.Arrays.sort(order, (a, b) -> Double.compare(px[a], px[b]));
+            for (int slot = 0; slot < 7; slot++) {
+                int i = order[slot];
                 float f = (p - i * 0.07F) / 0.2F;
                 if (f <= 0) continue;
                 float k = Math.min(1.0F, f);
-                // each beam lands at its own spot on the ground, spread out towards the viewer
-                double tx = c.w * (-0.25D + 1.5D * (i + 0.5D) / 7.0D), ty = c.h * 1.05D;
+                double tx = c.w * (-0.2D + 1.4D * (slot + 0.5D) / 7.0D), ty = c.h * 1.05D;
                 double ex = px[i] + (tx - px[i]) * k, ey = py[i] + (ty - py[i]) * k;
-                double wide = 2.0D + 26.0D * k;
-                c.taper(px[i], py[i], 1.5D, ex, ey, wide, Fx.argb(0xE8F0FF, 0.9F), Fx.argb(0xFFFFFF, 0.95F));
-                c.taper(px[i], py[i], 4.0D, ex, ey, wide * 3.0D, Fx.argb(0x9AB0FF, 0.25F), Fx.argb(0xB8C8FF, 0.35F));
-                if (f < 1.4F) c.glow(px[i], py[i], 46.0D * (1.4F - f), Fx.argb(0xFFFFFF, 0.6F));
+                double wide = 1.5D + 12.0D * k;
+                c.taper(px[i], py[i], 1.0D, ex, ey, wide, Fx.argb(0xE8F0FF, 0.85F), Fx.argb(0xFFFFFF, 0.95F));
+                c.taper(px[i], py[i], 3.0D, ex, ey, wide * 2.4D, Fx.argb(0x9AB0FF, 0.2F), Fx.argb(0xB8C8FF, 0.3F));
+                if (f < 1.4F) c.glow(px[i], py[i], 40.0D * (1.4F - f), Fx.argb(0xFFFFFF, 0.6F));
             }
             // long cross flares through every star
             for (int i = 0; i < 7; i++) {

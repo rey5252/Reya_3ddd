@@ -90,11 +90,23 @@ public final class RemoteRenderer extends BlockEntityWithoutLevelRenderer {
         screen(pose, buffers, skill, time, t);
         labels(pose, buffers, skill, light);
 
-        // the button, pushed in as the thumb presses, glowing in the weapon's colour
+        // the button, pushed in as the thumb presses, and the cover swung about its hinge
         float press = RemoteAnimation.press(t);
+        float angle = RemoteAnimation.cover(t);
         pose.pushPose();
         pose.translate(0.0F, 0.0F, -press / 16.0F);
         items.renderModelLists(models.getModel(BUTTON), stack, LightTexture.FULL_BRIGHT, overlay, pose, buffers.getBuffer(Sheets.cutoutBlockSheet()));
+        pose.popPose();
+        pose.pushPose();
+        hinge(pose, angle);
+        items.renderModelLists(models.getModel(COVER_FRAME), stack, light, overlay, pose, buffers.getBuffer(Sheets.cutoutBlockSheet()));
+        pose.popPose();
+        // the solid parts must be down before anything is blended over them
+        if (buffers instanceof MultiBufferSource.BufferSource source) source.endBatch(Sheets.cutoutBlockSheet());
+
+        // glow: the button's halo (brighter as it bottoms out) and the trims
+        pose.pushPose();
+        pose.translate(0.0F, 0.0F, -press / 16.0F);
         VertexConsumer halo = buffers.getBuffer(RenderType.eyes(TextureAtlas.LOCATION_BLOCKS));
         int passes = 1 + Math.round(RemoteAnimation.flare(t) * 3.0F);
         for (int i = 0; i < passes; i++) {
@@ -104,11 +116,9 @@ public final class RemoteRenderer extends BlockEntityWithoutLevelRenderer {
         items.renderModelLists(models.getModel(GLOW), stack, LightTexture.FULL_BRIGHT, overlay, pose,
                 buffers.getBuffer(RenderType.eyes(TextureAtlas.LOCATION_BLOCKS)));
 
-        // the cover, swung about its hinge
-        float angle = RemoteAnimation.cover(t);
+        // and last the cover's glass
         pose.pushPose();
         hinge(pose, angle);
-        items.renderModelLists(models.getModel(COVER_FRAME), stack, light, overlay, pose, buffers.getBuffer(Sheets.cutoutBlockSheet()));
         items.renderModelLists(models.getModel(COVER_GLASS), stack, light, overlay, pose,
                 buffers.getBuffer(RenderType.entityTranslucent(TextureAtlas.LOCATION_BLOCKS)));
         pose.popPose();
@@ -247,19 +257,19 @@ public final class RemoteRenderer extends BlockEntityWithoutLevelRenderer {
 
     private void thumb(PoseStack pose, MultiBufferSource buffers, AbstractClientPlayer player, float t, float angle,
                        float press, int light) {
-        Vector3f entry = new Vector3f(14.0F, 1.5F, 12.0F);
-        Vector3f underTab = tab(0.0F).add(0.0F, -0.5F, 0.35F);
-        Vector3f approach = new Vector3f(8.0F, BUTTON_Y, 11.6F);
-        Vector3f contact = new Vector3f(8.0F, BUTTON_Y, BUTTON_FRONT + 0.06F - press);
-        Vector3f lift = new Vector3f(8.8F, 7.8F, 12.0F);
-        Vector3f exit = new Vector3f(14.5F, 1.0F, 12.5F);
+        Vector3f entry = new Vector3f(17.0F, 5.0F, 11.0F);
+        Vector3f underTab = tab(0.0F).add(0.4F, -0.45F, 0.3F);
+        Vector3f approach = new Vector3f(8.3F, BUTTON_Y, 11.4F);
+        Vector3f contact = new Vector3f(8.3F, BUTTON_Y, BUTTON_FRONT + 0.06F - press);
+        Vector3f lift = new Vector3f(9.5F, 8.0F, 11.8F);
+        Vector3f exit = new Vector3f(17.5F, 5.5F, 11.5F);
         Vector3f tip;
         if (t < 2.0F) {
             tip = lerp(entry, underTab, RemoteAnimation.smooth(t / 2.0F));
         } else if (t < 5.0F) {
-            tip = tab(angle).add(0.0F, -0.5F, 0.35F);
+            tip = tab(angle).add(0.4F, -0.45F, 0.3F);
         } else if (t < 7.0F) {
-            tip = lerp(tab(RemoteAnimation.COVER_OPEN).add(0.0F, -0.5F, 0.35F), approach, RemoteAnimation.smooth((t - 5.0F) / 2.0F));
+            tip = lerp(tab(RemoteAnimation.COVER_OPEN).add(0.4F, -0.45F, 0.3F), approach, RemoteAnimation.smooth((t - 5.0F) / 2.0F));
         } else if (t < 8.8F) {
             tip = lerp(approach, contact, RemoteAnimation.smooth((t - 7.0F) / 1.8F));
         } else if (t < 10.2F) {
@@ -269,11 +279,12 @@ public final class RemoteRenderer extends BlockEntityWithoutLevelRenderer {
         } else {
             tip = lerp(lift, exit, RemoteAnimation.smooth((t - 11.6F) / 3.4F));
         }
-        Vector3f dir = new Vector3f(0.62F, -0.62F, 0.48F).normalize();
+        // from the tip back towards the hand, which holds the remote from the right
+        Vector3f dir = new Vector3f(0.9F, -0.3F, 0.3F).normalize();
         pose.pushPose();
         pose.translate(tip.x() / 16.0F, tip.y() / 16.0F, tip.z() / 16.0F);
         pose.mulPose(new Quaternionf().rotationTo(0.0F, 0.0F, 1.0F, dir.x(), dir.y(), dir.z()));
-        pose.scale(0.85F, 0.8F, 2.6F);
+        pose.scale(0.62F, 0.56F, 2.2F);
         thumbPart().render(pose, buffers.getBuffer(RenderType.entitySolid(player.getSkinTextureLocation())), light,
                 OverlayTexture.NO_OVERLAY);
         pose.popPose();
