@@ -6,9 +6,32 @@ using UnityEngine;
 
 namespace DigOrDieMobs
 {
+    internal enum MobRank
+    {
+        Monster,
+        MiniBoss,
+        Boss,
+    }
+
     /// <summary>One new monster: its game descriptor plus what the mod needs around it.</summary>
     internal sealed class Mob
     {
+        public MobRank Rank = MobRank.Monster;
+
+        // Mini-bosses and the boss: at most one alive, and a pause between appearances.
+        public float DefaultCooldownMinutes;
+        public ConfigEntry<bool> RareEnabled;
+        public ConfigEntry<float> RareCooldownMinutes;
+        public float NextAllowedTime;
+
+        // Behaviour of mini-bosses and the boss (see BossBehaviour)
+        public Mob[] SummonWave = new Mob[0];      // monsters called in by a summon
+        public float[] SummonAtHealth = new float[0]; // summon when health drops below these fractions
+        public float SummonEverySeconds;           // or periodically while fighting (0 = never)
+        public int MaxMinionsNearby = 6;
+        public Mob DeathSplitInto;                  // monsters left behind on death
+        public int DeathSplitCount;
+
         public readonly string CodeName;
         public readonly string NameEnglish;
         public readonly string NameRussian;
@@ -44,6 +67,11 @@ namespace DigOrDieMobs
         public string LocId
         {
             get { return "U_" + CodeName; } // see CUnit.CDesc.GetName()
+        }
+
+        public bool IsRare
+        {
+            get { return Rank != MobRank.Monster; }
         }
     }
 
@@ -139,7 +167,174 @@ namespace DigOrDieMobs
             },
             () => new CUnit.CDesc[] { GUnits.fish, GUnits.fishBlack, GUnits.shark });
 
-        public static readonly Mob[] All = { AcidSlime, CrystalSpider, LavaWisp, DeepJelly };
+        // ---------------------------------------------------------------- mini-bosses
+
+        /// <summary>Huge crowned slime. Hits hard and splits into acid slimes when it dies.</summary>
+        public static readonly Mob SlimeKing = new Mob(
+            "slimeKing", "Slime King", "Король слизней",
+            "surface and dirt caves", "поверхность и земляные пещеры",
+            new CUnitGround.CDesc(
+                tier: 3,
+                speed: 2.2f,
+                size: new Vector2(2.0f, 1.6f),
+                hpMax: 450,
+                armor: 4,
+                attackDesc: new CAttackDesc(range: 2.2f, damage: 18, nbAttacks: 1, cooldown: 1.4f, knockbackTarget: 14f),
+                tiles: MobAssets.slimeKing,
+                loot: new[]
+                {
+                    new CStack(GItems.sulfur, 6, 1f),
+                    new CStack(GItems.gold, 5, 0.4f),
+                    new CStack(GItems.potionHpRegen, 1, 0.5f),
+                })
+            {
+                m_emitLight = new Color24(40, 130, 60),
+            },
+            () => AcidSlime.Companions())
+        {
+            Rank = MobRank.MiniBoss,
+            DefaultCooldownMinutes = 10f,
+            DeathSplitInto = AcidSlime,
+            DeathSplitCount = 4,
+        };
+
+        /// <summary>Mother of the crystal spiders: armoured, fast, keeps calling her brood.</summary>
+        public static readonly Mob CrystalQueen = new Mob(
+            "crystalQueen", "Crystal Queen", "Кристальная королева",
+            "deep caves", "глубокие пещеры",
+            new CUnitGround.CDesc(
+                tier: 3,
+                speed: 5f,
+                size: new Vector2(2.2f, 1.5f),
+                hpMax: 700,
+                armor: 12,
+                attackDesc: new CAttackDesc(range: 2.4f, damage: 20, nbAttacks: 1, cooldown: 1f, knockbackTarget: 16f),
+                tiles: MobAssets.crystalQueen,
+                loot: new[]
+                {
+                    new CStack(GItems.crystal, 10, 1f),
+                    new CStack(GItems.crystalLight, 3, 0.6f),
+                    new CStack(GItems.crystalBlack, 2, 0.4f),
+                    new CStack(GItems.diamonds, 2, 0.2f),
+                })
+            {
+                m_emitLight = new Color24(120, 60, 200),
+            },
+            () => CrystalSpider.Companions())
+        {
+            Rank = MobRank.MiniBoss,
+            DefaultCooldownMinutes = 12f,
+            SummonWave = new[] { CrystalSpider, CrystalSpider },
+            SummonEverySeconds = 20f,
+            MaxMinionsNearby = 6,
+        };
+
+        /// <summary>Horned lord of the lava wisps: big fireballs, calls wisps when wounded.</summary>
+        public static readonly Mob PyreLord = new Mob(
+            "pyreLord", "Pyre Lord", "Повелитель пламени",
+            "lava and the volcano", "лава и вулкан",
+            new CUnitBird.CDesc(
+                tier: 3,
+                speed: 4.5f,
+                size: new Vector2(2.0f, 2.0f),
+                hpMax: 600,
+                armor: 8,
+                // the projectile (a vanilla big fireball) is attached in Patches.SUnits_OnInit
+                attackDesc: new CAttackDesc(range: 14f, damage: 25, nbAttacks: 3, cooldown: 2.2f, knockbackTarget: 8f,
+                                            sound: GameAssets.SoundID.firefly),
+                tiles: MobAssets.pyreLord,
+                loot: new[]
+                {
+                    new CStack(GItems.lootLavaBat, 4, 1f),
+                    new CStack(GItems.sulfur, 8, 1f),
+                    new CStack(GItems.energyGem, 2, 0.6f),
+                    new CStack(GItems.lootMiniBalrog, 1, 0.3f),
+                })
+            {
+                m_emitLight = new Color24(255, 90, 20),
+                m_immuneToFire = true,
+            },
+            () => LavaWisp.Companions())
+        {
+            Rank = MobRank.MiniBoss,
+            DefaultCooldownMinutes = 12f,
+            SummonWave = new[] { LavaWisp, LavaWisp },
+            SummonAtHealth = new[] { 0.66f, 0.33f },
+        };
+
+        // ---------------------------------------------------------------------- boss
+
+        /// <summary>
+        /// Giant floating eye of the deep. Shoots volleys of energy and, at 75%, 50% and 25% health,
+        /// calls crystal spiders and lava wisps to its side.
+        /// </summary>
+        public static readonly Mob AbyssEye = new Mob(
+            "abyssEye", "Eye of the Abyss", "Око Бездны",
+            "deep caves and lava", "глубокие пещеры и лава",
+            new CUnitBird.CDesc(
+                tier: 3,
+                speed: 3.8f,
+                size: new Vector2(3.0f, 3.0f),
+                hpMax: 4000,
+                armor: 14,
+                // the projectile (vanilla medium particle) is attached in Patches.SUnits_OnInit
+                attackDesc: new CAttackDesc(range: 18f, damage: 28, nbAttacks: 5, cooldown: 2.4f, knockbackTarget: 6f,
+                                            sound: GameAssets.SoundID.particle),
+                tiles: MobAssets.abyssEye,
+                loot: new[]
+                {
+                    new CStack(GItems.darkGem, 5, 1f),
+                    new CStack(GItems.energyGem, 4, 1f),
+                    new CStack(GItems.diamonds, 6, 0.7f),
+                    new CStack(GItems.masterGem, 1, 0.35f),
+                })
+            {
+                m_emitLight = new Color24(170, 60, 255),
+                m_immuneToFire = true,
+            },
+            () => Concat(CrystalSpider.Companions(), LavaWisp.Companions()))
+        {
+            Rank = MobRank.Boss,
+            DefaultCooldownMinutes = 30f,
+            SummonWave = new[] { CrystalSpider, CrystalSpider, LavaWisp, LavaWisp },
+            SummonAtHealth = new[] { 0.75f, 0.5f, 0.25f },
+        };
+
+        public static readonly Mob[] All = { AcidSlime, CrystalSpider, LavaWisp, DeepJelly, SlimeKing, CrystalQueen, PyreLord, AbyssEye };
+
+        private static Dictionary<CUnit.CDesc, Mob> _byDesc;
+
+        /// <summary>Our mob for a unit descriptor, or null.</summary>
+        public static Mob ByDesc(CUnit.CDesc desc)
+        {
+            if (_byDesc == null)
+            {
+                _byDesc = new Dictionary<CUnit.CDesc, Mob>();
+                foreach (Mob mob in All)
+                    _byDesc[mob.Desc] = mob;
+            }
+            Mob found;
+            return desc != null && _byDesc.TryGetValue(desc, out found) ? found : null;
+        }
+
+        private static CUnit.CDesc[] Concat(CUnit.CDesc[] a, CUnit.CDesc[] b)
+        {
+            var result = new CUnit.CDesc[a.Length + b.Length];
+            a.CopyTo(result, 0);
+            b.CopyTo(result, a.Length);
+            return result;
+        }
+
+        public static int CountAlive(Mob mob)
+        {
+            int count = 0;
+            foreach (CUnit unit in SUnits.Units)
+            {
+                if (unit != null && unit.m_uDesc == mob.Desc && unit.IsAlive())
+                    count++;
+            }
+            return count;
+        }
 
         public static Mob Find(string text)
         {
@@ -163,7 +358,20 @@ namespace DigOrDieMobs
             List<CUnitMonster.CDesc> result = null;
             foreach (Mob mob in All)
             {
-                int weight = mob.SpawnWeight != null ? mob.SpawnWeight.Value : 1;
+                int weight;
+                if (mob.IsRare)
+                {
+                    // one at a time, and not again before its cooldown has passed
+                    if (mob.RareEnabled != null && !mob.RareEnabled.Value)
+                        continue;
+                    if (Time.realtimeSinceStartup < mob.NextAllowedTime || CountAlive(mob) > 0)
+                        continue;
+                    weight = 1;
+                }
+                else
+                {
+                    weight = mob.SpawnWeight != null ? mob.SpawnWeight.Value : 1;
+                }
                 if (weight <= 0 || Array.IndexOf(list, mob.Desc) >= 0 || !HasCompanion(list, mob))
                     continue;
                 if (result == null)

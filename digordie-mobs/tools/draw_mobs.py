@@ -1,5 +1,6 @@
 """
-Draws the sprites of the new Dig or Die monsters (128x128 frames, transparent background).
+Draws the sprites of the new Dig or Die monsters (transparent background): 128x128 frames for
+the monsters, 256x256 frames for the mini-bosses and the boss.
 
     python3 tools/draw_mobs.py            -> src/DigOrDieMobs/assets/*.png
 
@@ -14,9 +15,18 @@ import random
 import numpy as np
 from PIL import Image, ImageDraw, ImageFilter
 
-FRAME = 128
-SS = 4                  # supersampling
+FRAME = 128             # drawing coordinates are always 0..128
+SS = 4                  # supersampling (internal pixels per drawing unit)
 N = FRAME * SS
+OUT_SIZE = 128          # size of the saved frame
+
+
+def set_output(size):
+    """Frames of `size` pixels; drawing stays in 128-space, supersampling follows."""
+    global SS, N, OUT_SIZE
+    OUT_SIZE = size
+    SS = size * 4 // FRAME
+    N = FRAME * SS
 GROUND = 102            # feet line, same framing as the DODModAPI example monster
 OUT = os.path.join(os.path.dirname(__file__), '..', 'src', 'DigOrDieMobs', 'assets')
 FRAMES = ['stand', 'run1', 'run2', 'jump', 'fight', 'dead']
@@ -105,11 +115,11 @@ def line_layer(segments, color, width):
 
 
 def finish(img):
-    return img.resize((FRAME, FRAME), Image.LANCZOS)
+    return img.resize((OUT_SIZE, OUT_SIZE), Image.LANCZOS)
 
 
 # ---------------------------------------------------------------- acid slime
-def acid_slime(kind):
+def acid_slime(kind, king=False):
     sx, sy, lift = {'stand': (1, 1, 0), 'run1': (1.12, 0.9, 0), 'run2': (0.92, 1.08, 0),
                     'jump': (0.84, 1.2, 10), 'fight': (1.16, 0.94, 0), 'dead': (1.55, 0.32, 0)}[kind]
     dead = kind == 'dead'
@@ -119,6 +129,8 @@ def acid_slime(kind):
     body = union(ellipse_mask(64, cy, rx, ry), ellipse_mask(64, base - 5, rx + 3, 6 * max(sy, 0.6)))
     dark, mid, light = (hexc('#3E5A3A'), hexc('#6E8A5E'), hexc('#B8C9A8')) if dead else \
         (hexc('#1F8A2E'), hexc('#45C83F'), hexc('#C8FF7A'))
+    if king and not dead:
+        dark, mid, light = hexc('#0B5E3B'), hexc('#1FAE63'), hexc('#9DFFC4')
     layers = [
         None if dead else glow(body, hexc('#7DFF4F'), 6, 0.45),
         solid(outline(body, 2.2), hexc('#0B3512') if not dead else hexc('#283426')),
@@ -145,6 +157,9 @@ def acid_slime(kind):
     # eye stalks + eyes
     top = cy - ry
     eyes = layer()
+    if king:
+        layers.extend(king_face(kind, cy, rx, ry, top, dead))
+        return finish(stack(*layers))
     if dead:
         ed = ImageDraw.Draw(eyes)
         for side in (-1, 1):
@@ -179,10 +194,12 @@ def acid_slime(kind):
 
 
 # ------------------------------------------------------------- crystal spider
-def crystal_spider(kind):
+def crystal_spider(kind, queen=False):
     dead = kind == 'dead'
     lift = 9 if kind == 'jump' else 0
     by = GROUND - 26 - lift if not dead else GROUND - 12
+    if queen:
+        by -= 4
     legs = []
     for i in range(4):
         for s in (-1, 1):
@@ -206,19 +223,27 @@ def crystal_spider(kind):
                 foot = (64 + s * (10 + i * 4), by - 26 - i * 3)
             legs.append([hip, knee, foot])
     dark = hexc('#3A3A44') if dead else hexc('#1F1530')
-    legs_dark = line_layer(legs, dark, 5.2)
+    legs_dark = line_layer(legs, dark, 6.4 if queen else 5.2)
     legs_light = line_layer([[ (x, y - 0.8) for x, y in leg] for leg in legs], hexc('#5A4A78') if not dead else hexc('#5B5B66'), 2.2)
 
-    abdomen = ellipse_mask(64, by - 2, 25, 17)
-    head = ellipse_mask(64, by + 9, 15, 10)
+    abdomen = ellipse_mask(64, by - 2, 29 if queen else 25, 19 if queen else 17)
+    head = ellipse_mask(64, by + 9, 17 if queen else 15, 11 if queen else 10)
     body = union(abdomen, head)
     layers = [
         solid(outline(body, 2), hexc('#120B1E')),
         shaded(abdomen, hexc('#2A1D45') if not dead else hexc('#3A3A44'), hexc('#7A5AB0') if not dead else hexc('#77777F'), 56, by - 12, 34),
         shaded(head, hexc('#24183B') if not dead else hexc('#35353D'), hexc('#6A4E98') if not dead else hexc('#6E6E76'), 60, by + 4, 20),
     ]
+    if queen and not dead:
+        veins = [[(64, by - 16), (58, by - 6), (52, by + 2)], [(64, by - 16), (70, by - 6), (76, by + 2)],
+                 [(50, by - 10), (42, by - 2)], [(78, by - 10), (86, by - 2)]]
+        layers.append(glow(Image.fromarray(np.asarray(line_layer(veins, (255, 255, 255, 255), 1.6))[..., 3]), hexc('#C77DFF'), 2, 1.0))
+        layers.append(line_layer(veins, hexc('#E9C8FF'), 1.2))
     # crystals on the back
     crystals = [(64, by - 14, 7, 30), (49, by - 10, 5, 19), (79, by - 10, 5, 19), (39, by - 4, 4, 11), (89, by - 4, 4, 11)]
+    if queen:
+        crystals = [(64, by - 16, 8, 38), (52, by - 13, 6, 27), (76, by - 13, 6, 27), (42, by - 8, 5, 18),
+                    (86, by - 8, 5, 18), (35, by - 1, 4, 11), (93, by - 1, 4, 11)]
     cmask_list = []
     for cx, base_y, w, h in crystals:
         lean = (cx - 64) * 0.25
@@ -227,10 +252,12 @@ def crystal_spider(kind):
         cmask_list.append((poly_mask(pts), cx, base_y, h, pts))
     allc = union(*[c[0] for c in cmask_list])
     if not dead:
-        layers.append(glow(allc, hexc('#5FF2FF'), 5, 0.7))
+        layers.append(glow(allc, hexc('#C77DFF') if queen else hexc('#5FF2FF'), 6 if queen else 5, 0.8 if queen else 0.7))
     layers.append(solid(outline(allc, 1.4), hexc('#0C4E58') if not dead else hexc('#3D4A4C')))
     for m, cx, base_y, h, pts in cmask_list:
-        layers.append(shaded(m, hexc('#1A9DB3') if not dead else hexc('#5E7377'), hexc('#E6FFFF') if not dead else hexc('#A9B8BA'),
+        crystal_dark = hexc('#6A2BD9') if queen else hexc('#1A9DB3')
+        crystal_light = hexc('#F6E9FF') if queen else hexc('#E6FFFF')
+        layers.append(shaded(m, crystal_dark if not dead else hexc('#5E7377'), crystal_light if not dead else hexc('#A9B8BA'),
                              cx - 2, base_y - h * 0.75, h * 1.1))
         # facet line
         layers.append(line_layer([[pts[2], ((pts[0][0] + pts[4][0]) / 2, base_y)]], (255, 255, 255, 90), 0.8))
@@ -239,6 +266,8 @@ def crystal_spider(kind):
         layers.append(line_layer([[(57, by + 8), (61, by + 8)], [(67, by + 8), (71, by + 8)]], hexc('#151018'), 1.3))
     else:
         eyes = [(58.5, by + 7, 2.6), (69.5, by + 7, 2.6), (54, by + 11, 1.6), (74, by + 11, 1.6)]
+        if queen:
+            eyes = [(58, by + 6, 3), (70, by + 6, 3), (53, by + 10, 2), (75, by + 10, 2), (61, by + 11, 1.6), (67, by + 11, 1.6)]
         em = union(*[ellipse_mask(x, y, r, r) for x, y, r in eyes])
         col = hexc('#FF3B6B') if kind != 'fight' else hexc('#FF7A2F')
         layers.append(glow(em, col, 2.5, 0.9))
@@ -250,7 +279,7 @@ def crystal_spider(kind):
 
 
 # ----------------------------------------------------------------- lava wisp
-def lava_wisp(kind):
+def lava_wisp(kind, lord=False):
     dead = kind == 'dead'
     phase = {'stand': 0.0, 'run1': 0.33, 'run2': 0.66, 'jump': 0.15, 'fight': 0.5, 'dead': 0}[kind]
     cy = 66 if kind != 'jump' else 60
@@ -269,7 +298,14 @@ def lava_wisp(kind):
         layers.append(line_layer(cracks, hexc('#C2410C', 200), 1.4))
         return finish(stack(*layers))
     # aura
-    layers.append(glow(ellipse_mask(64, cy - 4, r + 16, r + 18), hexc('#FF7A1A'), 10, 0.55))
+    layers.append(glow(ellipse_mask(64, cy - 4, r + 16, r + 18), hexc('#FF4A12') if lord else hexc('#FF7A1A'), 10, 0.7 if lord else 0.55))
+    if lord:
+        # obsidian horns behind the flames
+        for side in (-1, 1):
+            horn = poly_mask([(64 + side * 12, cy - r * 0.7), (64 + side * 22, cy - r * 0.45), (64 + side * 30, cy - r - 16),
+                              (64 + side * 34, cy - r - 30), (64 + side * 24, cy - r - 12)])
+            layers.append(solid(outline(horn, 1.2), hexc('#1A0A06')))
+            layers.append(shaded(horn, hexc('#140806'), hexc('#5A3A30'), 64 + side * 20, cy - r - 8, 22))
     # flames: pairs of tongues, symmetric
     flames = []
     for i, (ang, length, width) in enumerate([(0, 34, 9), (28, 26, 8), (52, 19, 7), (78, 13, 6)]):
@@ -292,14 +328,20 @@ def lava_wisp(kind):
     layers.append(solid(inner2.filter(ImageFilter.GaussianBlur(sc(1))), hexc('#FFE26A'), 0.9))
     # core
     layers.append(solid(outline(core, 1.6), hexc('#7A1203')))
-    layers.append(shaded(core, hexc('#D43A0C'), hexc('#FFF6C2'), 60, cy - 6, r * 1.35))
+    if lord:
+        layers.append(shaded(core, hexc('#B0200A'), hexc('#E8FBFF'), 64, cy - 2, r * 1.25))
+        layers.append(solid(ellipse_mask(64, cy - 2, r * 0.55, r * 0.55).filter(ImageFilter.GaussianBlur(sc(3))), hexc('#9FE6FF'), 0.55))
+    else:
+        layers.append(shaded(core, hexc('#D43A0C'), hexc('#FFF6C2'), 60, cy - 6, r * 1.35))
     # face
     for s in (-1, 1):
         ex, ey = 64 + s * 8, cy - 1
         w, h = (5.2, 3.4) if kind != 'fight' else (5.8, 4.2)
         eye = poly_mask([(ex - w, ey + s * 0), (ex - w * 0.2 * s, ey - h), (ex + w, ey - s * 0.5 * h * 0.2), (ex + w * 0.2 * s, ey + h * 0.8)])
         layers.append(solid(eye, hexc('#3A0800')))
-        layers.append(solid(ellipse_mask(ex + s * 0.8, ey - 0.3, 1.2, 1.2), hexc('#FFE9A0')))
+        layers.append(solid(ellipse_mask(ex + s * 0.8, ey - 0.3, 1.2, 1.2), hexc('#FFFFFF') if lord else hexc('#FFE9A0')))
+        if lord:  # angry brows
+            layers.append(line_layer([[(ex + s * 6, ey - 7), (ex - s * 4, ey - 3)]], hexc('#2A0500'), 2))
     if kind == 'fight':
         layers.append(solid(ellipse_mask(64, cy + 9, 6.5, 4.2), hexc('#3A0800')))
         layers.append(solid(ellipse_mask(64, cy + 10, 3.5, 2), hexc('#FF7A1A')))
@@ -384,6 +426,163 @@ def deep_jelly(kind):
     return finish(stack(*layers))
 
 
+# ----------------------------------------------------------- slime king face
+def king_face(kind, cy, rx, ry, top, dead):
+    """Big angry eyes in the body and a golden crown, for the Slime King."""
+    out = []
+    gold_dark, gold_light, gold_line = hexc('#9A6A00'), hexc('#FFE77A'), hexc('#4A3000')
+
+    def crown(cx, base, w, tilt):
+        pts = []
+        spikes = [(-1.0, 0.62), (-0.5, 0.8), (0.0, 1.0), (0.5, 0.8), (1.0, 0.62)]
+        h = w * 0.85
+        pts.append((-w, 0))
+        for i, (px, ph) in enumerate(spikes):
+            pts.append((px * w, -h * ph))
+            if i < len(spikes) - 1:
+                pts.append(((px + 0.25) * w, -h * 0.32))
+        pts.append((w, 0))
+        ca, sa = math.cos(tilt), math.sin(tilt)
+        world = [(cx + x * ca - y * sa, base + x * sa + y * ca) for x, y in pts]
+        m = poly_mask(world)
+        res = [solid(outline(m, 1.2), gold_line), shaded(m, gold_dark, gold_light, cx - w * 0.4, base - h * 0.7, w * 1.8)]
+        band = poly_mask([(cx + x * ca - y * sa, base + x * sa + y * ca) for x, y in [(-w, 0), (w, 0), (w, -h * 0.22), (-w, -h * 0.22)]])
+        res.append(solid(band, hexc('#C98A00'), 0.8))
+        for gx, col in ((-0.55, '#3D7BFF'), (0.0, '#FF2E4D'), (0.55, '#3D7BFF')):
+            x, y = gx * w, -h * 0.11
+            res.append(solid(ellipse_mask(cx + x * ca - y * sa, base + x * sa + y * ca, 2.2, 2.2), hexc(col)))
+        return res
+
+    if dead:
+        out.extend(crown(64 + rx * 0.45, GROUND - 7, 11, 0.5))
+        for side in (-1, 1):
+            ex, ey = 64 + side * 12, GROUND - 6
+            out.append(line_layer([[(ex - 3, ey - 3), (ex + 3, ey + 3)], [(ex - 3, ey + 3), (ex + 3, ey - 3)]], hexc('#1E2A1C'), 1.6))
+        return out
+
+    out.extend(crown(64, top + 6, 19, 0.0))
+    for side in (-1, 1):
+        ex, ey = 64 + side * rx * 0.33, cy - ry * 0.1
+        eye = ellipse_mask(ex, ey, 7.5, 8.5)
+        out.append(solid(outline(eye, 1.4), hexc('#06301A')))
+        out.append(shaded(eye, hexc('#CDEFD8'), hexc('#FFFFFF'), ex - 2, ey - 3, 10))
+        py = ey + (2.5 if kind == 'fight' else 1.5)
+        out.append(solid(ellipse_mask(ex + side * -0.8, py, 3.6, 4.2), hexc('#0C120E')))
+        out.append(solid(ellipse_mask(ex - 1.2, py - 1.5, 1.1, 1.1), (255, 255, 255, 255)))
+        # angry brows: the inner end (towards the middle) is lower
+        out.append(line_layer([[(ex + side * 9, ey - 14), (ex - side * 5, ey - 8)]], hexc('#06301A'), 3))
+    if kind == 'fight':
+        my = cy + ry * 0.38
+        out.append(solid(ellipse_mask(64, my, rx * 0.45, ry * 0.28), hexc('#06301A')))
+        teeth = layer()
+        td = ImageDraw.Draw(teeth)
+        for i in range(7):
+            tx = 64 - rx * 0.35 + i * rx * 0.7 / 6
+            ty = my - ry * 0.28 + 1
+            td.polygon([(sc(tx - 1.8), sc(ty)), (sc(tx + 1.8), sc(ty)), (sc(tx), sc(ty + 4))], fill=(235, 255, 225, 255))
+        out.append(teeth)
+    else:
+        out.append(line_layer([[(64 - 8, cy + ry * 0.42), (64, cy + ry * 0.34), (64 + 8, cy + ry * 0.42)]], hexc('#06301A'), 2))
+    return out
+
+
+# ------------------------------------------------------------- abyss eye boss
+def abyss_eye(kind):
+    dead = kind == 'dead'
+    phase = {'stand': 0.0, 'run1': 0.17, 'run2': 0.5, 'jump': 0.33, 'fight': 0.75, 'dead': 0}[kind]
+    cx, cy = 64, 50 if not dead else 66
+    R = 30 if kind != 'fight' else 31
+    layers = []
+    # aura
+    if not dead:
+        layers.append(glow(ellipse_mask(cx, cy, R + 12, R + 12), hexc('#9B30FF') if kind != 'fight' else hexc('#FF2E6A'), 12, 0.65))
+    # tentacles
+    tents = []
+    for i in range(6):
+        x0 = cx + (i - 2.5) * 8.5
+        pts = []
+        for k in range(14):
+            t = k / 13
+            y = cy + R * 0.7 + t * (44 if not dead else 22)
+            sway = 0 if dead else math.sin((phase + t * 0.8 + i * 0.19) * math.tau) * 6 * t
+            spread = (i - 2.5) * (5 if kind == 'fight' else 2) * t
+            pts.append((x0 + sway + spread, y))
+        tents.append(pts)
+    tent_dark = hexc('#3A1650') if not dead else hexc('#3C3842')
+    layers.append(line_layer(tents, tent_dark, 5))
+    layers.append(line_layer([[(x, y - 0.8) for x, y in t] for t in tents], hexc('#7A3FA0') if not dead else hexc('#66626C'), 2))
+    if not dead:
+        tips = union(*[ellipse_mask(t[-1][0], t[-1][1], 2.2, 2.2) for t in tents])
+        layers.append(glow(tips, hexc('#E08CFF'), 2, 1.0))
+        layers.append(solid(tips, hexc('#F3D6FF')))
+    # orbiting crystal shards (behind the eye on the far side of the orbit)
+    shards_back, shards_front = [], []
+    if not dead:
+        for k in range(5):
+            a = (phase + k / 5.0) * math.tau
+            d = R + 15
+            x, y = cx + math.cos(a) * d, cy + math.sin(a) * d * 0.55 - 2
+            size = 4.5 + 1.5 * math.sin(a)
+            m = poly_mask([(x, y - size * 1.6), (x + size * 0.7, y), (x, y + size * 1.6), (x - size * 0.7, y)])
+            (shards_front if math.sin(a) > 0 else shards_back).append(m)
+    def draw_shards(ms):
+        if not ms:
+            return []
+        u = union(*ms)
+        return [glow(u, hexc('#C77DFF'), 2.5, 0.9), solid(outline(u, 0.8), hexc('#3A0F6B')), shaded(u, hexc('#7B3BFF'), hexc('#F8EDFF'), cx, cy - R, R * 2.5)]
+    layers.extend(draw_shards(shards_back))
+    # eyeball
+    ball = ellipse_mask(cx, cy, R, R)
+    layers.append(solid(outline(ball, 2), hexc('#1E0A2C')))
+    layers.append(shaded(ball, hexc('#8E79AE') if not dead else hexc('#55525A'), hexc('#F7F0FF') if not dead else hexc('#9A97A0'), cx - 8, cy - 10, R * 1.5))
+    if not dead:
+        rnd = random.Random(5)
+        veins = []
+        for k in range(9):
+            a = rnd.uniform(0, math.tau)
+            x0, y0 = cx + math.cos(a) * R * 0.97, cy + math.sin(a) * R * 0.97
+            x1, y1 = cx + math.cos(a + 0.15) * R * 0.62, cy + math.sin(a + 0.15) * R * 0.62
+            veins.append([(x0, y0), ((x0 + x1) / 2 + rnd.uniform(-2, 2), (y0 + y1) / 2 + rnd.uniform(-2, 2)), (x1, y1)])
+        layers.append(line_layer(veins, hexc('#D0204A', 150), 0.9))
+        # iris + slit pupil
+        open_ = {'jump': 1.12, 'fight': 0.92}.get(kind, 1.0)
+        ir = R * 0.48 * open_
+        iris = ellipse_mask(cx, cy, ir, ir)
+        if kind == 'fight':
+            layers.append(shaded(iris, hexc('#5A0018'), hexc('#FF8A3D'), cx, cy, ir))
+        else:
+            layers.append(shaded(iris, hexc('#2A0E52'), hexc('#7FF6FF'), cx, cy, ir))
+        layers.append(solid(outline(iris, 0.8), hexc('#12051F')))
+        layers.append(solid(ellipse_mask(cx, cy, R * (0.05 if kind == 'fight' else 0.09), ir * 0.78), hexc('#06020B')))
+        layers.append(solid(ellipse_mask(cx - R * 0.32, cy - R * 0.36, R * 0.16, R * 0.1), (255, 255, 255, 255), 0.75))
+    # eyelids
+    lid_dark, lid_light = (hexc('#2E1040'), hexc('#7A3FA0')) if not dead else (hexc('#2C2A30'), hexc('#5E5A64'))
+    if dead:
+        lid = ellipse_mask(cx, cy, R + 0.5, R + 0.5)
+        layers.append(shaded(lid, lid_dark, lid_light, cx - 6, cy - 12, R * 1.6))
+        layers.append(line_layer([[(cx - R * 0.9, cy + 2), (cx, cy + 6), (cx + R * 0.9, cy + 2)]], hexc('#151318'), 1.6))
+    else:
+        open_lid = {'jump': 0.25, 'fight': 0.5}.get(kind, 0.42)
+        top_lid = ellipse_mask(cx, cy - R * (1.0 - open_lid * 0.2) - 2, R * 1.08, R * open_lid)
+        bot_lid = ellipse_mask(cx, cy + R * 1.0 + 2, R * 1.02, R * open_lid * 0.8)
+        lids = Image.fromarray(np.minimum(np.asarray(union(top_lid, bot_lid)), np.asarray(outline(ball, 2.5))))
+        layers.append(solid(outline(lids, 1.0), hexc('#12051F')))
+        layers.append(shaded(lids, lid_dark, lid_light, cx - 8, cy - R, R * 1.4))
+        # fleshy inner rim of the lids
+        rim = Image.fromarray(np.clip(np.asarray(outline(lids, 1.4), np.float32) - np.asarray(lids, np.float32), 0, 255).astype(np.uint8))
+        rim = Image.fromarray(np.minimum(np.asarray(rim), np.asarray(ball)))
+        layers.append(solid(rim, hexc('#D2386C'), 0.9))
+        # lashes along the upper lid
+        lashes = []
+        for k in range(7):
+            a = math.radians(-54 + k * 18)
+            bx, by_ = cx + math.sin(a) * (R + 1), cy - math.cos(a) * (R + 1)
+            lashes.append([(bx, by_), (bx + math.sin(a) * 7, by_ - math.cos(a) * 7)])
+        layers.append(line_layer(lashes, hexc('#1A0726'), 1.6))
+    layers.extend(draw_shards(shards_front))
+    return finish(stack(*layers))
+
+
 MOBS = {
     'acid_slime': acid_slime,
     'crystal_spider': crystal_spider,
@@ -391,12 +590,25 @@ MOBS = {
     'deep_jelly': deep_jelly,
 }
 
+BOSSES = {
+    'slime_king': lambda kind: acid_slime(kind, king=True),
+    'crystal_matriarch': lambda kind: crystal_spider(kind, queen=True),
+    'pyre_lord': lambda kind: lava_wisp(kind, lord=True),
+    'abyss_eye': abyss_eye,
+}
+
 
 def main():
+    import sys
+    only = set(sys.argv[1:])  # optional: names to redraw, e.g. abyss_eye slime_king
     os.makedirs(OUT, exist_ok=True)
-    for name, fn in MOBS.items():
-        for kind in FRAMES:
-            fn(kind).save(os.path.join(OUT, '%s_%s.png' % (name, kind)))
+    for size, group in ((128, MOBS), (256, BOSSES)):
+        set_output(size)
+        for name, fn in group.items():
+            if only and name not in only:
+                continue
+            for kind in FRAMES:
+                fn(kind).save(os.path.join(OUT, '%s_%s.png' % (name, kind)))
     print('sprites written to', os.path.abspath(OUT))
 
 

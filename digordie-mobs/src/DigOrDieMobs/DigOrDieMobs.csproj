@@ -2,7 +2,7 @@
   <PropertyGroup>
     <AssemblyName>DigOrDieMobs</AssemblyName>
     <RootNamespace>DigOrDieMobs</RootNamespace>
-    <Description>Four new monsters for Dig or Die: Acid Slime, Crystal Spider, Lava Wisp and Deep Jelly.</Description>
+    <Description>New Dig or Die monsters, mini-bosses (Slime King, Crystal Queen, Pyre Lord) and a boss (Eye of the Abyss).</Description>
   </PropertyGroup>
 
   <ItemGroup>

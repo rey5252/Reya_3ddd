@@ -1,7 +1,7 @@
 ﻿DIG OR DIE - НОВІ МОНСТРИ (New Mobs)
 ====================================
 
-Додає в Dig or Die чотири нових монстри. Вони самі з'являються у світі
+Додає в Dig or Die чотири нових монстри, три міні-боси і боса. Вони самі з'являються у світі
 там, де живуть схожі звичайні монстри гри:
 
   Кислотний слизень (Acid Slime)      - поверхня і земляні печери
@@ -12,6 +12,20 @@
       літає, кидає вогняні кулі, не горить, 70 HP. Випадає: здобич лавового кажана, сірка.
   Глибинна медуза (Deep Jelly)        - океани (де риби й акули)
       плаває, світиться, жалить на 9, 55 HP. Випадає: світні водорості.
+
+МІНІ-БОСИ І БОС (з'являються рідко, по одному, з паузою між появами):
+
+  Король слизнів (Slime King)          - міні-бос, поверхня/земляні печери
+      450 HP, б'є на 18. Коли гине - розпадається на 4 кислотні слизні.
+  Кришталева королева (Crystal Queen)  - міні-бос, глибокі печери
+      700 HP, броня 12. Кожні 20 с бою кличе 2 кришталевих павуків.
+  Повелитель полум'я (Pyre Lord)       - міні-бос, лава і вулкан
+      600 HP, літає, великі вогняні кулі; на 66% і 33% HP кличе лавових духів.
+  ОКО БЕЗОДНІ (Eye of the Abyss)       - БОС, глибокі печери і лава
+      4000 HP, броня 14, залпи енергії; на 75/50/25% HP кличе павуків і духів.
+      Найкраща здобич: темні камені, енергокамені, діаманти, майстер-камінь.
+
+Коли бос поруч - угорі екрана смужка його здоров'я, у чаті - попередження.
 
 Назви монстрів у грі - російською (якщо гра російською) або англійською.
 
@@ -36,6 +50,8 @@
   /mobs crystalSpider 5     - п'ять павуків
   /mobs lavaWisp
   /mobs deepJelly           - медуза (ставте у воді)
+  /mobs slimeKing           - міні-боси: slimeKing, crystalQueen, pyreLord
+  /mobs abyssEye            - бос Око Безодні
 Команда - це чит: досягнення Steam у цьому світі вимикаються.
 
 
@@ -43,6 +59,8 @@
 ------------
 BepInEx\config\reya.digordie.newmobs.cfg - як часто кожен монстр з'являється:
   0 = ніколи, 1 = як один звичайний монстр цього місця (за замовчуванням), до 5 = частіше.
+  Розділ [Bosses]: чи з'являються боси самі (...Enabled) і пауза між появами в хвилинах
+  (...CooldownMinutes: 10 / 12 / 12 / 30 за замовчуванням).
 Менеджер модів (кнопка МОДИ) вмикає/вимикає цей мод однією кнопкою.
 
 
@@ -56,8 +74,9 @@ BepInEx\config\reya.digordie.newmobs.cfg - як часто кожен монст
 
 ENGLISH (short)
 ---------------
-Four new Dig or Die monsters (Acid Slime, Crystal Spider, Lava Wisp, Deep Jelly) that spawn
-where similar vanilla monsters live. Install: extract, close the game, run Install.bat (it also
+Four new Dig or Die monsters (Acid Slime, Crystal Spider, Lava Wisp, Deep Jelly), three mini-bosses
+(Slime King, Crystal Queen, Pyre Lord) and a boss (Eye of the Abyss) that spawn where similar vanilla
+monsters live; bosses are rare, one at a time, with a boss health bar. Install: extract, close the game, run Install.bat (it also
 downloads the required DODModAPI library from nuget.org), start the game from Steam.
 In chat: /mobs lists them, /mobs <name> [count] spawns them next to you (disables achievements).
 Requires BepInEx 5 and DODModAPI (https://github.com/ddmitv/dig-or-die-mods).

@@ -16,9 +16,11 @@ namespace DigOrDieMobs
     {
         public const string Guid = "reya.digordie.newmobs";
         public const string PluginName = "New Mobs";
-        public const string PluginVersion = "1.0.0";
+        public const string PluginVersion = "1.1.0";
 
         internal static ManualLogSource Log;
+
+        private readonly BossBar _bossBar = new BossBar();
 
         private void Awake()
         {
@@ -26,23 +28,48 @@ namespace DigOrDieMobs
 
             foreach (Mob mob in Mobs.All)
             {
-                mob.SpawnWeight = Config.Bind("Spawn", mob.CodeName, 1, new BepInEx.Configuration.ConfigDescription(
-                    "How often " + mob.NameEnglish + " spawns in its habitat (" + mob.HabitatEnglish + "): " +
-                    "0 = never, 1 = like one vanilla monster of that place, 2-5 = more often.",
-                    new BepInEx.Configuration.AcceptableValueRange<int>(0, 5)));
+                if (mob.IsRare)
+                {
+                    string kind = mob.Rank == MobRank.Boss ? "boss" : "mini-boss";
+                    mob.RareEnabled = Config.Bind("Bosses", mob.CodeName + "Enabled", true,
+                        "Whether the " + kind + " " + mob.NameEnglish + " appears on its own (" + mob.HabitatEnglish + "). /mobs can always spawn it.");
+                    mob.RareCooldownMinutes = Config.Bind("Bosses", mob.CodeName + "CooldownMinutes", mob.DefaultCooldownMinutes, new BepInEx.Configuration.ConfigDescription(
+                        "Minutes of play before " + mob.NameEnglish + " can appear (again). Only one can be alive at a time.",
+                        new BepInEx.Configuration.AcceptableValueRange<float>(0f, 600f)));
+                    mob.NextAllowedTime = Time.realtimeSinceStartup + BossBehaviour.CooldownSeconds(mob);
+                }
+                else
+                {
+                    mob.SpawnWeight = Config.Bind("Spawn", mob.CodeName, 1, new BepInEx.Configuration.ConfigDescription(
+                        "How often " + mob.NameEnglish + " spawns in its habitat (" + mob.HabitatEnglish + "): " +
+                        "0 = never, 1 = like one vanilla monster of that place, 2-5 = more often.",
+                        new BepInEx.Configuration.AcceptableValueRange<int>(0, 5)));
+                }
             }
 
-            // Sprites: the atlas is embedded in this dll and loaded by DODModAPI when the game asks for it.
+            // Sprites: the atlases are embedded in this dll and loaded by DODModAPI when the game asks for them.
             TextureManager.RegisterTexture(MobAssets.UnitsAtlasResource_128);
+            TextureManager.RegisterTexture(MobAssets.UnitsAtlasResource_256);
             foreach (Mob mob in Mobs.All)
                 UnitManager.RegisterUnit(mob.Unit);
 
             var harmony = new Harmony(Guid);
             Patch(harmony, typeof(Patches));
             Patch(harmony, typeof(SpawnPatch));
+            Patch(harmony, typeof(BossBehaviour));
             RegisterCommand();
 
             Log.LogInfo("New Mobs: " + string.Join(", ", Mobs.All.Select(m => m.NameEnglish).ToArray()));
+        }
+
+        private void Update()
+        {
+            _bossBar.Update();
+        }
+
+        private void OnGUI()
+        {
+            _bossBar.OnGUI();
         }
 
         private static void Patch(Harmony harmony, Type patches)
@@ -71,7 +98,7 @@ namespace DigOrDieMobs
                 if (!args.HasNext)
                 {
                     foreach (Mob mob in Mobs.All)
-                        Misc.SendChatMessageLocal(LocalName(mob) + " — /mobs " + mob.CodeName + " (" + Habitat(mob) + ")");
+                        Misc.SendChatMessageLocal(LocalName(mob) + RankTag(mob) + " — /mobs " + mob.CodeName + " (" + Habitat(mob) + ")");
                     return;
                 }
 
@@ -119,17 +146,35 @@ namespace DigOrDieMobs
         {
             return IsGameRussian() ? mob.HabitatRussian : mob.HabitatEnglish;
         }
+
+        private static string RankTag(Mob mob)
+        {
+            bool russian = IsGameRussian();
+            switch (mob.Rank)
+            {
+                case MobRank.Boss: return russian ? " [БОСС]" : " [BOSS]";
+                case MobRank.MiniBoss: return russian ? " [мини-босс]" : " [mini-boss]";
+                default: return string.Empty;
+            }
+        }
     }
 
     internal static class Patches
     {
-        /// <summary>The Lava Wisp throws the game's own small fireballs (they exist once the game has started).</summary>
+        /// <summary>Ranged mobs throw the game's own projectiles (they exist once the game has started).</summary>
         [HarmonyPrefix]
         [HarmonyPatch(typeof(SUnits), nameof(SUnits.OnInit))]
         private static void SUnits_OnInit()
         {
-            if (Mobs.LavaWisp.Desc.m_attackDesc.m_bulletDesc == null)
-                Mobs.LavaWisp.Desc.m_attackDesc.m_bulletDesc = GBullets.fireballSmall;
+            SetBullet(Mobs.LavaWisp, GBullets.fireballSmall);
+            SetBullet(Mobs.PyreLord, GBullets.fireballBig);
+            SetBullet(Mobs.AbyssEye, GBullets.particleMedium);
+        }
+
+        private static void SetBullet(Mob mob, CBulletDesc bullet)
+        {
+            if (mob.Desc.m_attackDesc.m_bulletDesc == null)
+                mob.Desc.m_attackDesc.m_bulletDesc = bullet;
         }
 
         /// <summary>Monster names in the game's language (the game font has Russian, not Ukrainian, letters).</summary>
