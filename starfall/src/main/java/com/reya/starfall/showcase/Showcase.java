@@ -45,6 +45,8 @@ public final class Showcase {
     private static int ticks, shots;
     private static String pendingShot;
     private static long strikeStart = -1;
+    /** The newest strike's start before the press or the command that fires the next one. */
+    private static long baseline = -1;
     private static int baseX, baseY, baseZ;
 
     @SubscribeEvent
@@ -194,6 +196,7 @@ public final class Showcase {
             int y = mc.level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z) - 1;
             String c = String.format(Locale.ROOT, "starfall cast %s %d %d %d", skill, x, y, z);
             LOGGER.info("[showcase] /{}", c);
+            baseline = ClientStrikes.latestStart();
             mc.player.connection.sendCommand(c);
         });
         awaitStrike();
@@ -204,18 +207,19 @@ public final class Showcase {
         run(() -> {
             Minecraft mc = Minecraft.getInstance();
             LOGGER.info("[showcase] pressing the remote");
+            baseline = ClientStrikes.latestStart();
             mc.gameMode.useItem(mc.player, InteractionHand.MAIN_HAND);
         });
     }
 
     /** Waits for the next strike to reach the client, giving up after a while so the rest still runs. */
     private static void awaitStrike() {
-        long[] before = {-2};
         int[] waited = {0};
         step(() -> {
-            if (before[0] == -2) before[0] = ClientStrikes.latestStart();
+            // compared with the strikes there were before the press or the command, so a strike that is fired
+            // while a screenshot is being taken still counts
             long now = ClientStrikes.latestStart();
-            if (now >= 0 && now != before[0]) {
+            if (now >= 0 && now > baseline) {
                 strikeStart = now;
                 return true;
             }
