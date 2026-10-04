@@ -16,7 +16,7 @@ namespace DigOrDieMobs
     {
         public const string Guid = "reya.digordie.newmobs";
         public const string PluginName = "New Mobs";
-        public const string PluginVersion = "1.2.0";
+        public const string PluginVersion = "1.2.1";
 
         internal static ManualLogSource Log;
 
