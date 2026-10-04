@@ -354,6 +354,13 @@ final class Scene3D {
         int glowColor = 0xFF3A30;
         float glowStrength, glowRange = 30.0F;
         float charge, time;
+        /** One big bright thing nearby that the metal mirrors (a galaxy, a planet): where, how big, its light. */
+        final Vector3f env = new Vector3f();
+        float envRadius;
+        int envColor;
+        float envStrength = 1.0F;
+        /** True for a planet, which only shines on its sunlit side. */
+        boolean envLit;
     }
 
     void mesh(Mesh mesh, Matrix4f model, Light light) {

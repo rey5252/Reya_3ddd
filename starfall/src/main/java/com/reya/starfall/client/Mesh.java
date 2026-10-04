@@ -98,6 +98,12 @@ final class Mesh {
             sh.safeGetUniform("GlowRange").set(light.glowRange);
             sh.safeGetUniform("Charge").set(light.charge);
             sh.safeGetUniform("Time").set(light.time);
+            Vector3f env = s.toView(light.env);
+            float ek = light.envStrength;
+            sh.safeGetUniform("EnvPos").set(env.x, env.y, env.z);
+            sh.safeGetUniform("EnvRadius").set(light.envRadius);
+            sh.safeGetUniform("EnvColor").set(Scene3D.r(light.envColor) * ek, Scene3D.g(light.envColor) * ek, Scene3D.b(light.envColor) * ek);
+            sh.safeGetUniform("EnvLit").set(light.envLit ? 1.0F : 0.0F);
         }
         buffer.bind();
         buffer.drawWithShader(modelView, s.projection, sh);

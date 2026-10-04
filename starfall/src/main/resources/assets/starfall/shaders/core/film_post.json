@@ -16,6 +16,9 @@
         },
         {
             "name": "Sampler1"
+        },
+        {
+            "name": "Sampler2"
         }
     ],
     "uniforms": [
@@ -84,6 +87,31 @@
                 0.0,
                 0.0,
                 0.0,
+                0.0
+            ]
+        },
+        {
+            "name": "Shake",
+            "type": "float",
+            "count": 2,
+            "values": [
+                0.0,
+                0.0
+            ]
+        },
+        {
+            "name": "Trail",
+            "type": "float",
+            "count": 1,
+            "values": [
+                0.0
+            ]
+        },
+        {
+            "name": "Desaturate",
+            "type": "float",
+            "count": 1,
+            "values": [
                 0.0
             ]
         }

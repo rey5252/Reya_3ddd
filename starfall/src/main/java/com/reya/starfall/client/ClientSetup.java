@@ -9,10 +9,16 @@ import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.common.Mod;
 
 @Mod.EventBusSubscriber(modid = Starfall.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public final class ClientSetup {
+    @SubscribeEvent
+    public static void setup(FMLClientSetupEvent event) {
+        event.enqueueWork(RemotePose::init);
+    }
+
     /** The remote's moving parts, drawn by {@link RemoteRenderer}. */
     @SubscribeEvent
     public static void registerModels(ModelEvent.RegisterAdditional event) {
@@ -35,7 +41,10 @@ public final class ClientSetup {
 
     @SubscribeEvent
     public static void registerOverlays(RegisterGuiOverlaysEvent event) {
-        event.registerBelowAll("strike_glow", (gui, graphics, partial, width, height) -> WorldGlow.compose());
+        event.registerBelowAll("strike_glow", (gui, graphics, partial, width, height) -> {
+            WorldGlow.compose();
+            WorldImpact.compose(partial);
+        });
         event.registerAbove(VanillaGuiOverlay.HOTBAR.id(), "remote", (gui, graphics, partial, width, height) -> RemoteHud.render(graphics, partial, width, height));
         event.registerAbove(VanillaGuiOverlay.HOTBAR.id(), "evac", (gui, graphics, partial, width, height) -> Evac.render(graphics, partial, width, height));
         event.registerAboveAll("film", (gui, graphics, partial, width, height) -> Film.render(graphics, partial, width, height));

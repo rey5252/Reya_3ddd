@@ -123,6 +123,12 @@ final class FilmGungnir {
         light.glowStrength = 2.0F + 6.0F * clamp01((s - LAPS_FROM) / 4.0F);
         light.glowRange = 30.0F;
         light.time = s;
+        // the track mirrors Jupiter below it, bright where the planet is in daylight
+        light.env.set(0.0F, 0.0F, 0.0F);
+        light.envRadius = p.radius;
+        light.envColor = 0xD8A878;
+        light.envStrength = 0.75F;
+        light.envLit = true;
         sc.mesh(Mesh.ACCELERATOR, RING_TILT, light);
 
         float laps = laps(s);

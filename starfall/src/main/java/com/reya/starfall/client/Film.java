@@ -131,18 +131,32 @@ public final class Film {
                 FilmPost.aberration += 0.012F * pulse(s, 10.95F, 11.05F, 11.5F);
                 float shot = pulse(s, 10.98F, 11.03F, 11.35F);
                 if (shot > 0.0F) FilmPost.flash = Fx.argb(0xFFF0F0, 0.45F * shot);
+                // the hull trembles as it charges, the colour drains in the breath before the shot, and the shot kicks
+                FilmPost.shake = 0.0012F * Cam.ramp(s, 9.6F, 10.9F) * (1.0F - Cam.ramp(s, 11.6F, 12.0F))
+                        + 0.009F * pulse(s, 10.97F, 11.0F, 11.7F);
+                FilmPost.desaturate = 0.55F * pulse(s, 10.4F, 10.92F, 11.02F);
+                FilmPost.trail = Math.max(0.6F * pulse(s, 6.9F, 7.4F, 7.8F), Math.max(pulse(s, 10.95F, 11.05F, 11.9F),
+                        0.8F * Cam.ramp(s, 11.3F, 11.6F)));
             }
             case GUNGNIR -> {
                 FilmPost.zoom = 0.2F * pulse(s, 8.0F, 8.2F, 8.7F) + 0.18F * Cam.ramp(s, 11.3F, 11.95F);
                 FilmPost.bloom = 0.9F + 0.6F * Cam.ramp(s, 3.3F, 8.0F) * (1.0F - Cam.ramp(s, 8.2F, 8.8F)) + 0.8F * Cam.ramp(s, 11.0F, 12.0F);
                 float hit = pulse(s, 11.7F, 11.85F, 12.0F);
                 if (hit > 0.0F) FilmPost.flash = Fx.argb(0xFFD8A0, 0.35F * hit);
+                // the spear leaves a streak as it falls, and the ground shakes as it goes in
+                FilmPost.trail = Math.max(0.7F * pulse(s, 7.9F, 8.2F, 8.9F), 0.75F * Cam.ramp(s, 11.2F, 11.6F));
+                FilmPost.shake = 0.004F * pulse(s, 8.1F, 8.2F, 8.8F) + 0.008F * pulse(s, 11.72F, 11.8F, 12.0F);
+                FilmPost.desaturate = 0.4F * pulse(s, 11.2F, 11.68F, 11.78F);
             }
             case SEVEN_STARS -> {
                 FilmPost.bloom = 1.0F + 0.4F * Cam.ramp(s, 2.4F, 5.0F) + 0.8F * Cam.ramp(s, 9.3F, 10.0F);
                 FilmPost.zoom = 0.12F * pulse(s, 9.15F, 9.45F, 9.9F);
                 float hit = pulse(s, 9.55F, 9.65F, 10.1F);
                 if (hit > 0.0F) FilmPost.flash = Fx.argb(0xE8DCFF, 0.25F * hit);
+                // the seven falling stars draw streaks; the land shakes as they come down
+                FilmPost.trail = 0.65F * pulse(s, 8.6F, 9.3F, 10.2F);
+                FilmPost.shake = 0.006F * pulse(s, 9.55F, 9.62F, 10.3F);
+                FilmPost.desaturate = 0.35F * pulse(s, 9.1F, 9.5F, 9.62F);
             }
         }
         FilmPost.aberration += FilmPost.zoom * 0.02F;

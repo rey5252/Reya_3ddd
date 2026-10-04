@@ -69,6 +69,7 @@ public final class ClientStrikes {
         Camera camera = event.getCamera();
         Matrix4f mat = event.getPoseStack().last().pose();
         double far = mc.gameRenderer.getRenderDistance() * 3.5D;
+        WorldImpact.remember(mat, event.getProjectionMatrix(), camera.getPosition());
 
         Fx solid = Fx.begin(mat, camera, far, false, false);
         for (ClientStrike s : STRIKES) s.renderSolid(solid, age(s, level, partial), level);
@@ -108,6 +109,20 @@ public final class ClientStrikes {
             if (((f >>> 24) & 0xFF) > ((best >>> 24) & 0xFF)) best = f;
         }
         return Fx.scaleAlpha(best, strength);
+    }
+
+    /** The strongest reel of the world's picture right now, or null. */
+    static ClientStrike.Reel reel(float partial) {
+        Minecraft mc = Minecraft.getInstance();
+        ClientLevel level = mc.level;
+        if (level == null || STRIKES.isEmpty() || ClientConfig.flash() <= 0.0F) return null;
+        Vec3 eye = mc.gameRenderer.getMainCamera().getPosition();
+        ClientStrike.Reel best = null;
+        for (ClientStrike s : STRIKES) {
+            ClientStrike.Reel r = s.reel(age(s, level, partial), eye);
+            if (r != null && (best == null || r.weight() > best.weight())) best = r;
+        }
+        return best;
     }
 
     /** The most urgent evacuation warning for where the camera is, or null: the strike's line and its seconds left. */

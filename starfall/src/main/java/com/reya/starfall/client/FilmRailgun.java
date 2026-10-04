@@ -282,8 +282,14 @@ final class FilmRailgun {
         sky.nebula = 0.6F;
         sc.sky(sky);
         // the galaxy hangs huge ahead, where the shot is going
-        sc.galaxy(v(40000.0F, -52000.0F, 190000.0F), v(1.0F, 0.0F, 0.0F), v(0.0F, 0.42F, 1.0F), 120000.0F, 0.6F, 1.0F);
+        Vector3f galaxy = v(40000.0F, -52000.0F, 190000.0F);
+        sc.galaxy(galaxy, v(1.0F, 0.0F, 0.0F), v(0.0F, 0.42F, 1.0F), 120000.0F, 0.6F, 1.0F);
         Scene3D.Light light = new Scene3D.Light();
+        // the hull mirrors the galaxy's bright middle
+        light.env.set(galaxy);
+        light.envRadius = 55000.0F;
+        light.envColor = 0x8073B8;
+        light.envStrength = 0.8F * fade;
         light.sun.set(-0.5F, 0.6F, 0.6F).normalize();
         light.sunColor = 0xFFF1E0;
         light.sunStrength = 1.35F;

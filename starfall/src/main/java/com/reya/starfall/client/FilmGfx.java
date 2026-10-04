@@ -26,11 +26,13 @@ public final class FilmGfx {
     static ShaderInstance postDown, postUp, post;
     /** The strikes' halo, added over the world. */
     static ShaderInstance strikeGlow;
+    /** The world's picture reeling while a strike lands. */
+    static ShaderInstance worldImpact;
 
     @SubscribeEvent
     public static void registerShaders(RegisterShadersEvent event) {
         planet = sky = galaxy = soft = hull = null;
-        postDown = postUp = post = strikeGlow = null;
+        postDown = postUp = post = strikeGlow = worldImpact = null;
         FilmMaps.clear();
         register(event, "film_planet", DefaultVertexFormat.POSITION_TEX_COLOR, s -> planet = s);
         register(event, "film_sky", DefaultVertexFormat.POSITION_TEX_COLOR, s -> sky = s);
@@ -41,6 +43,7 @@ public final class FilmGfx {
         register(event, "film_post_up", DefaultVertexFormat.POSITION_TEX, s -> postUp = s);
         register(event, "film_post", DefaultVertexFormat.POSITION_TEX, s -> post = s);
         register(event, "strike_glow", DefaultVertexFormat.POSITION_TEX, s -> strikeGlow = s);
+        register(event, "world_impact", DefaultVertexFormat.POSITION_TEX, s -> worldImpact = s);
     }
 
     private static void register(RegisterShadersEvent event, String name, VertexFormat format, Consumer<ShaderInstance> set) {

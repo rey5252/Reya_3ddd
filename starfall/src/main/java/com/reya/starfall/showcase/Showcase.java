@@ -320,6 +320,8 @@ public final class Showcase {
         awaitStrike();
         at(120);
         shot("ss01_film_live");
+        at(Skill.MARK + 5);
+        shot("ss01_beam_lands");
         at(Skill.MARK + 34);
         shot("ss01_beam_impact_confirmed");
         at(Skill.MARK + 76);

@@ -369,6 +369,69 @@ final class ClientStrike {
         }
     }
 
+    // ------------------------------------------------------------------ the world's picture while it lands
+
+    /**
+     * How the world's picture reels while this strike lands: where it lands, how hard it smears out from there,
+     * how far the colours part, the colour it drains to and how much, and how much it greys. Null when calm.
+     */
+    record Reel(Vec3 at, float zoom, float aberration, int tint, float tintAmount, float desaturate) {
+        float weight() {
+            return zoom * 4.0F + tintAmount + aberration * 20.0F;
+        }
+    }
+
+    Reel reel(float t, Vec3 eye) {
+        switch (skill) {
+            case RAILGUN -> {
+                float bt = t - Skill.MARK;
+                if (bt < 0.0F || bt > 100.0F) return null;
+                double d = Math.hypot(eye.x - cx(), eye.z - cz());
+                Vec3 at = new Vec3(cx(), Math.max(groundY(), eye.y - 20.0D), cz());
+                if (d < radius) {
+                    // inside the beam: everything red, streaming
+                    float k = bt < 80.0F ? 1.0F : 1.0F - (bt - 80.0F) / 20.0F;
+                    return new Reel(new Vec3(cx(), eye.y + 200.0D, cz()), 0.22F * k, 0.02F * k, 0xFF2A2A, 0.62F * k, 0.4F * k);
+                }
+                float near = proximity(d, radius * 3.0D, radius * 14.0D);
+                if (bt > 40.0F || near <= 0.0F) return null;
+                float k = (1.0F - bt / 40.0F);
+                k *= k * near;
+                return new Reel(at, 0.26F * k, 0.022F * k, 0xFF3030, 0.42F * k, 0.45F * k);
+            }
+            case GUNGNIR -> {
+                float bt = t - Skill.GUNGNIR_IMPACT;
+                if (bt < 0.0F || bt > 34.0F) return null;
+                float near = proximity(Math.hypot(eye.x - cx(), eye.z - cz()), radius * 2.0D, radius * 10.0D);
+                if (near <= 0.0F) return null;
+                float k = 1.0F - bt / 34.0F;
+                k *= k * near;
+                return new Reel(new Vec3(cx(), groundY(), cz()), 0.2F * k, 0.016F * k, EMBER, 0.32F * k, 0.3F * k);
+            }
+            default -> {
+                Reel best = null;
+                for (int i = 0; i < nx.length; i++) {
+                    float bt = t - Skill.starImpact(i);
+                    if (bt < 0.0F || bt > 22.0F) continue;
+                    float near = proximity(Math.hypot(eye.x - nx[i], eye.z - nz[i]), sizes[i] * 4.0D, sizes[i] * 30.0D);
+                    if (near <= 0.0F) continue;
+                    float k = 1.0F - bt / 22.0F;
+                    k *= k * near;
+                    Reel r = new Reel(new Vec3(nx[i], ny[i], nz[i]), 0.13F * k, 0.012F * k, VIOLET_HOT, 0.25F * k, 0.2F * k);
+                    if (best == null || r.weight() > best.weight()) best = r;
+                }
+                float ft = t - Skill.FLARE;
+                if (ft >= 0.0F && ft < 40.0F) {
+                    float near = proximity(Math.hypot(eye.x - cx(), eye.z - cz()), radius * 1.5D, radius * 4.0D);
+                    float k = (ft < 6.0F ? ft / 6.0F : 1.0F - (ft - 6.0F) / 34.0F) * near;
+                    Reel r = new Reel(new Vec3(cx(), groundY(), cz()), 0.1F * k, 0.01F * k, VIOLET, 0.3F * k, 0.25F * k);
+                    if (k > 0.0F && (best == null || r.weight() > best.weight())) best = r;
+                }
+                return best;
+            }
+        }
+    }
+
     // ------------------------------------------------------------------ the evacuation warning
 
     /** What to tell someone standing where a strike will land: which line, and how many seconds are left. */
