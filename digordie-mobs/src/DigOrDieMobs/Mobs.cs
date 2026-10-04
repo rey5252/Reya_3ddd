@@ -89,7 +89,7 @@ namespace DigOrDieMobs
                 armor: 0,
                 attackDesc: new CAttackDesc(range: 1.4f, damage: 5, nbAttacks: 1, cooldown: 1.2f, knockbackTarget: 6f),
                 tiles: MobAssets.acidSlime,
-                loot: new[] { new CStack(GItems.sulfur, 1, 0.4f) })
+                loot: new[] { new CStack(GItems.sulfur, 1, 0.4f), new CStack(Items.AcidGland.Item, 1, 0.5f) })
             {
                 m_emitLight = new Color24(30, 90, 20),
             },
@@ -137,6 +137,7 @@ namespace DigOrDieMobs
                     new CStack(GItems.lootLavaBat, 1, 0.35f),
                     new CStack(GItems.sulfur, 2, 0.3f),
                     new CStack(GItems.energyGem, 1, 0.08f),
+                    new CStack(Items.PyreCore.Item, 1, 0.08f),
                 })
             {
                 m_emitLight = new Color24(255, 120, 30),
@@ -159,6 +160,7 @@ namespace DigOrDieMobs
                 loot: new[]
                 {
                     new CStack(GItems.waterLight, 1, 0.5f),
+                    new CStack(Items.JellyGoo.Item, 1, 0.6f),
                     new CStack(GItems.fish2Regen, 1, 0.2f),
                     new CStack(GItems.sapphire, 1, 0.05f),
                 })
@@ -184,6 +186,7 @@ namespace DigOrDieMobs
                 loot: new[]
                 {
                     new CStack(GItems.sulfur, 6, 1f),
+                    new CStack(Items.AcidGland.Item, 6, 1f),
                     new CStack(GItems.gold, 5, 0.4f),
                     new CStack(GItems.potionHpRegen, 1, 0.5f),
                 })
@@ -213,6 +216,7 @@ namespace DigOrDieMobs
                 loot: new[]
                 {
                     new CStack(GItems.crystal, 10, 1f),
+                    new CStack(Items.CrystalHeart.Item, 2, 1f),
                     new CStack(GItems.crystalLight, 3, 0.6f),
                     new CStack(GItems.crystalBlack, 2, 0.4f),
                     new CStack(GItems.diamonds, 2, 0.2f),
@@ -246,6 +250,7 @@ namespace DigOrDieMobs
                 loot: new[]
                 {
                     new CStack(GItems.lootLavaBat, 4, 1f),
+                    new CStack(Items.PyreCore.Item, 3, 1f),
                     new CStack(GItems.sulfur, 8, 1f),
                     new CStack(GItems.energyGem, 2, 0.6f),
                     new CStack(GItems.lootMiniBalrog, 1, 0.3f),
@@ -283,6 +288,7 @@ namespace DigOrDieMobs
                 tiles: MobAssets.abyssEye,
                 loot: new[]
                 {
+                    new CStack(Items.AbyssTear.Item, 3, 1f),
                     new CStack(GItems.darkGem, 5, 1f),
                     new CStack(GItems.energyGem, 4, 1f),
                     new CStack(GItems.diamonds, 6, 0.7f),

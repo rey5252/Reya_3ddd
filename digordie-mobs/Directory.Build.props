@@ -3,7 +3,7 @@
   <Import Project="../digordie-modmanager/Directory.Build.props" />
 
   <PropertyGroup>
-    <Version>1.1.0</Version>
+    <Version>1.2.0</Version>
     <Product>Dig or Die New Mobs</Product>
 
     <!-- DODModAPI is referenced from its nuget.org package; at runtime the player installs the real plugin -->

@@ -2,7 +2,7 @@
   <PropertyGroup>
     <AssemblyName>DigOrDieMobs</AssemblyName>
     <RootNamespace>DigOrDieMobs</RootNamespace>
-    <Description>New Dig or Die monsters, mini-bosses (Slime King, Crystal Queen, Pyre Lord) and a boss (Eye of the Abyss).</Description>
+    <Description>New Dig or Die monsters, mini-bosses, a boss (Eye of the Abyss) and new weapons and items made from their loot.</Description>
   </PropertyGroup>
 
   <ItemGroup>

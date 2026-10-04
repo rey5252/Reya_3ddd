@@ -1,7 +1,8 @@
 ﻿DIG OR DIE - НОВІ МОНСТРИ (New Mobs)
 ====================================
 
-Додає в Dig or Die чотири нових монстри, три міні-боси і боса. Вони самі з'являються у світі
+Додає в Dig or Die чотири нових монстри, три міні-боси, боса, нову зброю і предмети.
+Монстри самі з'являються у світі
 там, де живуть схожі звичайні монстри гри:
 
   Кислотний слизень (Acid Slime)      - поверхня і земляні печери
@@ -26,6 +27,25 @@
       Найкраща здобич: темні камені, енергокамені, діаманти, майстер-камінь.
 
 Коли бос поруч - угорі екрана смужка його здоров'я, у чаті - попередження.
+
+НОВА ЗБРОЯ І ПРЕДМЕТИ (створюються в автобудівниках):
+
+  Кислотний бластер (MK II)      - автомат, 9 шкоди, ~8 пострілів/с
+      кислотна залоза x6, залізо x10, мідь x6
+  Кришталевий дробовик (MK III)  - 7 осколків по 10 шкоди, пробивають броню
+      дробовик + кришталеве серце x1 + кристали x15
+  Полум'яна гармата (MK IV)      - вогняні кулі на 70 шкоди, підпалюють ворогів
+      ракетниця + ядро полум'я x3 + сірка x20
+  Скіпетр Безодні (MK V)         - автомат, 45 шкоди, промені пронизують усіх ворогів
+      сльоза Безодні x3, темні камені x5, енергокамені x5
+
+  Королівське зілля (MK III, x2) - сильна регенерація на 45 с
+  Кришталевий щит (MK IV)        - поглинає 125% здоров'я
+  Медузний ліхтар (MK II)        - яскраве світло
+
+  Матеріали падають з нових монстрів: кислотна залоза (слизні), кришталеве серце
+  (Кришталева королева), ядро полум'я (Повелитель полум'я, лавові духи),
+  сльоза Безодні (Око Безодні), медузний гель (медузи).
 
 Назви монстрів у грі - російською (якщо гра російською) або англійською.
 
@@ -52,6 +72,7 @@
   /mobs deepJelly           - медуза (ставте у воді)
   /mobs slimeKing           - міні-боси: slimeKing, crystalQueen, pyreLord
   /mobs abyssEye            - бос Око Безодні
+  /mobs items               - усі нові предмети і зброя в інвентар
 Команда - це чит: досягнення Steam у цьому світі вимикаються.
 
 
@@ -67,6 +88,7 @@ BepInEx\config\reya.digordie.newmobs.cfg - як часто кожен монст
 ВАЖЛИВО
 -------
 * У мультиплеєрі мод потрібен усім гравцям.
+* Світ, де є нові предмети чи монстри, без цього мода може не відкритися правильно.
 * Перш ніж видаляти мод, краще позбутися нових монстрів у світі (або не
   завантажувати потім той самий світ без мода).
 * Видалити тільки цей мод: Uninstall.bat.
@@ -76,7 +98,8 @@ ENGLISH (short)
 ---------------
 Four new Dig or Die monsters (Acid Slime, Crystal Spider, Lava Wisp, Deep Jelly), three mini-bosses
 (Slime King, Crystal Queen, Pyre Lord) and a boss (Eye of the Abyss) that spawn where similar vanilla
-monsters live; bosses are rare, one at a time, with a boss health bar. Install: extract, close the game, run Install.bat (it also
+monsters live; bosses are rare, one at a time, with a boss health bar. Their loot crafts four new
+weapons (Acid Blaster, Crystal Shotgun, Pyre Launcher, Abyss Scepter) and three devices. /mobs items gives them all. Install: extract, close the game, run Install.bat (it also
 downloads the required DODModAPI library from nuget.org), start the game from Steam.
 In chat: /mobs lists them, /mobs <name> [count] spawns them next to you (disables achievements).
 Requires BepInEx 5 and DODModAPI (https://github.com/ddmitv/dig-or-die-mods).

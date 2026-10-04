@@ -16,7 +16,7 @@ namespace DigOrDieMobs
     {
         public const string Guid = "reya.digordie.newmobs";
         public const string PluginName = "New Mobs";
-        public const string PluginVersion = "1.1.0";
+        public const string PluginVersion = "1.2.0";
 
         internal static ManualLogSource Log;
 
@@ -50,6 +50,10 @@ namespace DigOrDieMobs
             // Sprites: the atlases are embedded in this dll and loaded by DODModAPI when the game asks for them.
             TextureManager.RegisterTexture(MobAssets.UnitsAtlasResource_128);
             TextureManager.RegisterTexture(MobAssets.UnitsAtlasResource_256);
+            TextureManager.RegisterTexture(MobAssets.TileSpritesheetResource);
+            TextureManager.RegisterTexture(MobAssets.SpritesAtlasResource);
+            foreach (ModItemInfo item in Items.All)
+                ItemManager.RegisterItem(item.Mod);
             foreach (Mob mob in Mobs.All)
                 UnitManager.RegisterUnit(mob.Unit);
 
@@ -91,7 +95,7 @@ namespace DigOrDieMobs
             {
                 Local = true,
                 DisableAchievements = true,
-                TabCompleter = argIndex => argIndex == 0 ? Mobs.All.Select(m => m.CodeName).ToList() : null,
+                TabCompleter = argIndex => argIndex == 0 ? Mobs.All.Select(m => m.CodeName).Concat(new[] { "items" }).ToList() : null,
             };
             CommandManager.Register("/mobs", options, args =>
             {
@@ -103,6 +107,12 @@ namespace DigOrDieMobs
                 }
 
                 string name = args.ArgString("monster");
+                if (string.Equals(name, "items", StringComparison.OrdinalIgnoreCase))
+                {
+                    args.ArgNone();
+                    GiveAllItems(args.PlayerSender);
+                    return;
+                }
                 Mob target = Mobs.Find(name);
                 if (target == null)
                     throw new CommandException("Unknown monster \"" + name + "\". Use: " + string.Join(", ", Mobs.All.Select(m => m.CodeName).ToArray()), args.Index - 1);
@@ -117,6 +127,14 @@ namespace DigOrDieMobs
                 }
                 Misc.SendChatMessageLocal(LocalName(target) + " x" + count);
             });
+        }
+
+        /// <summary>/mobs items: puts every new item into the player's inventory (for testing).</summary>
+        private static void GiveAllItems(CPlayer player)
+        {
+            foreach (ModItemInfo info in Items.All)
+                player.m_inventory.AddToInventory(info.Item, info.TestAmount);
+            Misc.SendChatMessageLocal(IsGameRussian() ? "Новые предметы добавлены в инвентарь." : "New items added to your inventory.");
         }
 
         internal static bool IsGameRussian()
@@ -177,7 +195,26 @@ namespace DigOrDieMobs
                 mob.Desc.m_attackDesc.m_bulletDesc = bullet;
         }
 
-        /// <summary>Monster names in the game's language (the game font has Russian, not Ukrainian, letters).</summary>
+        /// <summary>
+        /// Item names in the game's language. DODModAPI turns m_name/m_desc into the item's text when it adds the
+        /// items (right after this prefix), so they only need to be in the right language at that moment.
+        /// </summary>
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(SItems), nameof(SItems.OnInit))]
+        private static void SItems_OnInit_Prefix()
+        {
+            Items.ApplyLanguage(NewMobsPlugin.IsGameRussian());
+        }
+
+        [HarmonyPostfix]
+        [HarmonyPriority(Priority.Last)]
+        [HarmonyPatch(typeof(SItems), nameof(SItems.OnInit))]
+        private static void SItems_OnInit_Postfix()
+        {
+            Items.Registered = true;
+        }
+
+        /// <summary>Monster and item names in the game's language (the game font has Russian, not Ukrainian, letters).</summary>
         [HarmonyPostfix]
         [HarmonyPatch(typeof(SLoc), nameof(SLoc.LoadLanguage))]
         private static void SLoc_LoadLanguage(SLoc __instance, string language)
@@ -187,6 +224,16 @@ namespace DigOrDieMobs
                 bool russian = NewMobsPlugin.IsRussian(language);
                 foreach (Mob mob in Mobs.All)
                     __instance.m_dico[mob.LocId] = new SLoc.CSentence(mob.LocId, russian ? mob.NameRussian : mob.NameEnglish);
+                // Before the items are added, DODModAPI adds their texts itself (and refuses existing ids).
+                if (Items.Registered)
+                {
+                    Items.ApplyLanguage(russian);
+                    foreach (ModItemInfo info in Items.All)
+                    {
+                        CItem item = info.Item;
+                        __instance.m_dico[item.m_locTextId] = new SLoc.CSentence(item.m_locTextId, item.m_name + "|" + item.m_desc);
+                    }
+                }
             }
             catch (Exception e)
             {
