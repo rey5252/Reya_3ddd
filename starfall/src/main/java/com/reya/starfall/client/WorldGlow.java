@@ -81,7 +81,7 @@ final class WorldGlow {
         int glow = CHAIN.run(target.getColorTextureId(), target.width, target.height, -1.0F);
         check("blurring the halo");
         ShaderInstance s = FilmGfx.strikeGlow;
-        s.safeGetUniform("Strength").set(1.0F / CHAIN.levels() * 2.0F);
+        s.safeGetUniform("Strength").set(1.0F / CHAIN.levels() * 1.3F);
         main.bindWrite(true);
         // let the shader settle its own blend first, then add: the halo only ever brightens the picture
         RenderSystem.setShaderTexture(0, glow);
