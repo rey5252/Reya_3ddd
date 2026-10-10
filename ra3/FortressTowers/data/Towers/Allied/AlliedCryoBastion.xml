@@ -1,0 +1,335 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    FortressTowers 1.0 - tower #2: AlliedCryoBastion ("Кріо-бастіон")
+
+    BASE: modified copy of the vanilla Allied Spectrum Tower GameObject from SageXml
+          (Allies anti-ground beam tower). Its W3X model, animations, damage states and
+          build-up/sell FX are reused unchanged, so no new art assets are required.
+          Cryo look is borrowed from the Cryocopter (freeze-ray beam/impact FX, frozen state)
+          and, where available, the Cryo Legionnaire.
+
+    CHANGED vs. Spectrum Tower:
+      - id / strings / CommandSet: AlliedCryoBastion, NAME/DESC/TYPE:AlliedCryoBastion,
+        AlliedCryoBastionCommandSet.
+      - Stats (SPEC): BuildCost 1400, BuildTime 20 s, MaxHealth 2600, AttackRange 300,
+        EnergyProduction -6.
+      - Weapon: Spectrum beam replaced by a low-damage cryo beam (ground only):
+          * every pulse refreshes a 50% slow on the target for 4 s
+            (AttributeModifier AlliedCryoBastion_CryoSlow);
+          * after 3 s of uninterrupted beam on the same target (6 pulses x 0.5 s,
+            ContinuousFireOne -> CONTINUOUS_FIRE_MEAN) the tower switches to
+            AlliedCryoBastionWeaponFreeze, which applies the vanilla Cryocopter freeze
+            (frozen target is shattered by any damage - vanilla FROZEN behaviour).
+      - Passive frost aura: AttributeModifierAuraUpdate, enemies (ground) within 150
+        units are slowed by 25% (AlliedCryoBastion_FrostAuraSlow). Off when unpowered.
+      - Draw: Scale 0.95 + cryo particle systems on the emitter bone; house-colour stays
+        Allied blue/white.
+
+    AUTHOR MUST VERIFY in SageXml (marked with VERIFY below):
+      - exact Spectrum Tower object id, its W3X model / animation / bone names;
+      - Cryocopter freeze-ray weapon, its freeze AttributeModifier / damage type and FX names;
+      - Cryo Legionnaire FX exist only in Uprising - NOT in the RA3 1.12 Mod SDK data;
+        if absent, fall back to the Cryocopter FX used here;
+      - armor template, DamageFX, sound event names, prerequisite object / upgrade ids;
+      - AttributeModifier Modifier value semantics (multiplier vs. delta) for SPEED.
+-->
+<AssetDeclaration xmlns="uri:ea.com:eala:asset" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Tags></Tags>
+    <Includes>
+        <Include type="reference" source="DATA:static.xml" />
+        <Include type="reference" source="DATA:global.xml" />
+        <Include type="reference" source="DATA:audio.xml" />
+    </Includes>
+
+    <!-- ===================================================================== -->
+    <!-- Attribute modifiers                                                    -->
+    <!-- ===================================================================== -->
+
+    <!-- Beam slow: -50% movement speed for 4 s, refreshed by every beam pulse. -->
+    <!-- VERIFY: SPEED Value semantics; vanilla RA3 slows (e.g. Cryocopter shrink/slow) use the multiplier form "50%". -->
+    <AttributeModifier
+        id="AlliedCryoBastion_CryoSlow"
+        Category="WEAKEN"
+        Duration="4s"
+        StackingLimit="1"
+        ReplaceInCategoryIfLongest="true">
+        <Modifier Type="SPEED" Value="50%" />
+        <!-- VERIFY: frost tint FX attached to slowed units; borrowed from Cryocopter impact -->
+        <ModelConditionFlags>USER_1</ModelConditionFlags>
+        <FX>FX_CryocopterFreezeRayImpactSmall</FX> <!-- VERIFY: FX name -->
+    </AttributeModifier>
+
+    <!-- Frost aura slow: -25% movement speed, refreshed by the aura every 1 s. -->
+    <AttributeModifier
+        id="AlliedCryoBastion_FrostAuraSlow"
+        Category="WEAKEN"
+        Duration="1.5s"
+        StackingLimit="1">
+        <Modifier Type="SPEED" Value="75%" /> <!-- VERIFY: multiplier form (75% speed = 25% slow) -->
+    </AttributeModifier>
+
+    <!-- ===================================================================== -->
+    <!-- Weapons                                                                -->
+    <!-- ===================================================================== -->
+
+    <!-- Primary: cryo beam. Low damage, ground only, 0.5 s pulses, slow 50% / 4 s.
+         ContinuousFireOne=6 -> after 3 s of continuous fire on one target the object
+         gets CONTINUOUS_FIRE_MEAN and the turret switches to the freeze weapon below.
+         ContinuousFireCoast=0.5s: losing the beam for more than one pulse resets the count. -->
+    <WeaponTemplate
+        id="AlliedCryoBastionWeapon"
+        Name="AlliedCryoBastionWeapon"
+        AttackRange="300.0"
+        MinimumAttackRange="0.0"
+        WeaponSpeed="999999.0"
+        AcceptableAimDelta="5d"
+        RadiusDamageAffects="ENEMIES NEUTRALS"
+        AntiMask="ANTI_GROUND"
+        ClipSize="0"
+        ContinuousFireOne="6"
+        ContinuousFireTwo="0"
+        ContinuousFireCoast="0.5s"
+        LeechRangeWeapon="true"
+        FireFX="FX_CryocopterFreezeRayFire"
+        FireSound="AlliedCryocopter_FreezeRayLoop"> <!-- VERIFY: FireFX (Cryocopter beam FX) and FireSound event names -->
+        <FiringDuration MinSeconds="0.5s" MaxSeconds="0.5s" />
+        <Nuggets>
+            <!-- Low direct damage: 15 per pulse = 30 DPS -->
+            <DamageNugget
+                Damage="15.0"
+                Radius="0.0"
+                DelayTimeSeconds="0.0s"
+                DamageType="CRYO"
+                DamageFXType="CRYO"
+                DeathType="NORMAL" /> <!-- VERIFY: DamageType/DamageFXType used by Cryocopter freeze ray (may be FROZEN / LASER) -->
+            <AttributeModifierNugget
+                AttributeModifierName="AlliedCryoBastion_CryoSlow"
+                Radius="0.0"
+                DamageFXType="CRYO"
+                PartitionFilterTestType="SPHERE">
+                <SpecialObjectFilter Rule="ANY" Relationship="ENEMIES" Include="INFANTRY VEHICLE HUGE_VEHICLE" Exclude="AIRCRAFT STRUCTURE" />
+            </AttributeModifierNugget>
+        </Nuggets>
+    </WeaponTemplate>
+
+    <!-- Freeze: fired only while CONTINUOUS_FIRE_MEAN (3 s on target). Applies the vanilla
+         Cryocopter freeze, so the frozen target is shattered by any damage. -->
+    <WeaponTemplate
+        id="AlliedCryoBastionWeaponFreeze"
+        Name="AlliedCryoBastionWeaponFreeze"
+        AttackRange="300.0"
+        MinimumAttackRange="0.0"
+        WeaponSpeed="999999.0"
+        AcceptableAimDelta="5d"
+        RadiusDamageAffects="ENEMIES NEUTRALS"
+        AntiMask="ANTI_GROUND"
+        ClipSize="1"
+        LeechRangeWeapon="true"
+        FireFX="FX_CryocopterFreezeRayFreeze"
+        FireSound="AlliedCryocopter_FreezeTarget"> <!-- VERIFY: FX / sound names -->
+        <FiringDuration MinSeconds="0.5s" MaxSeconds="0.5s" />
+        <ClipReloadTime MinSeconds="4.0s" MaxSeconds="4.0s" />
+        <Nuggets>
+            <DamageNugget
+                Damage="15.0"
+                Radius="0.0"
+                DelayTimeSeconds="0.0s"
+                DamageType="CRYO"
+                DamageFXType="CRYO"
+                DeathType="NORMAL" /> <!-- VERIFY: same as primary -->
+            <!-- VERIFY: vanilla Cryocopter freeze modifier id (sets FROZEN status; any damage shatters).
+                 If vanilla freezes via a damage type instead, replace this nugget with a DamageNugget
+                 of that DamageType (Cryocopter freeze-ray weapon in SageXml). -->
+            <AttributeModifierNugget
+                AttributeModifierName="AttributeModifier_CryocopterFreeze"
+                Radius="0.0"
+                PartitionFilterTestType="SPHERE">
+                <SpecialObjectFilter Rule="ANY" Relationship="ENEMIES" Include="INFANTRY VEHICLE HUGE_VEHICLE" Exclude="AIRCRAFT STRUCTURE" />
+            </AttributeModifierNugget>
+        </Nuggets>
+    </WeaponTemplate>
+
+    <!-- ===================================================================== -->
+    <!-- GameObject                                                             -->
+    <!-- ===================================================================== -->
+
+    <!-- VERIFY: base Spectrum Tower object id in SageXml (e.g. AlliedAntiVehicleTower / AlliedSpectrumTower);
+         inheritFrom kept as BaseStructure per SPEC. -->
+    <GameObject
+        id="AlliedCryoBastion"
+        inheritFrom="BaseStructure"
+        Side="Allies"
+        EditorSorting="STRUCTURE"
+        KindOf="PRELOAD STRUCTURE SELECTABLE IMMOBILE SCORE FS_BASE_DEFENSE IMMUNE_TO_CAPTURE CAN_ATTACK"
+        BuildCost="1400"
+        BuildTime="20"
+        CommandSet="AlliedCryoBastionCommandSet"
+        EnergyProduction="-6"
+        ThreatLevel="2.0"
+        VisionRange="350"
+        ShroudClearingRange="350"
+        RadarPriority="STRUCTURE"
+        ButtonImage="Button_AlliedSpectrumTower"
+        SelectPortrait="Portrait_AlliedSpectrumTower"
+        UnitCategory="BASE_DEFENSE"
+        ProductionQueueType="BASE_DEFENSE"
+        BuildFadeInOnCreateTime="0.5s"> <!-- VERIFY: ButtonImage / SelectPortrait names, UnitCategory/ProductionQueueType enums -->
+
+        <DisplayName>NAME:AlliedCryoBastion</DisplayName>
+        <Description>DESC:AlliedCryoBastion</Description>
+        <TypeDescription>TYPE:AlliedCryoBastion</TypeDescription>
+
+        <ObjectPrerequisites>
+            <!-- SPEC: Defense Bureau + Command Hub. VERIFY: exact object ids in SageXml. -->
+            <Object>
+                <Req>AlliedDefenseBureau</Req>   <!-- VERIFY: Defense Bureau id -->
+            </Object>
+            <Object>
+                <Req>AlliedCommandHub</Req>      <!-- VERIFY: Command Hub id (may be a CY upgrade, then use <Upgrade>) -->
+            </Object>
+        </ObjectPrerequisites>
+
+        <ArmorSet
+            Armor="AlliedSpectrumTowerArmor"
+            DamageFX="StructureDamageFXNoShake" /> <!-- VERIFY: armor template / DamageFX copied from Spectrum Tower -->
+
+        <WeaponSetUpdate>
+            <WeaponSlotTurret
+                ID="1"
+                AllowInterleavedFiring="false"
+                InterleavedStyle="INTERLEAVE_FIRST_AVAILABLE"
+                WeaponChoiceCriteria="PREFER_MOST_DAMAGE">
+                <!-- Freeze weapon only while the beam has been held 3 s (CONTINUOUS_FIRE_MEAN). -->
+                <Weapon
+                    Ordering="PRIMARY_WEAPON"
+                    Template="AlliedCryoBastionWeapon"
+                    ForbiddenObjectStatus="UNDER_CONSTRUCTION SOLD DISABLED_UNDERPOWERED" />
+                <Weapon
+                    Ordering="SECONDARY_WEAPON"
+                    Template="AlliedCryoBastionWeaponFreeze"
+                    RequiredModelConditions="CONTINUOUS_FIRE_MEAN"
+                    ForbiddenObjectStatus="UNDER_CONSTRUCTION SOLD DISABLED_UNDERPOWERED" /> <!-- VERIFY: attribute name for model-condition gating in WeaponSlot Weapon -->
+                <TurretSettings
+                    TurretTurnRate="180"
+                    TurretPitchRate="90"
+                    AllowsPitch="true"
+                    MinimumPitch="-20d"
+                    MinIdleScanTime="2.0s"
+                    MaxIdleScanTime="4.0s"
+                    MinIdleScanAngle="0"
+                    MaxIdleScanAngle="180">
+                    <TurretAITargetChooserData
+                        CanAcquireDynamicIfAssignedOutOfRange="true"
+                        IdleScanDelay="0.5s" />
+                </TurretSettings>
+            </WeaponSlotTurret>
+        </WeaponSetUpdate>
+
+        <Draws>
+            <!-- Model/animations copied from Spectrum Tower. VERIFY: W3X names (ABSpectrum*_SKN/_SKL/_*A) and bones. -->
+            <ScriptedModelDraw
+                id="ModuleTag_Draw"
+                OkToChangeModelColor="true"
+                Scale="0.95"
+                ExtraPublicBone="FX_EMITTER">
+                <ModelConditionState ParseCondStateType="PARSE_DEFAULT">
+                    <Model Name="ABSpectrumTwr_SKN" />  <!-- VERIFY: model -->
+                    <WeaponFireFXBone WeaponSlotType="PRIMARY_WEAPON" BoneName="FX_EMITTER" />
+                    <WeaponLaunchBone WeaponSlotType="PRIMARY_WEAPON" BoneName="FX_EMITTER" />
+                    <WeaponFireFXBone WeaponSlotType="SECONDARY_WEAPON" BoneName="FX_EMITTER" />
+                    <WeaponLaunchBone WeaponSlotType="SECONDARY_WEAPON" BoneName="FX_EMITTER" />
+                    <!-- Cryo idle mist borrowed from Cryocopter. VERIFY: particle system name. -->
+                    <ParticleSysBone BoneName="FX_EMITTER" FXParticleSystemTemplate="CryocopterFreezeRayGlow" FollowBone="true" />
+                </ModelConditionState>
+                <ModelConditionState ParseCondStateType="PARSE_NORMAL" ConditionsYes="REALLYDAMAGED">
+                    <Model Name="ABSpectrumTwr_D1SKN" /> <!-- VERIFY: damaged model -->
+                </ModelConditionState>
+                <ModelConditionState ParseCondStateType="PARSE_NORMAL" ConditionsYes="RUBBLE">
+                    <Model Name="ABSpectrumTwr_D2SKN" /> <!-- VERIFY: rubble model -->
+                </ModelConditionState>
+
+                <AnimationState ParseCondStateType="PARSE_DEFAULT">
+                    <Animation AnimationName="ABSpectrumTwr_IDLA" AnimationMode="LOOP" /> <!-- VERIFY -->
+                </AnimationState>
+                <AnimationState ParseCondStateType="PARSE_NORMAL" ConditionsYes="AWAITING_CONSTRUCTION">
+                    <Animation AnimationName="ABSpectrumTwr_BLDA" AnimationMode="MANUAL" /> <!-- VERIFY -->
+                </AnimationState>
+                <AnimationState ParseCondStateType="PARSE_NORMAL" ConditionsYes="ACTIVELY_BEING_CONSTRUCTED">
+                    <Animation AnimationName="ABSpectrumTwr_BLDA" AnimationMode="ONCE" /> <!-- VERIFY -->
+                </AnimationState>
+                <AnimationState ParseCondStateType="PARSE_NORMAL" ConditionsYes="FIRING_OR_PREATTACK_A">
+                    <Animation AnimationName="ABSpectrumTwr_ATKA" AnimationMode="LOOP" /> <!-- VERIFY -->
+                    <!-- Cryo charge FX while beaming. VERIFY: FX name. -->
+                    <ParticleSysBone BoneName="FX_EMITTER" FXParticleSystemTemplate="CryocopterFreezeRayCharge" FollowBone="true" />
+                </AnimationState>
+                <AnimationState ParseCondStateType="PARSE_NORMAL" ConditionsYes="SOLD">
+                    <Animation AnimationName="ABSpectrumTwr_BLDA" AnimationMode="ONCE_BACKWARDS" /> <!-- VERIFY -->
+                </AnimationState>
+            </ScriptedModelDraw>
+        </Draws>
+
+        <Behaviors>
+            <!-- Turret AI, ground targets only (weapons are ANTI_GROUND). -->
+            <!-- Passive frost aura: 150 units, enemy ground units slowed 25%. Off when unpowered. -->
+            <AttributeModifierAuraUpdate
+                id="ModuleTag_FrostAura"
+                AttributeModifierName="AlliedCryoBastion_FrostAuraSlow"
+                RefreshDelay="1s"
+                Range="150"
+                StartsActive="true"
+                RunWhileDead="false">
+                <ObjectFilter Rule="ANY" Relationship="ENEMIES" Include="INFANTRY VEHICLE HUGE_VEHICLE" Exclude="AIRCRAFT STRUCTURE" />
+                <DisabledTypesToProcess>UNDERPOWERED EMP HELD</DisabledTypesToProcess> <!-- VERIFY: element name for disabled gating -->
+            </AttributeModifierAuraUpdate>
+
+            <!-- Frost aura ring visual (blue-white). VERIFY: FX / particle names. -->
+            <FXListBehavior id="ModuleTag_FrostAuraFX">
+                <Event Index="onCreation" FX="FX_CryocopterFreezeGroundMist" />
+            </FXListBehavior>
+
+            <!-- Power consumer: shuts down weapons/aura when power is low. -->
+            <PoweredUpdate id="ModuleTag_Powered" /> <!-- VERIFY: vanilla Spectrum Tower power module name -->
+
+            <!-- Construction / sell / death copied from Spectrum Tower. -->
+            <StructureCollapseUpdate
+                id="ModuleTag_Collapse"
+                MinCollapseDelay="0.0s"
+                MaxCollapseDelay="0.0s"
+                CollapseDamping="0.5"
+                MaxShudder="1.0"
+                BigBurstFrequency="4"
+                DestroyObjectWhenDone="true"
+                FXFinal="FX_AlliedStructureDeathMedium"> <!-- VERIFY: death FX name -->
+                <DieMuxData DeathTypes="ALL" />
+            </StructureCollapseUpdate>
+            <SellBehavior id="ModuleTag_Sell" /> <!-- VERIFY: vanilla sell module (may be inherited from BaseStructure) -->
+        </Behaviors>
+
+        <Body>
+            <ActiveBody
+                id="ModuleTag_Body"
+                MaxHealth="2600"
+                InitialHealth="2600" />
+        </Body>
+
+        <AI>
+            <AIUpdate
+                id="ModuleTag_AI"
+                AutoAcquireEnemiesWhenIdle="YES"
+                MoodAttackCheckRate="250" />
+        </AI>
+
+        <Geometry IsSmall="false">
+            <!-- Spectrum Tower footprint (scaled x0.95). VERIFY against vanilla Geometry. -->
+            <Shape Type="BOX" MajorRadius="20.0" MinorRadius="20.0" Height="70.0" ContactPointGeneration="STRUCTURE" />
+        </Geometry>
+
+        <Sounds>
+            <!-- VERIFY: all sound event names (Spectrum Tower + Cryocopter). -->
+            <Sound Type="SoundOnDamaged" List="AlliedStructureDamagedLight" />
+            <Sound Type="SoundOnReallyDamaged" List="AlliedStructureDamagedHeavy" />
+            <Sound Type="SoundSelect" List="AlliedSpectrumTower_Select" />
+            <Sound Type="SoundAmbient" List="AlliedCryocopter_FreezeRayAmbient" />
+        </Sounds>
+    </GameObject>
+</AssetDeclaration>
