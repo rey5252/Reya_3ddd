@@ -104,7 +104,8 @@ def main():
                             "category": "neutral",
                             "min_distance": 4.0,
                             "max_distance": 32.0,
-                            "sounds": [{"name": rel, "volume": 1.0}],
+                            # streamed: 868 clips would not all fit into memory on low-end phones
+                            "sounds": [{"name": rel, "volume": 1.0, "stream": True}],
                         }
             voice_js[ch][lang] = entry
     print(f"{len(defs)} lines, {len(jobs)} to voice")
