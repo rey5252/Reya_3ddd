@@ -1,4 +1,756 @@
 {
+"sounds/dialog/ru/mat/1_1": {
+"hash": "bb6e4b2208c5c498903a4618eba7b70c8b199f90",
+"seconds": 5.86
+},
+"sounds/dialog/ru/mat/1_2": {
+"hash": "5fe8f93d0f8905279ab85b0a5ed21f9714c5466b",
+"seconds": 3.56
+},
+"sounds/dialog/ru/mat/1_3": {
+"hash": "7fbc026c23bf01111889c7e50305dc768fba26df",
+"seconds": 7.44
+},
+"sounds/dialog/ru/mat/1_4": {
+"hash": "483b6c93da076e06d36018d482beebfc8566964b",
+"seconds": 5.96
+},
+"sounds/dialog/ru/mat/1_5": {
+"hash": "45bcd4e8950f127bed48a0442dc985ece04b3c85",
+"seconds": 7.15
+},
+"sounds/dialog/ru/mat/1_6": {
+"hash": "ac8002c5eb92a651198afe79bc6b70bf3c97238a",
+"seconds": 6.02
+},
+"sounds/dialog/ru/mat/2_1": {
+"hash": "057fde43827898ec4e173a6d7ca426ecb30b918c",
+"seconds": 6.14
+},
+"sounds/dialog/ru/mat/2_2": {
+"hash": "f5bcd4c71aab97c8d448167a80f2fd345ec95a5a",
+"seconds": 7.13
+},
+"sounds/dialog/ru/mat/2_3": {
+"hash": "5717f2eeb06ded7a3d253a82649966198b158073",
+"seconds": 4.88
+},
+"sounds/dialog/ru/mat/2_4": {
+"hash": "c71589c243bf91e20db012fdc374d4f33418cc12",
+"seconds": 5.68
+},
+"sounds/dialog/ru/mat/2_5": {
+"hash": "85c4dfafac42997c323724bdf21bc6591599dddc",
+"seconds": 7.44
+},
+"sounds/dialog/ru/mat/2_6": {
+"hash": "0bf5333e0d993200a908c971dacd02c25d12232a",
+"seconds": 8.24
+},
+"sounds/dialog/ru/mat/3_1": {
+"hash": "5dec205ca715287c7e84dbd36a31eb2b3e1670ea",
+"seconds": 6.94
+},
+"sounds/dialog/ru/mat/3_2": {
+"hash": "d30878256ab706a3a37cb44a61e781aa2ecd822b",
+"seconds": 5.56
+},
+"sounds/dialog/ru/mat/3_3": {
+"hash": "db41dc27cbdc7547e500ad1346a2cfe3976c439c",
+"seconds": 7.27
+},
+"sounds/dialog/ru/mat/3_4": {
+"hash": "bed9d120ff5342abb44e22b3aff8700f498be322",
+"seconds": 7.45
+},
+"sounds/dialog/ru/mat/3_5": {
+"hash": "3b0d67f0a76281cd159c24ec853e6fb7c313d633",
+"seconds": 6.86
+},
+"sounds/dialog/ru/mat/4_1": {
+"hash": "ccfc56989d1dc4581fee10f0978bbe3d1862e0eb",
+"seconds": 4.17
+},
+"sounds/dialog/ru/mat/4_2": {
+"hash": "b54061ce56bdcb582f3091334a7015960d01b9c3",
+"seconds": 6.99
+},
+"sounds/dialog/ru/mat/4_3": {
+"hash": "caa160ac0d49e595517187f450a3ffa96ba25cf4",
+"seconds": 5.49
+},
+"sounds/dialog/ru/mat/4_4": {
+"hash": "74b1967ff655f91007701b131edc808aa9c24a72",
+"seconds": 5.04
+},
+"sounds/dialog/ru/mat/4_5": {
+"hash": "1e9080d94c87e9e4cce63a44073767eb0f66f281",
+"seconds": 6.07
+},
+"sounds/dialog/ru/mat/4_6": {
+"hash": "694dfbf97cb9fb567e73cd05ccf792ee9a8fc84e",
+"seconds": 8.47
+},
+"sounds/dialog/ru/mat/5_1": {
+"hash": "c2787b9537e68014d746382a602d608134294f1a",
+"seconds": 6.19
+},
+"sounds/dialog/ru/mat/5_2": {
+"hash": "e73b11ce6cd16d52c750afd07d929168c89eff49",
+"seconds": 6.0
+},
+"sounds/dialog/ru/mat/5_3": {
+"hash": "3f0a8c2662f7a73482d71eca763ff995788477ec",
+"seconds": 8.64
+},
+"sounds/dialog/ru/mat/5_4": {
+"hash": "0b5952b7cd14089d2dfda2b868550e3e3535a9ff",
+"seconds": 6.15
+},
+"sounds/dialog/ru/mat/5_5": {
+"hash": "486b3cbdeba7bfd4feb8d3f7a75d6693e946935c",
+"seconds": 9.45
+},
+"sounds/dialog/ru/mat/5_6": {
+"hash": "73acf0bb1c0c2db4b8b651bf3f6c5899890999d3",
+"seconds": 6.04
+},
+"sounds/dialog/ru/mat/6_1": {
+"hash": "3252ff69905b5b2d0aa5f7de34bf862221914a51",
+"seconds": 6.15
+},
+"sounds/dialog/ru/mat/6_2": {
+"hash": "5f84fccaef27ebed24d7e5186642538ccaf67609",
+"seconds": 5.64
+},
+"sounds/dialog/ru/mat/6_3": {
+"hash": "680772b9ad72304d3ba141f7752850babd5e2a9a",
+"seconds": 7.3
+},
+"sounds/dialog/ru/mat/6_4": {
+"hash": "f18083674d307b043c44ecd5430d47fb96a4b267",
+"seconds": 5.83
+},
+"sounds/dialog/ru/mat/6_5": {
+"hash": "4421f8eeb023e1db59bb04d255e0dc4bd03b7e1d",
+"seconds": 7.63
+},
+"sounds/dialog/ru/mat/6_6": {
+"hash": "edacb836cb7c875810b6634ca59bf3a33632d2eb",
+"seconds": 7.21
+},
+"sounds/dialog/ru/mat/7_1": {
+"hash": "df3e46b93b0a3ab1440edd5f5cf428a8193b9f4e",
+"seconds": 7.06
+},
+"sounds/dialog/ru/mat/7_2": {
+"hash": "03dd499734c0b75019a1d54789ffc716d3f92872",
+"seconds": 5.8
+},
+"sounds/dialog/ru/mat/7_3": {
+"hash": "ac00234401ada429ee8964c666fdd6088fac2316",
+"seconds": 7.18
+},
+"sounds/dialog/ru/mat/7_4": {
+"hash": "e19b91cf278f75ac0b3fcc5278ab4b7f58cac2a9",
+"seconds": 6.58
+},
+"sounds/dialog/ru/mat/7_5": {
+"hash": "a86b8d9d560b77ef2d72989160306c37daa7e09b",
+"seconds": 7.44
+},
+"sounds/dialog/ru/mat/7_6": {
+"hash": "1451c88075263d715d9d2e8d7785135f1bc4c51e",
+"seconds": 8.13
+},
+"sounds/dialog/ru/mat/8_1": {
+"hash": "697216ab7e8535a1b5bd1d33791d868cc252acc0",
+"seconds": 5.79
+},
+"sounds/dialog/ru/mat/8_2": {
+"hash": "5fb587779c6ab13147285bb874aaba458970c10e",
+"seconds": 4.18
+},
+"sounds/dialog/ru/mat/8_3": {
+"hash": "3a344262181a1b93e8f915ae4d962ccd41aa5b29",
+"seconds": 8.23
+},
+"sounds/dialog/ru/mat/8_4": {
+"hash": "cd477a6b0b408d432f44a5463c8011be3217662b",
+"seconds": 3.25
+},
+"sounds/dialog/ru/mat/8_5": {
+"hash": "cbd9e90568760b1872b4b95b4740bd1401ab8858",
+"seconds": 7.56
+},
+"sounds/dialog/ru/mat/8_6": {
+"hash": "9cc8f7fb3aff33c77a9cf42518fb739ebbbcc96c",
+"seconds": 6.25
+},
+"sounds/dialog/ru/normal/1_1": {
+"hash": "11e5a43b41d54afaf297941ce1ecc7d04dd3ed97",
+"seconds": 5.74
+},
+"sounds/dialog/ru/normal/1_2": {
+"hash": "48eed4dbf6b8de2978bc8eb51dfff66b01ec98d4",
+"seconds": 3.42
+},
+"sounds/dialog/ru/normal/1_3": {
+"hash": "ab9487e18f32dc999fb6bddd9e4952d16d24d4b8",
+"seconds": 5.88
+},
+"sounds/dialog/ru/normal/1_4": {
+"hash": "e2f64594f1fe63060cff144f2b64eba48780e2e9",
+"seconds": 4.83
+},
+"sounds/dialog/ru/normal/1_5": {
+"hash": "8f388ba33d36bde91a8f9a2ec94f2c8aa62fedc9",
+"seconds": 6.2
+},
+"sounds/dialog/ru/normal/1_6": {
+"hash": "60872bfa1f624b93369ecfea1c689f71d8d5cef7",
+"seconds": 5.81
+},
+"sounds/dialog/ru/normal/2_1": {
+"hash": "e65e10ab0c1812ca35f7a7049feac5f4c1a2ed50",
+"seconds": 5.5
+},
+"sounds/dialog/ru/normal/2_2": {
+"hash": "7acf89d1d74043406b18a5bceed5f38895a2861b",
+"seconds": 7.3
+},
+"sounds/dialog/ru/normal/2_3": {
+"hash": "5ab095eb5ca52be03d255b5ef8c4d21855ff025e",
+"seconds": 4.83
+},
+"sounds/dialog/ru/normal/2_4": {
+"hash": "3d1b0bd8c82864c3d992f5b82b7f1803fd12a328",
+"seconds": 5.72
+},
+"sounds/dialog/ru/normal/2_5": {
+"hash": "3b0d39221b0d904f5f44e803279c92bd8ebc4f5b",
+"seconds": 6.41
+},
+"sounds/dialog/ru/normal/2_6": {
+"hash": "a9900149de1715a211e02990a12402a29b5f05bb",
+"seconds": 7.64
+},
+"sounds/dialog/ru/normal/3_1": {
+"hash": "4e70331aad1668a524c646fab2046a01a477729d",
+"seconds": 5.82
+},
+"sounds/dialog/ru/normal/3_2": {
+"hash": "636a37223aab7761372cf8437269ba09bb210b3c",
+"seconds": 4.65
+},
+"sounds/dialog/ru/normal/3_3": {
+"hash": "9b8f06883bf46d9b095bdd14018a6f75f821a54f",
+"seconds": 6.62
+},
+"sounds/dialog/ru/normal/3_4": {
+"hash": "f3d1d77330a5d27be5114c2cab084b46ad95dea1",
+"seconds": 6.86
+},
+"sounds/dialog/ru/normal/3_5": {
+"hash": "d99d6a6d6e5205744de85252a77986ce48d427a3",
+"seconds": 5.93
+},
+"sounds/dialog/ru/normal/4_1": {
+"hash": "38bf8cc088922400f110b803884f81e8eeb38d90",
+"seconds": 4.17
+},
+"sounds/dialog/ru/normal/4_2": {
+"hash": "2cb09d6ed693f354e9118098672a59ed7e25783c",
+"seconds": 5.95
+},
+"sounds/dialog/ru/normal/4_3": {
+"hash": "c3ac06c383b29a27a8ea1bb30b94c4b7d3665444",
+"seconds": 4.66
+},
+"sounds/dialog/ru/normal/4_4": {
+"hash": "278f603a62bbd2799addab20a80a7f7e29f9329a",
+"seconds": 4.82
+},
+"sounds/dialog/ru/normal/4_5": {
+"hash": "4cab05490192fb385882db9816ebe7fcc8ab9ff9",
+"seconds": 4.79
+},
+"sounds/dialog/ru/normal/4_6": {
+"hash": "518944a8691762594b545c785588c18f163062c0",
+"seconds": 7.98
+},
+"sounds/dialog/ru/normal/5_1": {
+"hash": "302b417af10f5366a02d1ee2551e59ccabd69da8",
+"seconds": 5.44
+},
+"sounds/dialog/ru/normal/5_2": {
+"hash": "936bc7e5a8cce24abc6c06079603bfc67595a9f0",
+"seconds": 5.52
+},
+"sounds/dialog/ru/normal/5_3": {
+"hash": "d3e248d21368e47b113328a1d04f6dc866739137",
+"seconds": 6.81
+},
+"sounds/dialog/ru/normal/5_4": {
+"hash": "2ab2f35f9367830302ce0e3dc1c47709285a9694",
+"seconds": 6.12
+},
+"sounds/dialog/ru/normal/5_5": {
+"hash": "cbd5e969d885a11c91c0bf729c809f807f170723",
+"seconds": 8.06
+},
+"sounds/dialog/ru/normal/5_6": {
+"hash": "4dac5c487cc65d5e174701b3742abff02433e559",
+"seconds": 5.29
+},
+"sounds/dialog/ru/normal/6_1": {
+"hash": "69b0151249115a4bebbc82062af12d49bfd7ece8",
+"seconds": 6.03
+},
+"sounds/dialog/ru/normal/6_2": {
+"hash": "eadb54c630fb7be9e547eb2500ad92b53d9f031b",
+"seconds": 4.87
+},
+"sounds/dialog/ru/normal/6_3": {
+"hash": "e5f6ff95b2b4d012e6563f0bb8b0ae783911bd8a",
+"seconds": 6.28
+},
+"sounds/dialog/ru/normal/6_4": {
+"hash": "ac8f0b29926c55ae3e944d321c80581a9336f18d",
+"seconds": 4.73
+},
+"sounds/dialog/ru/normal/6_5": {
+"hash": "bed8db74b8712400c54499abf517b08c5f04f475",
+"seconds": 8.08
+},
+"sounds/dialog/ru/normal/6_6": {
+"hash": "c5b4ad53531e16b114ff3827ab666c2a63180cb0",
+"seconds": 6.2
+},
+"sounds/dialog/ru/normal/7_1": {
+"hash": "05d8e2e05f0b0c05f72787523e8bc4c0b0bbe9af",
+"seconds": 6.02
+},
+"sounds/dialog/ru/normal/7_2": {
+"hash": "d07d66d541b31d7ef8d23c1d650f4ce09027d39f",
+"seconds": 5.14
+},
+"sounds/dialog/ru/normal/7_3": {
+"hash": "97b67b6eb48fccd516d97d5bd8c5f511200c864c",
+"seconds": 5.45
+},
+"sounds/dialog/ru/normal/7_4": {
+"hash": "12ffe79df6b5619ecf01631d1e4b9c705886c464",
+"seconds": 6.74
+},
+"sounds/dialog/ru/normal/7_5": {
+"hash": "3ddc89b2d69f7a700f8e2ec0a934746cf579e486",
+"seconds": 6.39
+},
+"sounds/dialog/ru/normal/7_6": {
+"hash": "072d212e902e15387dedc6f576e9cc01b879e400",
+"seconds": 7.77
+},
+"sounds/dialog/ru/normal/8_1": {
+"hash": "ec2aa2fd0faa30068a8ddd7780aca089eb9745ac",
+"seconds": 5.71
+},
+"sounds/dialog/ru/normal/8_2": {
+"hash": "f7ccac23c990559a3ee8106bd6d67c6d6fa0d420",
+"seconds": 3.51
+},
+"sounds/dialog/ru/normal/8_3": {
+"hash": "3dce5d9e6b17e34dfbddfbd0f5747bf3d0d779f9",
+"seconds": 7.21
+},
+"sounds/dialog/ru/normal/8_4": {
+"hash": "09f9f320dde9be1eeb83712908b109129e972d8b",
+"seconds": 2.31
+},
+"sounds/dialog/ru/normal/8_5": {
+"hash": "d232c0f8209a0d31715d5c54cb413ab1236b4783",
+"seconds": 7.14
+},
+"sounds/dialog/ru/normal/8_6": {
+"hash": "a19ea1e0022c14574f3491523bd14e1fb001ec2b",
+"seconds": 5.55
+},
+"sounds/dialog/uk/mat/1_1": {
+"hash": "3cb283d910faa21de27971d3669046bde4f7379b",
+"seconds": 6.49
+},
+"sounds/dialog/uk/mat/1_2": {
+"hash": "4dc6cfe5cdad35b53c18f9b8a9a101173056a4a8",
+"seconds": 3.68
+},
+"sounds/dialog/uk/mat/1_3": {
+"hash": "7b3d5dcc94f7d7b9f1e6d5e61b182d3bf6ebf0e8",
+"seconds": 7.16
+},
+"sounds/dialog/uk/mat/1_4": {
+"hash": "3edbf7eb6e177cc0f1a4f09fbd3f0bb0a780888a",
+"seconds": 5.67
+},
+"sounds/dialog/uk/mat/1_5": {
+"hash": "ee751cb41d0829b35d0053d695420b4e5d9fc07c",
+"seconds": 6.82
+},
+"sounds/dialog/uk/mat/1_6": {
+"hash": "6ba69522a2988b5241394f8bf3a17e9bf9284601",
+"seconds": 5.83
+},
+"sounds/dialog/uk/mat/2_1": {
+"hash": "7f6a390863d0ab8fa8f43c023827e04bbfacb711",
+"seconds": 6.31
+},
+"sounds/dialog/uk/mat/2_2": {
+"hash": "0a0945cc542157e718312fc753826c3182b5177f",
+"seconds": 6.94
+},
+"sounds/dialog/uk/mat/2_3": {
+"hash": "e96e5c97021aa69c8f4e564266e7aaeee82eba77",
+"seconds": 5.29
+},
+"sounds/dialog/uk/mat/2_4": {
+"hash": "c5ba7523fb7e8546d9b503307dd5072385cfa301",
+"seconds": 5.47
+},
+"sounds/dialog/uk/mat/2_5": {
+"hash": "d0c918cb22a8a58ee853f756eb415a796ed4dd8c",
+"seconds": 7.1
+},
+"sounds/dialog/uk/mat/2_6": {
+"hash": "c6dbebde3a2a7025f95439dbf21ab45b6e727771",
+"seconds": 8.22
+},
+"sounds/dialog/uk/mat/3_1": {
+"hash": "16d68c08e63d5b4b69490a742041a28dd2f2f50f",
+"seconds": 6.86
+},
+"sounds/dialog/uk/mat/3_2": {
+"hash": "7c2348f931b0d6eb8753a960b5480e2134a467dc",
+"seconds": 5.76
+},
+"sounds/dialog/uk/mat/3_3": {
+"hash": "514c7767ff889a2c70f2058151a3cc6fb4830dd8",
+"seconds": 7.06
+},
+"sounds/dialog/uk/mat/3_4": {
+"hash": "52f2af5eaed89708f0fb3a4dcbfb1c91e34cf5a1",
+"seconds": 6.19
+},
+"sounds/dialog/uk/mat/3_5": {
+"hash": "8157590c75730bfeebfcbb73740fecbfa0926035",
+"seconds": 6.71
+},
+"sounds/dialog/uk/mat/4_1": {
+"hash": "12c3462e97e31131b1213ee09fa25861e815b5fc",
+"seconds": 4.42
+},
+"sounds/dialog/uk/mat/4_2": {
+"hash": "8c471bc22fb3fd936a7d8fe791b6fce10efa06ca",
+"seconds": 6.8
+},
+"sounds/dialog/uk/mat/4_3": {
+"hash": "01bcb318d1a0b45cf9e3c5ddd251299e46e5f908",
+"seconds": 5.69
+},
+"sounds/dialog/uk/mat/4_4": {
+"hash": "609c421ab741fbe1ef122f8f890682913ff64a20",
+"seconds": 5.36
+},
+"sounds/dialog/uk/mat/4_5": {
+"hash": "ee2d4f7320ba904ecd222ebe619273bdb11bfcf9",
+"seconds": 5.66
+},
+"sounds/dialog/uk/mat/4_6": {
+"hash": "d3fe92fa9a564f57923f627086b4a74610e4ad8e",
+"seconds": 8.04
+},
+"sounds/dialog/uk/mat/5_1": {
+"hash": "af7690596c98b8f0935a06bc23ed4a46e8ceb5dc",
+"seconds": 6.39
+},
+"sounds/dialog/uk/mat/5_2": {
+"hash": "5e6c49e5a693741df9e787830bcf7dedd36633b2",
+"seconds": 6.12
+},
+"sounds/dialog/uk/mat/5_3": {
+"hash": "55dc123213de9691af73585a2ae22091afc5f681",
+"seconds": 8.0
+},
+"sounds/dialog/uk/mat/5_4": {
+"hash": "191fcb40c10871333275305581fb87ba5458228a",
+"seconds": 5.85
+},
+"sounds/dialog/uk/mat/5_5": {
+"hash": "f262b3bef48f18552edb5e09c4ce948db8f4bfa6",
+"seconds": 8.56
+},
+"sounds/dialog/uk/mat/5_6": {
+"hash": "ff9001fd1b9fe06d3985f34b0220955132f97da1",
+"seconds": 5.48
+},
+"sounds/dialog/uk/mat/6_1": {
+"hash": "158885a485c0be91f3274707a6dd1e825bcb723d",
+"seconds": 6.94
+},
+"sounds/dialog/uk/mat/6_2": {
+"hash": "7c15512722aadce43a0c84eda1b62ded62281b84",
+"seconds": 5.54
+},
+"sounds/dialog/uk/mat/6_3": {
+"hash": "73c3283db33313374a4c94abb056f91a8de365ab",
+"seconds": 7.46
+},
+"sounds/dialog/uk/mat/6_4": {
+"hash": "b0634a6ef2f61f6f190b5da4f08d48b0fa468659",
+"seconds": 5.96
+},
+"sounds/dialog/uk/mat/6_5": {
+"hash": "25c5c7da38daa6fc905f7be913565d5c3b60561b",
+"seconds": 8.05
+},
+"sounds/dialog/uk/mat/6_6": {
+"hash": "adfa2e19979df7425ddf0c5eb2ed7be9318575f4",
+"seconds": 6.48
+},
+"sounds/dialog/uk/mat/7_1": {
+"hash": "6a2970630a2b37ca1fbce1041a0b0dab9ff130ce",
+"seconds": 7.14
+},
+"sounds/dialog/uk/mat/7_2": {
+"hash": "c87551a510de8d7076d722260eaacaf35adf907e",
+"seconds": 5.5
+},
+"sounds/dialog/uk/mat/7_3": {
+"hash": "2914d201e041b731b2f461ffce825873c8d7091f",
+"seconds": 6.74
+},
+"sounds/dialog/uk/mat/7_4": {
+"hash": "c18912d3a3057fb5520281371578e8f7e68ed1dd",
+"seconds": 6.79
+},
+"sounds/dialog/uk/mat/7_5": {
+"hash": "4d1c9d065076b33054a7cb4e6f9c5fcb59b4e70f",
+"seconds": 7.1
+},
+"sounds/dialog/uk/mat/7_6": {
+"hash": "7ec3c0b182b9658f2f323ca7a441cff248d8981c",
+"seconds": 8.57
+},
+"sounds/dialog/uk/mat/8_1": {
+"hash": "33ee513b166c3afdd4452896c5b1819b98caee6e",
+"seconds": 5.78
+},
+"sounds/dialog/uk/mat/8_2": {
+"hash": "bc7429733f24a691209361bdc32def8f7c369de4",
+"seconds": 4.47
+},
+"sounds/dialog/uk/mat/8_3": {
+"hash": "3c34b682b69c8845122d319fd05cf6f2a408fe26",
+"seconds": 8.68
+},
+"sounds/dialog/uk/mat/8_4": {
+"hash": "43ffd4f4596511abdd1709ba8eb0dc0ae875799b",
+"seconds": 3.27
+},
+"sounds/dialog/uk/mat/8_5": {
+"hash": "6ae4e95d140f210e9b0cbe607085673fce29e1e9",
+"seconds": 7.74
+},
+"sounds/dialog/uk/mat/8_6": {
+"hash": "579766a79dfbe07edae2746add3e4c5c17a06329",
+"seconds": 6.36
+},
+"sounds/dialog/uk/normal/1_1": {
+"hash": "78a178638f16f5782471f83a77311b6b24e1de5c",
+"seconds": 5.82
+},
+"sounds/dialog/uk/normal/1_2": {
+"hash": "c9e10fb410e6749bad7910461b28b29622eb8492",
+"seconds": 3.24
+},
+"sounds/dialog/uk/normal/1_3": {
+"hash": "f140a8c231aaa5bcc6e92ca8d04261403379b324",
+"seconds": 5.98
+},
+"sounds/dialog/uk/normal/1_4": {
+"hash": "732c04c5f6a94fcc97c1827c8abfac76f401dd3d",
+"seconds": 4.88
+},
+"sounds/dialog/uk/normal/1_5": {
+"hash": "5a9a37f7ee24dd28e80780305e81d328d2ae6e61",
+"seconds": 5.91
+},
+"sounds/dialog/uk/normal/1_6": {
+"hash": "2295663e907a30728f2475728dfee7db263cc3af",
+"seconds": 5.55
+},
+"sounds/dialog/uk/normal/2_1": {
+"hash": "7ff84c3d8a027c9300feeb625a62a567823e1b3e",
+"seconds": 5.83
+},
+"sounds/dialog/uk/normal/2_2": {
+"hash": "e8b25d7bd25473259d8c61fe9d0b1679c81f02a0",
+"seconds": 6.87
+},
+"sounds/dialog/uk/normal/2_3": {
+"hash": "d5e2f86f3bdcd3663d2ac1df2e94d4611de564aa",
+"seconds": 5.08
+},
+"sounds/dialog/uk/normal/2_4": {
+"hash": "d3fa931b71d4d30128824269e784fa3c6ea66cc6",
+"seconds": 5.51
+},
+"sounds/dialog/uk/normal/2_5": {
+"hash": "0d2f5891a4a0624c9305d38ea1da992bea2e41da",
+"seconds": 6.46
+},
+"sounds/dialog/uk/normal/2_6": {
+"hash": "f6c5adade2de0617af5c49ca0130f94db5e5f003",
+"seconds": 7.82
+},
+"sounds/dialog/uk/normal/3_1": {
+"hash": "f364bc78ee1ff3e367780651df8425d0c929a3e9",
+"seconds": 6.17
+},
+"sounds/dialog/uk/normal/3_2": {
+"hash": "2cdabccd2a3fff680c2c741dd37dca0e227ade73",
+"seconds": 5.04
+},
+"sounds/dialog/uk/normal/3_3": {
+"hash": "6671dc017b4e3606c672022d8ddb4d4873d947f1",
+"seconds": 6.94
+},
+"sounds/dialog/uk/normal/3_4": {
+"hash": "2fc72add7f72f1e414d3ec3fb2b7cddf99e3603a",
+"seconds": 5.94
+},
+"sounds/dialog/uk/normal/3_5": {
+"hash": "3e4945559cfe468c26860fb02b4da2df6a70f866",
+"seconds": 6.3
+},
+"sounds/dialog/uk/normal/4_1": {
+"hash": "af67424dc48e8d1375ed10dd4189855c09fe2f36",
+"seconds": 4.54
+},
+"sounds/dialog/uk/normal/4_2": {
+"hash": "98cc95a4d185d5755c137dd5ce9afa1ed58916a3",
+"seconds": 6.23
+},
+"sounds/dialog/uk/normal/4_3": {
+"hash": "bb6f5ae8795a2666e270b35151e37341ea7a3c72",
+"seconds": 5.1
+},
+"sounds/dialog/uk/normal/4_4": {
+"hash": "87d3f41b92554f3a4f78ac8424151d9625b2ecf0",
+"seconds": 5.38
+},
+"sounds/dialog/uk/normal/4_5": {
+"hash": "8d26fb8d2f7579755987ae5faf89453b7f5658ec",
+"seconds": 4.97
+},
+"sounds/dialog/uk/normal/4_6": {
+"hash": "21d7269f19f080ccfad03828d5154d02e0212cfa",
+"seconds": 8.02
+},
+"sounds/dialog/uk/normal/5_1": {
+"hash": "085ec37d819246d0388509c7c5afd5b99bec5bcd",
+"seconds": 6.21
+},
+"sounds/dialog/uk/normal/5_2": {
+"hash": "031582e063a15d3427608c1577797545695d441e",
+"seconds": 5.6
+},
+"sounds/dialog/uk/normal/5_3": {
+"hash": "915d63dbb58a3f0401a565695cf81cea213322a1",
+"seconds": 6.28
+},
+"sounds/dialog/uk/normal/5_4": {
+"hash": "ceb7309817cc952af227c25cd6091df9b811af6f",
+"seconds": 5.75
+},
+"sounds/dialog/uk/normal/5_5": {
+"hash": "86b68935c7d4f5a1f4602195eb2a555f9087ad3f",
+"seconds": 7.81
+},
+"sounds/dialog/uk/normal/5_6": {
+"hash": "8cb35454287498d7103fd161ca7f888462c72bdc",
+"seconds": 4.88
+},
+"sounds/dialog/uk/normal/6_1": {
+"hash": "c63c1e3706f67aaf2b255ef239f0b5202c0abb9a",
+"seconds": 6.39
+},
+"sounds/dialog/uk/normal/6_2": {
+"hash": "38034ad41359671a3a5c1c9a71ccb6e10a443ee6",
+"seconds": 5.01
+},
+"sounds/dialog/uk/normal/6_3": {
+"hash": "9606e8737670f7f5ca24b7a992b070475c2f99c3",
+"seconds": 6.85
+},
+"sounds/dialog/uk/normal/6_4": {
+"hash": "1b7f2abeb616b36cabe1ae2891ff8eeea6ae9246",
+"seconds": 5.14
+},
+"sounds/dialog/uk/normal/6_5": {
+"hash": "a65f028a110d2d0c85f2badaa3fdcf11c19222d9",
+"seconds": 8.45
+},
+"sounds/dialog/uk/normal/6_6": {
+"hash": "a77f5dddc5dc2782c730d7deec78a50e81ba38f5",
+"seconds": 5.7
+},
+"sounds/dialog/uk/normal/7_1": {
+"hash": "a3dce046624cfd4cb5d1b41b41aa0456c4c53acc",
+"seconds": 6.59
+},
+"sounds/dialog/uk/normal/7_2": {
+"hash": "1fd26bf9c4df6ff4802778cf9757262b1c61fc03",
+"seconds": 5.08
+},
+"sounds/dialog/uk/normal/7_3": {
+"hash": "06fa159d00375eaa932d990e1678f7376666ed45",
+"seconds": 5.58
+},
+"sounds/dialog/uk/normal/7_4": {
+"hash": "d80601a1f2186099dae8d5283f76763379faaa2b",
+"seconds": 6.47
+},
+"sounds/dialog/uk/normal/7_5": {
+"hash": "1b441627f82f184ad9bf10b2627af4bc0ccce4f4",
+"seconds": 6.19
+},
+"sounds/dialog/uk/normal/7_6": {
+"hash": "99504c55365dd7c334d335ec9f2ef33ec3fe4e8f",
+"seconds": 8.45
+},
+"sounds/dialog/uk/normal/8_1": {
+"hash": "11ca3bceada833eeb5d043812dd0fc59f7ca770e",
+"seconds": 5.83
+},
+"sounds/dialog/uk/normal/8_2": {
+"hash": "720734e2271a83e9f0f4fe852617b749f4db5bf1",
+"seconds": 3.98
+},
+"sounds/dialog/uk/normal/8_3": {
+"hash": "216d5b57fcd3fb1c54dc21e1dee02c6b9e0eca8b",
+"seconds": 8.11
+},
+"sounds/dialog/uk/normal/8_4": {
+"hash": "cfdb80ca575ef5e2194ad5d0c41f0740215d5d2b",
+"seconds": 2.46
+},
+"sounds/dialog/uk/normal/8_5": {
+"hash": "d0084996691bb967ba3c0d50e8d3931e628ff4b9",
+"seconds": 7.17
+},
+"sounds/dialog/uk/normal/8_6": {
+"hash": "c3d4f311892e40b949fada5b4eaa42e9b0eed03b",
+"seconds": 5.8
+},
 "sounds/klod/ru/mat/about_1": {
 "hash": "8ab37007ec218d2aba0a7063987286d57bb29479",
 "seconds": 7.53
@@ -30,6 +782,130 @@
 "sounds/klod/ru/mat/bye_2": {
 "hash": "372b7080cc653c4b6dff73904a469fb964090a1b",
 "seconds": 3.5
+},
+"sounds/klod/ru/mat/cmd_bridge_1": {
+"hash": "c670f34859eb25431ffd977aeecb8f81b31bc75e",
+"seconds": 5.92
+},
+"sounds/klod/ru/mat/cmd_bridge_2": {
+"hash": "21665abd7a2fed938b28041ece576dd24cd2a347",
+"seconds": 4.35
+},
+"sounds/klod/ru/mat/cmd_build_1": {
+"hash": "f489244c134cf596419bfc10613f8a1e58de9357",
+"seconds": 7.16
+},
+"sounds/klod/ru/mat/cmd_build_2": {
+"hash": "b8a4f50ff193ccaff40f0183af62053e1c6327a8",
+"seconds": 5.94
+},
+"sounds/klod/ru/mat/cmd_cant_1": {
+"hash": "a33d826f0ae633b87abf74083a82960bff6c08d2",
+"seconds": 5.44
+},
+"sounds/klod/ru/mat/cmd_cant_2": {
+"hash": "4dfedd0d5f20fb5f4022873830d121a1a6ae9a3f",
+"seconds": 5.97
+},
+"sounds/klod/ru/mat/cmd_chop_1": {
+"hash": "f408310ec00307113bc4b0222c3ff21e9e049097",
+"seconds": 6.31
+},
+"sounds/klod/ru/mat/cmd_chop_2": {
+"hash": "c60fe9bcb62c30fdcfe194dcfd3cdfb1af20fbba",
+"seconds": 5.03
+},
+"sounds/klod/ru/mat/cmd_collect_1": {
+"hash": "cffb11f53ce94f916dba6206dca43aeb8a2d682c",
+"seconds": 6.79
+},
+"sounds/klod/ru/mat/cmd_collect_2": {
+"hash": "6d722d40c8c3d8d02702a26dc9d940f983dad3ad",
+"seconds": 5.3
+},
+"sounds/klod/ru/mat/cmd_food_1": {
+"hash": "3c530f82405b42dce4c24c311bc6b477a367b145",
+"seconds": 4.5
+},
+"sounds/klod/ru/mat/cmd_food_2": {
+"hash": "92bb2f93d6a63a4bc890099c5427ffe530bc9830",
+"seconds": 5.24
+},
+"sounds/klod/ru/mat/cmd_found_1": {
+"hash": "2ac4004154fe99ca853b65eeef39fec93f9940b2",
+"seconds": 5.41
+},
+"sounds/klod/ru/mat/cmd_found_2": {
+"hash": "11d2c945c28d13999d75de0bdd70b089331a3e78",
+"seconds": 6.25
+},
+"sounds/klod/ru/mat/cmd_kill_1": {
+"hash": "59928cc3bf43d83cdbcb20a35b08c2fbec15ee8d",
+"seconds": 4.14
+},
+"sounds/klod/ru/mat/cmd_kill_2": {
+"hash": "c070182308ad0ab642d935b4277181c8b4cd24de",
+"seconds": 5.54
+},
+"sounds/klod/ru/mat/cmd_notfound_1": {
+"hash": "59c30f5c010fb0d015ceeb38d1d929bdf53bc424",
+"seconds": 4.35
+},
+"sounds/klod/ru/mat/cmd_notfound_2": {
+"hash": "6c5e39c5f0dabcda0e43e1a9776704c3899bba14",
+"seconds": 5.51
+},
+"sounds/klod/ru/mat/cmd_ok_1": {
+"hash": "1048cb00f558bac8b0196cb454dd5f16eb84fbad",
+"seconds": 2.17
+},
+"sounds/klod/ru/mat/cmd_ok_2": {
+"hash": "95182ce3dae3af9d2e8c1305b499ac484bd2eab3",
+"seconds": 4.46
+},
+"sounds/klod/ru/mat/cmd_ok_3": {
+"hash": "01f7df1d7a6ebde684b87c9198edaa4928dd932f",
+"seconds": 5.12
+},
+"sounds/klod/ru/mat/cmd_time_1": {
+"hash": "f872dbecc76d1b4e69029b2533cb30ab36f44ed7",
+"seconds": 6.84
+},
+"sounds/klod/ru/mat/cmd_time_2": {
+"hash": "eff58863ccdaf71054bf23d6f17cade0b965f612",
+"seconds": 7.51
+},
+"sounds/klod/ru/mat/cmd_torches_1": {
+"hash": "1a6fa74b0028304c0979ef1d64de577e477f8abf",
+"seconds": 6.63
+},
+"sounds/klod/ru/mat/cmd_torches_2": {
+"hash": "6a29bdd9075bf45a1ada3301c6e72e46b0950b97",
+"seconds": 4.15
+},
+"sounds/klod/ru/mat/cmd_tunnel_1": {
+"hash": "9ad9fe6b8e1f91dc048402c2720a46749fcdfe4b",
+"seconds": 5.81
+},
+"sounds/klod/ru/mat/cmd_tunnel_2": {
+"hash": "22b5c44665847aa856f936b51fcbd1cd185f72d0",
+"seconds": 6.05
+},
+"sounds/klod/ru/mat/cmd_unknown_1": {
+"hash": "0e1a4ff100397c6941767b5276f00ad21acab409",
+"seconds": 10.73
+},
+"sounds/klod/ru/mat/cmd_unknown_2": {
+"hash": "706050b9d13de3b37e3bb5cfc5063c9f8fc14150",
+"seconds": 10.85
+},
+"sounds/klod/ru/mat/collect_auto_1": {
+"hash": "aec10c962032b1c9f5d33740aa63efa834eb68db",
+"seconds": 6.66
+},
+"sounds/klod/ru/mat/collect_auto_2": {
+"hash": "a5b314d1f932988c9f4f57a7b4d95efc9716d1b9",
+"seconds": 5.34
 },
 "sounds/klod/ru/mat/creeper_1": {
 "hash": "a900e4f078c9844dfc47115a66e6f6ce609dd9be",
@@ -383,6 +1259,130 @@
 "hash": "de9088ab1ff3ec8ea1f196678b91402b4df11ad0",
 "seconds": 2.59
 },
+"sounds/klod/ru/normal/cmd_bridge_1": {
+"hash": "5ad83ec66fd01842afa9a62f7d4f920efd8145b8",
+"seconds": 5.5
+},
+"sounds/klod/ru/normal/cmd_bridge_2": {
+"hash": "fad39302cf08ef8dcc54dc8560701f8a01f08770",
+"seconds": 3.92
+},
+"sounds/klod/ru/normal/cmd_build_1": {
+"hash": "6fd8999b0df066391eb1b6d4755213c347e03ec0",
+"seconds": 6.43
+},
+"sounds/klod/ru/normal/cmd_build_2": {
+"hash": "835e2783ac741ef04a2f837dc9d86323ecd95abd",
+"seconds": 5.26
+},
+"sounds/klod/ru/normal/cmd_cant_1": {
+"hash": "d68c4f0c83d4513eafe53779f431d1ca998838b4",
+"seconds": 4.93
+},
+"sounds/klod/ru/normal/cmd_cant_2": {
+"hash": "511a69a337fad0c3cc17e57730a856b03217d56f",
+"seconds": 5.56
+},
+"sounds/klod/ru/normal/cmd_chop_1": {
+"hash": "fef740c7f6af97da5142f04760976a67920a4556",
+"seconds": 5.56
+},
+"sounds/klod/ru/normal/cmd_chop_2": {
+"hash": "0e32979a31b72990951bf129240ea8d8dffb55a3",
+"seconds": 4.76
+},
+"sounds/klod/ru/normal/cmd_collect_1": {
+"hash": "7185960ae7975bc132a4d4b418ec9cbd8fb538d2",
+"seconds": 6.06
+},
+"sounds/klod/ru/normal/cmd_collect_2": {
+"hash": "3e7b6b85ea6c2339e2f2fe3c547b9722898001c7",
+"seconds": 4.48
+},
+"sounds/klod/ru/normal/cmd_food_1": {
+"hash": "f1c5daf2b94eae120475535c41fb0cd06ecd81d2",
+"seconds": 3.76
+},
+"sounds/klod/ru/normal/cmd_food_2": {
+"hash": "20665cd96a85f18014e1cfb5ee55163e76ed88c5",
+"seconds": 4.85
+},
+"sounds/klod/ru/normal/cmd_found_1": {
+"hash": "1b398832804d07e9d4102328ab03fc6fda34259e",
+"seconds": 4.62
+},
+"sounds/klod/ru/normal/cmd_found_2": {
+"hash": "5f10ff576dcdce5fd7c2b763b216bb9ca4571ef0",
+"seconds": 5.46
+},
+"sounds/klod/ru/normal/cmd_kill_1": {
+"hash": "03fb16c2d3fe8328b7f4ae0cd4f5af8450296e34",
+"seconds": 3.4
+},
+"sounds/klod/ru/normal/cmd_kill_2": {
+"hash": "ad020c5e200262af025deb16629be9fc45953e10",
+"seconds": 4.79
+},
+"sounds/klod/ru/normal/cmd_notfound_1": {
+"hash": "8fae40a7b65b4b87e4cf0218753f136da99f1e4a",
+"seconds": 4.37
+},
+"sounds/klod/ru/normal/cmd_notfound_2": {
+"hash": "241c3726c08668c740aab870947981572c26257f",
+"seconds": 4.76
+},
+"sounds/klod/ru/normal/cmd_ok_1": {
+"hash": "a6905306a9b863b84b43b43010fb0124f74e9564",
+"seconds": 1.55
+},
+"sounds/klod/ru/normal/cmd_ok_2": {
+"hash": "577321280237e725ff4011bbfbaa16005218dbbb",
+"seconds": 3.77
+},
+"sounds/klod/ru/normal/cmd_ok_3": {
+"hash": "659e4152ef645374d7d12585d2cf3d6ddf172c9b",
+"seconds": 4.58
+},
+"sounds/klod/ru/normal/cmd_time_1": {
+"hash": "1d5fd49b5a6813d25b8012d31daf584912694fe6",
+"seconds": 6.1
+},
+"sounds/klod/ru/normal/cmd_time_2": {
+"hash": "c7d283364f080d3171a011ffcf61e8746b84365a",
+"seconds": 6.58
+},
+"sounds/klod/ru/normal/cmd_torches_1": {
+"hash": "a5e0eb3a1ff91884e3fe637ebb39510d1f04a56f",
+"seconds": 5.91
+},
+"sounds/klod/ru/normal/cmd_torches_2": {
+"hash": "e8ed770093f047971053f9a224b17f9a291df4a7",
+"seconds": 3.75
+},
+"sounds/klod/ru/normal/cmd_tunnel_1": {
+"hash": "bfc65e25f41101c39d954ef857f877bc55fbee92",
+"seconds": 5.08
+},
+"sounds/klod/ru/normal/cmd_tunnel_2": {
+"hash": "dd65007c7f95abc95544c03496d033f3488fb32a",
+"seconds": 4.83
+},
+"sounds/klod/ru/normal/cmd_unknown_1": {
+"hash": "cdc7ceaa3c152de17bd4d5f3f480bdb62b4e52c0",
+"seconds": 10.82
+},
+"sounds/klod/ru/normal/cmd_unknown_2": {
+"hash": "3975c5d16e0936c4975c9bbdc31073758df15b7d",
+"seconds": 10.73
+},
+"sounds/klod/ru/normal/collect_auto_1": {
+"hash": "2ee24e34b9d19a59ad603379d604e58511cfe4ab",
+"seconds": 5.88
+},
+"sounds/klod/ru/normal/collect_auto_2": {
+"hash": "9d0e65d0f7234a97a77514df8d8394d7455d364d",
+"seconds": 4.42
+},
 "sounds/klod/ru/normal/creeper_1": {
 "hash": "90e0c0848cc28d97e9944b6c3d1ec709ac80d3bb",
 "seconds": 3.34
@@ -735,6 +1735,130 @@
 "hash": "851d550177230512145d27ebcb3dec69c3c74e2a",
 "seconds": 3.34
 },
+"sounds/klod/uk/mat/cmd_bridge_1": {
+"hash": "9cd3a4b09681b83c5cff64ef2302062dafdc47e9",
+"seconds": 5.58
+},
+"sounds/klod/uk/mat/cmd_bridge_2": {
+"hash": "c8fe9d0f651839ccc9c3580f0bf3a3e881a2ece6",
+"seconds": 4.32
+},
+"sounds/klod/uk/mat/cmd_build_1": {
+"hash": "0ff8cecaf240625b6032705c354b7c77754d0f44",
+"seconds": 6.56
+},
+"sounds/klod/uk/mat/cmd_build_2": {
+"hash": "17b41462dd9c2ea184bbf9debf8bcb8423b417c4",
+"seconds": 5.38
+},
+"sounds/klod/uk/mat/cmd_cant_1": {
+"hash": "d93be2d6794eaa7671392a142f647a6aaecacd79",
+"seconds": 4.67
+},
+"sounds/klod/uk/mat/cmd_cant_2": {
+"hash": "26bbe151b974f1a60fab9cca3b9dd682ce557178",
+"seconds": 5.19
+},
+"sounds/klod/uk/mat/cmd_chop_1": {
+"hash": "038db634d852613b79038dc6fc882aa669db29bf",
+"seconds": 5.92
+},
+"sounds/klod/uk/mat/cmd_chop_2": {
+"hash": "c071ac4caa7ed95769b28b5ae50731d579fa946d",
+"seconds": 5.08
+},
+"sounds/klod/uk/mat/cmd_collect_1": {
+"hash": "991dd38ac0c3571f89e35f5e8aebe4e9111bd8f1",
+"seconds": 6.23
+},
+"sounds/klod/uk/mat/cmd_collect_2": {
+"hash": "d3f2f7466136fa50745564091ab06e1c00c778b5",
+"seconds": 5.21
+},
+"sounds/klod/uk/mat/cmd_food_1": {
+"hash": "4cccca61885d434fd68fefdb8c2378d944e81575",
+"seconds": 4.52
+},
+"sounds/klod/uk/mat/cmd_food_2": {
+"hash": "6a2b130e6af7e72823732a3a1cfd26a03dc5b3aa",
+"seconds": 5.37
+},
+"sounds/klod/uk/mat/cmd_found_1": {
+"hash": "a83a936957fdde740cf5d4ee72e198e0f3dd01c3",
+"seconds": 5.13
+},
+"sounds/klod/uk/mat/cmd_found_2": {
+"hash": "444901bea6dcc8518f3243c571b089c3b24f6690",
+"seconds": 6.29
+},
+"sounds/klod/uk/mat/cmd_kill_1": {
+"hash": "3df9ffd4cba39afddd04916e0c966e853970dab6",
+"seconds": 4.14
+},
+"sounds/klod/uk/mat/cmd_kill_2": {
+"hash": "36b1edcc75372bf073862668929024d78c7db48a",
+"seconds": 5.88
+},
+"sounds/klod/uk/mat/cmd_notfound_1": {
+"hash": "1c24127729f88ef5645c981c81fe91f449abff7b",
+"seconds": 4.52
+},
+"sounds/klod/uk/mat/cmd_notfound_2": {
+"hash": "10490e5a721dc7240feeb80b4517e530a44cfd16",
+"seconds": 5.21
+},
+"sounds/klod/uk/mat/cmd_ok_1": {
+"hash": "5d226a86e52cc83dc730c7f749c483c7d2a78b60",
+"seconds": 2.4
+},
+"sounds/klod/uk/mat/cmd_ok_2": {
+"hash": "8f776102f70b1abaec3e3dea0ff2fd5f8481eaa2",
+"seconds": 4.34
+},
+"sounds/klod/uk/mat/cmd_ok_3": {
+"hash": "bce67d4847f272d981df51103321593fe9558a83",
+"seconds": 4.66
+},
+"sounds/klod/uk/mat/cmd_time_1": {
+"hash": "bc94307343b31e923b336e8acf09558540aa75f8",
+"seconds": 6.49
+},
+"sounds/klod/uk/mat/cmd_time_2": {
+"hash": "5653ace15f63ab074db63a73378034df771a9ea7",
+"seconds": 7.41
+},
+"sounds/klod/uk/mat/cmd_torches_1": {
+"hash": "7c83781f3d8eb9c113cf0641c32ce8ba188e7611",
+"seconds": 6.1
+},
+"sounds/klod/uk/mat/cmd_torches_2": {
+"hash": "59710be7d26df87ca43455398d61c1bdd634f926",
+"seconds": 4.67
+},
+"sounds/klod/uk/mat/cmd_tunnel_1": {
+"hash": "351a1c10b87f42c2813b9566f12d1bed64dbf01e",
+"seconds": 5.33
+},
+"sounds/klod/uk/mat/cmd_tunnel_2": {
+"hash": "62b54b5c8818563a4cffdc6ed3cc2a12dbb0f933",
+"seconds": 5.33
+},
+"sounds/klod/uk/mat/cmd_unknown_1": {
+"hash": "3f009da5bfcd91c5d45cc28b0b498b2dc3bc59f0",
+"seconds": 9.88
+},
+"sounds/klod/uk/mat/cmd_unknown_2": {
+"hash": "d803a130515a2ccd44db353e6ce5cb5b1c2e36ef",
+"seconds": 9.69
+},
+"sounds/klod/uk/mat/collect_auto_1": {
+"hash": "bd3d77725e5fa54b7b5a27752ba244c700a05554",
+"seconds": 6.54
+},
+"sounds/klod/uk/mat/collect_auto_2": {
+"hash": "edfb346be4b65c00b25194f83f8bdb110ba8cc0e",
+"seconds": 5.25
+},
 "sounds/klod/uk/mat/creeper_1": {
 "hash": "beafd0876ce1401d1297c4c4e7d54af22e1caf55",
 "seconds": 3.45
@@ -1086,6 +2210,130 @@
 "sounds/klod/uk/normal/bye_2": {
 "hash": "6a28e3a44e9d75eb3a563736e2c4cd630331b51e",
 "seconds": 2.53
+},
+"sounds/klod/uk/normal/cmd_bridge_1": {
+"hash": "2fc7a9336a2d0509626c84fc1f368a62ee3437bd",
+"seconds": 5.88
+},
+"sounds/klod/uk/normal/cmd_bridge_2": {
+"hash": "be367baba90ccb486e725da5363ffa03f9f370f2",
+"seconds": 3.95
+},
+"sounds/klod/uk/normal/cmd_build_1": {
+"hash": "40ddd23606acc780934ddc0bb0a0aead89aaa168",
+"seconds": 6.02
+},
+"sounds/klod/uk/normal/cmd_build_2": {
+"hash": "95c75fa8b2ac3d8633f471e07f39a7baf71787d2",
+"seconds": 4.87
+},
+"sounds/klod/uk/normal/cmd_cant_1": {
+"hash": "4590a023bc8b12a391865eb6e660d9b2209a42f4",
+"seconds": 4.2
+},
+"sounds/klod/uk/normal/cmd_cant_2": {
+"hash": "213979aa56b3c0ea1759ad21c919e7cda4ad86e2",
+"seconds": 4.5
+},
+"sounds/klod/uk/normal/cmd_chop_1": {
+"hash": "f3b8897a536986afb8007672a0dc1ce2c12c9ada",
+"seconds": 5.44
+},
+"sounds/klod/uk/normal/cmd_chop_2": {
+"hash": "59b936b0689f8241b1300d14b90f9a85672aed63",
+"seconds": 4.79
+},
+"sounds/klod/uk/normal/cmd_collect_1": {
+"hash": "784afaf7ace1bf40e87d397c6e3c65721bc905dd",
+"seconds": 5.85
+},
+"sounds/klod/uk/normal/cmd_collect_2": {
+"hash": "39e2b5c8f962ee3a930dfb3c5ead08bafe050411",
+"seconds": 4.56
+},
+"sounds/klod/uk/normal/cmd_food_1": {
+"hash": "dbfe251968639e4c922b94b7e3d37332aad79750",
+"seconds": 4.11
+},
+"sounds/klod/uk/normal/cmd_food_2": {
+"hash": "ffcdfe812bd856de3d387bd515baa73385ca477b",
+"seconds": 5.08
+},
+"sounds/klod/uk/normal/cmd_found_1": {
+"hash": "d1f8d76762898dab326ae6a82e30d4a58858c523",
+"seconds": 4.75
+},
+"sounds/klod/uk/normal/cmd_found_2": {
+"hash": "ef2361ca65b44e5bfc1a9e6c9fe46b82898f47b1",
+"seconds": 5.68
+},
+"sounds/klod/uk/normal/cmd_kill_1": {
+"hash": "86031a40187f2bc9776c725cdeccecadeeb776f4",
+"seconds": 3.65
+},
+"sounds/klod/uk/normal/cmd_kill_2": {
+"hash": "35061ec8ac637a3bef7f01a3944f935a7af7abe0",
+"seconds": 5.12
+},
+"sounds/klod/uk/normal/cmd_notfound_1": {
+"hash": "93fc9851333c6557dcdcd90629874e3f5264fab8",
+"seconds": 4.58
+},
+"sounds/klod/uk/normal/cmd_notfound_2": {
+"hash": "b0e32182bfe59a3b7f721bf84003ee44d3994194",
+"seconds": 4.74
+},
+"sounds/klod/uk/normal/cmd_ok_1": {
+"hash": "604cee6b5723ec99ad4b45b1a0dd083946e7588f",
+"seconds": 1.97
+},
+"sounds/klod/uk/normal/cmd_ok_2": {
+"hash": "be3ea1bbb6bbdbbdeaf00508c6ad40189434480d",
+"seconds": 3.73
+},
+"sounds/klod/uk/normal/cmd_ok_3": {
+"hash": "a6c17f49c7c80f7d049a51d561aaab8e34c6611d",
+"seconds": 4.46
+},
+"sounds/klod/uk/normal/cmd_time_1": {
+"hash": "19c5d82ba269158b963823c28f3fbe6624ab26c0",
+"seconds": 6.04
+},
+"sounds/klod/uk/normal/cmd_time_2": {
+"hash": "770793120b57d2ca5af05ee74314a809ba7df1a2",
+"seconds": 6.79
+},
+"sounds/klod/uk/normal/cmd_torches_1": {
+"hash": "f77c2f2dd0c39b2158f128ceac5ee3e84d68375b",
+"seconds": 5.71
+},
+"sounds/klod/uk/normal/cmd_torches_2": {
+"hash": "c0dceaf533161b388fd226e34ea25a5538b3f17a",
+"seconds": 4.3
+},
+"sounds/klod/uk/normal/cmd_tunnel_1": {
+"hash": "4ac51fc671fddb5ece4cb06484fea4e79ed7578d",
+"seconds": 4.84
+},
+"sounds/klod/uk/normal/cmd_tunnel_2": {
+"hash": "bd194b328e808b3ad5ee836b9f38223ff241c58a",
+"seconds": 4.28
+},
+"sounds/klod/uk/normal/cmd_unknown_1": {
+"hash": "aef876a592a84435444915402b6a12c702ee45ad",
+"seconds": 9.74
+},
+"sounds/klod/uk/normal/cmd_unknown_2": {
+"hash": "2cf2ddb71847f08a78a987395bd042919698be02",
+"seconds": 9.78
+},
+"sounds/klod/uk/normal/collect_auto_1": {
+"hash": "97b23c8ba046354ec94c741089a56a3fd3c478e1",
+"seconds": 6.08
+},
+"sounds/klod/uk/normal/collect_auto_2": {
+"hash": "5305b5fa78830e8c29a63ce8fc306e84caf607f1",
+"seconds": 4.55
 },
 "sounds/klod/uk/normal/creeper_1": {
 "hash": "ba50a2c9c6939b8ced81cf9354e3377d73d3525b",
@@ -1455,6 +2703,86 @@
 "hash": "c6b4054ecc11a4bb5990a4624cbb3a7eff675d54",
 "seconds": 5.08
 },
+"sounds/vasyan/ru/mat/cmd_bridge_1": {
+"hash": "607ef90b84879184623632cb1adaa9273a3f7772",
+"seconds": 7.51
+},
+"sounds/vasyan/ru/mat/cmd_bridge_2": {
+"hash": "2cb0b98a85b733768c9abaf356a0392e8f38041f",
+"seconds": 6.6
+},
+"sounds/vasyan/ru/mat/cmd_cant_1": {
+"hash": "915b81605897c395de8e93a39bf37f3a185439e2",
+"seconds": 7.34
+},
+"sounds/vasyan/ru/mat/cmd_cant_2": {
+"hash": "866862b262871d0e9ea4c392855b936a9fba63a8",
+"seconds": 5.25
+},
+"sounds/vasyan/ru/mat/cmd_chop_1": {
+"hash": "9bbdc407f79196e0aa89473fc4506feab995e705",
+"seconds": 8.15
+},
+"sounds/vasyan/ru/mat/cmd_chop_2": {
+"hash": "c9c4896152d1081211fd2b9a0d4333b6b90ba7f5",
+"seconds": 7.58
+},
+"sounds/vasyan/ru/mat/cmd_collect_1": {
+"hash": "54fdfc8872b2cc92243b96e03f4efb8d73b34546",
+"seconds": 6.46
+},
+"sounds/vasyan/ru/mat/cmd_collect_2": {
+"hash": "e680d88ecf99b84dd368d59d9027da9ea6407914",
+"seconds": 8.76
+},
+"sounds/vasyan/ru/mat/cmd_misunderstood_1": {
+"hash": "2072329f96532599bac3f61e5d826958a5578abe",
+"seconds": 8.65
+},
+"sounds/vasyan/ru/mat/cmd_misunderstood_2": {
+"hash": "ef6dd2a6377d2f11ef16ff214f459ff193f2fedc",
+"seconds": 7.79
+},
+"sounds/vasyan/ru/mat/cmd_misunderstood_3": {
+"hash": "462a32170602aa6fdd70ecfdd92cdbaf770222f9",
+"seconds": 8.24
+},
+"sounds/vasyan/ru/mat/cmd_ok_1": {
+"hash": "6d50743d6fa1f008de806b43ce09bb4a56c4390d",
+"seconds": 5.87
+},
+"sounds/vasyan/ru/mat/cmd_ok_2": {
+"hash": "18f3c60ccb382e1f1ca52e82f73524fce2bc5bb1",
+"seconds": 6.89
+},
+"sounds/vasyan/ru/mat/cmd_ok_3": {
+"hash": "f13c6514f120910f65757c54ba4ce696e70c8a26",
+"seconds": 5.82
+},
+"sounds/vasyan/ru/mat/cmd_time_1": {
+"hash": "931a9eea9d2e6f187b4b53b4a090f1c06edcf950",
+"seconds": 8.59
+},
+"sounds/vasyan/ru/mat/cmd_time_2": {
+"hash": "c5eed63c7679b6c7b652e6a4cc3da9394dcccf05",
+"seconds": 7.66
+},
+"sounds/vasyan/ru/mat/cmd_torches_1": {
+"hash": "5455b2fac7d73bb30049838580e1f1c24a595850",
+"seconds": 7.54
+},
+"sounds/vasyan/ru/mat/cmd_torches_2": {
+"hash": "e9243fca9e333df425f44ea554ab2c66fd48e94d",
+"seconds": 6.79
+},
+"sounds/vasyan/ru/mat/cmd_unknown_1": {
+"hash": "56a1bafa8b597bba22162f03b72c5ac69b86af9f",
+"seconds": 7.44
+},
+"sounds/vasyan/ru/mat/cmd_unknown_2": {
+"hash": "6b904f13e6d90b12a79fb7d7900655cea3e64929",
+"seconds": 6.03
+},
 "sounds/vasyan/ru/mat/creeper_1": {
 "hash": "51ddc779ad62f8560c32c3ec98aac9badc9d00ca",
 "seconds": 4.88
@@ -1550,6 +2878,18 @@
 "sounds/vasyan/ru/mat/friend_zombie_2": {
 "hash": "34c850a9c2c120c8e2bc1e99539c51ca0bfdcfa9",
 "seconds": 5.48
+},
+"sounds/vasyan/ru/mat/garden_1": {
+"hash": "5ac78739981a73864c99566be756842302f0fc7d",
+"seconds": 8.31
+},
+"sounds/vasyan/ru/mat/garden_2": {
+"hash": "8f5b6b91bf4c61ed3c837ddf4bc9515b47fd4dc4",
+"seconds": 7.92
+},
+"sounds/vasyan/ru/mat/garden_3": {
+"hash": "672064604d14fce1f10ad3e99468915369065745",
+"seconds": 6.67
 },
 "sounds/vasyan/ru/mat/gift_flower_1": {
 "hash": "ce4354062d1379681f256997daacd5e7431575ce",
@@ -1987,6 +3327,86 @@
 "hash": "bb13759b751deff8e03a8bbe55c27de403f424a2",
 "seconds": 4.6
 },
+"sounds/vasyan/ru/normal/cmd_bridge_1": {
+"hash": "33e002c5f7e29cc2cf85cdf850817182aa246cab",
+"seconds": 4.92
+},
+"sounds/vasyan/ru/normal/cmd_bridge_2": {
+"hash": "592f73e538271d221d361b4fa95a76496b055b5b",
+"seconds": 6.43
+},
+"sounds/vasyan/ru/normal/cmd_cant_1": {
+"hash": "dde7c08b8c23f9a6d098ee2039341918f6f65710",
+"seconds": 7.06
+},
+"sounds/vasyan/ru/normal/cmd_cant_2": {
+"hash": "e7fb98e7291f33b780587c98ddad4c880b9a71c0",
+"seconds": 4.1
+},
+"sounds/vasyan/ru/normal/cmd_chop_1": {
+"hash": "987c1978cf239e5cfe958cb40f8ca47b7ea06d0a",
+"seconds": 7.26
+},
+"sounds/vasyan/ru/normal/cmd_chop_2": {
+"hash": "e40cf8d90b05e29b6458df29d1f85ebd02cb4683",
+"seconds": 6.82
+},
+"sounds/vasyan/ru/normal/cmd_collect_1": {
+"hash": "b0ca402fece7a98d813839ea9512afd6b301adb5",
+"seconds": 5.45
+},
+"sounds/vasyan/ru/normal/cmd_collect_2": {
+"hash": "30a1d200717934b62c81bfc57b9a771b24923154",
+"seconds": 6.22
+},
+"sounds/vasyan/ru/normal/cmd_misunderstood_1": {
+"hash": "4f483a471cf44df2ac6d9f24cbe72f38a738d4e5",
+"seconds": 7.65
+},
+"sounds/vasyan/ru/normal/cmd_misunderstood_2": {
+"hash": "3e629f0830cd8c665c206387cc6367b59915e87e",
+"seconds": 6.86
+},
+"sounds/vasyan/ru/normal/cmd_misunderstood_3": {
+"hash": "b827e6509ea09ad4c5f9d988955231a0a1032267",
+"seconds": 6.6
+},
+"sounds/vasyan/ru/normal/cmd_ok_1": {
+"hash": "3d965f9f85016aeef0a1cfcfc4dfb60b96ca0094",
+"seconds": 4.94
+},
+"sounds/vasyan/ru/normal/cmd_ok_2": {
+"hash": "fdd2fb0747f94e3944de51d384aa00a58f0f392b",
+"seconds": 5.83
+},
+"sounds/vasyan/ru/normal/cmd_ok_3": {
+"hash": "c7c8c306393c79648a6d237a9b755e8329e1d6da",
+"seconds": 5.04
+},
+"sounds/vasyan/ru/normal/cmd_time_1": {
+"hash": "da1af30971367dbd0b7c7809e761f935b297183d",
+"seconds": 5.75
+},
+"sounds/vasyan/ru/normal/cmd_time_2": {
+"hash": "b4a3fc307e803f43445cc6f00c282cbdf285b69f",
+"seconds": 7.32
+},
+"sounds/vasyan/ru/normal/cmd_torches_1": {
+"hash": "d0244f519f2ac94d9131be5ce1a9f3d967dcdc9a",
+"seconds": 6.52
+},
+"sounds/vasyan/ru/normal/cmd_torches_2": {
+"hash": "8a9f801de9f986015df7b211c283b1198d6fe799",
+"seconds": 6.33
+},
+"sounds/vasyan/ru/normal/cmd_unknown_1": {
+"hash": "c9e21fba82a4cd50bb4c281558349396091a8be1",
+"seconds": 7.19
+},
+"sounds/vasyan/ru/normal/cmd_unknown_2": {
+"hash": "ca2fe90af05f9d7c30ca87e4ab25b72b7d598053",
+"seconds": 4.45
+},
 "sounds/vasyan/ru/normal/creeper_1": {
 "hash": "d2552a43267e43e75f321222ddda4114f448ba63",
 "seconds": 3.86
@@ -2082,6 +3502,18 @@
 "sounds/vasyan/ru/normal/friend_zombie_2": {
 "hash": "7ec63d9a4a11cb958cb80ea4a2b5e5bbbce7ae70",
 "seconds": 4.02
+},
+"sounds/vasyan/ru/normal/garden_1": {
+"hash": "cfc68221ae6c12f033f5a659f087c2db71d0c046",
+"seconds": 7.06
+},
+"sounds/vasyan/ru/normal/garden_2": {
+"hash": "7703c525162a1f57641388f525e722e258dd608a",
+"seconds": 7.26
+},
+"sounds/vasyan/ru/normal/garden_3": {
+"hash": "f8cb3b3ef4987b0a61f314e4da3361d783e5f397",
+"seconds": 5.83
 },
 "sounds/vasyan/ru/normal/gift_flower_1": {
 "hash": "d2f6b7d48a933042a99447ef0faebeb606cb2296",
@@ -2519,6 +3951,86 @@
 "hash": "00b1edfbd2ceec0c84282fd6ec069e0b1a87d270",
 "seconds": 4.52
 },
+"sounds/vasyan/uk/mat/cmd_bridge_1": {
+"hash": "ff430f4601d2130f56ee2c8e56c469d353d64d0e",
+"seconds": 7.34
+},
+"sounds/vasyan/uk/mat/cmd_bridge_2": {
+"hash": "e4e0a226378b00b3810f6151e4a7449a83a8bdc2",
+"seconds": 6.8
+},
+"sounds/vasyan/uk/mat/cmd_cant_1": {
+"hash": "10fac07744f72a3de8b6a91851f2ec68eef934a3",
+"seconds": 6.94
+},
+"sounds/vasyan/uk/mat/cmd_cant_2": {
+"hash": "666dcd2862b7cd670f0c5844c5ecc55fd5b3078e",
+"seconds": 5.47
+},
+"sounds/vasyan/uk/mat/cmd_chop_1": {
+"hash": "18af02c84ca4ff68513b11b84c540a48abdc8e8a",
+"seconds": 8.11
+},
+"sounds/vasyan/uk/mat/cmd_chop_2": {
+"hash": "74166dbfd44bab7c2a2685a05c437085cb745eb0",
+"seconds": 7.62
+},
+"sounds/vasyan/uk/mat/cmd_collect_1": {
+"hash": "94e6046bbc90c89b12e9607e2ff08311422c6b3d",
+"seconds": 6.36
+},
+"sounds/vasyan/uk/mat/cmd_collect_2": {
+"hash": "a094387a689b034330624afc258f8191fa393a98",
+"seconds": 8.39
+},
+"sounds/vasyan/uk/mat/cmd_misunderstood_1": {
+"hash": "29cdc5f327e1cce1a5b89b107657d0869e55ecbf",
+"seconds": 7.89
+},
+"sounds/vasyan/uk/mat/cmd_misunderstood_2": {
+"hash": "677f3eee6c99133368ae1506ea7aa7583a7be0f3",
+"seconds": 6.62
+},
+"sounds/vasyan/uk/mat/cmd_misunderstood_3": {
+"hash": "82896deefa8ac6483e76b753b0108891f1e4d247",
+"seconds": 8.33
+},
+"sounds/vasyan/uk/mat/cmd_ok_1": {
+"hash": "1a06e754f9065103c441d02887984453f94f5ac0",
+"seconds": 5.46
+},
+"sounds/vasyan/uk/mat/cmd_ok_2": {
+"hash": "459598b2298214dc3bc70699dfd5a30bfc63abc7",
+"seconds": 6.92
+},
+"sounds/vasyan/uk/mat/cmd_ok_3": {
+"hash": "e31e9b66c96e09b8370750f4c29aff4d21d2607a",
+"seconds": 6.84
+},
+"sounds/vasyan/uk/mat/cmd_time_1": {
+"hash": "a860ce7e687e8b1da40de43df5f0d69d121fd19e",
+"seconds": 8.58
+},
+"sounds/vasyan/uk/mat/cmd_time_2": {
+"hash": "f90e5b7a61fcbf72c67e4ee05f92786dfc0affbc",
+"seconds": 7.37
+},
+"sounds/vasyan/uk/mat/cmd_torches_1": {
+"hash": "266b976f49b319d9bff5d440c094555d04ed7d34",
+"seconds": 7.06
+},
+"sounds/vasyan/uk/mat/cmd_torches_2": {
+"hash": "1c976dbb7cfd468c2a171d23651c97ed67dd2600",
+"seconds": 6.76
+},
+"sounds/vasyan/uk/mat/cmd_unknown_1": {
+"hash": "0ad30e0e8a5fe7aea57e7c57bf6567f5ad45b1f8",
+"seconds": 7.1
+},
+"sounds/vasyan/uk/mat/cmd_unknown_2": {
+"hash": "1b01cde6bbb08741b81144ed46b37403aa88c60b",
+"seconds": 6.57
+},
 "sounds/vasyan/uk/mat/creeper_1": {
 "hash": "57d09c9c162b41229406fef19cae8f2e66606587",
 "seconds": 4.51
@@ -2614,6 +4126,18 @@
 "sounds/vasyan/uk/mat/friend_zombie_2": {
 "hash": "37d8ca4784b4eaa4502d9ea10f2f1df5f7482d2c",
 "seconds": 5.45
+},
+"sounds/vasyan/uk/mat/garden_1": {
+"hash": "953b82f3eed71297ceb29f2f5c2a2be2edf83250",
+"seconds": 8.17
+},
+"sounds/vasyan/uk/mat/garden_2": {
+"hash": "2dafb551bae0569f5472a37880dd424ac50be229",
+"seconds": 7.37
+},
+"sounds/vasyan/uk/mat/garden_3": {
+"hash": "749017e2ed83e420eb32259fd4ee2286943a9059",
+"seconds": 7.29
 },
 "sounds/vasyan/uk/mat/gift_flower_1": {
 "hash": "0b6c6abc72f5a56d6a9fadf119e492d9ec6b7227",
@@ -3051,6 +4575,86 @@
 "hash": "4fc96d1d29cf0325aedbb75923f73c751c09b01a",
 "seconds": 4.25
 },
+"sounds/vasyan/uk/normal/cmd_bridge_1": {
+"hash": "8340d674a8c5e869ad604ad218f56de95fa3f78e",
+"seconds": 5.51
+},
+"sounds/vasyan/uk/normal/cmd_bridge_2": {
+"hash": "4c88b24f9d2db3d0a6f52dbe70ac7ea7163d5930",
+"seconds": 6.92
+},
+"sounds/vasyan/uk/normal/cmd_cant_1": {
+"hash": "14aa866ce0631c609c9901b22a593138c28eaf4c",
+"seconds": 6.99
+},
+"sounds/vasyan/uk/normal/cmd_cant_2": {
+"hash": "af8cc8d010fc8b01b1700ddb110d95ed0be17436",
+"seconds": 4.98
+},
+"sounds/vasyan/uk/normal/cmd_chop_1": {
+"hash": "c8ccc391b336493129728e24b2bd3108bac4169b",
+"seconds": 7.71
+},
+"sounds/vasyan/uk/normal/cmd_chop_2": {
+"hash": "8ee8228e60c9b8616429ea9117379d75ae8cc0f7",
+"seconds": 6.89
+},
+"sounds/vasyan/uk/normal/cmd_collect_1": {
+"hash": "89947410050b669f26ef8494601c35777295a9ac",
+"seconds": 5.83
+},
+"sounds/vasyan/uk/normal/cmd_collect_2": {
+"hash": "08f60d8db7716417efc61be35983b26a56302c54",
+"seconds": 6.39
+},
+"sounds/vasyan/uk/normal/cmd_misunderstood_1": {
+"hash": "9c231e922a28d53416906c5a3e78583fa323ebb3",
+"seconds": 7.37
+},
+"sounds/vasyan/uk/normal/cmd_misunderstood_2": {
+"hash": "4497586633a0624a95b35621869d55a7deb20c88",
+"seconds": 5.76
+},
+"sounds/vasyan/uk/normal/cmd_misunderstood_3": {
+"hash": "14505007db6ba1827f77af96d5005c80161f32b9",
+"seconds": 7.03
+},
+"sounds/vasyan/uk/normal/cmd_ok_1": {
+"hash": "e84d4bec2a4ee81130d1e68445d4bf7cce2e0dba",
+"seconds": 4.89
+},
+"sounds/vasyan/uk/normal/cmd_ok_2": {
+"hash": "4fde58ea309e31ec65589236d2fdcb00ed8db15c",
+"seconds": 6.06
+},
+"sounds/vasyan/uk/normal/cmd_ok_3": {
+"hash": "6c71cf3f56bea5aca8099daa5fc61dc6e8906f0f",
+"seconds": 6.06
+},
+"sounds/vasyan/uk/normal/cmd_time_1": {
+"hash": "ac8b995e2b70698325a2be4e944b21a2d37ef154",
+"seconds": 6.3
+},
+"sounds/vasyan/uk/normal/cmd_time_2": {
+"hash": "6838d2c0c4ab8b73439b96f30145fbb08cb261af",
+"seconds": 7.12
+},
+"sounds/vasyan/uk/normal/cmd_torches_1": {
+"hash": "1293e563564f56976c267d5920ea61c83ec9349e",
+"seconds": 6.49
+},
+"sounds/vasyan/uk/normal/cmd_torches_2": {
+"hash": "94021606830bd5763f6a8abdef3026bbff04353d",
+"seconds": 6.3
+},
+"sounds/vasyan/uk/normal/cmd_unknown_1": {
+"hash": "e61e5047b70fbbb4a5b4761d5ff85e1fc14ebd1e",
+"seconds": 7.0
+},
+"sounds/vasyan/uk/normal/cmd_unknown_2": {
+"hash": "d5fdcad8ac892d44621eac0ec4b403d48ad16487",
+"seconds": 5.28
+},
 "sounds/vasyan/uk/normal/creeper_1": {
 "hash": "b9c365d2dc71f49a59ab41b6b3267cdf7c12db99",
 "seconds": 3.94
@@ -3146,6 +4750,18 @@
 "sounds/vasyan/uk/normal/friend_zombie_2": {
 "hash": "39545735bbdd65dfb5495c78128917e57ad956f1",
 "seconds": 4.68
+},
+"sounds/vasyan/uk/normal/garden_1": {
+"hash": "09f74d061866361649bf07157ce1506a0cc3e74c",
+"seconds": 7.59
+},
+"sounds/vasyan/uk/normal/garden_2": {
+"hash": "61f7d07291d88d4369439a2131402fac5506ee00",
+"seconds": 6.75
+},
+"sounds/vasyan/uk/normal/garden_3": {
+"hash": "be568d098550d0e6d875b229f9bc6e438ef1365b",
+"seconds": 6.49
 },
 "sounds/vasyan/uk/normal/gift_flower_1": {
 "hash": "767cbf7a98f72d02e0755d1a3450ebe2443d7794",

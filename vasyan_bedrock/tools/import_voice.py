@@ -4,7 +4,7 @@
   python3 vasyan_bedrock/tools/import_voice.py DIR                  import the recordings found in DIR
 
 Recordings in DIR follow the same layout as the list: <character>/<lang>/<set>/<key>_<n>.<ext>
-(e.g. vasyan/uk/mat/hello_1.m4a). Any format ffmpeg reads works; files are levelled to the same loudness
+(e.g. vasyan/uk/mat/hello_1.m4a), and dialog/<lang>/<set>/<d>_<n>.<ext> for the arguments. Any format ffmpeg reads works; files are levelled to the same loudness
 and converted to ogg. Lines without a recording keep the synthesized voice. Imported lines are marked in
 tools/voice_cache.json, so gen_voice.py leaves them alone; delete the entry there to go back to synthesis.
 """
@@ -22,6 +22,12 @@ def lines():
                 for key, texts in data[ch][lang][s].items():
                     for i, text in enumerate(texts, 1):
                         yield f"{ch}/{lang}/{s}/{key}_{i}", text
+    dialogs = gen_voice.load_dialogs()
+    for lang in gen_voice.LANGS:
+        for s in ("normal", "mat"):
+            for di, dlg in enumerate(dialogs[lang][s], 1):
+                for si, (speaker, text) in enumerate(dlg, 1):
+                    yield f"dialog/{lang}/{s}/{di}_{si}", f"[{speaker}] {text}"
 
 
 def main():

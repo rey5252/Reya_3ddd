@@ -4,8 +4,8 @@
 // and cleans up after Bobik.
 // Stable Script API only (@minecraft/server 2.0.0, @minecraft/server-ui 2.0.0), Bedrock 1.21.90+.
 import { world, system, GameMode, Player, ItemStack, EntityDamageCause } from "@minecraft/server";
-import { ActionFormData } from "@minecraft/server-ui";
-import { VOICE } from "./voice.js";
+import { ActionFormData, ModalFormData } from "@minecraft/server-ui";
+import { VOICE, DIALOGS } from "./voice.js";
 
 /** @typedef {import("@minecraft/server").Entity} Entity */
 /** @typedef {import("@minecraft/server").Block} Block */
@@ -38,6 +38,7 @@ const LANG = "vasyan:lang"; // "uk" or "ru": the language both of them speak
 const BOBIK_DELAY = [15 * 20, 40 * 20];
 const KLOD_DELAY = [25 * 20, 50 * 20];
 const QUIET_TICKS = 5 * 60 * 20;
+const ARGUE_DELAY = [3 * 60 * 20, 6 * 60 * 20]; // how often the two start an argument on their own
 const LEASH = 24; // further than this from the owner and the companion just appears next to them
 const NEAR = 16; // close enough to talk and to react
 const REACT_COOLDOWN = 12 * 20;
@@ -117,7 +118,8 @@ function takeOne(player, slot) {
 // Talking: one line at a time per player, played as a sound at the speaker with a subtitle on the
 // player's screen, while the speaker's mouth moves (entity property vasyan:talking).
 
-/** @type {Map<string, {busy: boolean, items: {who: Entity, key: string, then?: () => void}[]}>} */
+/** @typedef {{who: Entity, key?: string, line?: {sid: string, text: string, ticks: number}, then?: () => void}} QueueItem */
+/** @type {Map<string, {busy: boolean, items: QueueItem[]}>} */
 const queues = new Map();
 
 /** @param {Player} player */
@@ -164,7 +166,7 @@ function wrap(text, width = 44) {
 function say(player, who, key, opts = {}) {
   const q = queueOf(player);
   if (!opts.important && (q.busy || q.items.length)) return false;
-  if (q.items.length >= 4 || !hasLine(who, key, player)) return false;
+  if (q.items.length >= 8 || !hasLine(who, key, player)) return false;
   q.items.push({ who, key, then: opts.then });
   pump(player);
   return true;
@@ -181,11 +183,17 @@ function pump(player) {
   const ch = VOICE_OF[who.typeId];
   const l = lang(player);
   const v = VOICE[ch][l];
-  let set = matOn(player) ? "mat" : "normal";
-  if (!v[set][item.key]) set = set === "mat" ? "normal" : "mat";
-  const lines = v[set][item.key];
-  const i = rand(lines.length);
-  const [text, ticks] = lines[i];
+  let text, ticks, sid;
+  if (item.line) {
+    ({ text, ticks, sid } = item.line);
+  } else {
+    let set = matOn(player) ? "mat" : "normal";
+    if (!v[set][item.key]) set = set === "mat" ? "normal" : "mat";
+    const lines = v[set][item.key];
+    const i = rand(lines.length);
+    [text, ticks] = lines[i];
+    sid = `${ch}.${l}.${set}.${item.key}.${i + 1}`;
+  }
   // the end of the line is scheduled first, so nothing below can leave the queue busy forever
   q.busy = true;
   const subtitle = `${COLOR[who.typeId]}${v.ui.name}:§r ${wrap(text)}`;
@@ -201,7 +209,7 @@ function pump(player) {
     q.busy = false;
     system.runTimeout(() => pump(player), 8);
   }, ticks);
-  sound(who, `${ch}.${l}.${set}.${item.key}.${i + 1}`);
+  sound(who, sid);
   setFlag(who, "vasyan:talking", true);
   try {
     item.then?.();
@@ -506,6 +514,30 @@ function friend(player, bobik) {
   return { key: "friend" };
 }
 
+/** "Made the world prettier": a flower or a sapling on the grass next to the player. @param {Player} player @returns {Prank} */
+function garden(player) {
+  if (!canBuild(player)) return false;
+  const p = floorLoc(player.location);
+  const dim = player.dimension;
+  const plants = ["minecraft:poppy", "minecraft:dandelion", "minecraft:cornflower", "minecraft:oxeye_daisy", "minecraft:azure_bluet", "minecraft:oak_sapling", "minecraft:birch_sapling"];
+  for (let tries = 0; tries < 8; tries++) {
+    const x = p.x + rand(7) - 3;
+    const z = p.z + rand(7) - 3;
+    for (let y = p.y + 1; y >= p.y - 2; y--) {
+      const b = dim.getBlock({ x, y, z });
+      const below = dim.getBlock({ x, y: y - 1, z });
+      if (b?.isAir && below && /grass_block|^minecraft:dirt$|podzol|moss_block/.test(below.typeId)) {
+        b.setType(plants[rand(plants.length)]);
+        try {
+          dim.spawnParticle("minecraft:villager_happy", { x: x + 0.5, y: y + 0.5, z: z + 0.5 });
+        } catch {}
+        return { key: "garden" };
+      }
+    }
+  }
+  return false;
+}
+
 const PRANKS = [
   { weight: 3, run: dig },
   { weight: 2, run: house },
@@ -517,12 +549,13 @@ const PRANKS = [
   { weight: 3, run: push },
   { weight: 2, run: web },
   { weight: 1, run: friend },
+  { weight: 2, run: garden },
   { weight: 3, run: () => ({ key: "idle" }) },
 ];
 const PRANK_TOTAL = PRANKS.reduce((s, h) => s + h.weight, 0);
 
 // the only pranks allowed while the player is fighting or nearly dead
-const HARMLESS = [sort, () => ({ key: "idle" })];
+const HARMLESS = [sort, garden, () => ({ key: "idle" })];
 
 /** @param {Player} player @returns {(player: Player, bobik: Entity) => Prank} */
 function pickPrank(player) {
@@ -661,6 +694,11 @@ function klodUseful(player, klod, bobik, tips = true) {
     player.addEffect("regeneration", 100, { amplifier: 1 });
     particle(player, "minecraft:heart_particle");
     return "heal";
+  }
+  const loot = itemsAround(player, 8).filter((i) => dist(i.location, player.location) > 2.5);
+  if (loot.length >= 3 && chance(0.5)) {
+    for (const i of loot) i.teleport(player.location);
+    return "collect_auto";
   }
   if (isDark(player) && torch(player)) return "torch";
   if (hurtBy(player) >= 2 && chance(0.5)) {
@@ -809,6 +847,15 @@ function tickPlayer(player, all, now, enabled, nightfall) {
     }
   }
 
+  if (bobik && klod && !busy(player) && !quiet(bobik) && !quiet(klod)) {
+    const next = nextArgue.get(player.id);
+    if (next === undefined || next > now + ARGUE_DELAY[1]) nextArgue.set(player.id, now + between(ARGUE_DELAY));
+    else if (now >= next) {
+      nextArgue.set(player.id, now + between(ARGUE_DELAY));
+      return argue(player, bobik, klod);
+    }
+  }
+
   if (klod) {
     const next = klod.getDynamicProperty(NEXT);
     if (typeof next !== "number" || next > now + KLOD_DELAY[1]) {
@@ -917,6 +964,512 @@ world.afterEvents.weatherChange.subscribe((ev) => {
     if (player.dimension.id === "minecraft:overworld") react(player, "rain", 1, true);
   }
 });
+
+// ---------------------------------------------------------------------------------------------
+// Arguments between the two
+
+const nextArgue = new Map();
+
+/** Plays one of the prepared arguments, each line in its speaker's voice. @param {Player} player @param {Entity} bobik @param {Entity} klod */
+function argue(player, bobik, klod) {
+  const l = lang(player);
+  let set = matOn(player) ? "mat" : "normal";
+  if (!DIALOGS[l][set].length) set = set === "mat" ? "normal" : "mat";
+  const list = DIALOGS[l][set];
+  if (!list.length) {
+    say(player, klod, "roast", { important: true });
+    say(player, bobik, "reply_klod", { important: true });
+    return;
+  }
+  const d = rand(list.length);
+  const q = queueOf(player);
+  list[d].forEach(([speaker, text, ticks], i) => {
+    q.items.push({ who: speaker === "vasyan" ? bobik : klod, line: { sid: `dialog.${l}.${set}.${d + 1}.${i + 1}`, text, ticks } });
+  });
+  pump(player);
+}
+
+/** @param {Player} player @param {Entity} who */
+function argueFromMenu(player, who) {
+  const { bobik, klod } = near(player);
+  if (!bobik || !klod) return say(player, who, "cmd_cant", { important: true });
+  argue(player, bobik, klod);
+}
+
+// ---------------------------------------------------------------------------------------------
+// Commands the player types (menu "Дати команду"): Ukrainian or Russian words -> what to do.
+// Klod does it properly, Bobik does it his way.
+
+// [intent, word beginnings, phrases]; the first match wins, so the order matters
+/** @type {[string, string[], string[]][]} */
+const INTENTS = [
+  ["bye", [], ["йди геть", "іди геть", "піди геть", "пішов геть", "уходи", "зникни", "исчезни", "пошел вон", "вали звідси", "вали отсюда"]],
+  ["give_back", ["поверн", "верни", "віддай", "отдай"], []],
+  ["quiet", ["мовч", "помовч", "замовк", "молч", "помолч", "замолч", "тихо", "заткн"], []],
+  ["follow", ["слідуй", "следуй"], ["за мною", "за мной", "йди сюди", "іди сюди", "иди сюда", "ко мне", "до мене"]],
+  ["stay", ["сиди", "стій", "стой", "чекай", "жди", "залишайся", "оставайся", "охороняй", "охраняй"], []],
+  ["argue", ["свар", "посвар", "спор", "поспор", "сперечай", "посперечай", "руга", "поруга", "срач"], []],
+  ["joke", ["анекдот", "жарт", "пожартуй", "шутк", "пошути", "смішн", "смешн", "розсміши", "рассмеши"], []],
+  ["dance", ["танц", "потанц", "станц"], []],
+  ["kill", ["вбий", "вбивай", "убей", "убивай", "атак", "бий", "бей", "монстр", "зомб", "скелет", "павук", "паук", "крипер", "кріпер", "захист", "защит"], []],
+  ["tunnel", ["тунел", "туннел", "шахт", "копа", "покопа", "прокопа", "викопа", "выкопа", "рий", "рой", "вирий", "вырой"], []],
+  ["chop", ["дерев", "руби", "рубай", "зрубай", "сруби", "наруби", "сокир", "топор", "колод", "дров", "бревн"], []],
+  ["bridge", ["міст", "мост"], []],
+  ["build", ["будин", "будуй", "збудуй", "побудуй", "дім", "хат", "дом", "строй", "построй", "укрит", "сховищ", "убежищ", "халуп"], []],
+  ["torches", ["факел", "світл", "свет", "освіт", "освет", "темн", "темряв"], []],
+  ["food", ["їж", "їст", "поїст", "голод", "жрат", "пожрат", "жерт", "хліб", "хлеб", "еда", "еды", "еду", "поесть", "поешь", "кушат", "покуш"], []],
+  ["collect", ["збер", "позбир", "собер", "подбер", "підбер", "лут", "предмет", "підніми", "подними"], []],
+  ["find", ["алмаз", "руд", "знайди", "найди", "шукай", "пошукай", "ищи", "поищи", "залізо", "железо", "золото", "смарагд", "изумруд"], []],
+  ["heal", ["лік", "полікуй", "вилікуй", "леч", "вылечи", "хіл", "хил", "здоров"], []],
+  ["time", ["день", "днем", "вдень", "ніч", "ночь", "сонц", "солнц", "ранок", "утро", "вечір", "вечер"], []],
+];
+
+/** @param {string} text */
+function parseIntent(text) {
+  const t = text.toLowerCase().replace(/ё/g, "е").replace(/[’ʼ`]/g, "'");
+  const words = t.split(/[^a-zа-яіїєґ']+/).filter(Boolean);
+  for (const [intent, stems, phrases] of INTENTS) {
+    if (phrases.some((ph) => t.includes(ph))) return intent;
+    if (words.some((w) => stems.some((st) => w.startsWith(st)))) return intent;
+  }
+  return "unknown";
+}
+
+/** @typedef {{key: string, run?: () => void, undo?: () => void} | false} Job */
+
+/** Horizontal direction the player looks at, snapped to an axis. @param {Player} player */
+function facing(player) {
+  const d = player.getViewDirection();
+  return Math.abs(d.x) > Math.abs(d.z) ? { x: Math.sign(d.x), z: 0 } : { x: 0, z: Math.sign(d.z) || 1 };
+}
+
+const ORE = /_ore$|^minecraft:ancient_debris$/;
+/** @param {Block | undefined} b */
+const minable = (b) => !!b && canBreak(b) && (DIGGABLE.test(b.typeId) || ORE.test(b.typeId));
+/** Breaks a block the way a player would, so it drops. @param {import("@minecraft/server").Dimension} dim @param {Vector3} l */
+const breakBlock = (dim, l) => dim.runCommand(`setblock ${l.x} ${l.y} ${l.z} air destroy`);
+/** @param {import("@minecraft/server").Dimension} dim @param {Vector3} l */
+const inWorld = (dim, l) => l.y > dim.heightRange.min && l.y < dim.heightRange.max - 1;
+/** @param {Player} player */
+const itemsAround = (player, r = 16) => player.dimension.getEntities({ type: "minecraft:item", location: player.location, maxDistance: r });
+
+/** @param {Player} player */
+function monstersAround(player, range = 12) {
+  return player.dimension
+    .getEntities({ families: ["monster"], location: player.location, maxDistance: range })
+    .filter((m) => m.isValid && m.typeId !== BOBIK && m.typeId !== KLOD && !NEUTRAL.test(m.typeId) && !m.nameTag && !m.getComponent("minecraft:leashable")?.isLeashed);
+}
+
+/** A 1x2 tunnel up to 8 blocks forward, through natural ground only, stopping before water or lava. @param {Player} player */
+function planTunnel(player) {
+  const f = facing(player);
+  const p = floorLoc(player.location);
+  const dim = player.dimension;
+  const out = [];
+  for (let i = 1; i <= 8; i++) {
+    for (const dy of [0, 1]) {
+      const l = { x: p.x + f.x * i, y: p.y + dy, z: p.z + f.z * i };
+      if (!inWorld(dim, l)) return out;
+      const b = dim.getBlock(l);
+      if (!b || b.isLiquid) return out;
+      for (const [nx, ny, nz] of [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, 0, 1], [0, 0, -1]]) {
+        if (dim.getBlock({ x: l.x + nx, y: l.y + ny, z: l.z + nz })?.isLiquid) return out;
+      }
+      if (b.isAir) continue;
+      if (!minable(b)) return out;
+      out.push(l);
+    }
+  }
+  return out;
+}
+
+const LOG = /_log$|_stem$/;
+/** The nearest natural tree (logs with leaves on them), all its logs top first. @param {Player} player */
+function planTree(player) {
+  const p = floorLoc(player.location);
+  const dim = player.dimension;
+  let start;
+  let best = Infinity;
+  for (let x = -8; x <= 8; x++)
+    for (let z = -8; z <= 8; z++)
+      for (let y = -2; y <= 6; y++) {
+        const l = { x: p.x + x, y: p.y + y, z: p.z + z };
+        if (!inWorld(dim, l)) continue;
+        const id = dim.getBlock(l)?.typeId ?? "";
+        if (LOG.test(id) && !id.includes("stripped") && x * x + y * y + z * z < best) {
+          best = x * x + y * y + z * z;
+          start = l;
+        }
+      }
+  if (!start) return [];
+  const key = (l) => `${l.x},${l.y},${l.z}`;
+  const seen = new Set([key(start)]);
+  const logs = [start];
+  let leaves = 0;
+  for (let i = 0; i < logs.length && logs.length < 96; i++) {
+    for (let dx = -1; dx <= 1; dx++)
+      for (let dy = -1; dy <= 1; dy++)
+        for (let dz = -1; dz <= 1; dz++) {
+          const l = { x: logs[i].x + dx, y: logs[i].y + dy, z: logs[i].z + dz };
+          if (seen.has(key(l)) || !inWorld(dim, l)) continue;
+          seen.add(key(l));
+          const id = dim.getBlock(l)?.typeId ?? "";
+          if (LOG.test(id) && !id.includes("stripped")) logs.push(l);
+          else if (id.includes("leaves")) leaves++;
+        }
+  }
+  // a log cabin has no leaves on it: leave the player's buildings alone
+  if (leaves < 4) return [];
+  return logs.sort((a, b) => b.y - a.y);
+}
+
+/** Air, or a plant/snow layer that a block can simply replace. @param {Block | undefined} b */
+const replaceable = (b) => !!b && (b.isAir || /short_grass|tall_grass|fern|snow_layer|deadbush|poppy|dandelion/.test(b.typeId));
+
+/** A 5x5 plank hut around the player with a doorway where he looks: [layer][block]. @param {Player} player */
+function planShelter(player) {
+  const p = floorLoc(player.location);
+  const f = facing(player);
+  const dim = player.dimension;
+  const layers = [[], [], [], []];
+  if (!inWorld(dim, { x: p.x, y: p.y + 4, z: p.z })) return layers;
+  for (let dy = 0; dy <= 3; dy++)
+    for (let dx = -2; dx <= 2; dx++)
+      for (let dz = -2; dz <= 2; dz++) {
+        const wall = Math.max(Math.abs(dx), Math.abs(dz)) === 2;
+        if (dy < 3 && !wall) continue;
+        if (dy < 2 && dx === 2 * f.x && dz === 2 * f.z) continue; // the doorway
+        const l = { x: p.x + dx, y: p.y + dy, z: p.z + dz };
+        if (replaceable(dim.getBlock(l))) layers[dy].push(l);
+      }
+  return layers;
+}
+
+/** A cobblestone path forward over air, water or lava. @param {Player} player */
+function planBridge(player) {
+  const f = facing(player);
+  const p = floorLoc(player.location);
+  const dim = player.dimension;
+  const out = [];
+  for (let i = 1; i <= 12; i++) {
+    const l = { x: p.x + f.x * i, y: p.y - 1, z: p.z + f.z * i };
+    if (!inWorld(dim, l)) break;
+    const b = dim.getBlock(l);
+    if (b && (b.isAir || b.isLiquid)) out.push(l);
+  }
+  return out;
+}
+
+/** Spots for a ring of torches five blocks around the player. @param {Player} player */
+function planTorches(player) {
+  const p = floorLoc(player.location);
+  const dim = player.dimension;
+  const out = [];
+  for (let k = 0; k < 8; k++) {
+    const x = p.x + Math.round(Math.cos((k * Math.PI) / 4) * 5);
+    const z = p.z + Math.round(Math.sin((k * Math.PI) / 4) * 5);
+    for (let y = p.y + 2; y >= p.y - 3; y--) {
+      if (!inWorld(dim, { x, y, z })) continue;
+      const here = dim.getBlock({ x, y, z });
+      const below = dim.getBlock({ x, y: y - 1, z });
+      if (here?.isAir && below && !below.isAir && !below.isLiquid && !/leaves|glass|fence|wall|slab|stairs|web|torch/.test(below.typeId)) {
+        out.push({ x, y, z });
+        break;
+      }
+    }
+  }
+  return out;
+}
+
+// most valuable first
+const ORES = [/diamond_ore/, /emerald_ore/, /ancient_debris/, /gold_ore/, /iron_ore/, /lapis_ore|redstone_ore/];
+/** The best ore within 8 blocks. @param {Player} player @returns {Vector3 | undefined} */
+function findOre(player) {
+  const p = floorLoc(player.location);
+  const dim = player.dimension;
+  let found;
+  let rank = ORES.length;
+  let best = Infinity;
+  for (let x = -8; x <= 8; x++)
+    for (let y = -8; y <= 8; y++)
+      for (let z = -8; z <= 8; z++) {
+        const l = { x: p.x + x, y: p.y + y, z: p.z + z };
+        if (!inWorld(dim, l)) continue;
+        const id = dim.getBlock(l)?.typeId ?? "";
+        if (!id.includes("ore") && !id.includes("debris")) continue;
+        const r = ORES.findIndex((re) => re.test(id));
+        const d = x * x + y * y + z * z;
+        if (r >= 0 && (r < rank || (r === rank && d < best))) {
+          rank = r;
+          best = d;
+          found = l;
+        }
+      }
+  return found;
+}
+
+/** Sparkles from the player to the target for ten seconds. @param {Player} player @param {Vector3} target */
+function trail(player, target) {
+  let n = 0;
+  const run = system.runInterval(() => {
+    if (!player.isValid || ++n > 20) return system.clearRun(run);
+    const from = { x: player.location.x, y: player.location.y + 1.2, z: player.location.z };
+    const to = { x: target.x + 0.5, y: target.y + 0.5, z: target.z + 0.5 };
+    const len = dist(from, to);
+    for (let t = 1; t < len; t += 1) {
+      try {
+        player.dimension.spawnParticle("minecraft:villager_happy", {
+          x: from.x + ((to.x - from.x) * t) / len,
+          y: from.y + ((to.y - from.y) * t) / len,
+          z: from.z + ((to.z - from.z) * t) / len,
+        });
+      } catch {}
+    }
+  }, 10);
+}
+
+/** Runs `step` for each element, `every` ticks apart. @template T @param {T[]} list @param {(x: T) => void} step */
+function slowly(list, step, every = 3) {
+  list.forEach((x, i) =>
+    system.runTimeout(() => {
+      try {
+        step(x);
+      } catch {}
+    }, i * every + 1),
+  );
+}
+
+/** What Klod does for an intent, or false when it cannot be done here. @param {Player} player @param {Entity} klod @param {string} intent @returns {Job} */
+function klodJob(player, klod, intent) {
+  const dim = player.dimension;
+  switch (intent) {
+    case "kill": {
+      const mobs = monstersAround(player).slice(0, 6);
+      if (!mobs.length) return false;
+      return {
+        key: "cmd_kill",
+        run: () =>
+          slowly(mobs, (m) => {
+            if (!m.isValid) return;
+            particle(m, "minecraft:critical_hit_emitter", 1);
+            m.applyDamage(30, { cause: EntityDamageCause.entityAttack, damagingEntity: klod });
+          }, 6),
+      };
+    }
+    case "tunnel": {
+      if (player.getGameMode() === GameMode.Adventure) return false;
+      const plan = planTunnel(player);
+      return plan.length ? { key: "cmd_tunnel", run: () => slowly(plan, (l) => breakBlock(dim, l), 4) } : false;
+    }
+    case "chop": {
+      if (player.getGameMode() === GameMode.Adventure) return false;
+      const logs = planTree(player);
+      return logs.length ? { key: "cmd_chop", run: () => slowly(logs, (l) => breakBlock(dim, l), 3) } : false;
+    }
+    case "build": {
+      if (player.getGameMode() === GameMode.Adventure) return false;
+      const layers = planShelter(player);
+      if (layers.flat().length < 12) return false;
+      return {
+        key: "cmd_build",
+        run: () =>
+          slowly(layers, (layer) => {
+            for (const l of layer) {
+              const b = dim.getBlock(l);
+              if (replaceable(b)) b.setType("minecraft:oak_planks");
+            }
+            sound(klod, "dig.wood");
+          }, 10),
+      };
+    }
+    case "bridge": {
+      if (player.getGameMode() === GameMode.Adventure) return false;
+      const plan = planBridge(player);
+      return plan.length ? { key: "cmd_bridge", run: () => slowly(plan, (l) => dim.getBlock(l)?.setType("minecraft:cobblestone"), 3) } : false;
+    }
+    case "torches": {
+      if (player.getGameMode() === GameMode.Adventure) return false;
+      const spots = planTorches(player);
+      return spots.length ? { key: "cmd_torches", run: () => slowly(spots, (l) => dim.getBlock(l)?.setType("minecraft:torch"), 4) } : false;
+    }
+    case "food":
+      return { key: "cmd_food", run: () => giveOrDrop(player, new ItemStack("minecraft:bread", 3)) };
+    case "collect": {
+      const items = itemsAround(player);
+      return items.length ? { key: "cmd_collect", run: () => items.forEach((i) => i.isValid && i.teleport(player.location)) } : false;
+    }
+    case "find": {
+      const ore = findOre(player);
+      return ore ? { key: "cmd_found", run: () => trail(player, ore) } : { key: "cmd_notfound" };
+    }
+    case "heal":
+      return { key: "heal", run: () => player.addEffect("regeneration", 160, { amplifier: 1 }) };
+    case "time":
+      return { key: "cmd_time" };
+    default:
+      return { key: "cmd_unknown" };
+  }
+}
+
+/** Bobik's version of the same intent. @param {Player} player @param {Entity} bobik @param {string} intent @returns {Job} */
+function bobikJob(player, bobik, intent) {
+  const dim = player.dimension;
+  switch (intent) {
+    case "kill": {
+      // he "deals with" the monsters: by healing them
+      const mobs = monstersAround(player);
+      if (!mobs.length) return false;
+      return {
+        key: "mobheal",
+        run: () =>
+          mobs.forEach((m) => {
+            if (!m.isValid) return;
+            m.addEffect("regeneration", 200, { amplifier: 1 });
+            particle(m, "minecraft:heart_particle", 1.5);
+          }),
+      };
+    }
+    case "tunnel":
+      return dig(player);
+    case "build":
+      return house(player);
+    case "chop":
+      return { key: "cmd_chop", run: () => giveOrDrop(player, new ItemStack("minecraft:stick", 1)) };
+    case "bridge": {
+      // a dirt pillar under the player instead of a bridge
+      if (!canBuild(player)) return false;
+      const p = floorLoc(player.location);
+      for (let dy = 2; dy <= 5; dy++) if (!dim.getBlock({ x: p.x, y: p.y + dy, z: p.z })?.isAir) return false;
+      return {
+        key: "cmd_bridge",
+        run: () =>
+          slowly([0, 1, 2], () => {
+            if (!player.isValid) return;
+            const feet = dim.getBlock(floorLoc(player.location));
+            if (!feet?.isAir) return;
+            player.teleport({ x: player.location.x, y: player.location.y + 1.05, z: player.location.z });
+            feet.setType("minecraft:dirt");
+          }, 8),
+      };
+    }
+    case "torches": {
+      // exactly one torch, problem solved
+      const p = floorLoc(player.location);
+      const here = dim.getBlock(p);
+      const below = dim.getBlock({ x: p.x, y: p.y - 1, z: p.z });
+      if (!canBuild(player) || !here?.isAir || !below || below.isAir || below.isLiquid) return false;
+      return { key: "cmd_torches", run: () => here.isValid && here.isAir && here.setType("minecraft:torch") };
+    }
+    case "food":
+      return eat(player, bobik);
+    case "collect": {
+      // into his own pockets
+      const items = itemsAround(player);
+      const bag = container(bobik);
+      if (!items.length || !bag) return false;
+      return {
+        key: "cmd_collect",
+        run: () => {
+          for (const i of items) {
+            const stack = i.isValid ? i.getComponent("minecraft:item")?.itemStack : undefined;
+            if (stack && !bag.addItem(stack)) i.remove();
+          }
+        },
+      };
+    }
+    case "find":
+      return { key: "diamonds", run: () => giveOrDrop(player, fakeDiamond(bobik, player)) };
+    case "heal":
+      return heal(player);
+    case "time":
+      return {
+        key: "cmd_time",
+        run: () => {
+          const t = world.getTimeOfDay();
+          world.setTimeOfDay(t > 12500 && t < 23500 ? 1000 : 13000);
+        },
+      };
+    default:
+      return false;
+  }
+}
+
+/** Bobik gives back what he has in his pockets (and sometimes "forgets" one thing). @param {Player} player @param {Entity} bobik */
+function giveBack(player, bobik) {
+  const bag = container(bobik);
+  const items = [];
+  for (let i = 0; bag && i < bag.size; i++) if (bag.getItem(i)) items.push(i);
+  if (!items.length) return say(player, bobik, "give_back_empty", { important: true });
+  const keep = items.length > 1 && chance(0.2) ? items[rand(items.length)] : -1;
+  for (const i of items) {
+    if (i === keep) continue;
+    giveOrDrop(player, bag.getItem(i));
+    bag.setItem(i, undefined);
+  }
+  say(player, bobik, keep >= 0 ? "give_back_forgot" : "give_back", { important: true });
+}
+
+/**
+ * Carries out a typed command.
+ * @param {Player} player @param {Entity} who @param {string} text
+ */
+function command(player, who, text) {
+  const intent = parseIntent(text);
+  const { bobik, klod } = near(player);
+  const isBobik = who.typeId === BOBIK;
+  // the things both do the same way
+  switch (intent) {
+    case "bye":
+      return dismiss(player, who);
+    case "give_back":
+      if (isBobik) return giveBack(player, who);
+      if (bobik && container(bobik)?.emptySlotsCount !== container(bobik)?.size) {
+        return say(player, who, "fix_vasyan", { important: true, then: () => returnStolen(player, bobik) });
+      }
+      return say(player, who, "cmd_cant", { important: true });
+    case "quiet":
+      who.setDynamicProperty(QUIET, system.currentTick + QUIET_TICKS);
+      return say(player, who, "quiet", { important: true });
+    case "follow":
+    case "stay":
+      return setStay(player, who, intent === "stay");
+    case "argue":
+      return argueFromMenu(player, who);
+    case "joke":
+      return say(player, who, "joke", { important: true });
+    case "dance":
+      return dance(player, who);
+  }
+  if (isBobik) {
+    // he gets the order wrong on purpose every so often, and always when he has no idea
+    const job = intent === "unknown" || chance(0.2) ? false : bobikJob(player, who, intent);
+    if (!job) {
+      if (intent !== "unknown" && chance(0.5)) return say(player, who, "cmd_cant", { important: true });
+      return say(player, who, "cmd_misunderstood", { important: true, then: () => system.runTimeout(() => who.isValid && bobikHelp(player, who, klod), 20) });
+    }
+    say(player, who, job.key, { important: true, then: job.run });
+    if (job.undo) pendingUndo.set(player.id, { undo: job.undo, at: system.currentTick });
+    if (klod && !quiet(klod) && chance(0.5)) {
+      if (job.undo) pendingUndo.delete(player.id);
+      say(player, klod, job.undo ? "undo" : "roast", { important: true, then: job.undo });
+    }
+    return;
+  }
+  const job = klodJob(player, who, intent);
+  if (!job) return say(player, who, "cmd_cant", { important: true });
+  if (job.run && chance(0.35)) say(player, who, "cmd_ok", { important: true });
+  say(player, who, job.key, { important: true, then: job.run });
+  if (bobik && !quiet(bobik) && job.run && chance(0.3)) say(player, bobik, "reply_klod", { important: true });
+}
+
+/** The text box for a command. @param {Player} player @param {Entity} who */
+async function askCommand(player, who) {
+  const t = ui(who, player);
+  const res = await new ModalFormData().title(t.command_title).textField(t.command_label, t.command_hint).show(player);
+  if (res.canceled || !res.formValues || !who.isValid || !player.isValid) return;
+  const text = String(res.formValues[0] ?? "").trim();
+  if (text) command(player, who, text);
+}
 
 // ---------------------------------------------------------------------------------------------
 // Menus
@@ -1029,24 +1582,9 @@ function bobikMenu(player, bobik) {
   const klod = near(player).klod;
   const stay = bobik.getDynamicProperty(STAY) === true;
   return menu(player, bobik, t.title, matOn(player) ? t.body_mat : t.body, [
+    [t.command, () => askCommand(player, bobik)],
     [t.talk, () => bobikTalk(player, bobik)],
-    [
-      t.give_back,
-      () => {
-        const bag = container(bobik);
-        const items = [];
-        for (let i = 0; bag && i < bag.size; i++) if (bag.getItem(i)) items.push(i);
-        if (!items.length) return say(player, bobik, "give_back_empty", { important: true });
-        // sometimes he "forgets" one thing for later
-        const keep = items.length > 1 && chance(0.2) ? items[rand(items.length)] : -1;
-        for (const i of items) {
-          if (i === keep) continue;
-          giveOrDrop(player, bag.getItem(i));
-          bag.setItem(i, undefined);
-        }
-        say(player, bobik, keep >= 0 ? "give_back_forgot" : "give_back", { important: true });
-      },
-    ],
+    [t.give_back, () => giveBack(player, bobik)],
     [
       t.help,
       () => {
@@ -1081,6 +1619,7 @@ function bobikTalk(player, bobik) {
     [t.q_how, ask("how")],
     [t.q_stupid, ask("stupid", () => chance(0.4) && knock(player, bobik, 1.2))],
     [t.q_about, ask("about")],
+    [t.argue, () => argueFromMenu(player, bobik)],
     [t.back, () => bobikMenu(player, bobik)],
   ]);
 }
@@ -1090,6 +1629,7 @@ function klodMenu(player, klod) {
   const t = ui(klod, player);
   const stay = klod.getDynamicProperty(STAY) === true;
   return menu(player, klod, t.title, matOn(player) ? t.body_mat : t.body, [
+    [t.command, () => askCommand(player, klod)],
     [t.talk, () => klodTalk(player, klod)],
     [
       t.help,
@@ -1137,6 +1677,7 @@ function klodTalk(player, klod) {
     [t.q_vasyan, ask("vasyan")],
     [t.q_smart, ask("smart")],
     [t.q_about, ask("about")],
+    [t.argue, () => argueFromMenu(player, klod)],
     [t.back, () => klodMenu(player, klod)],
   ]);
 }

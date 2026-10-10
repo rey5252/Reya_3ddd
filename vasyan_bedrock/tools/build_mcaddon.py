@@ -71,6 +71,13 @@ def check_voice():
     for f in sorted(os.listdir(lines_dir)):
         ch, lang = f[:-5].rsplit("_", 1)
         d = json.load(open(os.path.join(lines_dir, f), encoding="utf-8"))
+        if ch == "dialogs":
+            for s in ("normal", "mat"):
+                for di, dlg in enumerate(d[s], 1):
+                    for si in range(1, len(dlg) + 1):
+                        if f"dialog.{lang}.{s}.{di}.{si}" not in defs:
+                            fail(f"{f}: {s} dialog {di} line {si} is not voiced, run tools/gen_voice.py")
+            continue
         for s in ("normal", "mat"):
             for key, lines in d[s].items():
                 keys_by_lang.setdefault(lang, set()).add(key)
@@ -85,7 +92,8 @@ def check_voice():
     used.update(re.findall(r'react\(\w+, "(\w+)"', script))
     used.update(re.findall(r'ask\("(\w+)"', script))
     used.update(re.findall(r'key: "(\w+)"', script))  # Bobik's pranks
-    used.update(re.findall(r'return "(\w+)";', script))  # Klod's useful things
+    useful = re.search(r"\nfunction klodUseful\(.*?\n}\n", script, re.S)
+    used.update(re.findall(r'return "(\w+)";', useful.group(0)))  # Klod's useful things
     for pair in re.findall(r'say\(\w+, \w+, [\w.()!]+ \? "(\w+)" : "(\w+)"', script):
         used.update(pair)
     for lang, have in keys_by_lang.items():
