@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    FortressTowers 1.0 - Tower #5: SovietFlakNest ("Флак-гніздо")
+
+    BASE: modified copy of the base-game Soviet Flak Cannon from SageXml
+          (SageXml/Soviet/Structures/SovietAntiAirStructure.xml - VERIFY exact file/object id).
+          The original model, animations and FX are reused, so no new W3X assets are needed.
+
+    CHANGED vs. the original Flak Cannon:
+      - id/strings/CommandSet -> SovietFlakNest*; BuildCost 1000, BuildTime 15 s,
+        MaxHealth 2400, AttackRange 500 (air only), EnergyProduction -4 (SPEC row #5).
+      - Weapon: "three flak guns" implemented as a 3-shell burst (ClipSize 3) from a single
+        turret, each shell an airburst with splash radius 60 (anti-air only, AntiMask).
+      - Every target in the burst radius gets the "shrapnel" debuff
+        (AttributeModifier SovietFlakNestShrapnel): -15% movement speed for 3 s.
+      - Draw module: Scale 1.15 (slightly bigger than the vanilla cannon), red-orange airburst FX.
+      - Prerequisite: Soviet Construction Yard only.
+
+    AUTHOR MUST CHECK IN SageXml:
+      - W3X model / animation names of the Flak Cannon (SBFlak*), turret + muzzle bone names.
+      - Armor template, DamageFX, FX list names, audio event names, rubble OCL.
+      - Object id of the Soviet Construction Yard used in ObjectPrerequisites.
+      - Exact AttributeModifier "Type" token for movement speed and its value semantics.
+    Every such uncertain name is marked with a VERIFY comment below.
+-->
+<AssetDeclaration xmlns="uri:ea.com:eala:asset" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Includes>
+        <Include type="reference" source="DATA:static.xml" />
+        <Include type="reference" source="DATA:global.xml" />
+        <Include type="reference" source="DATA:audio.xml" />
+    </Includes>
+
+    <!-- ===================================================================== -->
+    <!-- Shrapnel debuff: -15% movement speed for 3 seconds                    -->
+    <!-- ===================================================================== -->
+    <!-- VERIFY: Modifier Type token for movement speed ("SPEED") and whether Value is a multiplier (85%) or delta (-15%) in RA3. -->
+    <AttributeModifier
+        id="SovietFlakNestShrapnel"
+        Category="WEAPON"
+        Duration="3s"
+        ReplaceInCategoryIfLongest="true"
+        IgnoreIfAnticategoryActive="false">
+        <Modifier Type="SPEED" Value="85%" />
+    </AttributeModifier>
+
+    <!-- ===================================================================== -->
+    <!-- Weapon: 3-shell flak burst, airburst splash radius 60, anti-air only  -->
+    <!-- ===================================================================== -->
+    <!-- VERIFY: FireFX / FireSound names copied from the vanilla Flak Cannon weapon (SovietAntiAirStructureWeapon?). -->
+    <WeaponTemplate
+        id="SovietFlakNestWeapon"
+        Name="SovietFlakNestWeapon"
+        AttackRange="500"
+        MinimumAttackRange="0"
+        WeaponSpeed="999999"
+        ClipSize="3"
+        AutoReloadsClip="Yes"
+        AcceptableAimDelta="20d"
+        AntiMask="ANTI_AIRBORNE_VEHICLE ANTI_AIRBORNE_INFANTRY"
+        RadiusDamageAffects="ENEMIES NEUTRALS"
+        ProjectileCollidesWith="ENEMIES"
+        FireFX="FX_SovietFlakCannonMuzzleFlash"
+        FireSound="SovietFlakCannon_WeaponFire"
+        CanFireWhileMoving="false"
+        ScatterRadiusVsAir="8">
+        <!-- Delay between the three barrels of the burst (VERIFY: FiringDuration is the inter-shot delay element in the RA3 schema). -->
+        <FiringDuration MinSeconds="0.2s" MaxSeconds="0.2s" />
+        <ClipReloadTime MinSeconds="1.6s" MaxSeconds="1.6s" />
+        <Nuggets>
+            <!-- VERIFY: DamageType "FLAK" exists in RA3 DamageType enum; DamageFXType name. -->
+            <DamageNugget
+                Damage="45"
+                Radius="60"
+                DamageArc="360d"
+                DamageType="FLAK"
+                DamageFXType="SOVIET_FLAK"
+                DeathType="NORMAL" />
+            <!-- Shrapnel slow applied to every aircraft inside the airburst. -->
+            <AttributeModifierNugget
+                AttributeModifierName="SovietFlakNestShrapnel"
+                Radius="60"
+                PartitionFilterTestType="SPHERE"
+                AffectsMask="ENEMIES NEUTRALS"
+                ForbiddenKindOf="STRUCTURE" />
+            <!-- Red-orange airburst at the target position. VERIFY: FX list name (reuse Flak Cannon detonation FX, tinted). -->
+            <FireFXNugget FireFX="FX_SovietFlakNestAirburst" />
+        </Nuggets>
+    </WeaponTemplate>
+
+    <!-- ===================================================================== -->
+    <!-- GameObject                                                            -->
+    <!-- ===================================================================== -->
+    <!-- VERIFY: SelectPortrait / ButtonImage names copied from vanilla Flak Cannon (Portrait_SovietFlakCannon?). -->
+    <GameObject
+        id="SovietFlakNest"
+        inheritFrom="BaseStructure"
+        Side="Soviet"
+        EditorSorting="STRUCTURE"
+        KindOf="PRELOAD STRUCTURE SELECTABLE IMMOBILE SCORE FS_BASE_DEFENSE CAN_ATTACK"
+        BuildCost="1000"
+        BuildTime="15"
+        CommandSet="SovietFlakNestCommandSet"
+        EnergyProduction="-4"
+        ThreatLevel="6"
+        VisionRange="550"
+        ShroudClearingRange="550"
+        SelectPortrait="Portrait_SovietFlakCannon"
+        ButtonImage="Button_SovietFlakCannon"
+        RadarPriority="STRUCTURE">
+
+        <DisplayName>NAME:SovietFlakNest</DisplayName>
+        <Description>DESC:SovietFlakNest</Description>
+        <TypeDescription>TYPE:SovietFlakNest</TypeDescription>
+
+        <!-- VERIFY: armor template and DamageFX used by the vanilla Flak Cannon. -->
+        <ArmorSet Armor="SovietAntiAirStructureArmor" DamageFX="StructureDamageFXNoShake" />
+
+        <WeaponSet>
+            <Weapon Ordering="PRIMARY_WEAPON" Template="SovietFlakNestWeapon" />
+        </WeaponSet>
+
+        <Draws>
+            <!-- VERIFY: model SBFlakCan_SKN, animation and bone names (Turret/TurretEL/Muzzle01..03) from SageXml Flak Cannon draw. -->
+            <ScriptedModelDraw
+                id="ModuleTag_Draw"
+                OkToChangeModelColor="true"
+                Scale="1.15">
+                <ModelConditionState ParseCondStateType="PARSE_DEFAULT">
+                    <Model Name="SBFlakCan_SKN" />
+                    <Turret TurretNameKey="Turret" TurretPitch="TurretEL" TurretID="1" />
+                    <WeaponFireFXBone WeaponSlotType="PRIMARY_WEAPON" BoneName="Muzzle" />
+                    <WeaponLaunchBone WeaponSlotType="PRIMARY_WEAPON" BoneName="Muzzle" />
+                </ModelConditionState>
+                <ModelConditionState ConditionsYes="REALLYDAMAGED">
+                    <Model Name="SBFlakCan_SKN" />
+                    <Turret TurretNameKey="Turret" TurretPitch="TurretEL" TurretID="1" />
+                    <WeaponFireFXBone WeaponSlotType="PRIMARY_WEAPON" BoneName="Muzzle" />
+                    <WeaponLaunchBone WeaponSlotType="PRIMARY_WEAPON" BoneName="Muzzle" />
+                    <ParticleSysBone BoneName="Turret" FXParticleSystemTemplate="SmokeStructureDamagedMedium" FollowBone="true" />
+                </ModelConditionState>
+                <AnimationState ParseCondStateType="PARSE_DEFAULT">
+                    <Animation AnimationName="SBFlakCan_IDLA" AnimationMode="LOOP" />
+                </AnimationState>
+                <AnimationState ConditionsYes="FIRING_OR_PREATTACK_A">
+                    <Animation AnimationName="SBFlakCan_ATKA" AnimationMode="ONCE" />
+                </AnimationState>
+                <AnimationState ConditionsYes="AWAITING_CONSTRUCTION">
+                    <Animation AnimationName="SBFlakCan_BLDA" AnimationMode="MANUAL" />
+                </AnimationState>
+                <AnimationState ConditionsYes="ACTIVELY_BEING_CONSTRUCTED">
+                    <Animation AnimationName="SBFlakCan_BLDA" AnimationMode="ONCE" />
+                </AnimationState>
+            </ScriptedModelDraw>
+        </Draws>
+
+        <Behaviors>
+            <WeaponSetUpdate id="ModuleTag_WeaponSetUpdate">
+                <WeaponSlotTurret ID="1" AllowInterleavedFiring="false">
+                    <Weapon Ordering="PRIMARY_WEAPON" Template="SovietFlakNestWeapon" />
+                    <TurretSettings
+                        TurretTurnRate="200"
+                        TurretPitchRate="120"
+                        AllowsPitch="true"
+                        NaturalTurretPitch="20d"
+                        MinPhysicalPitch="0d"
+                        MinIdleScanTime="2s"
+                        MaxIdleScanTime="6s"
+                        MinIdleScanAngle="0d"
+                        MaxIdleScanAngle="360d">
+                        <TurretAITargetChooserData
+                            CanAcquireDynamicIfAssignedOutOfRange="true"
+                            SympathyRange="100" />
+                    </TurretSettings>
+                </WeaponSlotTurret>
+            </WeaponSetUpdate>
+
+            <!-- Base defenses shut down on low power (as vanilla). VERIFY module name in RA3 SageXml. -->
+            <PowerConsumerBehavior id="ModuleTag_PowerConsumer" />
+
+            <DestroyDie id="ModuleTag_DestroyDie" />
+            <!-- VERIFY: death FX list and rubble OCL names from vanilla Flak Cannon. -->
+            <FXListDie id="ModuleTag_FXListDie" DeathFX="FX_SovietStructureDeathSmall" />
+            <CreateObjectDie id="ModuleTag_CreateObjectDie" CreationList="OCL_SovietStructureRubbleSmall" />
+        </Behaviors>
+
+        <Body>
+            <ActiveBody id="ModuleTag_Body" MaxHealth="2400" />
+        </Body>
+
+        <AI>
+            <!-- VERIFY: AILuaEventsList name used by vanilla Soviet base defenses. -->
+            <AIUpdate id="ModuleTag_AI" AutoAcquireEnemiesWhenIdle="YES" AILuaEventsList="BaseDefenseFunctions" />
+        </AI>
+
+        <Geometry IsSmall="false">
+            <!-- VERIFY: footprint copied from vanilla Flak Cannon, enlarged for Scale 1.15. -->
+            <Shape Type="CYLINDER" MajorRadius="22" Height="45" />
+        </Geometry>
+
+        <ObjectPrerequisites>
+            <!-- VERIFY: Soviet Construction Yard object id. -->
+            <GameDependency>
+                <RequiredObject>SovietConstructionYard</RequiredObject>
+            </GameDependency>
+        </ObjectPrerequisites>
+
+        <!-- Sounds. VERIFY: audio event names copied from vanilla Flak Cannon. -->
+        <VoiceSelect>SovietFlakCannon_Select</VoiceSelect>
+        <SoundOnDamaged>StructureDamagedMedium</SoundOnDamaged>
+        <SoundOnReallyDamaged>StructureDamagedHeavy</SoundOnReallyDamaged>
+        <SoundDie>SovietStructureDieSmall</SoundDie>
+        <UnitSpecificSounds>
+            <SoundSellStructure>SovietStructureSold</SoundSellStructure>
+        </UnitSpecificSounds>
+    </GameObject>
+</AssetDeclaration>

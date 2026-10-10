@@ -1,0 +1,399 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    FortressTowers 1.0 - Tower #9: JapanKitsuneShrine ("Святилище Кіцуне"), Empire of the Rising Sun.
+
+    BASE: modified copy of the vanilla Empire Nanoswarm Hive (SageXml: JapanNanoSwarmHive)
+          and of a vanilla Empire defence nanocore (SageXml: JapanNanoSwarmHiveNanocore / generic Empire core).
+          The Nanoswarm Hive model, animations and FX are reused - no new W3X assets.
+
+    CHANGED vs. vanilla:
+      - New IDs (JapanKitsuneShrine, JapanKitsuneShrineNanocore, JapanKitsuneShrine* weapons/modifiers).
+      - Role: support / anti-infantry. Nanoswarm dome ability removed. Instead an automatic
+        psionic pulse every 4 s, radius 250, damages enemy infantry and stuns them for 1 s.
+      - StealthDetectorUpdate, detection radius 350.
+      - Stats per SPEC: cost 900, build time 14 s (on the nanocore), HP 1800, range 250.
+      - Draw Scale 0.85 (smaller "shrine" silhouette), turquoise/white psionic FX tint.
+
+    TO CHECK IN SageXml (marked with VERIFY comments below):
+      - Exact W3X model / skeleton / animation names of the Nanoswarm Hive and of the Empire nanocore.
+      - FX names (psionic pulse ring, unpack FX), sound event names.
+      - Empire core unpack mechanism (module name + LogicCommand), ArmorSet names, prerequisite object names.
+      - Whether vanilla Empire defences have EnergyProduction (value below copied from Nanoswarm Hive guess).
+-->
+<AssetDeclaration xmlns="uri:ea.com:eala:asset" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Tags></Tags>
+    <Includes>
+        <Include type="reference" source="DATA:static.xml" />
+        <Include type="reference" source="DATA:global.xml" />
+        <Include type="reference" source="DATA:audio.xml" />
+    </Includes>
+
+    <!-- ============================================================ -->
+    <!--  Attribute modifier: 1 s psionic stun                         -->
+    <!-- ============================================================ -->
+    <!-- VERIFY: RA3 stun is usually done via AttributeModifier with SPEED/RATE_OF_FIRE = 0; check vanilla "AttributeModifier_Stunned"-style entries -->
+    <AttributeModifier
+        id="JapanKitsuneShrinePsionicStun"
+        Category="STUN"
+        Duration="1s"
+        StackingLimit="1">
+        <Modifier Type="SPEED" Value="0%" />
+        <Modifier Type="RATE_OF_FIRE" Value="0%" />
+        <ModelCondition>USER_1</ModelCondition> <!-- VERIFY: model condition used by vanilla stun FX on infantry -->
+    </AttributeModifier>
+
+    <!-- ============================================================ -->
+    <!--  Weapon: psionic pulse (every 4 s, radius 250, infantry only) -->
+    <!-- ============================================================ -->
+    <WeaponTemplate
+        id="JapanKitsuneShrineWeapon"
+        Name="JapanKitsuneShrineWeapon"
+        AttackRange="250.0"
+        MinimumAttackRange="0.0"
+        WeaponSpeed="999999.0"
+        RadiusDamageAffects="ENEMIES"
+        ClipSize="1"
+        AcceptableAimDelta="180d"
+        FireFX="FX_JapanKitsuneShrinePsionicPulse"
+        FireSound="JapanNanoSwarmHive_ShieldOn"
+        AntiMask="ANTI_GROUND">
+        <!-- VERIFY: FireFX - reuse a vanilla Empire psionic FX (e.g. Yuriko "FX_YurikoPsionicBlast") tinted turquoise/white -->
+        <!-- VERIFY: FireSound - reuse a vanilla Nanoswarm Hive / Yuriko sound event name -->
+        <FiringDuration>0.1s</FiringDuration>
+        <ClipReloadTime MinSeconds="4.0s" MaxSeconds="4.0s" />
+        <PreAttackDelay MinSeconds="0.3s" MaxSeconds="0.3s" />
+        <Nuggets>
+            <!-- Damage centred on the shrine, so every enemy infantry unit in 250 is hit -->
+            <DamageNugget
+                Damage="80.0"
+                Radius="250.0"
+                DamageTaperOff="0.0"
+                DamageType="SNIPER"
+                DeathType="NORMAL"
+                DamageFXType="JAPAN_PSIONIC"
+                DamageArcInsideRadius="360d"
+                OriginatesFromShooter="true"> <!-- VERIFY: DamageType/DamageFXType names (Yuriko uses a psionic damage type) -->
+                <SpecialObjectFilter Rule="NONE" Relationship="ENEMIES" Include="INFANTRY" />
+            </DamageNugget>
+            <!-- 1 s stun -->
+            <AttributeModifierNugget
+                AttributeModifierName="JapanKitsuneShrinePsionicStun"
+                Radius="250.0"
+                OriginatesFromShooter="true">
+                <SpecialObjectFilter Rule="NONE" Relationship="ENEMIES" Include="INFANTRY" />
+            </AttributeModifierNugget>
+        </Nuggets>
+    </WeaponTemplate>
+
+    <!-- ============================================================ -->
+    <!--  Tower: JapanKitsuneShrine (copy of JapanNanoSwarmHive)        -->
+    <!-- ============================================================ -->
+    <GameObject
+        id="JapanKitsuneShrine"
+        inheritFrom="BaseStructure"
+        Side="Japan"
+        EditorSorting="STRUCTURE"
+        KindOf="PRELOAD STRUCTURE SELECTABLE IMMOBILE SCORE FS_BASE_DEFENSE CAN_ATTACK DEFENSIVE_STRUCTURE"
+        BuildCost="900"
+        BuildTime="14"
+        CommandSet="JapanKitsuneShrineCommandSet"
+        EnergyProduction="-4"
+        ThreatLevel="6.0"
+        VisionRange="350.0"
+        ShroudClearingRange="350.0"
+        RadarPriority="STRUCTURE"
+        BuildFadeInOnCreateTimeSeconds="0.5s"
+        CommandPoints="0"
+        SelectPortrait="Portrait_JapanNanoSwarmHive"
+        ButtonImage="Button_JapanNanoSwarmHive"
+        UnitCategory="BASEDEFENSE">
+        <!-- VERIFY: EnergyProduction - check whether vanilla JapanNanoSwarmHive consumes power; set to 0 if not -->
+        <!-- VERIFY: SelectPortrait / ButtonImage names from vanilla JapanNanoSwarmHive -->
+        <!-- Note: BuildCost/BuildTime are effectively paid on the nanocore (JapanKitsuneShrineNanocore) -->
+        <DisplayName>NAME:JapanKitsuneShrine</DisplayName>
+        <Description>DESC:JapanKitsuneShrine</Description>
+        <TypeDescription>TYPE:JapanKitsuneShrine</TypeDescription>
+
+        <ArmorSet
+            Armor="JapanBaseDefenseArmor"
+            DamageFX="StructureDamageFXNoShake" /> <!-- VERIFY: armor name used by vanilla Empire base defences -->
+
+        <WeaponSetUpdate
+            id="ModuleTag_WeaponSetUpdate">
+            <WeaponSlotHardpoint
+                ID="1">
+                <Weapon
+                    Ordering="PRIMARY_WEAPON"
+                    Template="JapanKitsuneShrineWeapon" />
+            </WeaponSlotHardpoint>
+        </WeaponSetUpdate>
+
+        <Draws>
+            <ScriptedModelDraw
+                id="ModuleTag_Draw"
+                OkToChangeModelColor="true"
+                ExtraPublicBone="FXBONE01"
+                Scale="0.85">
+                <!-- VERIFY: model/animation names of vanilla Nanoswarm Hive (JBNanoSwarmHive_*) -->
+                <ModelConditionState
+                    ParseCondStateType="PARSE_DEFAULT">
+                    <Model Name="JBNanoSwrm_SKN" />
+                </ModelConditionState>
+                <ModelConditionState
+                    ParseCondStateType="PARSE_NORMAL"
+                    ConditionsYes="REALLYDAMAGED">
+                    <Model Name="JBNanoSwrm_D1" /> <!-- VERIFY -->
+                </ModelConditionState>
+                <ModelConditionState
+                    ParseCondStateType="PARSE_NORMAL"
+                    ConditionsYes="RUBBLE">
+                    <Model Name="JBNanoSwrm_D2" /> <!-- VERIFY -->
+                </ModelConditionState>
+                <AnimationState
+                    ParseCondStateType="PARSE_DEFAULT">
+                    <Animation
+                        AnimationName="JBNanoSwrm_IDLA"
+                        AnimationMode="LOOP" /> <!-- VERIFY -->
+                </AnimationState>
+                <AnimationState
+                    ParseCondStateType="PARSE_NORMAL"
+                    ConditionsYes="UNPACKING">
+                    <Animation
+                        AnimationName="JBNanoSwrm_BLDA"
+                        AnimationMode="ONCE" /> <!-- VERIFY: unpack/build-up animation -->
+                </AnimationState>
+                <AnimationState
+                    ParseCondStateType="PARSE_NORMAL"
+                    ConditionsYes="FIRING_A">
+                    <Animation
+                        AnimationName="JBNanoSwrm_ATKA"
+                        AnimationMode="ONCE" /> <!-- VERIFY: activation animation of the hive -->
+                    <Script>
+                        CurDrawableShowSubObject("FX_Ring")
+                    </Script> <!-- VERIFY: sub-object name -->
+                </AnimationState>
+            </ScriptedModelDraw>
+        </Draws>
+
+        <Behaviors>
+            <AIUpdate
+                id="ModuleTag_AI"
+                AILuaEventsList="BaseDefenseFunctions"
+                AutoAcquireEnemiesWhenIdle="YES"
+                MoodAttackCheckRate="500"> <!-- VERIFY: AILuaEventsList name -->
+                <UnitAITargetChooserData
+                    CanPickDynamicTargets="true"
+                    TargetingCompareList="DefenseTargetingCompareList"
+                    SympathyRange="250.0" /> <!-- VERIFY -->
+            </AIUpdate>
+
+            <!-- Stealth detection, radius 350 -->
+            <StealthDetectorUpdate
+                id="ModuleTag_StealthDetector"
+                DetectionRange="350.0"
+                DetectionRate="1s"
+                CanDetectWhileGarrisoned="false"
+                CanDetectWhileContained="false">
+                <ExtraRequiredKindOf></ExtraRequiredKindOf>
+            </StealthDetectorUpdate>
+
+            <!-- Visual: idle turquoise aura -->
+            <FXListBehavior
+                id="ModuleTag_FXList">
+                <Event
+                    Index="onCreation"
+                    FX="FX_JapanNanoSwarmHiveIdle" /> <!-- VERIFY: vanilla idle FX of the hive, tint turquoise -->
+            </FXListBehavior>
+
+            <StructureCollapseUpdate
+                id="ModuleTag_Collapse"
+                MinCollapseDelay="0s"
+                MaxCollapseDelay="0s"
+                CollapseDamping=".5"
+                MaxShudder="1.4"
+                MinBurstDelay="250"
+                MaxBurstDelay="800"
+                BigBurstFrequency="4"
+                CrushingWeaponName="CrushingWeapon">
+                <OCL
+                    Type="FINAL">
+                    <OCL>OCL_JapanStructureDebris</OCL> <!-- VERIFY -->
+                </OCL>
+                <FXList
+                    Type="FINAL">
+                    <FXList>FX_JapanStructureDeath_Small</FXList> <!-- VERIFY -->
+                </FXList>
+            </StructureCollapseUpdate>
+
+            <DestroyDie
+                id="ModuleTag_DestroyDie" />
+
+            <SpecialPowerModule
+                id="ModuleTag_SellPower"
+                SpecialPowerTemplate="SpecialPowerSell" /> <!-- VERIFY: vanilla sell special power name -->
+        </Behaviors>
+
+        <Body>
+            <ActiveBody
+                id="ModuleTag_Body"
+                MaxHealth="1800.0"
+                InitialHealth="1800.0" />
+        </Body>
+
+        <Geometry
+            IsSmall="false">
+            <Shape
+                Type="CYLINDER"
+                MajorRadius="28.0"
+                Height="45.0" />
+        </Geometry>
+
+        <AI>
+            <AIPersonality>
+                <!-- VERIFY: vanilla Empire base defences use AIPersonality with base defence AISkirmish data -->
+            </AIPersonality>
+        </AI>
+
+        <!-- Empire: built as a nanocore (JapanKitsuneShrineNanocore) from the Construction Yard -->
+        <ObjectPrerequisites>
+            <GameDependency>
+                <RequiredObject>JapanConstructionYard</RequiredObject> <!-- VERIFY: vanilla Empire Construction Yard id -->
+            </GameDependency>
+        </ObjectPrerequisites>
+
+        <Sounds>
+            <SoundSelect>JapanNanoSwarmHive_Select</SoundSelect> <!-- VERIFY -->
+            <SoundOnDamaged>BuildingDamagedStateLight</SoundOnDamaged> <!-- VERIFY -->
+            <SoundOnReallyDamaged>BuildingDamagedStateHeavy</SoundOnReallyDamaged> <!-- VERIFY -->
+            <SoundDie>JapanStructureDie_Small</SoundDie> <!-- VERIFY -->
+        </Sounds>
+    </GameObject>
+
+    <!-- ============================================================ -->
+    <!--  Nanocore: JapanKitsuneShrineNanocore (copy of Empire core)    -->
+    <!--  Built at the Construction Yard, drives out, unpacks into      -->
+    <!--  JapanKitsuneShrine. Pays BuildCost/BuildTime.                 -->
+    <!-- ============================================================ -->
+    <GameObject
+        id="JapanKitsuneShrineNanocore"
+        inheritFrom="BaseVehicle"
+        Side="Japan"
+        EditorSorting="UNIT"
+        KindOf="PRELOAD SELECTABLE CAN_CAST_REFLECTIONS SCORE VEHICLE NANOCORE"
+        BuildCost="900"
+        BuildTime="14"
+        CommandSet="JapanKitsuneShrineNanocoreCommandSet"
+        ThreatLevel="1.0"
+        VisionRange="200.0"
+        ShroudClearingRange="200.0"
+        RadarPriority="UNIT"
+        CommandPoints="0"
+        SelectPortrait="Portrait_JapanNanoSwarmHive"
+        ButtonImage="Button_JapanNanoSwarmHive"
+        UnitCategory="VEHICLE">
+        <!-- VERIFY: inheritFrom of vanilla Empire cores (may be "BaseJapanNanocore"), KindOf flag "NANOCORE" -->
+        <DisplayName>NAME:JapanKitsuneShrineNanocore</DisplayName>
+        <Description>DESC:JapanKitsuneShrineNanocore</Description>
+        <TypeDescription>TYPE:JapanKitsuneShrineNanocore</TypeDescription>
+
+        <ArmorSet
+            Armor="JapanNanocoreArmor"
+            DamageFX="VehicleDamageFX" /> <!-- VERIFY -->
+
+        <Draws>
+            <ScriptedModelDraw
+                id="ModuleTag_Draw"
+                OkToChangeModelColor="true">
+                <ModelConditionState
+                    ParseCondStateType="PARSE_DEFAULT">
+                    <Model Name="JUNanoCore_SKN" /> <!-- VERIFY: vanilla Empire defence nanocore model -->
+                </ModelConditionState>
+                <AnimationState
+                    ParseCondStateType="PARSE_DEFAULT">
+                    <Animation
+                        AnimationName="JUNanoCore_IDLA"
+                        AnimationMode="LOOP" /> <!-- VERIFY -->
+                </AnimationState>
+                <AnimationState
+                    ParseCondStateType="PARSE_NORMAL"
+                    ConditionsYes="MOVING">
+                    <Animation
+                        AnimationName="JUNanoCore_MOVA"
+                        AnimationMode="LOOP" /> <!-- VERIFY -->
+                </AnimationState>
+                <AnimationState
+                    ParseCondStateType="PARSE_NORMAL"
+                    ConditionsYes="UNPACKING">
+                    <Animation
+                        AnimationName="JUNanoCore_UNPA"
+                        AnimationMode="ONCE" /> <!-- VERIFY -->
+                </AnimationState>
+            </ScriptedModelDraw>
+        </Draws>
+
+        <Behaviors>
+            <AIUpdate
+                id="ModuleTag_AI"
+                AutoAcquireEnemiesWhenIdle="NO" />
+
+            <PhysicsBehavior
+                id="ModuleTag_Physics"
+                GravityMult="1.0" />
+
+            <!-- Unpack into the tower: same mechanism as vanilla Empire defence cores -->
+            <!-- VERIFY: vanilla module/special power used by Empire cores (e.g. SpecialPower_JapanNanocoreUnpack + ReplaceSelfUpgrade-style module) -->
+            <SpecialPowerModule
+                id="ModuleTag_UnpackPower"
+                SpecialPowerTemplate="SpecialPower_JapanNanocoreUnpack"
+                UpdateModuleStartsAttack="true" />
+            <UnpackIntoStructureSpecialPowerUpdate
+                id="ModuleTag_UnpackUpdate"
+                SpecialPowerTemplate="SpecialPower_JapanNanocoreUnpack"
+                StructureToUnpack="JapanKitsuneShrine"
+                UnpackTime="3s"
+                UnpackFX="FX_JapanNanocoreUnpack" /> <!-- VERIFY: module + attribute names, FX name -->
+
+            <DestroyDie
+                id="ModuleTag_DestroyDie" />
+            <FXListDie
+                id="ModuleTag_DeathFX"
+                DeathFX="FX_JapanNanocoreDie" /> <!-- VERIFY -->
+        </Behaviors>
+
+        <LocomotorSet
+            Locomotor="JapanNanocoreLocomotor"
+            Condition="NORMAL"
+            Speed="40.0" /> <!-- VERIFY: vanilla nanocore locomotor name -->
+
+        <Body>
+            <ActiveBody
+                id="ModuleTag_Body"
+                MaxHealth="800.0"
+                InitialHealth="800.0" /> <!-- VERIFY: vanilla Empire core HP -->
+        </Body>
+
+        <Geometry
+            IsSmall="true">
+            <Shape
+                Type="CYLINDER"
+                MajorRadius="12.0"
+                Height="15.0" />
+        </Geometry>
+
+        <AI>
+            <AIPersonality />
+        </AI>
+
+        <ObjectPrerequisites>
+            <GameDependency>
+                <RequiredObject>JapanConstructionYard</RequiredObject> <!-- VERIFY: vanilla Empire Construction Yard id -->
+            </GameDependency>
+        </ObjectPrerequisites>
+
+        <Sounds>
+            <SoundSelect>JapanNanocore_Select</SoundSelect> <!-- VERIFY -->
+            <SoundMoveStart>JapanNanocore_MoveStart</SoundMoveStart> <!-- VERIFY -->
+            <SoundDie>JapanNanocore_Die</SoundDie> <!-- VERIFY -->
+        </Sounds>
+    </GameObject>
+</AssetDeclaration>
