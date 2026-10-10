@@ -17,3 +17,7 @@
 ```
 
 Готовий `.jar` — у `build/libs/`. Також GitHub Actions збирає мод при кожному пуші (вкладка **Actions** → артефакт `cursedseed-jar`).
+
+## Хвиля — музичний плеєр
+
+У папці [`musicplayer/`](musicplayer/) — плеєр для телефона в стилі Spotify (PWA): улюблені, плейлисти, черга, таймер сну, своя музика з пристрою. Деталі — у [`musicplayer/README.md`](musicplayer/README.md).
