@@ -19,12 +19,16 @@ const CHIP_OF = { [BOBIK]: "vasyan:ai_chip", [KLOD]: "vasyan:klod_chip" };
 const VOICE_OF = { [BOBIK]: "vasyan", [KLOD]: "klod" }; // key in VOICE
 const COLOR = { [BOBIK]: "§b", [KLOD]: "§6" };
 const DIMENSIONS = ["minecraft:overworld", "minecraft:nether", "minecraft:the_end"];
+// names given automatically (in any language, plus the first version's); a name tag the player chose stays
+const DEFAULT_NAMES = new Set(["Васян", ...Object.values(VOICE).flatMap((c) => Object.values(c).map((l) => l.ui.name))]);
 
 // entity dynamic properties
 const OWNER = "vasyan:owner"; // id of the player the companion belongs to
 const NEXT = "vasyan:next"; // tick of the next "help" (Bobik) or useful thing (Klod)
 const QUIET = "vasyan:quiet"; // tick until which he promised to keep quiet
 const STAY = "vasyan:stay"; // true while told to stay in place
+// player dynamic property prefix: id of the player's current Bobik / Klod ("vasyan:cur_vasyan", "vasyan:cur_klod")
+const CURRENT = "vasyan:cur_";
 // world dynamic properties
 const ENABLED = "vasyan:enabled"; // false turns Bobik's pranks off (/scriptevent vasyan:toggle)
 const MAT = "vasyan:mat"; // false: no swearing (menu or /scriptevent vasyan:mat)
@@ -86,7 +90,8 @@ function setFlag(entity, prop, on) {
 
 /** @param {Player} player @param {ItemStack} item */
 function giveOrDrop(player, item) {
-  const left = container(player)?.addItem(item) ?? item;
+  const inv = container(player);
+  const left = inv ? inv.addItem(item) : item;
   if (left) player.dimension.spawnItem(left, player.location);
 }
 
@@ -176,15 +181,14 @@ function pump(player) {
   const lines = v[set][item.key];
   const i = rand(lines.length);
   const [text, ticks] = lines[i];
+  // the end of the line is scheduled first, so nothing below can leave the queue busy forever
   q.busy = true;
-  sound(who, `${ch}.${l}.${set}.${item.key}.${i + 1}`);
-  setFlag(who, "vasyan:talking", true);
-  try {
-    item.then?.();
-  } catch {}
   const subtitle = `${COLOR[who.typeId]}${v.ui.name}:§r ${wrap(text)}`;
-  const show = () => player.isValid && player.onScreenDisplay.setActionBar(subtitle);
-  show();
+  const show = () => {
+    try {
+      if (player.isValid) player.onScreenDisplay.setActionBar(subtitle);
+    } catch {}
+  };
   const refresh = system.runInterval(show, 40);
   system.runTimeout(() => {
     system.clearRun(refresh);
@@ -192,6 +196,12 @@ function pump(player) {
     q.busy = false;
     system.runTimeout(() => pump(player), 8);
   }, ticks);
+  sound(who, `${ch}.${l}.${set}.${item.key}.${i + 1}`);
+  setFlag(who, "vasyan:talking", true);
+  try {
+    item.then?.();
+  } catch {}
+  show();
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -234,6 +244,7 @@ function adopt(e, player) {
   } catch {}
   e.triggerEvent("vasyan:on_tame");
   e.setDynamicProperty(OWNER, player.id);
+  player.setDynamicProperty(CURRENT + VOICE_OF[e.typeId], e.id);
   e.setDynamicProperty(NEXT, system.currentTick + between(e.typeId === BOBIK ? BOBIK_DELAY : KLOD_DELAY));
   e.nameTag = ui(e).name;
 }
@@ -529,6 +540,7 @@ function isDark(player) {
 function torch(player) {
   const p = floorLoc(player.location);
   const dim = player.dimension;
+  if (p.y <= dim.heightRange.min || p.y >= dim.heightRange.max) return false;
   const here = dim.getBlock(p);
   const below = dim.getBlock({ x: p.x, y: p.y - 1, z: p.z });
   if (!here?.isAir || !below || below.isAir || below.isLiquid || /leaves|glass|fence|wall|slab|stairs|web|torch/.test(below.typeId)) return false;
@@ -588,10 +600,11 @@ let lastTime = -1;
 /** @param {Player} player */
 function watch(player, now) {
   const pos = afk.get(player.id);
-  if (!pos || dist(pos.at, player.location) > 0.5) {
-    afk.set(player.id, { at: { ...player.location }, since: now });
-  } else if (now - pos.since > 45 * 20) {
-    pos.since = now;
+  const rot = player.getRotation();
+  if (!pos || dist(pos.at, player.location) > 0.5 || Math.abs(rot.x - pos.rot.x) + Math.abs(rot.y - pos.rot.y) > 10) {
+    afk.set(player.id, { at: { ...player.location }, rot, since: now, said: false });
+  } else if (!pos.said && now - pos.since > 60 * 20) {
+    pos.said = true;
     react(player, "afk", 1, true);
   }
   const h = player.getComponent("minecraft:health");
@@ -611,6 +624,27 @@ function watch(player, now) {
 // ---------------------------------------------------------------------------------------------
 // Main loop: once a second
 
+/** @param {Player} player */
+function safeSpot(player) {
+  if (!player.isOnGround) return false;
+  try {
+    return !/lava|fire/.test(player.dimension.getBlock(floorLoc(player.location))?.typeId ?? "");
+  } catch {
+    return false;
+  }
+}
+
+/** Removes a companion for good, dropping whatever is in his pockets. @param {Entity} e */
+function retire(e) {
+  const bag = container(e);
+  for (let i = 0; bag && i < bag.size; i++) {
+    const it = bag.getItem(i);
+    if (it) e.dimension.spawnItem(it, e.location);
+  }
+  bag?.clearAll();
+  e.remove();
+}
+
 const lastGuard = new Map();
 system.runInterval(() => {
   const now = system.currentTick;
@@ -620,52 +654,73 @@ system.runInterval(() => {
   const nightfall = lastTime >= 0 && lastTime < 12500 && time >= 12500;
   lastTime = time;
   for (const player of world.getPlayers()) {
-    const list = owned.get(player.id) ?? [];
-    for (const e of list) {
-      if (e.nameTag !== ui(e).name) e.nameTag = ui(e).name;
-      if (e.getDynamicProperty(STAY) === true) continue;
-      // keep up with the owner even across dimensions
-      if (e.dimension.id !== player.dimension.id || dist(e.location, player.location) > LEASH) {
-        e.teleport(player.location, { dimension: player.dimension });
-      }
-    }
-    if (!list.length || player.getGameMode() === GameMode.Spectator) continue;
-    const { bobik, klod } = near(player, list);
-    watch(player, now);
-    if (nightfall && player.dimension.id === "minecraft:overworld") react(player, "night", 1, true);
-
-    if (klod && now - (lastGuard.get(player.id) ?? -1000) >= 80 && guard(player, klod)) lastGuard.set(player.id, now);
-
-    if (bobik && enabled) {
-      const next = bobik.getDynamicProperty(NEXT);
-      if (typeof next !== "number" || next > now + BOBIK_DELAY[1]) {
-        bobik.setDynamicProperty(NEXT, now + between(BOBIK_DELAY));
-      } else if (now >= next && !busy(player)) {
-        bobik.setDynamicProperty(NEXT, now + between(BOBIK_DELAY));
-        if (!quiet(bobik)) {
-          bobikHelp(player, bobik, klod);
-        } else if (chance(0.1)) {
-          say(player, bobik, "quiet_broke", { important: true });
-          bobikHelp(player, bobik, klod);
-        }
-      }
-    }
-
-    if (klod) {
-      const next = klod.getDynamicProperty(NEXT);
-      if (typeof next !== "number" || next > now + KLOD_DELAY[1]) {
-        klod.setDynamicProperty(NEXT, now + between(KLOD_DELAY));
-      } else if (now >= next && !busy(player)) {
-        klod.setDynamicProperty(NEXT, now + between(KLOD_DELAY));
-        const key = klodUseful(player, klod, bobik, !quiet(klod));
-        if (key && !quiet(klod)) {
-          say(player, klod, key);
-          if (key === "fix_vasyan" && bobik && chance(0.5)) say(player, bobik, "reply_klod", { important: true });
-        }
-      }
+    try {
+      tickPlayer(player, owned.get(player.id) ?? [], now, enabled, nightfall);
+    } catch (err) {
+      console.warn(`[Bobik & Klod] ${err}`);
     }
   }
 }, 20);
+
+/** @param {Player} player @param {Entity[]} all @param {number} now @param {boolean} enabled @param {boolean} nightfall */
+function tickPlayer(player, all, now, enabled, nightfall) {
+  const hp = player.getComponent("minecraft:health");
+  if (!hp || hp.currentValue <= 0 || player.getGameMode() === GameMode.Spectator) return;
+  const list = [];
+  for (const e of all) {
+    // one Bobik and one Klod per player: an older one that turns up again (unloaded chunk) is retired
+    const cur = player.getDynamicProperty(CURRENT + VOICE_OF[e.typeId]);
+    if (typeof cur !== "string") player.setDynamicProperty(CURRENT + VOICE_OF[e.typeId], e.id);
+    else if (cur !== e.id) {
+      retire(e);
+      continue;
+    }
+    list.push(e);
+    if ((!e.nameTag || DEFAULT_NAMES.has(e.nameTag)) && e.nameTag !== ui(e).name) e.nameTag = ui(e).name;
+    if (!busy(player) && e.getProperty("vasyan:talking") === true) setFlag(e, "vasyan:talking", false);
+    if (!dancing.has(e.id) && e.getProperty("vasyan:dancing") === true) setFlag(e, "vasyan:dancing", false);
+    if (e.getDynamicProperty(STAY) === true) continue;
+    // keep up with the owner, but only to a safe spot (not mid-fall over the void, not into lava)
+    if ((e.dimension.id !== player.dimension.id || dist(e.location, player.location) > LEASH) && safeSpot(player)) {
+      e.teleport(player.location, { dimension: player.dimension });
+    }
+  }
+  if (!list.length) return;
+  const { bobik, klod } = near(player, list);
+  watch(player, now);
+  if (nightfall && player.dimension.id === "minecraft:overworld") react(player, "night", 1, true);
+
+  if (klod && now - (lastGuard.get(player.id) ?? -1000) >= 80 && guard(player, klod)) lastGuard.set(player.id, now);
+
+  if (bobik && enabled) {
+    const next = bobik.getDynamicProperty(NEXT);
+    if (typeof next !== "number" || next > now + BOBIK_DELAY[1]) {
+      bobik.setDynamicProperty(NEXT, now + between(BOBIK_DELAY));
+    } else if (now >= next && !busy(player)) {
+      bobik.setDynamicProperty(NEXT, now + between(BOBIK_DELAY));
+      if (!quiet(bobik)) {
+        bobikHelp(player, bobik, klod);
+      } else if (chance(0.1)) {
+        say(player, bobik, "quiet_broke", { important: true });
+        bobikHelp(player, bobik, klod);
+      }
+    }
+  }
+
+  if (klod) {
+    const next = klod.getDynamicProperty(NEXT);
+    if (typeof next !== "number" || next > now + KLOD_DELAY[1]) {
+      klod.setDynamicProperty(NEXT, now + between(KLOD_DELAY));
+    } else if (now >= next && !busy(player)) {
+      klod.setDynamicProperty(NEXT, now + between(KLOD_DELAY));
+      const key = klodUseful(player, klod, bobik, !quiet(klod));
+      if (key && !quiet(klod)) {
+        say(player, klod, key);
+        if (key === "fix_vasyan" && bobik && chance(0.5)) say(player, bobik, "reply_klod", { important: true });
+      }
+    }
+  }
+}
 
 // ---------------------------------------------------------------------------------------------
 // Events
@@ -699,6 +754,7 @@ world.afterEvents.entityHurt.subscribe((ev) => {
   }
   // hitting a mob near Bobik: sometimes he feels sorry for the mob and heals it
   if (world.getDynamicProperty(ENABLED) === false || target.typeId === BOBIK || target.typeId === KLOD) return;
+  if (!target.isValid || !((target.getComponent("minecraft:health")?.currentValue ?? 0) > 0)) return;
   const now = system.currentTick;
   if (now - (lastMobHeal.get(attacker.id) ?? -1000) < 300 || !chance(0.25)) return;
   const { bobik } = near(attacker);
@@ -723,17 +779,28 @@ world.afterEvents.playerSpawn.subscribe((ev) => {
   system.runTimeout(() => player.isValid && react(player, "respawn", 1, true), 60);
 });
 
+const lastDiamonds = new Map();
 world.afterEvents.playerBreakBlock.subscribe((ev) => {
-  if (ev.brokenBlockPermutation.type.id.includes("diamond_ore")) react(ev.player, "diamond_ore", 1, true);
+  if (!ev.brokenBlockPermutation.type.id.includes("diamond_ore")) return;
+  const now = system.currentTick;
+  if (now - (lastDiamonds.get(ev.player.id) ?? -10000) < 60 * 20) return;
+  lastDiamonds.set(ev.player.id, now);
+  react(ev.player, "diamond_ore", 1, true);
 });
 
 world.afterEvents.playerDimensionChange.subscribe((ev) => {
   const player = ev.player;
+  try {
+    for (const e of ev.fromDimension.getEntities({ location: ev.fromLocation, maxDistance: LEASH + 8 })) {
+      if ((e.typeId !== BOBIK && e.typeId !== KLOD) || e.getDynamicProperty(OWNER) !== player.id) continue;
+      if (e.getDynamicProperty(STAY) !== true) e.teleport(ev.toLocation, { dimension: ev.toDimension });
+    }
+  } catch {}
   system.runTimeout(() => player.isValid && react(player, "dimension", 1, true), 80);
 });
 
 world.afterEvents.weatherChange.subscribe((ev) => {
-  if (ev.previousWeather !== "Clear" || ev.newWeather === "Clear" || ev.dimension !== "minecraft:overworld") return;
+  if (ev.previousWeather !== "Clear" || ev.newWeather === "Clear" || !ev.dimension.endsWith("overworld")) return;
   for (const player of world.getPlayers()) {
     if (player.dimension.id === "minecraft:overworld") react(player, "rain", 1, true);
   }
@@ -766,14 +833,19 @@ function toggleLang(player, who) {
   say(player, who, "lang", { important: true });
 }
 
+const dancing = new Set();
 /** @param {Player} player @param {Entity} who */
 function dance(player, who) {
+  if (dancing.has(who.id)) return;
   say(player, who, "dance", { important: true });
+  dancing.add(who.id);
   setFlag(who, "vasyan:dancing", true);
   let n = 0;
+  const id = who.id;
   const beat = system.runInterval(() => {
     if (!who.isValid || ++n > 12) {
       system.clearRun(beat);
+      dancing.delete(id);
       setFlag(who, "vasyan:dancing", false);
       return;
     }
