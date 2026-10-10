@@ -15456,6 +15456,94 @@
      "stream": true
     }
    ]
+  },
+  "vasyan.sfx.airhorn": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/sfx/airhorn",
+     "volume": 0.8
+    }
+   ]
+  },
+  "vasyan.sfx.boing": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/sfx/boing",
+     "volume": 0.8
+    }
+   ]
+  },
+  "vasyan.sfx.boom": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/sfx/boom",
+     "volume": 0.8
+    }
+   ]
+  },
+  "vasyan.sfx.crickets": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/sfx/crickets",
+     "volume": 0.8
+    }
+   ]
+  },
+  "vasyan.sfx.ding": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/sfx/ding",
+     "volume": 0.8
+    }
+   ]
+  },
+  "vasyan.sfx.drumroll": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/sfx/drumroll",
+     "volume": 0.8
+    }
+   ]
+  },
+  "vasyan.sfx.sad": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/sfx/sad",
+     "volume": 0.8
+    }
+   ]
+  },
+  "vasyan.sfx.scratch": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/sfx/scratch",
+     "volume": 0.8
+    }
+   ]
   }
  }
 }

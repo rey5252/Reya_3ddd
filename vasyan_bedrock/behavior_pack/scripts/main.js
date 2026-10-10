@@ -172,6 +172,38 @@ function say(player, who, key, opts = {}) {
   return true;
 }
 
+// Comedy sound effects (tools/gen_sfx.py) around some lines: [before the line, after it].
+/** @type {Record<string, [string?, string?]>} */
+const SFX = {
+  roast: [undefined, "boom"],
+  angry: [undefined, "boom"],
+  undo: [undefined, "ding"],
+  fix_vasyan: [undefined, "ding"],
+  cmd_found: ["drumroll"],
+  cmd_unknown: [undefined, "crickets"],
+  cmd_misunderstood: ["scratch"],
+  dance: ["airhorn"],
+};
+/** Bobik's own: a failure gets the sad trombone, a prank sometimes a boing. @type {Record<string, [string?, string?]>} */
+const BOBIK_SFX = {
+  cmd_cant: [undefined, "sad"],
+  respawn: [undefined, "sad"],
+  give_back_empty: [undefined, "sad"],
+};
+const BOINGS = new Set(["dig", "house", "steal", "sort", "eat", "heal", "shortcut", "push", "web", "friend", "friend_zombie", "garden"]);
+// how long to wait for an effect: before the voice starts / before the next line
+const SFX_TICKS = { scratch: 10, airhorn: 22, drumroll: 48, boom: 22, ding: 10, crickets: 44, sad: 46 };
+
+/** @param {Entity} who @param {string} [key] @returns {[string?, string?]} */
+function sfxFor(who, key) {
+  if (!key) return [];
+  if (who.typeId === BOBIK) {
+    if (BOBIK_SFX[key]) return BOBIK_SFX[key];
+    if (BOINGS.has(key) && chance(0.5)) return ["boing"];
+  }
+  return SFX[key] ?? [];
+}
+
 /** @param {Player} player */
 function pump(player) {
   const q = queueOf(player);
@@ -197,6 +229,9 @@ function pump(player) {
     [text, ticks] = lines[i];
     sid = `${ch}.${l}.${set}.${item.key}.${i + 1}`;
   }
+  const [before, after] = sfxFor(who, item.key);
+  const lead = before ? (SFX_TICKS[before] ?? 0) : 0;
+  const tail = after ? (SFX_TICKS[after] ?? 0) : 0;
   // the end of the line is scheduled first, so nothing below can leave the queue busy forever
   q.busy = true;
   const subtitle = `${COLOR[who.typeId]}${v.ui.name}:§r ${wrap(text)}`;
@@ -205,19 +240,30 @@ function pump(player) {
       if (player.isValid) player.onScreenDisplay.setActionBar(subtitle);
     } catch {}
   };
-  const refresh = system.runInterval(show, 40);
+  /** @type {number | undefined} */
+  let refresh;
   system.runTimeout(() => {
-    system.clearRun(refresh);
+    if (refresh !== undefined) system.clearRun(refresh);
     setFlag(who, "vasyan:talking", false);
-    q.busy = false;
-    system.runTimeout(() => pump(player), 8);
-  }, ticks);
-  sound(who, sid);
-  setFlag(who, "vasyan:talking", true);
-  try {
-    item.then?.();
-  } catch {}
-  show();
+    if (after && who.isValid) sound(who, `vasyan.sfx.${after}`);
+    system.runTimeout(() => {
+      q.busy = false;
+      pump(player);
+    }, 8 + tail);
+  }, lead + ticks);
+  const start = () => {
+    if (!who.isValid) return;
+    refresh = system.runInterval(show, 40);
+    sound(who, sid);
+    setFlag(who, "vasyan:talking", true);
+    try {
+      item.then?.();
+    } catch {}
+    show();
+  };
+  if (before) sound(who, `vasyan.sfx.${before}`);
+  if (lead) system.runTimeout(start, lead);
+  else start();
 }
 
 // ---------------------------------------------------------------------------------------------

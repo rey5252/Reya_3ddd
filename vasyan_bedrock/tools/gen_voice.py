@@ -146,13 +146,25 @@ def main():
                     line(f"dialog.{lang}.{s}.{di}.{si}", rel, text, lang, speaker)
                     steps.append([speaker, text, rel])
                 dialogs_js[lang][s].append(steps)
-    print(f"{len(defs)} lines, {len(jobs)} to voice")
+    # the comedy sound effects made by tools/gen_sfx.py: short, loaded once, a bit quieter than the voices
+    sfx_dir = os.path.join(SOUNDS, "sfx")
+    for f in sorted(os.listdir(sfx_dir)) if os.path.isdir(sfx_dir) else []:
+        if f.endswith(".ogg"):
+            defs[f"vasyan.sfx.{f[:-4]}"] = {
+                "category": "neutral",
+                "min_distance": 4.0,
+                "max_distance": 32.0,
+                "sounds": [{"name": f"sounds/sfx/{f[:-4]}", "volume": 0.8}],
+            }
+    print(f"{len(defs)} sounds, {len(jobs)} lines to voice")
     with ThreadPoolExecutor(max_workers=os.cpu_count() or 4) as pool:
         for (rel, h, _), seconds in zip(jobs, pool.map(voice, [j[2] for j in jobs])):
             new_cache[rel] = {"hash": h, "seconds": seconds}
     # drop sounds of lines that no longer exist
     keep = {os.path.normpath(os.path.join(ROOT, "resource_pack", rel + ".ogg")) for rel in new_cache}
     for dirpath, _, files in os.walk(SOUNDS):
+        if os.path.normpath(dirpath).startswith(os.path.normpath(os.path.join(SOUNDS, "sfx"))):
+            continue  # sound effects are not voice lines
         for f in files:
             p = os.path.normpath(os.path.join(dirpath, f))
             if f.endswith(".ogg") and p not in keep:
