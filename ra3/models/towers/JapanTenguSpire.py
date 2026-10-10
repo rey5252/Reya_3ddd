@@ -76,7 +76,7 @@ def place(mesh, yaw, r=0.0, y=0.0, tilt=0.0):
 def roof(r_mid, r_tip, y_eave, y_top, r_top, lift, thick=0.1, nu=64, nv=8):
     """Curved pagoda roof with four upturned corners on the diagonals.
 
-    Returns (top_mesh, rim_mesh, under_mesh, tip_points).
+    Returns (top_mesh, rim_mesh, under_mesh, tip_points, rib_mesh).
     """
     th = np.linspace(0, 2 * math.pi, nu, endpoint=False)
     c = (1 + np.cos(4 * (th - math.pi / 4))) / 2          # 1 at diagonals, 0 on axes
@@ -99,11 +99,26 @@ def roof(r_mid, r_tip, y_eave, y_top, r_top, lift, thick=0.1, nu=64, nv=8):
     us = np.linspace(1, 0.08, 5)
     under = grid(np.stack([ring(r_top + (R * 0.995 - r_top) * t, surf_y(t) - thick) for t in us], 1),
                  orient="down")
+    # raised ridge ribs: on the diagonals (to the tips) and on the axes
+    ribs = []
+    for k in range(8):
+        a0 = math.pi / 4 * k + math.pi / 4
+        cc = (1 + math.cos(4 * (a0 - math.pi / 4))) / 2
+        Rk, Lk = r_mid + (r_tip - r_mid) * cc ** 2, lift * cc ** 4
+        rows = []
+        for t in np.linspace(0.02, 0.97, nv):
+            rad = r_top + (Rk - r_top) * t
+            y = y_top - drop * (1 - (1 - t) ** 2) + Lk * t ** 3 + 0.014
+            w = 0.022 + 0.012 * t
+            rows.append([(rad * math.cos(a0) - s * w * math.sin(a0), y, rad * math.sin(a0) + s * w * math.cos(a0))
+                         for s in (-1, 1)])
+        ribs.append(grid(np.array(rows).transpose(1, 0, 2), wrap=False, orient="up"))
+    ribs = merge(*ribs)
     tips = []
     for k in range(4):
         a = math.pi / 4 + k * math.pi / 2
         tips.append((r_tip * 1.01 * math.cos(a), y_top - drop + lift - thick * 0.35, r_tip * 1.01 * math.sin(a)))
-    return top, rim, under, tips
+    return top, rim, under, tips, ribs
 
 
 def band(r, y0, h, seg=48):
@@ -197,10 +212,11 @@ def build_tower():
     ]
     tips_all = []
     for (rm, rt, ye, yt, rtp, lift, th, nu) in roofs:
-        top, rim, under, tips = roof(rm, rt, ye, yt, rtp, lift, th, nu, 7)
+        top, rim, under, tips, ribs = roof(rm, rt, ye, yt, rtp, lift, th, nu, 7)
         base.add(top, "white")
         base.add(rim, "crimson")
         base.add(under, "black")
+        base.add(ribs, "panel")
         base.add(disc(rtp, 24).translate(0, yt, 0), "white")
         base.add(torus(rtp, 0.035, 24, 6).translate(0, yt, 0), "crimson")
         tips_all += tips
@@ -304,10 +320,10 @@ def build_nanocore():
     base.add(box(1.3, 0.12, 1.0, bevel=0.1).translate(-0.4, H1 + 0.06, 0), "black")
     base.add(cylinder(0.55, 0.36, 24).translate(-0.4, H1 + 0.12, 0), "white")
     base.add(band(0.56, H1 + 0.3, 0.06, 24).translate(-0.4, 0, 0), "crimson")
-    top, rim, under, tips = roof(0.62, 0.82, H1 + 0.58, H1 + 0.8, 0.18, 0.1, 0.06, 24, 4)
+    top, rim, under, tips, _ = roof(0.62, 0.82, H1 + 0.58, H1 + 0.8, 0.18, 0.1, 0.06, 24, 4)
     for mesh, mat in ((top, "white"), (rim, "crimson"), (under, "black")):
         base.add(mesh.translate(-0.4, 0, 0), mat)
-    top, rim, under, tips2 = roof(0.42, 0.56, H1 + 0.86, H1 + 1.0, 0.12, 0.08, 0.05, 20, 4)
+    top, rim, under, tips2, _ = roof(0.42, 0.56, H1 + 0.86, H1 + 1.0, 0.12, 0.08, 0.05, 20, 4)
     for mesh, mat in ((top, "white"), (rim, "crimson"), (under, "black")):
         base.add(mesh.translate(-0.4, 0, 0), mat)
     for p in tips + tips2:

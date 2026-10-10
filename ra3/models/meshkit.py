@@ -139,6 +139,9 @@ def box(w=1.0, h=1.0, d=1.0, bevel=0.0) -> Mesh:
 def lathe(profile, segments=24, start_deg=0.0, end_deg=360.0, smooth=True) -> Mesh:
     """Revolve a profile [(radius, y), ...] (bottom to top) around the Y axis.
 
+    Point order sets the facing: for a closed ring (a wall) go up the outer face, across the top,
+    then down the inner face; the reverse order turns the surface inside out.
+
     Use radius 0 at the ends to close the shape. smooth=False gives hard rings (faceted).
     """
     prof = [(float(r), float(y)) for r, y in profile]
@@ -346,7 +349,8 @@ class Node:
         return self
 
     def node(self, name: str, translation=(0, 0, 0)) -> "Node":
-        """Child node; its geometry is expressed relative to `translation` (its pivot)."""
+        """Child node. `translation` is its pivot in WORLD coordinates; meshes passed to add() are
+        also in world coordinates (save() converts them to node-local space)."""
         n = Node(self.model, name, translation, self)
         self.children.append(n)
         self.model._register(n)

@@ -146,6 +146,15 @@ base = m.node("Base")
 # --- foundation plate with hazard edge band, inset deck and rivets
 base.add(foundation_plate(), "plate")
 base.add(box(5.5, 0.03, 5.5, bevel=0.3).translate(0, PLATE_TOP + 0.015, 0), "plate_top")
+# panel grooves on the deck (inner square border + seam grid, as in the concept)
+grooves = []
+GY = PLATE_TOP + 0.031
+for k in range(4):
+    grooves.append(box(0.04, 0.006, 5.0).translate(2.5, GY, 0).rotate(0, 90 * k, 0))
+for c in (-0.9, 0.9):
+    grooves.append(box(5.0, 0.006, 0.035).translate(0, GY, c))
+    grooves.append(box(0.035, 0.006, 5.0).translate(c, GY, 0))
+base.add(merge(*grooves), "haz_k")
 hk, hy = plate_side_hazard()
 base.add(hk, "haz_k")
 base.add(hy, "haz_y")
@@ -170,11 +179,11 @@ base.add(wy, "haz_y")
 
 # --- two courses of sandbags on the wall crown
 bags = {"bag": [], "bag_dark": []}
-for layer, (n, r, y, off) in enumerate(((24, 2.2, WALL_TOP + 0.1, 0.0), (24, 2.16, WALL_TOP + 0.3, 0.5))):
+for layer, (n, r, y, off) in enumerate(((24, 2.2, WALL_TOP + 0.12, 0.0), (24, 2.16, WALL_TOP + 0.35, 0.5))):
     for i in range(n):
         th = 2 * math.pi * (i + off) / n + rng.uniform(-0.03, 0.03)
         sc = rng.uniform(0.92, 1.06)
-        bag = rounded_box(0.62 * sc, 0.22 * rng.uniform(0.92, 1.08), 0.4 * sc)
+        bag = rounded_box(0.62 * sc, 0.26 * rng.uniform(0.92, 1.08), 0.42 * sc)
         bag.rotate(rng.uniform(-4, 4), -math.degrees(th) + 90 + rng.uniform(-7, 7), rng.uniform(-4, 4))
         bag.translate(r * math.cos(th), y + rng.uniform(-0.015, 0.015), r * math.sin(th))
         bags["bag" if rng.rand() < 0.65 else "bag_dark"].append(bag)

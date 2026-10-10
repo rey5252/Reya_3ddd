@@ -114,7 +114,7 @@ m.material("chrome", rgb("#c4d2e0"), metallic=0.92, roughness=0.22)
 m.material("steel", rgb("#7c91aa"), metallic=0.8, roughness=0.35)
 m.material("dark", rgb("#2a3850"), metallic=0.5, roughness=0.5)
 m.material("seam", rgb("#4a5d76"), metallic=0.4, roughness=0.6)
-m.material("vent", rgb("#5fd8ff"), roughness=0.3, emissive=rgb("#3fc8f0", 1.25))
+m.material("vent", rgb("#3fc8f0"), roughness=0.3, emissive=rgb("#22b5ee", 1.7))
 m.material("ice", rgb("#a8ecff"), metallic=0.0, roughness=0.12, emissive=rgb("#4fd2f5", 0.55))
 m.material("frost", rgb("#d9f6ff"), metallic=0.1, roughness=0.25, emissive=rgb("#7fe3ff", 0.45))
 m.material("frostcore", rgb("#e6fbff"), roughness=0.2, emissive=rgb("#9fe9ff", 0.9))
@@ -129,7 +129,7 @@ base.add(sweep([(x, PLATE_TOP - 0.01, z) for x, z in oct_pts(2.955, 0.33)], 0.03
 y_top = PLATE_TOP
 ring = oct_pts(2.8, 0.3)
 base.add(sweep([(x, y_top + 0.005, z) for x, z in ring], 0.025, 4, closed=True), "chrome")
-notch = merge(*[box(0.035, 0.26, 0.02).translate(x, 0.17, 3.0) for x in (-1.6, -0.55, 0.55, 1.6)])
+notch = merge(*[box(0.035, 0.26, 0.02).translate(x, 0.17, 2.99) for x in (-1.6, -0.55, 0.55, 1.6)])
 base.add(radial(notch, 4), "seam")
 for sx in (-1, 1):
     for sz in (-1, 1):
@@ -196,7 +196,7 @@ base.add(radial(merge(*vent_glow), 4), "vent")
 base.add(radial(merge(*vent_slat), 4), "dark")
 
 # top lip slab + deck frame
-LIP_Y, LIP_H, LIP_HALF = Y1, 0.2, 2.24
+LIP_Y, LIP_H, LIP_HALF = Y1, 0.2, 2.4
 DECK = LIP_Y + LIP_H
 base.add(extrude(oct_pts(LIP_HALF, 0.42), LIP_H).translate(0, LIP_Y, 0), "armor")
 base.add(loft(oct_pts(LIP_HALF + 0.012, 0.42), LIP_Y + 0.02, oct_pts(LIP_HALF + 0.012, 0.42), LIP_Y + 0.05), "blue")
@@ -205,9 +205,9 @@ base.add(sweep([(x, DECK + 0.004, z) for x, z in oct_pts(1.82, 0.36)], 0.028, 4,
 # icicles hanging off the lip
 rng = np.random.default_rng(7)
 ice = []
-xs = np.linspace(-1.72, 1.72, 9)
+xs = np.linspace(-1.8, 1.8, 10)
 for x in xs:
-    L = float(rng.uniform(0.2, 0.5))
+    L = float(rng.uniform(0.16, 0.38))
     r = float(rng.uniform(0.06, 0.09))
     ice.append(cone(r, L, 5).rotate(180, 0, 0).translate(float(x + rng.uniform(-0.06, 0.06)), LIP_Y + 0.02, LIP_HALF - 0.05))
 # corner icicles on the chamfers
