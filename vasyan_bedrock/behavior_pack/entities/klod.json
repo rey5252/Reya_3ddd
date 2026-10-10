@@ -124,13 +124,6 @@
                     "test": "is_family",
                     "subject": "other",
                     "value": "player"
-                  },
-                  {
-                    "test": "has_equipment",
-                    "subject": "other",
-                    "domain": "hand",
-                    "operator": "not",
-                    "value": "minecraft:redstone"
                   }
                 ]
               },

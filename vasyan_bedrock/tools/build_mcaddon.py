@@ -1,4 +1,4 @@
-"""Checks the add-on and packs it into dist/vasyan.mcaddon (a zip with both packs inside).
+"""Checks the add-on and packs it into dist/bobik_klod.mcaddon (a zip with both packs inside).
 
 Run from anywhere:  python3 vasyan_bedrock/tools/build_mcaddon.py
 Checks: every .json parses, manifest uuids are unique and the BP depends on the RP, every .lang file has
@@ -7,8 +7,8 @@ the names, every line in tools/lines is voiced and every line key the script use
 import json, os, re, sys, zipfile
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
-PACKS = {"behavior_pack": "Vasyan_BP", "resource_pack": "Vasyan_RP"}
-OUT = os.path.join(ROOT, "dist", "vasyan.mcaddon")
+PACKS = {"behavior_pack": "Bobik_Klod_BP", "resource_pack": "Bobik_Klod_RP"}
+OUT = os.path.join(ROOT, "dist", "bobik_klod.mcaddon")
 
 
 def fail(msg):

@@ -7393,6 +7393,54 @@
     }
    ]
   },
+  "klod.uk.normal.afk.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/afk_1",
+     "volume": 1.0,
+     "stream": true
+    }
+   ]
+  },
+  "klod.uk.normal.afk.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/afk_2",
+     "volume": 1.0,
+     "stream": true
+    }
+   ]
+  },
+  "klod.uk.normal.rain.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/rain_1",
+     "volume": 1.0,
+     "stream": true
+    }
+   ]
+  },
+  "klod.uk.normal.rain.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/rain_2",
+     "volume": 1.0,
+     "stream": true
+    }
+   ]
+  },
   "klod.uk.mat.hello.1": {
    "category": "neutral",
    "min_distance": 4.0,
@@ -8396,6 +8444,54 @@
    "sounds": [
     {
      "name": "sounds/klod/uk/mat/mat_on_1",
+     "volume": 1.0,
+     "stream": true
+    }
+   ]
+  },
+  "klod.uk.mat.afk.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/afk_1",
+     "volume": 1.0,
+     "stream": true
+    }
+   ]
+  },
+  "klod.uk.mat.afk.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/afk_2",
+     "volume": 1.0,
+     "stream": true
+    }
+   ]
+  },
+  "klod.uk.mat.rain.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/rain_1",
+     "volume": 1.0,
+     "stream": true
+    }
+   ]
+  },
+  "klod.uk.mat.rain.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/rain_2",
      "volume": 1.0,
      "stream": true
     }
@@ -9409,6 +9505,54 @@
     }
    ]
   },
+  "klod.ru.normal.afk.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/afk_1",
+     "volume": 1.0,
+     "stream": true
+    }
+   ]
+  },
+  "klod.ru.normal.afk.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/afk_2",
+     "volume": 1.0,
+     "stream": true
+    }
+   ]
+  },
+  "klod.ru.normal.rain.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/rain_1",
+     "volume": 1.0,
+     "stream": true
+    }
+   ]
+  },
+  "klod.ru.normal.rain.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/rain_2",
+     "volume": 1.0,
+     "stream": true
+    }
+   ]
+  },
   "klod.ru.mat.hello.1": {
    "category": "neutral",
    "min_distance": 4.0,
@@ -10412,6 +10556,54 @@
    "sounds": [
     {
      "name": "sounds/klod/ru/mat/mat_on_1",
+     "volume": 1.0,
+     "stream": true
+    }
+   ]
+  },
+  "klod.ru.mat.afk.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/afk_1",
+     "volume": 1.0,
+     "stream": true
+    }
+   ]
+  },
+  "klod.ru.mat.afk.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/afk_2",
+     "volume": 1.0,
+     "stream": true
+    }
+   ]
+  },
+  "klod.ru.mat.rain.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/rain_1",
+     "volume": 1.0,
+     "stream": true
+    }
+   ]
+  },
+  "klod.ru.mat.rain.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/rain_2",
      "volume": 1.0,
      "stream": true
     }

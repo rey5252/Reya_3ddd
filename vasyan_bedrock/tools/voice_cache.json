@@ -7,6 +7,14 @@
 "hash": "568e05bd0d3149e4fe870368cc8a2f2b6ab3abde",
 "seconds": 8.79
 },
+"sounds/klod/ru/mat/afk_1": {
+"hash": "204fdfdd19b2b3339dcd258ba3be85671d8f73df",
+"seconds": 5.63
+},
+"sounds/klod/ru/mat/afk_2": {
+"hash": "2d13aab7e510032094a934525f9e6777f0b4d6b8",
+"seconds": 3.31
+},
 "sounds/klod/ru/mat/angry_1": {
 "hash": "07544f8311836a079ea1ecbe27d767f69a132115",
 "seconds": 4.41
@@ -227,6 +235,14 @@
 "hash": "c84044be44206ed340ac37d906b4d04d0895dd47",
 "seconds": 4.49
 },
+"sounds/klod/ru/mat/rain_1": {
+"hash": "77ed96cdcd44479f941037cd00b83d260ca82f4a",
+"seconds": 5.05
+},
+"sounds/klod/ru/mat/rain_2": {
+"hash": "c23c3ffb01c903ba58559df12a818479bc2b06e0",
+"seconds": 4.89
+},
 "sounds/klod/ru/mat/respawn_1": {
 "hash": "75c872871758ff40cfcfc555f3b418b0566c4203",
 "seconds": 6.94
@@ -342,6 +358,14 @@
 "sounds/klod/ru/normal/about_2": {
 "hash": "7ffaa8ed9d159906947eb844e83ad84074015ac4",
 "seconds": 7.94
+},
+"sounds/klod/ru/normal/afk_1": {
+"hash": "6c7fa748a1d55f28f36cf5f4e81cb1cf0a068f37",
+"seconds": 4.26
+},
+"sounds/klod/ru/normal/afk_2": {
+"hash": "af79c176b1b06658d92ff84a7fd3b39fef794783",
+"seconds": 3.0
 },
 "sounds/klod/ru/normal/angry_1": {
 "hash": "c2715448cedaaa00db22024da0ba22e89c1b29ae",
@@ -563,6 +587,14 @@
 "hash": "4e1247002e251e5849b34cafa10c8f9ab49ed737",
 "seconds": 3.88
 },
+"sounds/klod/ru/normal/rain_1": {
+"hash": "8d888d3252eaf1615d7beb1292546ef1015adaad",
+"seconds": 4.01
+},
+"sounds/klod/ru/normal/rain_2": {
+"hash": "e6bd8ba5f6d2a15fdd044a926faa69325c5d1743",
+"seconds": 4.08
+},
 "sounds/klod/ru/normal/respawn_1": {
 "hash": "1e885c0dbbcc29a44565882b9592010a8fbfc921",
 "seconds": 6.21
@@ -679,6 +711,14 @@
 "hash": "c73c39d16945cd1bcc55f03854aae5f485a4ed31",
 "seconds": 8.31
 },
+"sounds/klod/uk/mat/afk_1": {
+"hash": "126f3d58932d651788f91a649a5fd6fb5c0aa244",
+"seconds": 5.05
+},
+"sounds/klod/uk/mat/afk_2": {
+"hash": "04fde59f9c4606546613b560c29a6bf9121b192c",
+"seconds": 3.43
+},
 "sounds/klod/uk/mat/angry_1": {
 "hash": "63cc9847858d313b8c745bd40d03d96d76ee5e74",
 "seconds": 4.18
@@ -712,8 +752,8 @@
 "seconds": 3.97
 },
 "sounds/klod/uk/mat/diamond_ore_1": {
-"hash": "7fe090aef097d9bb0e310553db3752b4ac0303fe",
-"seconds": 5.65
+"hash": "aa3470fcf8f833f92e50196ba8a3b4d87a72b525",
+"seconds": 5.66
 },
 "sounds/klod/uk/mat/diamond_ore_2": {
 "hash": "c89d3c864d52034b122aca79625c3123657f7da5",
@@ -899,6 +939,14 @@
 "hash": "c8dc3fe71c87af57916562a25df663badbd908eb",
 "seconds": 4.47
 },
+"sounds/klod/uk/mat/rain_1": {
+"hash": "ee79c5ed24468bb58a9b1cf15617a354d6238e40",
+"seconds": 4.93
+},
+"sounds/klod/uk/mat/rain_2": {
+"hash": "60cdd9c6ef652f34c872a77628f43ee41b33394f",
+"seconds": 4.62
+},
 "sounds/klod/uk/mat/respawn_1": {
 "hash": "2d00b33bccb0b3220aeda0f70ac966c6204dd7fa",
 "seconds": 7.1
@@ -908,8 +956,8 @@
 "seconds": 4.26
 },
 "sounds/klod/uk/mat/roast_1": {
-"hash": "0cce31f94aee7435f6915269ab6db4806803a7df",
-"seconds": 2.88
+"hash": "9eb97139c78785adb66fa1f24d94fb4ef7dd24b1",
+"seconds": 3.08
 },
 "sounds/klod/uk/mat/roast_2": {
 "hash": "4212f78d7f71748210a5dcf5d25cb53efb3b282b",
@@ -1015,6 +1063,14 @@
 "hash": "f0b02ed4572c3b40949d9add4d5d5907504e8dac",
 "seconds": 7.68
 },
+"sounds/klod/uk/normal/afk_1": {
+"hash": "e387c8a868536560bd9d0029c3f857d8ccda6853",
+"seconds": 4.28
+},
+"sounds/klod/uk/normal/afk_2": {
+"hash": "d6670b2c1423e4d200c280c920178adad8a537ab",
+"seconds": 3.14
+},
 "sounds/klod/uk/normal/angry_1": {
 "hash": "6633bcb10806c39027a9410c2ef9d4e145268963",
 "seconds": 3.49
@@ -1048,8 +1104,8 @@
 "seconds": 3.61
 },
 "sounds/klod/uk/normal/diamond_ore_1": {
-"hash": "d084ea1fbfa780365ab32d48be649bc0d5aa52b3",
-"seconds": 5.27
+"hash": "81c835eb003718683e31fab83bf37ee78a45c1f3",
+"seconds": 5.28
 },
 "sounds/klod/uk/normal/diamond_ore_2": {
 "hash": "9f303a709afc52bfb891bd77424349844447220c",
@@ -1234,6 +1290,14 @@
 "sounds/klod/uk/normal/quiet_1": {
 "hash": "7eeae8f99d83a3854806a6c1fef3682efe768cb9",
 "seconds": 3.98
+},
+"sounds/klod/uk/normal/rain_1": {
+"hash": "e28ef968d67e814f358808389f12494a7616247e",
+"seconds": 4.21
+},
+"sounds/klod/uk/normal/rain_2": {
+"hash": "04d1e0445a634605f615976c926822f5eef7c146",
+"seconds": 4.03
 },
 "sounds/klod/uk/normal/respawn_1": {
 "hash": "abad7881490619ac91b359686b6886abf472bf00",
@@ -2632,8 +2696,8 @@
 "seconds": 5.87
 },
 "sounds/vasyan/uk/mat/heal_3": {
-"hash": "2826b87b84e0b3f14878fca703cace7d363d64b4",
-"seconds": 5.73
+"hash": "3b5b6d05f42f5b80a151a59fc2de46fd8a6683ed",
+"seconds": 5.79
 },
 "sounds/vasyan/uk/mat/hello_1": {
 "hash": "96a2a5da940590bcccb3e2ea1829789498dd3862",
@@ -2704,8 +2768,8 @@
 "seconds": 3.36
 },
 "sounds/vasyan/uk/mat/idle_2": {
-"hash": "cb8600dc7ea53273eebfdb80b7406afebb8cd114",
-"seconds": 5.95
+"hash": "5d37a9f233facbc6f4861b6223807330395f4851",
+"seconds": 5.9
 },
 "sounds/vasyan/uk/mat/idle_3": {
 "hash": "1380b00e9361399fe8ebf8b7786a9e3ecf862639",
@@ -2732,8 +2796,8 @@
 "seconds": 6.21
 },
 "sounds/vasyan/uk/mat/joke_3": {
-"hash": "dbe2c82b66d92136e9b8bd832ab6816079b83a24",
-"seconds": 11.44
+"hash": "ff5e7265d0043a44a212cafe055c01257e727ba2",
+"seconds": 11.62
 },
 "sounds/vasyan/uk/mat/joke_4": {
 "hash": "1d7708fc28b049351affd37cbafd51826d131322",
@@ -3164,8 +3228,8 @@
 "seconds": 6.16
 },
 "sounds/vasyan/uk/normal/heal_3": {
-"hash": "7d87306ce618e250366a0b86cd624dcd403b5108",
-"seconds": 4.92
+"hash": "fced0e722245f7320183ce019c5aff324522d71c",
+"seconds": 4.93
 },
 "sounds/vasyan/uk/normal/hello_1": {
 "hash": "cc6290db721c5a208d16b085081baedd3aa7546c",
@@ -3236,8 +3300,8 @@
 "seconds": 2.96
 },
 "sounds/vasyan/uk/normal/idle_2": {
-"hash": "f2bfd7b942dfa724266079ae5201de7a1f5c7d07",
-"seconds": 5.37
+"hash": "e53694826c02a2fb4593185198cd8ab3229cb7db",
+"seconds": 5.32
 },
 "sounds/vasyan/uk/normal/idle_3": {
 "hash": "5bbcaffb95bb4a60ebca79e57fcb068073a902cf",
@@ -3264,8 +3328,8 @@
 "seconds": 6.19
 },
 "sounds/vasyan/uk/normal/joke_3": {
-"hash": "a5e315406b1bfb56e782e4db66c48f5b2e2d73b9",
-"seconds": 10.44
+"hash": "f751ee55b1cdadcbc2bfcda046a631bc4516122a",
+"seconds": 10.62
 },
 "sounds/vasyan/uk/normal/joke_4": {
 "hash": "030b5637f871b536bc048de5a08594e173227f53",

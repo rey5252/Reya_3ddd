@@ -31,6 +31,7 @@ const STAY = "vasyan:stay"; // true while told to stay in place
 const CURRENT = "vasyan:cur_";
 // world dynamic properties
 const ENABLED = "vasyan:enabled"; // false turns Bobik's pranks off (/scriptevent vasyan:toggle)
+// player dynamic properties (each owner chooses for his own companions; the world value is the fallback)
 const MAT = "vasyan:mat"; // false: no swearing (menu or /scriptevent vasyan:mat)
 const LANG = "vasyan:lang"; // "uk" or "ru": the language both of them speak
 
@@ -45,7 +46,7 @@ const REACT_COOLDOWN = 12 * 20;
 const PROTECTED = /bedrock|barrier|command_block|structure_block|jigsaw|portal|end_gateway|reinforced_deepslate|spawner|vault|chest|barrel|shulker_box|_bed$|^minecraft:bed$|hopper|furnace|smoker|dispenser|dropper|crafter|beacon|respawn_anchor|light_block/;
 const FLOWER = /poppy|dandelion|tulip|orchid|allium|azure_bluet|oxeye_daisy|cornflower|lily_of_the_valley|wither_rose|sunflower|lilac|rose_bush|peony|torchflower|pitcher_plant|pink_petals|red_flower|yellow_flower/;
 // monsters Klod leaves alone: hitting them only makes the whole group angry
-const NEUTRAL = /enderman|zombie_pigman|zombified_piglin|^minecraft:piglin$|spider|wither$|ender_dragon|warden|elder_guardian/;
+const NEUTRAL = /enderman|zombie_pigman|zombified_piglin|^minecraft:piglin$|^minecraft:spider$|zombie_villager|wither$|ender_dragon|warden|elder_guardian/;
 const SHINY = /^minecraft:(diamond|emerald|gold_ingot|netherite_ingot|amethyst_shard|raw_gold|gold_nugget)$/;
 
 const rand = (n) => Math.floor(Math.random() * n);
@@ -56,10 +57,14 @@ const floorLoc = (l) => ({ x: Math.floor(l.x), y: Math.floor(l.y), z: Math.floor
 /** @param {Vector3} a @param {Vector3} b */
 const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y, a.z - b.z);
 
-const matOn = () => world.getDynamicProperty(MAT) !== false;
-const lang = () => (world.getDynamicProperty(LANG) === "ru" ? "ru" : "uk");
-/** @param {Entity} who */
-const ui = (who) => VOICE[VOICE_OF[who.typeId]][lang()].ui;
+/** @param {Player} player @param {string} id */
+const setting = (player, id) => player.getDynamicProperty(id) ?? world.getDynamicProperty(id);
+/** @param {Player} player */
+const matOn = (player) => setting(player, MAT) !== false;
+/** @param {Player} player @returns {"uk" | "ru"} */
+const lang = (player) => (setting(player, LANG) === "ru" ? "ru" : "uk");
+/** Menu texts of `who` in the language of `player`. @param {Entity} who @param {Player} player */
+const ui = (who, player) => VOICE[VOICE_OF[who.typeId]][lang(player)].ui;
 
 /** @param {Entity} entity */
 function container(entity) {
@@ -128,9 +133,9 @@ function busy(player) {
   return !!q && (q.busy || q.items.length > 0);
 }
 
-/** @param {Entity} who @param {string} key */
-function hasLine(who, key) {
-  const v = VOICE[VOICE_OF[who.typeId]][lang()];
+/** @param {Entity} who @param {string} key @param {Player} player */
+function hasLine(who, key, player) {
+  const v = VOICE[VOICE_OF[who.typeId]][lang(player)];
   return !!(v.normal[key] || v.mat[key]);
 }
 
@@ -159,7 +164,7 @@ function wrap(text, width = 44) {
 function say(player, who, key, opts = {}) {
   const q = queueOf(player);
   if (!opts.important && (q.busy || q.items.length)) return false;
-  if (q.items.length >= 4 || !hasLine(who, key)) return false;
+  if (q.items.length >= 4 || !hasLine(who, key, player)) return false;
   q.items.push({ who, key, then: opts.then });
   pump(player);
   return true;
@@ -174,9 +179,9 @@ function pump(player) {
   const who = item.who;
   if (!player.isValid || !who.isValid) return pump(player);
   const ch = VOICE_OF[who.typeId];
-  const l = lang();
+  const l = lang(player);
   const v = VOICE[ch][l];
-  let set = matOn() ? "mat" : "normal";
+  let set = matOn(player) ? "mat" : "normal";
   if (!v[set][item.key]) set = set === "mat" ? "normal" : "mat";
   const lines = v[set][item.key];
   const i = rand(lines.length);
@@ -235,7 +240,10 @@ function near(player, list = companionsByOwner().get(player.id) ?? []) {
 }
 
 /** @param {Entity} who */
-const quiet = (who) => (/** @type {number} */ (who.getDynamicProperty(QUIET)) ?? 0) > system.currentTick;
+const quiet = (who) => {
+  const until = /** @type {number} */ (who.getDynamicProperty(QUIET)) ?? 0;
+  return until > system.currentTick && until - system.currentTick <= QUIET_TICKS;
+};
 
 /** Makes `player` the owner: vanilla taming (so follow_owner works) plus our own owner record. @param {Entity} e @param {Player} player */
 function adopt(e, player) {
@@ -246,7 +254,7 @@ function adopt(e, player) {
   e.setDynamicProperty(OWNER, player.id);
   player.setDynamicProperty(CURRENT + VOICE_OF[e.typeId], e.id);
   e.setDynamicProperty(NEXT, system.currentTick + between(e.typeId === BOBIK ? BOBIK_DELAY : KLOD_DELAY));
-  e.nameTag = ui(e).name;
+  e.nameTag = ui(e, player).name;
 }
 
 /** @param {Player} player @param {Entity} e */
@@ -268,27 +276,46 @@ function canBreak(block) {
 
 /** @typedef {{key: string, undo?: () => void} | false} Prank */
 
+// natural terrain Bobik may dig out (nothing built, nothing valuable to break)
+const DIGGABLE = /^minecraft:(dirt|grass_block|coarse_dirt|rooted_dirt|podzol|mycelium|stone|cobblestone|deepslate|cobbled_deepslate|tuff|andesite|diorite|granite|calcite|sand|red_sand|sandstone|gravel|clay|mud|netherrack|soul_sand|soul_soil|blackstone|basalt|end_stone|snow|snow_block|moss_block|dripstone_block)$/;
+
+const lastHurt = new Map();
+/** Fighting, low on health or a monster close by: no pranks that could get the player killed. @param {Player} player */
+function inDanger(player) {
+  const h = player.getComponent("minecraft:health");
+  if (!h || h.currentValue <= 8) return true;
+  if (system.currentTick - (lastHurt.get(player.id) ?? -10000) < 10 * 20) return true;
+  return player.dimension.getEntities({ families: ["monster"], location: player.location, maxDistance: 8 }).length > 0;
+}
+
+/** Pranks that change the world are off in Adventure mode (no way to undo them) and in mid-air. @param {Player} player */
+const canBuild = (player) => player.getGameMode() !== GameMode.Adventure && player.isOnGround;
+
 /** Digs the block under the player's feet (only with solid ground one block lower). @param {Player} player @returns {Prank} */
 function dig(player) {
   const p = floorLoc(player.location);
   const dim = player.dimension;
+  if (!canBuild(player) || p.y - 2 <= dim.heightRange.min) return false;
   const below = dim.getBlock({ x: p.x, y: p.y - 1, z: p.z });
   const floor = dim.getBlock({ x: p.x, y: p.y - 2, z: p.z });
-  if (!canBreak(below) || !floor || floor.isAir || floor.isLiquid) return false;
+  if (!canBreak(below) || !DIGGABLE.test(below.typeId) || !floor || floor.isAir || floor.isLiquid) return false;
+  const was = below.permutation;
   dim.runCommand(`setblock ${p.x} ${p.y - 1} ${p.z} air destroy`);
   return {
     key: "dig",
     undo: () => {
       const b = dim.getBlock({ x: p.x, y: p.y - 1, z: p.z });
-      if (b?.isAir) b.setType("minecraft:dirt");
+      if (b?.isAir) b.setPermutation(was);
     },
   };
 }
 
 /** Builds a "house": dirt on the four sides of the player and a roof, wherever there is air. @param {Player} player @returns {Prank} */
 function house(player) {
+  if (!canBuild(player)) return false;
   const p = floorLoc(player.location);
   const dim = player.dimension;
+  if (p.y + 2 >= dim.heightRange.max) return false;
   const spots = [{ x: p.x, y: p.y + 2, z: p.z }];
   for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
     spots.push({ x: p.x + dx, y: p.y, z: p.z + dz }, { x: p.x + dx, y: p.y + 1, z: p.z + dz });
@@ -369,7 +396,8 @@ function eat(player, bobik) {
   if (!inv) return false;
   const food = [];
   for (let i = 0; i < inv.size; i++) {
-    if (inv.getItem(i)?.getComponent("minecraft:food")) food.push(i);
+    const it = inv.getItem(i);
+    if (it?.getComponent("minecraft:food") && !/golden_apple|golden_carrot/.test(it.typeId)) food.push(i);
   }
   if (!food.length) return false;
   takeOne(player, food[rand(food.length)]);
@@ -424,14 +452,35 @@ function knock(player, from, strength = 1.6) {
   player.applyKnockback({ x: dx * strength, z: dz * strength }, 0.5);
 }
 
-/** "Was pushing you out of danger". @param {Player} player @param {Entity} bobik @returns {Prank} */
+/** "Was pushing you out of danger". Only where there is solid ground to land on. @param {Player} player @param {Entity} bobik @returns {Prank} */
 function push(player, bobik) {
+  const dim = player.dimension;
+  if (dim.id !== "minecraft:overworld" || !player.isOnGround) return false;
+  const dx = player.location.x - bobik.location.x;
+  const dz = player.location.z - bobik.location.z;
+  const len = Math.hypot(dx, dz) || 1;
+  const p = floorLoc(player.location);
+  for (let step = 1; step <= 4; step++) {
+    const x = Math.floor(player.location.x + (dx / len) * step);
+    const z = Math.floor(player.location.z + (dz / len) * step);
+    let ground = false;
+    for (let y = p.y - 1; y >= p.y - 3; y--) {
+      const b = dim.getBlock({ x, y, z });
+      if (!b || /lava|fire|magma|cactus|powder_snow|sweet_berry/.test(b.typeId)) return false;
+      if (!b.isAir && !b.isLiquid) {
+        ground = true;
+        break;
+      }
+    }
+    if (!ground) return false;
+  }
   knock(player, bobik);
   return { key: "push" };
 }
 
 /** "Anti-theft trap": a cobweb at the player's feet that disappears after 8 seconds. @param {Player} player @returns {Prank} */
 function web(player) {
+  if (!canBuild(player)) return false;
   const p = floorLoc(player.location);
   const dim = player.dimension;
   const b = dim.getBlock(p);
@@ -472,14 +521,21 @@ const PRANKS = [
 ];
 const PRANK_TOTAL = PRANKS.reduce((s, h) => s + h.weight, 0);
 
-/** @returns {(player: Player, bobik: Entity) => Prank} */
-function pickPrank() {
+// the only pranks allowed while the player is fighting or nearly dead
+const HARMLESS = [sort, () => ({ key: "idle" })];
+
+/** @param {Player} player @returns {(player: Player, bobik: Entity) => Prank} */
+function pickPrank(player) {
+  if (inDanger(player)) return HARMLESS[rand(HARMLESS.length)];
   let r = rand(PRANK_TOTAL);
   for (const h of PRANKS) {
     if ((r -= h.weight) < 0) return h.run;
   }
   return PRANKS[0].run;
 }
+
+// per player: how to undo Bobik's last prank, until Klod gets to it (or 5 minutes pass)
+const pendingUndo = new Map();
 
 /**
  * Bobik "helps", then, if Klod is around, Klod comments, sometimes fixes it, and Bobik answers back.
@@ -490,16 +546,21 @@ function bobikHelp(player, bobik, klod) {
     /** @type {Prank} */
     let prank = false;
     try {
-      prank = pickPrank()(player, bobik);
+      prank = pickPrank(player)(player, bobik);
     } catch {
       // unloaded chunk, world border etc. - just try something else
     }
     if (!prank) continue;
     say(player, bobik, prank.key, { important: true });
-    if (klod?.isValid && prank.key !== "idle" && chance(0.55)) {
-      const fix = prank.undo && chance(0.6);
-      say(player, klod, fix ? "undo" : "roast", { important: true, then: fix ? prank.undo : undefined });
-      if (chance(0.45)) say(player, bobik, "reply_klod", { important: true });
+    if (prank.undo) pendingUndo.set(player.id, { undo: prank.undo, at: system.currentTick });
+    if (klod?.isValid && prank.key !== "idle" && !quiet(klod) && chance(0.6)) {
+      if (prank.undo && chance(0.7)) {
+        pendingUndo.delete(player.id);
+        say(player, klod, "undo", { important: true, then: prank.undo });
+      } else {
+        say(player, klod, "roast", { important: true });
+      }
+      if (!quiet(bobik) && chance(0.45)) say(player, bobik, "reply_klod", { important: true });
     }
     return;
   }
@@ -508,22 +569,33 @@ function bobikHelp(player, bobik, klod) {
 // ---------------------------------------------------------------------------------------------
 // Klod's actual help
 
-/** @param {Player} player @param {Entity} klod */
-function nearestMonster(player, klod, range = 8) {
+/** The closest monster that is a real threat: not neutral, not named, not on a lead, not being cured. @param {Player} player */
+function nearestMonster(player, range = 7) {
   const mobs = player.dimension.getEntities({ families: ["monster"], location: player.location, maxDistance: range });
-  return mobs.find((m) => m.isValid && m.typeId !== BOBIK && m.typeId !== KLOD && !NEUTRAL.test(m.typeId));
+  return mobs.find(
+    (m) =>
+      m.isValid &&
+      m.typeId !== BOBIK &&
+      m.typeId !== KLOD &&
+      !NEUTRAL.test(m.typeId) &&
+      !m.nameTag &&
+      !m.getComponent("minecraft:leashable")?.isLeashed &&
+      Math.abs(m.location.y - player.location.y) <= 3,
+  );
 }
 
 const lastGuardLine = new Map();
 /** Hits the nearest monster hard. Talks about it only now and then. @param {Player} player @param {Entity} klod */
 function guard(player, klod) {
-  const mob = nearestMonster(player, klod);
+  if (player.getGameMode() === GameMode.Creative) return false;
+  const mob = nearestMonster(player);
   if (!mob) return false;
   particle(mob, "minecraft:critical_hit_emitter", 1);
   sound(mob, "random.orb", 0.6);
-  mob.applyDamage(20, { cause: EntityDamageCause.entityAttack, damagingEntity: klod });
+  mob.applyDamage(30, { cause: EntityDamageCause.entityAttack, damagingEntity: klod });
+  const dead = !mob.isValid || (mob.getComponent("minecraft:health")?.currentValue ?? 0) <= 0;
   const now = system.currentTick;
-  if (now - (lastGuardLine.get(player.id) ?? -10000) > 30 * 20 && !quiet(klod) && say(player, klod, "guard")) {
+  if (dead && now - (lastGuardLine.get(player.id) ?? -10000) > 30 * 20 && !quiet(klod) && say(player, klod, "guard")) {
     lastGuardLine.set(player.id, now);
   }
   return true;
@@ -531,9 +603,21 @@ function guard(player, klod) {
 
 /** @param {Player} player */
 function isDark(player) {
-  if (player.dimension.id !== "minecraft:overworld") return true;
+  if (player.dimension.id !== "minecraft:overworld") return false;
   const t = world.getTimeOfDay();
   return (t > 13000 && t < 23000) || player.location.y < 50;
+}
+
+/** @param {Player} player */
+function lightNearby(player, r = 4) {
+  const p = floorLoc(player.location);
+  for (let x = -r; x <= r; x++)
+    for (let z = -r; z <= r; z++)
+      for (let y = -2; y <= 2; y++) {
+        const id = player.dimension.getBlock({ x: p.x + x, y: p.y + y, z: p.z + z })?.typeId ?? "";
+        if (/torch|lantern|glowstone|shroomlight|froglight|campfire/.test(id)) return true;
+      }
+  return false;
 }
 
 /** Places a torch where the player stands. @param {Player} player */
@@ -544,6 +628,7 @@ function torch(player) {
   const here = dim.getBlock(p);
   const below = dim.getBlock({ x: p.x, y: p.y - 1, z: p.z });
   if (!here?.isAir || !below || below.isAir || below.isLiquid || /leaves|glass|fence|wall|slab|stairs|web|torch/.test(below.typeId)) return false;
+  if (lightNearby(player)) return false;
   here.setType("minecraft:torch");
   return true;
 }
@@ -561,34 +646,49 @@ function hurtBy(player) {
 function klodUseful(player, klod, bobik, tips = true) {
   if (bobik && container(bobik)?.emptySlotsCount !== container(bobik)?.size) {
     returnStolen(player, bobik);
+    pendingUndo.delete(player.id);
     return "fix_vasyan";
+  }
+  const pending = pendingUndo.get(player.id);
+  if (pending) {
+    pendingUndo.delete(player.id);
+    if (system.currentTick - pending.at < 5 * 60 * 20) {
+      pending.undo();
+      return "undo";
+    }
   }
   if (hurtBy(player) >= 6) {
     player.addEffect("regeneration", 100, { amplifier: 1 });
     particle(player, "minecraft:heart_particle");
     return "heal";
   }
-  if (isDark(player) && chance(0.6) && torch(player)) return "torch";
-  if (chance(0.25)) {
+  if (isDark(player) && torch(player)) return "torch";
+  if (hurtBy(player) >= 2 && chance(0.5)) {
     player.addEffect("saturation", 2, { amplifier: 0 });
     return "feed";
   }
-  return tips ? "tip" : false;
+  return tips && chance(0.35) ? "tip" : false;
 }
 
 // ---------------------------------------------------------------------------------------------
 // Reactions to what happens to the owner
 
 const lastReact = new Map();
-/** One of the companions near the player says something about it (not too often). @param {Player} player @param {string} key */
-function react(player, key, p = 1, force = false) {
+/**
+ * One of the companions near the player says something about it (not too often).
+ * @param {Player} player @param {string} key @param {number} [p] @param {boolean} [force]
+ * @param {{skip?: string, then?: (who: Entity) => void}} [opts]
+ */
+function react(player, key, p = 1, force = false, opts = {}) {
+  const skip = opts.skip;
   const now = system.currentTick;
   if (!force && now - (lastReact.get(player.id) ?? -10000) < REACT_COOLDOWN) return;
   if (!chance(p) || busy(player)) return;
   const { bobik, klod } = near(player);
-  const who = [bobik, klod].filter((e) => e && !quiet(e) && hasLine(e, key));
+  const who = [bobik, klod].filter((e) => e && e.typeId !== skip && !quiet(e) && hasLine(e, key, player));
   if (!who.length) return;
-  if (say(player, who[rand(who.length)], key)) lastReact.set(player.id, now);
+  const speaker = who[rand(who.length)];
+  if (say(player, speaker, key, { then: opts.then && (() => opts.then(speaker)) })) lastReact.set(player.id, now);
 }
 
 // per player: last position and since when, low health and creeper cooldowns
@@ -610,7 +710,9 @@ function watch(player, now) {
   const h = player.getComponent("minecraft:health");
   if (h && h.currentValue > 0 && h.currentValue <= 6 && now - (lowHp.get(player.id) ?? -10000) > 60 * 20) {
     lowHp.set(player.id, now);
-    react(player, "low_hp", 1, true);
+    react(player, "low_hp", 1, true, {
+      then: (who) => who.typeId === KLOD && player.addEffect("regeneration", 160, { amplifier: 1 }),
+    });
   }
   if (now - (creeperSeen.get(player.id) ?? -10000) > 60 * 20) {
     const c = player.dimension.getEntities({ type: "minecraft:creeper", location: player.location, maxDistance: 8 });
@@ -676,7 +778,7 @@ function tickPlayer(player, all, now, enabled, nightfall) {
       continue;
     }
     list.push(e);
-    if ((!e.nameTag || DEFAULT_NAMES.has(e.nameTag)) && e.nameTag !== ui(e).name) e.nameTag = ui(e).name;
+    if ((!e.nameTag || DEFAULT_NAMES.has(e.nameTag)) && e.nameTag !== ui(e, player).name) e.nameTag = ui(e, player).name;
     if (!busy(player) && e.getProperty("vasyan:talking") === true) setFlag(e, "vasyan:talking", false);
     if (!dancing.has(e.id) && e.getProperty("vasyan:dancing") === true) setFlag(e, "vasyan:dancing", false);
     if (e.getDynamicProperty(STAY) === true) continue;
@@ -716,7 +818,7 @@ function tickPlayer(player, all, now, enabled, nightfall) {
       const key = klodUseful(player, klod, bobik, !quiet(klod));
       if (key && !quiet(klod)) {
         say(player, klod, key);
-        if (key === "fix_vasyan" && bobik && chance(0.5)) say(player, bobik, "reply_klod", { important: true });
+        if (key === "fix_vasyan" && bobik && !quiet(bobik) && chance(0.5)) say(player, bobik, "reply_klod", { important: true });
       }
     }
   }
@@ -731,7 +833,8 @@ world.afterEvents.entityHurt.subscribe((ev) => {
   const target = ev.hurtEntity;
   const attacker = ev.damageSource.damagingEntity;
   if (target instanceof Player) {
-    if (ev.damage > 0 && attacker?.typeId !== BOBIK && attacker?.typeId !== KLOD) react(target, "hurt", 0.35);
+    lastHurt.set(target.id, system.currentTick);
+    if (ev.damage > 0 && attacker && attacker.typeId !== BOBIK && attacker.typeId !== KLOD) react(target, "hurt", 0.35);
     return;
   }
   if (!(attacker instanceof Player)) return;
@@ -745,7 +848,15 @@ world.afterEvents.entityHurt.subscribe((ev) => {
       hits.set(target.id, []);
       say(attacker, target, "angry", {
         important: true,
-        then: () => target.typeId === BOBIK && attacker.isValid && knock(attacker, target, 2.2),
+        then: () => {
+          if (!attacker.isValid || !target.isValid) return;
+          if (target.typeId === BOBIK) return knock(attacker, target, 2.2);
+          // Klod keeps his word and steps away
+          const dx = target.location.x - attacker.location.x;
+          const dz = target.location.z - attacker.location.z;
+          const len = Math.hypot(dx, dz) || 1;
+          target.applyKnockback({ x: (dx / len) * 1.8, z: (dz / len) * 1.8 }, 0.35);
+        },
       });
     } else if (chance(0.5)) {
       say(attacker, target, "ouch");
@@ -776,7 +887,8 @@ world.afterEvents.entityDie.subscribe((ev) => {
 world.afterEvents.playerSpawn.subscribe((ev) => {
   if (ev.initialSpawn) return;
   const player = ev.player;
-  system.runTimeout(() => player.isValid && react(player, "respawn", 1, true), 60);
+  const skip = world.gameRules.keepInventory ? KLOD : undefined;
+  system.runTimeout(() => player.isValid && react(player, "respawn", 1, true, { skip }), 60);
 });
 
 const lastDiamonds = new Map();
@@ -823,13 +935,13 @@ async function menu(player, who, title, body, buttons) {
 
 /** @param {Player} player @param {Entity} who */
 function toggleMat(player, who) {
-  world.setDynamicProperty(MAT, !matOn());
-  say(player, who, matOn() ? "mat_on" : "mat_off", { important: true });
+  player.setDynamicProperty(MAT, !matOn(player));
+  say(player, who, matOn(player) ? "mat_on" : "mat_off", { important: true });
 }
 
 /** @param {Player} player @param {Entity} who */
 function toggleLang(player, who) {
-  world.setDynamicProperty(LANG, lang() === "uk" ? "ru" : "uk");
+  player.setDynamicProperty(LANG, lang(player) === "uk" ? "ru" : "uk");
   say(player, who, "lang", { important: true });
 }
 
@@ -874,10 +986,10 @@ function dismiss(player, who) {
   });
 }
 
-/** A real-looking diamond. @param {Entity} bobik */
-function fakeDiamond(bobik) {
+/** A real-looking diamond. @param {Entity} bobik @param {Player} player */
+function fakeDiamond(bobik, player) {
   const it = new ItemStack("minecraft:dirt", 1);
-  it.nameTag = ui(bobik).fake_diamond;
+  it.nameTag = ui(bobik, player).fake_diamond;
   return it;
 }
 
@@ -901,7 +1013,7 @@ function gift(player, bobik) {
   }
   if (SHINY.test(id)) {
     takeOne(player, slot);
-    return say(player, bobik, "gift_shiny", { important: true, then: () => giveOrDrop(player, fakeDiamond(bobik)) });
+    return say(player, bobik, "gift_shiny", { important: true, then: () => giveOrDrop(player, fakeDiamond(bobik, player)) });
   }
   if (FLOWER.test(id)) {
     takeOne(player, slot);
@@ -913,10 +1025,10 @@ function gift(player, bobik) {
 
 /** @param {Player} player @param {Entity} bobik */
 function bobikMenu(player, bobik) {
-  const t = ui(bobik);
+  const t = ui(bobik, player);
   const klod = near(player).klod;
   const stay = bobik.getDynamicProperty(STAY) === true;
-  return menu(player, bobik, t.title, matOn() ? t.body_mat : t.body, [
+  return menu(player, bobik, t.title, matOn(player) ? t.body_mat : t.body, [
     [t.talk, () => bobikTalk(player, bobik)],
     [
       t.give_back,
@@ -952,7 +1064,7 @@ function bobikMenu(player, bobik) {
         say(player, bobik, "quiet", { important: true });
       },
     ],
-    [matOn() ? t.mat_off : t.mat_on, () => toggleMat(player, bobik)],
+    [matOn(player) ? t.mat_off : t.mat_on, () => toggleMat(player, bobik)],
     [t.lang, () => toggleLang(player, bobik)],
     [t.bye, () => dismiss(player, bobik)],
   ]);
@@ -960,12 +1072,12 @@ function bobikMenu(player, bobik) {
 
 /** @param {Player} player @param {Entity} bobik */
 function bobikTalk(player, bobik) {
-  const t = ui(bobik);
+  const t = ui(bobik, player);
   const ask = (key, then) => () => say(player, bobik, key, { important: true, then });
-  return menu(player, bobik, t.talk_title, matOn() ? t.talk_body_mat : t.talk_body, [
+  return menu(player, bobik, t.talk_title, matOn(player) ? t.talk_body_mat : t.talk_body, [
     [t.q_joke, ask("joke")],
     [t.q_advice, ask("advice")],
-    [t.q_diamonds, ask("diamonds", () => giveOrDrop(player, fakeDiamond(bobik)))],
+    [t.q_diamonds, ask("diamonds", () => giveOrDrop(player, fakeDiamond(bobik, player)))],
     [t.q_how, ask("how")],
     [t.q_stupid, ask("stupid", () => chance(0.4) && knock(player, bobik, 1.2))],
     [t.q_about, ask("about")],
@@ -975,9 +1087,9 @@ function bobikTalk(player, bobik) {
 
 /** @param {Player} player @param {Entity} klod */
 function klodMenu(player, klod) {
-  const t = ui(klod);
+  const t = ui(klod, player);
   const stay = klod.getDynamicProperty(STAY) === true;
-  return menu(player, klod, t.title, matOn() ? t.body_mat : t.body, [
+  return menu(player, klod, t.title, matOn(player) ? t.body_mat : t.body, [
     [t.talk, () => klodTalk(player, klod)],
     [
       t.help,
@@ -985,6 +1097,11 @@ function klodMenu(player, klod) {
         const bobik = near(player).bobik;
         say(player, klod, "help", { important: true });
         if (guard(player, klod)) return;
+        const pending = pendingUndo.get(player.id);
+        if (pending) {
+          pendingUndo.delete(player.id);
+          return say(player, klod, "undo", { important: true, then: pending.undo });
+        }
         const key = klodUseful(player, klod, bobik, false);
         say(player, klod, key || "help_nothing", { important: true });
       },
@@ -998,7 +1115,7 @@ function klodMenu(player, klod) {
         say(player, klod, "quiet", { important: true });
       },
     ],
-    [matOn() ? t.mat_off : t.mat_on, () => toggleMat(player, klod)],
+    [matOn(player) ? t.mat_off : t.mat_on, () => toggleMat(player, klod)],
     [t.lang, () => toggleLang(player, klod)],
     [t.bye, () => dismiss(player, klod)],
   ]);
@@ -1006,14 +1123,14 @@ function klodMenu(player, klod) {
 
 /** @param {Player} player @param {Entity} klod */
 function klodTalk(player, klod) {
-  const t = ui(klod);
+  const t = ui(klod, player);
   const ask = (key) => () => {
     say(player, klod, key, { important: true });
     // Bobik does not let an opinion about himself go unanswered
     const bobik = near(player).bobik;
     if (key === "vasyan" && bobik) say(player, bobik, "reply_klod", { important: true });
   };
-  return menu(player, klod, t.talk_title, matOn() ? t.talk_body_mat : t.talk_body, [
+  return menu(player, klod, t.talk_title, matOn(player) ? t.talk_body_mat : t.talk_body, [
     [t.q_joke, ask("joke")],
     [t.q_advice, ask("tip")],
     [t.q_how, ask("how")],
@@ -1039,7 +1156,7 @@ world.afterEvents.playerInteractWithEntity.subscribe((ev) => {
     say(player, e, "stranger");
     return;
   }
-  if (ev.itemStack?.typeId === "minecraft:redstone") return;
+  if (e.typeId === BOBIK && ev.beforeItemStack?.typeId === "minecraft:redstone") return gift(player, e);
   system.run(() => (e.typeId === BOBIK ? bobikMenu(player, e) : klodMenu(player, e)));
 });
 
@@ -1082,15 +1199,16 @@ world.afterEvents.playerInteractWithBlock.subscribe((ev) => {
 system.afterEvents.scriptEventReceive.subscribe((ev) => {
   if (ev.id !== "vasyan:toggle" && ev.id !== "vasyan:mat") return;
   const owned = companionsByOwner();
-  if (ev.id === "vasyan:mat") world.setDynamicProperty(MAT, !matOn());
-  else world.setDynamicProperty(ENABLED, world.getDynamicProperty(ENABLED) === false);
-  for (const player of world.getPlayers()) {
+  const players = ev.sourceEntity instanceof Player ? [ev.sourceEntity] : world.getPlayers();
+  if (ev.id === "vasyan:toggle") world.setDynamicProperty(ENABLED, world.getDynamicProperty(ENABLED) === false);
+  for (const player of players) {
     const { bobik, klod } = near(player, owned.get(player.id) ?? []);
     const who = bobik ?? klod;
-    if (ev.id === "vasyan:mat" && who) {
-      say(player, who, matOn() ? "mat_on" : "mat_off", { important: true });
-    } else if (ev.id === "vasyan:toggle") {
-      const t = VOICE.vasyan[lang()].ui;
+    if (ev.id === "vasyan:mat") {
+      player.setDynamicProperty(MAT, !matOn(player));
+      if (who) say(player, who, matOn(player) ? "mat_on" : "mat_off", { important: true });
+    } else {
+      const t = VOICE.vasyan[lang(player)].ui;
       player.onScreenDisplay.setActionBar(world.getDynamicProperty(ENABLED) === false ? t.pranks_off : t.pranks_on);
     }
   }
