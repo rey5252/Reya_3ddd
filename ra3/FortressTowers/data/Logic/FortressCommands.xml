@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    FortressTowers 1.0 - LogicCommand entries (integration layer).
+
+    Contents:
+      * Command_Construct<TowerId>         - Allies / Soviets (6 towers), built from the construction yard.
+      * Command_Construct<TowerId>Nanocore - Empire (3 towers), the yard builds a nanocore unit
+                                             that later unpacks into the tower.
+      * Command_Upgrade_FortressReinforcedPlating - player upgrade bought at the construction yard.
+
+    What to check in SageXml (Data/Logic/LogicCommand.xml or wherever vanilla keeps them):
+      * The LogicCommand Type used by vanilla yard structure buttons. Allied/Soviet structures are
+        placed from the construction yard "build anywhere in radius" queue; in SAGE (C&C3/RA3) that is
+        Type="FOUNDATION_CONSTRUCT". If vanilla RA3 uses a different value (e.g. DOZER_CONSTRUCT or
+        UNIT_BUILD), change it here to match.
+      * The Type used by vanilla Japan core buttons (Japan cores are produced like units: UNIT_BUILD).
+      * Button art / tooltip are taken from the GameObject (ButtonImage, DisplayName/Description)
+        and TOOLTIP:Construct<TowerId> strings in data/strings/_Logic.str.
+-->
+<AssetDeclaration xmlns="uri:ea.com:eala:asset" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Includes>
+        <Include type="reference" source="DATA:static.xml" />
+        <Include type="reference" source="DATA:global.xml" />
+        <Include type="reference" source="DATA:audio.xml" />
+        <!-- The objects referenced below live in the tower files, which mod.xml includes as type="all". -->
+    </Includes>
+
+    <!-- ===================== Allies ===================== -->
+    <!-- VERIFY: Type="FOUNDATION_CONSTRUCT" matches vanilla Command_ConstructAlliedPowerPlant -->
+    <LogicCommand
+        id="Command_ConstructAlliedPrismSpire"
+        Type="FOUNDATION_CONSTRUCT">
+        <Object>AlliedPrismSpire</Object>
+    </LogicCommand>
+
+    <LogicCommand
+        id="Command_ConstructAlliedCryoBastion"
+        Type="FOUNDATION_CONSTRUCT">
+        <Object>AlliedCryoBastion</Object>
+    </LogicCommand>
+
+    <LogicCommand
+        id="Command_ConstructAlliedAegisSpire"
+        Type="FOUNDATION_CONSTRUCT">
+        <Object>AlliedAegisSpire</Object>
+    </LogicCommand>
+
+    <!-- ===================== Soviets ===================== -->
+    <!-- VERIFY: Type="FOUNDATION_CONSTRUCT" matches vanilla Command_ConstructSovietPowerPlant -->
+    <LogicCommand
+        id="Command_ConstructSovietTeslaObelisk"
+        Type="FOUNDATION_CONSTRUCT">
+        <Object>SovietTeslaObelisk</Object>
+    </LogicCommand>
+
+    <LogicCommand
+        id="Command_ConstructSovietFlakNest"
+        Type="FOUNDATION_CONSTRUCT">
+        <Object>SovietFlakNest</Object>
+    </LogicCommand>
+
+    <LogicCommand
+        id="Command_ConstructSovietInfernoBunker"
+        Type="FOUNDATION_CONSTRUCT">
+        <Object>SovietInfernoBunker</Object>
+    </LogicCommand>
+
+    <!-- ===================== Empire of the Rising Sun ===================== -->
+    <!-- The yard builds the nanocore (a mobile unit); the core then unpacks into the tower.
+         VERIFY: Type="UNIT_BUILD" matches the vanilla Japan core buttons
+         (e.g. the Wave-Force Tower core button in JapanConstructionYardCommandSet). -->
+    <LogicCommand
+        id="Command_ConstructJapanTenguSpireNanocore"
+        Type="UNIT_BUILD">
+        <Object>JapanTenguSpireNanocore</Object>
+    </LogicCommand>
+
+    <LogicCommand
+        id="Command_ConstructJapanWaveCitadelNanocore"
+        Type="UNIT_BUILD">
+        <Object>JapanWaveCitadelNanocore</Object>
+    </LogicCommand>
+
+    <LogicCommand
+        id="Command_ConstructJapanKitsuneShrineNanocore"
+        Type="UNIT_BUILD">
+        <Object>JapanKitsuneShrineNanocore</Object>
+    </LogicCommand>
+
+    <!-- ===================== Upgrade ===================== -->
+    <!-- Bought at all three construction yards; the UpgradeTemplate is in FortressUpgrades.xml.
+         VERIFY: Type="PLAYER_UPGRADE" is the value vanilla uses for player-wide upgrades bought at a structure. -->
+    <LogicCommand
+        id="Command_Upgrade_FortressReinforcedPlating"
+        Type="PLAYER_UPGRADE">
+        <Upgrade>Upgrade_FortressReinforcedPlating</Upgrade>
+    </LogicCommand>
+</AssetDeclaration>

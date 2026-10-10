@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    FortressTowers 1.0 - UpgradeTemplate entries (integration layer).
+
+    Upgrade_FortressReinforcedPlating
+      * player-wide upgrade, bought at the construction yard of any faction
+        (button Command_Upgrade_FortressReinforcedPlating in FortressCommandSets.xml), $1500;
+      * effect: +25% max HP for all 9 FortressTowers towers.
+
+    IMPORTANT FOR TOWER AUTHORS / REVIEWERS:
+    The UpgradeTemplate by itself does nothing. Every one of the 9 tower GameObjects
+    (AlliedPrismSpire, AlliedCryoBastion, AlliedAegisSpire, SovietTeslaObelisk, SovietFlakNest,
+    SovietInfernoBunker, JapanTenguSpire, JapanWaveCitadel, JapanKitsuneShrine - the deployed tower,
+    not the Japan *Nanocore unit) must carry a MaxHealthUpgrade behavior keyed on this upgrade inside
+    its <Behaviors> block. Because it is a PLAYER upgrade, towers built after the purchase get it too.
+
+    Snippet to paste into <Behaviors> (AddMaxHealth = 25% of the tower's ActiveBody MaxHealth):
+
+        <MaxHealthUpgrade
+            id="ModuleTag_FortressReinforcedPlating"
+            AddMaxHealth="800"
+            ChangeType="ADD_CURRENT_HEALTH_TOO">
+            <TriggeredBy>Upgrade_FortressReinforcedPlating</TriggeredBy>
+        </MaxHealthUpgrade>
+
+    AddMaxHealth per tower (MaxHealth x 0.25):
+        AlliedPrismSpire     3200 -> 800
+        AlliedCryoBastion    2600 -> 650
+        AlliedAegisSpire     2200 -> 550
+        SovietTeslaObelisk   3600 -> 900
+        SovietFlakNest       2400 -> 600
+        SovietInfernoBunker  3000 -> 750
+        JapanTenguSpire      2000 -> 500
+        JapanWaveCitadel     3400 -> 850
+        JapanKitsuneShrine   1800 -> 450
+
+    VERIFY: attribute names of MaxHealthUpgrade in the RA3 schema (AddMaxHealth / MultiplyMaxHealth /
+    ChangeType and its enum values ADD_CURRENT_HEALTH_TOO / PRESERVE_RATIO / SAME_CURRENTHEALTH).
+    If MultiplyMaxHealth="1.25" is supported, it can replace the per-tower AddMaxHealth values.
+-->
+<AssetDeclaration xmlns="uri:ea.com:eala:asset" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Includes>
+        <Include type="reference" source="DATA:static.xml" />
+        <Include type="reference" source="DATA:global.xml" />
+        <Include type="reference" source="DATA:audio.xml" />
+    </Includes>
+
+    <!-- VERIFY: the Description attribute exists on RA3 UpgradeTemplate (drop it if the schema rejects it;
+         the yard tooltip then uses TOOLTIP/DESC strings via the button). -->
+    <!-- VERIFY: IconImage - reuse a vanilla upgrade button image (e.g. the armor/plating upgrade icon
+         of any faction); the id below is a placeholder. -->
+    <!-- VERIFY: ResearchSound / UnitSpecificSound - copy from a vanilla player upgrade bought at a structure. -->
+    <UpgradeTemplate
+        id="Upgrade_FortressReinforcedPlating"
+        DisplayName="NAME:Upgrade_FortressReinforcedPlating"
+        Description="DESC:Upgrade_FortressReinforcedPlating"
+        Type="PLAYER"
+        BuildCost="1500"
+        BuildTime="45"
+        IconImage="Button_UpgradeReinforcedPlating" />
+</AssetDeclaration>

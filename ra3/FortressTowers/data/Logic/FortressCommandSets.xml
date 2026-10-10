@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    FortressTowers 1.0 - LogicCommandSet entries (integration layer).
+
+    1) <TowerId>CommandSet for each of the 9 towers (the GameObject attribute CommandSet="<TowerId>CommandSet"
+       in every tower file must match these ids exactly).
+    2) Overrides of the vanilla construction-yard command sets of all three factions. A mod asset with the
+       same id as a vanilla asset replaces it, so the override MUST contain the complete vanilla list,
+       otherwise vanilla buttons disappear from the yard. The lists below are written from memory:
+       VERIFY every one of them against SageXml before building and copy the full vanilla list over.
+
+    Generic commands used by the tower sets (Command_Sell, Command_Repair, Command_Stop, Command_TogglePower,
+    Command_Evacuate) are vanilla LogicCommands - this mod does not redefine them.
+    VERIFY: exact ids of the vanilla sell / repair / stop / power-toggle / evacuate commands
+    (look at the command set of the vanilla base object of each tower, e.g. the Spectrum Tower / Tesla Coil /
+    Wave-Force Tower command sets, and use whatever they contain).
+
+    Tab placement: RA3 sorts yard buttons into the "Structures"/"Defenses" tabs by the built object, not by
+    the order in the command set. VERIFY in SageXml which flag does it (KindOf / BuildTab-like attribute on the
+    vanilla defenses) and make sure every tower GameObject (and Japan nanocore) carries the same flag.
+-->
+<AssetDeclaration xmlns="uri:ea.com:eala:asset" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Includes>
+        <Include type="reference" source="DATA:static.xml" />
+        <Include type="reference" source="DATA:global.xml" />
+        <Include type="reference" source="DATA:audio.xml" />
+    </Includes>
+
+    <!-- ======================================================================= -->
+    <!--                         Tower command sets                               -->
+    <!-- ======================================================================= -->
+
+    <!-- Allies: towers consume power, so they get the power toggle. -->
+    <LogicCommandSet id="AlliedPrismSpireCommandSet">
+        <Cmd>Command_Sell</Cmd>          <!-- VERIFY: vanilla sell command id -->
+        <Cmd>Command_Repair</Cmd>        <!-- VERIFY: vanilla structure repair command id -->
+        <Cmd>Command_TogglePower</Cmd>   <!-- VERIFY: vanilla power-down toggle command id -->
+        <Cmd>Command_Stop</Cmd>          <!-- VERIFY: vanilla stop command id -->
+    </LogicCommandSet>
+
+    <LogicCommandSet id="AlliedCryoBastionCommandSet">
+        <Cmd>Command_Sell</Cmd>
+        <Cmd>Command_Repair</Cmd>
+        <Cmd>Command_TogglePower</Cmd>
+        <Cmd>Command_Stop</Cmd>
+    </LogicCommandSet>
+
+    <!-- The shield projector of the Aegis Spire is passive (aura behaviour in the tower file); no button. -->
+    <LogicCommandSet id="AlliedAegisSpireCommandSet">
+        <Cmd>Command_Sell</Cmd>
+        <Cmd>Command_Repair</Cmd>
+        <Cmd>Command_TogglePower</Cmd>
+        <Cmd>Command_Stop</Cmd>
+    </LogicCommandSet>
+
+    <!-- Soviets: towers consume power, so they get the power toggle. -->
+    <LogicCommandSet id="SovietTeslaObeliskCommandSet">
+        <Cmd>Command_Sell</Cmd>
+        <Cmd>Command_Repair</Cmd>
+        <Cmd>Command_TogglePower</Cmd>
+        <Cmd>Command_Stop</Cmd>
+    </LogicCommandSet>
+
+    <LogicCommandSet id="SovietFlakNestCommandSet">
+        <Cmd>Command_Sell</Cmd>
+        <Cmd>Command_Repair</Cmd>
+        <Cmd>Command_TogglePower</Cmd>
+        <Cmd>Command_Stop</Cmd>
+    </LogicCommandSet>
+
+    <!-- Garrisonable (3 infantry): adds the vanilla evacuate button. -->
+    <LogicCommandSet id="SovietInfernoBunkerCommandSet">
+        <Cmd>Command_Sell</Cmd>
+        <Cmd>Command_Repair</Cmd>
+        <Cmd>Command_TogglePower</Cmd>
+        <Cmd>Command_Evacuate</Cmd>      <!-- VERIFY: vanilla evacuate command id (see a garrisonable civilian building / Soviet bunker) -->
+        <Cmd>Command_Stop</Cmd>
+    </LogicCommandSet>
+
+    <!-- Empire: SPEC lists no energy for Japan towers, so no power toggle.
+         VERIFY: if the vanilla Wave-Force Tower command set does contain a power toggle, add it here too. -->
+    <LogicCommandSet id="JapanTenguSpireCommandSet">
+        <Cmd>Command_Sell</Cmd>
+        <Cmd>Command_Repair</Cmd>
+        <Cmd>Command_Stop</Cmd>
+    </LogicCommandSet>
+
+    <LogicCommandSet id="JapanWaveCitadelCommandSet">
+        <Cmd>Command_Sell</Cmd>
+        <Cmd>Command_Repair</Cmd>
+        <Cmd>Command_Stop</Cmd>
+    </LogicCommandSet>
+
+    <LogicCommandSet id="JapanKitsuneShrineCommandSet">
+        <Cmd>Command_Sell</Cmd>
+        <Cmd>Command_Repair</Cmd>
+        <Cmd>Command_Stop</Cmd>
+    </LogicCommandSet>
+
+    <!-- ======================================================================= -->
+    <!--                  Construction yard overrides                             -->
+    <!-- ======================================================================= -->
+
+    <!-- VERIFY: override id - the CommandSet attribute of vanilla GameObject AlliedConstructionYard -->
+    <LogicCommandSet id="AlliedConstructionYardCommandSet">
+        <!-- VERIFY: copy the full vanilla list from SageXml (ids and order below are from memory) -->
+        <Cmd>Command_ConstructAlliedPowerPlant</Cmd>
+        <Cmd>Command_ConstructAlliedBarracks</Cmd>
+        <Cmd>Command_ConstructAlliedRefinery</Cmd>
+        <Cmd>Command_ConstructAlliedWarFactory</Cmd>
+        <Cmd>Command_ConstructAlliedNavalYard</Cmd>
+        <Cmd>Command_ConstructAlliedAirfield</Cmd>
+        <Cmd>Command_ConstructAlliedDefenseBureau</Cmd>      <!-- VERIFY: may be Command_ConstructAlliedTechStructure -->
+        <Cmd>Command_ConstructAlliedCommandHub</Cmd>         <!-- VERIFY -->
+        <Cmd>Command_ConstructAlliedWall</Cmd>               <!-- VERIFY: Fortress Wall -->
+        <Cmd>Command_ConstructAlliedBaseDefense</Cmd>        <!-- VERIFY: Multigunner Turret -->
+        <Cmd>Command_ConstructAlliedBaseDefenseAdvanced</Cmd><!-- VERIFY: Spectrum Tower -->
+        <Cmd>Command_ConstructAlliedSuperWeapon</Cmd>        <!-- VERIFY: Proton Collider -->
+        <Cmd>Command_ConstructAlliedSuperWeaponAdvanced</Cmd><!-- VERIFY: Chronosphere -->
+        <Cmd>Command_Sell</Cmd>                              <!-- VERIFY: vanilla yard also has sell / pack-up -->
+        <!-- end of vanilla list -->
+
+        <!-- FortressTowers additions (Defenses tab) -->
+        <Cmd>Command_ConstructAlliedPrismSpire</Cmd>
+        <Cmd>Command_ConstructAlliedCryoBastion</Cmd>
+        <Cmd>Command_ConstructAlliedAegisSpire</Cmd>
+        <Cmd>Command_Upgrade_FortressReinforcedPlating</Cmd>
+    </LogicCommandSet>
+
+    <!-- VERIFY: override id - the CommandSet attribute of vanilla GameObject SovietConstructionYard -->
+    <LogicCommandSet id="SovietConstructionYardCommandSet">
+        <!-- VERIFY: copy the full vanilla list from SageXml (ids and order below are from memory) -->
+        <Cmd>Command_ConstructSovietPowerPlant</Cmd>
+        <Cmd>Command_ConstructSovietBarracks</Cmd>
+        <Cmd>Command_ConstructSovietRefinery</Cmd>
+        <Cmd>Command_ConstructSovietWarFactory</Cmd>
+        <Cmd>Command_ConstructSovietNavalYard</Cmd>
+        <Cmd>Command_ConstructSovietAirfield</Cmd>
+        <Cmd>Command_ConstructSovietBattleLab</Cmd>          <!-- VERIFY: may be Command_ConstructSovietTechStructure -->
+        <Cmd>Command_ConstructSovietCrusher</Cmd>            <!-- VERIFY: Super-Reactor / Crusher Crane id -->
+        <Cmd>Command_ConstructSovietWall</Cmd>               <!-- VERIFY: Soviet wall -->
+        <Cmd>Command_ConstructSovietBaseDefense</Cmd>        <!-- VERIFY: Sentry Gun -->
+        <Cmd>Command_ConstructSovietAntiAirDefense</Cmd>     <!-- VERIFY: Flak Cannon -->
+        <Cmd>Command_ConstructSovietBaseDefenseAdvanced</Cmd><!-- VERIFY: Tesla Coil -->
+        <Cmd>Command_ConstructSovietSuperWeapon</Cmd>        <!-- VERIFY: Vacuum Imploder -->
+        <Cmd>Command_ConstructSovietSuperWeaponAdvanced</Cmd><!-- VERIFY: Iron Curtain -->
+        <Cmd>Command_Sell</Cmd>                              <!-- VERIFY: vanilla yard also has sell / pack-up -->
+        <!-- end of vanilla list -->
+
+        <!-- FortressTowers additions (Defenses tab) -->
+        <Cmd>Command_ConstructSovietTeslaObelisk</Cmd>
+        <Cmd>Command_ConstructSovietFlakNest</Cmd>
+        <Cmd>Command_ConstructSovietInfernoBunker</Cmd>
+        <Cmd>Command_Upgrade_FortressReinforcedPlating</Cmd>
+    </LogicCommandSet>
+
+    <!-- Empire: the construction yard is the object that produces nanocores in vanilla RA3, so the
+         nanocore buttons go into its command set.
+         VERIFY: override id - the CommandSet attribute of vanilla GameObject JapanConstructionYard.
+         VERIFY: if vanilla puts defense cores into a separate set (e.g. a second yard tab set or a
+         core-producing object other than the yard), add the three nanocore buttons there instead. -->
+    <LogicCommandSet id="JapanConstructionYardCommandSet">
+        <!-- VERIFY: copy the full vanilla list from SageXml (ids and order below are from memory) -->
+        <Cmd>Command_ConstructJapanPowerPlantNanocore</Cmd>          <!-- VERIFY: Instant Generator core -->
+        <Cmd>Command_ConstructJapanBarracksNanocore</Cmd>            <!-- VERIFY: Dojo core -->
+        <Cmd>Command_ConstructJapanRefineryNanocore</Cmd>            <!-- VERIFY: Ore Refinery core -->
+        <Cmd>Command_ConstructJapanWarFactoryNanocore</Cmd>          <!-- VERIFY: Mecha Bay core -->
+        <Cmd>Command_ConstructJapanNavalYardNanocore</Cmd>           <!-- VERIFY: Docks core -->
+        <Cmd>Command_ConstructJapanTechStructureNanocore</Cmd>       <!-- VERIFY: Nanotech Mainframe core -->
+        <Cmd>Command_ConstructJapanWallNanocore</Cmd>                <!-- VERIFY: Japan wall -->
+        <Cmd>Command_ConstructJapanBaseDefenseNanocore</Cmd>         <!-- VERIFY: Tankbuster Bunker / Defender-VX core -->
+        <Cmd>Command_ConstructJapanAntiAirDefenseNanocore</Cmd>      <!-- VERIFY: Defender-VX / anti-air core -->
+        <Cmd>Command_ConstructJapanBaseDefenseAdvancedNanocore</Cmd> <!-- VERIFY: Wave-Force Tower core -->
+        <Cmd>Command_ConstructJapanSuperWeaponNanocore</Cmd>         <!-- VERIFY: Psionic Decimator core -->
+        <Cmd>Command_ConstructJapanSuperWeaponAdvancedNanocore</Cmd> <!-- VERIFY: Nanoswarm Hive core -->
+        <Cmd>Command_Sell</Cmd>                                      <!-- VERIFY: vanilla yard also has sell / pack-up -->
+        <!-- end of vanilla list -->
+
+        <!-- FortressTowers additions (Defenses tab) -->
+        <Cmd>Command_ConstructJapanTenguSpireNanocore</Cmd>
+        <Cmd>Command_ConstructJapanWaveCitadelNanocore</Cmd>
+        <Cmd>Command_ConstructJapanKitsuneShrineNanocore</Cmd>
+        <Cmd>Command_Upgrade_FortressReinforcedPlating</Cmd>
+    </LogicCommandSet>
+</AssetDeclaration>
