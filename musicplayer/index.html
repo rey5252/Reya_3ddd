@@ -22,7 +22,7 @@
 :root{
   /* Layout: a phone-shaped shell — stacked scrolling pages, a floating mini player over the tab bar, a full-screen player that slides up */
   --bg:#101211; --bg-elev:#1b1e1c; --bg-elev-2:#252927; --bg-press:#323735;
-  --fg:#ffffff; --fg-2:#b2b8b4; --fg-3:#79807c; --line:rgba(255,255,255,.08);
+  --fg:#ffffff; --fg-2:#b2b8b4; --fg-3:#8a918d; --line:rgba(255,255,255,.08);
   --accent:#1ed760; --accent-ink:#06140b; --danger:#ff5c6c; --shell:#050606;
   --font-ui:'Manrope',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
   --font-display:'Unbounded','Manrope',system-ui,sans-serif;
@@ -50,7 +50,7 @@ h1,h2,h3,p{margin:0}
 }
 
 /* ---------- pages ---------- */
-.pages{position:absolute;inset:0;overflow:hidden}
+.pages{position:absolute;inset:0;overflow:hidden;background:#000}
 .page{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior-y:contain;background:var(--bg);padding:0 16px calc(var(--dock-h) + var(--safe-b) + 36px);scrollbar-width:none}
 .page::-webkit-scrollbar{display:none}
 .page.coll-page{padding-inline:0}
@@ -58,8 +58,8 @@ h1,h2,h3,p{margin:0}
 .scrim{position:absolute;top:0;left:0;right:0;height:var(--safe-t);background:var(--bg);z-index:10;transition:opacity .3s;pointer-events:none}
 #app.on-coll .scrim{opacity:0}
 @keyframes pageIn{from{transform:translateX(100%)}to{transform:none}}
-@keyframes pageUnder{from{transform:none;filter:none}to{transform:translateX(-28%);filter:brightness(.5)}}
-@keyframes pageReturn{from{transform:translateX(-28%);filter:brightness(.5)}to{transform:none;filter:none}}
+@keyframes pageUnder{from{transform:none;opacity:1}to{transform:translateX(-28%);opacity:.5}}
+@keyframes pageReturn{from{transform:translateX(-28%);opacity:.5}to{transform:none;opacity:1}}
 @keyframes pageOut{from{transform:none}to{transform:translateX(100%)}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
@@ -86,14 +86,15 @@ h1,h2,h3,p{margin:0}
 .pill.sm{height:36px;padding:0 16px;font-size:13.5px}
 .chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:2px 16px}
 .chips::-webkit-scrollbar{display:none}
-.chip{flex:none;display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 16px;border-radius:999px;background:var(--bg-elev-2);font-weight:700;font-size:13px;transition:background .25s,color .25s,transform .2s var(--ease-spring)}
+.chip::after{content:'';position:absolute;inset:-4px 0}
+.chip{position:relative;flex:none;display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 16px;border-radius:999px;background:var(--bg-elev-2);font-weight:700;font-size:13px;transition:background .25s,color .25s,transform .2s var(--ease-spring)}
 .chip:active{transform:scale(.94)}
 .chip.on{background:var(--accent);color:var(--accent-ink)}
 .chip.x{width:34px;padding:0;justify-content:center}
 .chip.x .ic{width:16px;height:16px}
-.avatar{width:36px;height:36px;border-radius:50%;flex:none;display:grid;place-items:center;font-weight:800;font-size:15px;color:var(--accent-ink);background:linear-gradient(140deg,var(--accent),#7ff0b0);transition:transform .2s var(--ease-spring)}
+.avatar{width:40px;height:40px;border-radius:50%;flex:none;display:grid;place-items:center;font-weight:800;font-size:15px;color:var(--accent-ink);background:linear-gradient(140deg,var(--accent),#7ff0b0);transition:transform .2s var(--ease-spring)}
 .avatar:active{transform:scale(.9)}
-.title-xl{font-family:var(--font-display);font-size:26px;font-weight:700;letter-spacing:-.01em;line-height:1.15;text-wrap:balance}
+.title-xl{font-family:var(--font-display);font-size:clamp(20px,5.9vw,26px);font-weight:700;letter-spacing:-.01em;line-height:1.15;text-wrap:balance}
 .title-lg{font-family:var(--font-display);font-size:21px;font-weight:700;letter-spacing:-.01em}
 
 /* eq bars */
@@ -135,7 +136,7 @@ body.is-playing .eq i{animation-play-state:running}
 .sec{margin-top:30px}
 .sec-h{display:flex;align-items:baseline;gap:10px;margin-bottom:14px}
 .sec-h h2{flex:1;font-family:var(--font-display);font-size:19px;font-weight:700;letter-spacing:-.01em;line-height:1.2}
-.link{color:var(--fg-2);font-weight:700;font-size:13px}
+.link{color:var(--fg-2);font-weight:700;font-size:13px;padding:12px 0 12px 12px;margin:-12px 0}
 .rail{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -16px;padding:0 16px 6px;scroll-padding-inline:16px;scrollbar-width:none}
 .rail::-webkit-scrollbar{display:none}
 .card{flex:none;width:142px;scroll-snap-align:start;cursor:pointer;transition:transform .22s var(--ease-spring)}
@@ -191,27 +192,28 @@ body.is-playing .eq i{animation-play-state:running}
 .sfield input{flex:1;min-width:0;height:100%;border:0;outline:0;background:none;color:#111;font-size:16px;font-weight:700}
 .sfield input::placeholder{color:#555;font-weight:600}
 .sfield input::-webkit-search-cancel-button{display:none}
-.sfield .ibtn{width:36px;height:36px;color:#333}
+.sfield .ibtn{width:40px;height:40px;color:#333}
 .browse{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .bt{position:relative;height:100px;border-radius:12px;overflow:hidden;padding:12px 14px;cursor:pointer;background:hsl(var(--h),58%,36%);transition:transform .22s var(--ease-spring)}
 .bt:active{transform:scale(.96)}
-.bt b{position:relative;z-index:1;display:block;font-size:15px;font-weight:800;line-height:1.2;max-width:75%;text-wrap:balance}
+.bt b{position:relative;z-index:1;font-size:15px;font-weight:800;line-height:1.2;max-width:68%;text-wrap:balance;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .bt .cov{position:absolute;right:-12px;bottom:-8px;width:68px;height:68px;transform:rotate(24deg);box-shadow:0 6px 18px rgba(0,0,0,.4);border-radius:6px}
 .bt .cov.round{border-radius:50%}
+.sres .li .cov{width:50px;height:50px}
 .res-h{font-family:var(--font-display);font-size:17px;font-weight:700;margin:22px 0 10px}
 .empty{padding:56px 12px 24px;text-align:center}
-.empty h3{font-family:var(--font-display);font-size:18px;font-weight:700;text-wrap:balance}
+.empty h3{font-family:var(--font-display);font-size:18px;font-weight:700;text-wrap:balance;overflow-wrap:anywhere}
 .empty p{color:var(--fg-2);margin:10px auto 20px;max-width:30ch;line-height:1.5}
 
 /* ---------- library ---------- */
-.lib-top{position:sticky;top:var(--safe-t);z-index:3;background:var(--bg);margin:0 -16px;padding:0 16px 10px;transition:box-shadow .3s}
+.lib-top{position:sticky;top:0;z-index:3;background:var(--bg);margin:0 -16px;padding:var(--safe-t) 16px 10px;transition:box-shadow .3s}
 .lib-top.raised{box-shadow:0 8px 20px rgba(0,0,0,.45)}
 .lib-top .head{padding-top:16px}
 .lib-head{display:flex;align-items:center;gap:10px}
-.lib-head h1{flex:1;min-width:0}
+.lib-head h1{flex:1;min-width:0;font-size:clamp(17px,5vw,21px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lib-top .chips{margin-top:14px}
 .lib-tools{display:flex;align-items:center;justify-content:space-between;margin:8px 0 6px}
-.sortbtn{display:inline-flex;align-items:center;gap:8px;font-weight:700;font-size:13px;height:36px}
+.sortbtn{display:inline-flex;align-items:center;gap:8px;font-weight:700;font-size:13px;height:40px}
 .sortbtn .ic{width:18px;height:18px}
 .lib-list{display:flex;flex-direction:column}
 .li{position:relative;display:flex;align-items:center;gap:12px;padding:7px 0;border-radius:8px;cursor:pointer;transition:transform .22s var(--ease-spring)}
@@ -219,7 +221,8 @@ body.is-playing .eq i{animation-play-state:running}
 .li .cov{width:64px;height:64px}
 .li-meta{flex:1;min-width:0}
 .li-meta b{display:block;font-size:15.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:color .25s}
-.li-meta small{display:flex;align-items:center;gap:5px;margin-top:4px;color:var(--fg-2);font-size:13px;white-space:nowrap;overflow:hidden}
+.li-meta small{display:block;margin-top:4px;color:var(--fg-2);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.li .pin{display:inline-flex;vertical-align:-2px;margin-right:5px}
 .li .pin .ic{width:13px;height:13px;color:var(--accent)}
 .li.ctx-active b{color:var(--accent)}
 .li.ctx-active .eq{display:flex}
@@ -246,15 +249,16 @@ body.is-playing .eq i{animation-play-state:running}
 .is-artist .coll-cover{border-radius:50%}
 .coll-info{position:relative;padding:0 16px}
 .coll-title{font-family:var(--font-display);font-size:clamp(22px,7vw,30px);font-weight:700;letter-spacing:-.015em;line-height:1.15;text-wrap:balance;overflow-wrap:anywhere}
+.coll-title.long{font-size:clamp(20px,5.6vw,24px);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .coll-desc{color:var(--fg-2);margin-top:8px;line-height:1.5}
 .coll-meta{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-top:10px;font-size:13px;color:var(--fg-2)}
 .coll-meta b{color:var(--fg)}
 .owner{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:800;color:var(--accent-ink);background:linear-gradient(140deg,var(--accent),#7ff0b0)}
-.coll-actions{position:relative;display:flex;align-items:center;gap:4px;padding:10px 12px 6px 8px}
+.coll-actions{position:relative;display:flex;align-items:center;gap:4px;padding:10px 16px 6px 8px}
 .coll-actions .grow{flex:1}
 .coll-actions .ibtn{color:var(--fg-2)}
 .coll-actions .ibtn.on{color:var(--accent)}
-.big-play{position:relative;width:58px;height:58px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;box-shadow:0 12px 26px rgba(0,0,0,.4);transition:transform .25s var(--ease-spring);margin-left:6px}
+.big-play{position:relative;opacity:calc(1 - var(--bp,0));transform:scale(calc(1 - var(--bp,0) * .3));width:58px;height:58px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;box-shadow:0 12px 26px rgba(0,0,0,.4);transition:transform .25s var(--ease-spring);margin-left:6px}
 .big-play:active{transform:scale(.9)}
 .big-play .pp,.big-play .pp .ic{width:26px;height:26px}
 .coll-tracks{position:relative;padding:4px 16px 0}
@@ -276,19 +280,19 @@ body.is-loading .np-play .spin,body.is-loading .mini-play .spin{display:block}
 .heart.on .ic-o{display:none}
 .heart.on .ic-f{display:block;color:var(--accent)}
 .heart.pop .ic{animation:heartPop .5s var(--ease-spring)}
-.heart::before{content:'';position:absolute;inset:6px;border-radius:50%;border:2px solid var(--accent);opacity:0;transform:scale(.4);pointer-events:none}
+.heart::before{content:'';position:absolute;inset:6px;border-radius:50%;border:2.5px solid var(--accent);opacity:0;transform:scale(.4);pointer-events:none}
 .heart.pop.on::before{animation:ring .5s var(--ease-out)}
 .burst{position:absolute;inset:0;pointer-events:none}
-.burst i{position:absolute;left:50%;top:50%;width:5px;height:5px;margin:-2.5px;border-radius:50%;background:var(--accent);opacity:0}
-.burst i:nth-child(even){background:#fff;width:4px;height:4px;margin:-2px}
+.burst i{position:absolute;left:50%;top:50%;width:6px;height:6px;margin:-3px;border-radius:50%;background:var(--accent);opacity:0}
+.burst i:nth-child(even){background:#fff;width:5px;height:5px;margin:-2.5px}
 .heart.pop.on .burst i{animation:burst .6s var(--ease-out) forwards}
 .heart.big .ic{width:28px;height:28px}
 @keyframes heartPop{0%{transform:scale(1)}25%{transform:scale(.65)}60%{transform:scale(1.32)}100%{transform:scale(1)}}
 @keyframes ring{0%{opacity:.9;transform:scale(.4)}100%{opacity:0;transform:scale(1.5)}}
-@keyframes burst{0%{opacity:1;transform:rotate(var(--a)) translateY(0) scale(1)}100%{opacity:0;transform:rotate(var(--a)) translateY(-24px) scale(.3)}}
+@keyframes burst{0%{opacity:0;transform:rotate(var(--a)) translateY(-6px) scale(.6)}20%{opacity:1;transform:rotate(var(--a)) translateY(-12px) scale(1)}100%{opacity:0;transform:rotate(var(--a)) translateY(-30px) scale(.4)}}
 
 /* ---------- dock: mini player + tabs ---------- */
-.dock{position:absolute;left:0;right:0;bottom:0;z-index:20;pointer-events:none;background:linear-gradient(to top,rgba(5,6,6,.98) 0%,rgba(5,6,6,.92) calc(var(--tab-h) + var(--safe-b)),rgba(5,6,6,0) 100%);padding-top:24px}
+.dock{position:absolute;left:0;right:0;bottom:0;z-index:20;pointer-events:none;background:linear-gradient(to top,#050606 0,#050606 calc(var(--tab-h) * .75 + var(--safe-b)),rgba(5,6,6,.86) calc(var(--tab-h) + var(--safe-b)),rgba(5,6,6,0) 100%);padding-top:24px}
 .dock > *{pointer-events:auto}
 .mini{position:relative;margin:0 8px 6px;border-radius:12px;background:var(--mc,#2a2d2b);overflow:hidden;box-shadow:0 10px 28px rgba(0,0,0,.45);transition:background-color .7s ease,transform .3s var(--ease-out);touch-action:none}
 .mini.in{animation:miniIn .55s var(--ease-spring) both}
@@ -331,7 +335,7 @@ body:not(.is-playing) .np-cover{box-shadow:0 12px 30px rgba(0,0,0,.35)}
 .np-info{display:flex;align-items:center;gap:10px;flex:none}
 .np-text{flex:1;min-width:0}
 .np-title{font-size:22px;font-weight:800;letter-spacing:-.01em;line-height:1.25}
-.np-artist{display:block;max-width:100%;margin-top:3px;font-size:15px;font-weight:600;color:rgba(255,255,255,.72);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.np-artist{display:block;max-width:100%;padding:8px 0;margin:-5px 0 -8px;font-size:15px;font-weight:600;color:rgba(255,255,255,.72);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .marquee{overflow:hidden;white-space:nowrap}
 .marquee span{display:inline-block}
 .marquee.run{-webkit-mask-image:linear-gradient(90deg,#000 88%,transparent);mask-image:linear-gradient(90deg,#000 88%,transparent)}
@@ -357,7 +361,7 @@ body:not(.is-playing) .np-cover{box-shadow:0 12px 30px rgba(0,0,0,.35)}
 .np-play:active{transform:scale(.9)}
 .np-play .pp,.np-play .pp .ic{width:32px;height:32px}
 .np-extra{display:flex;justify-content:space-between;gap:8px;margin-top:16px;flex:none}
-.xbtn{display:inline-flex;align-items:center;gap:7px;height:36px;padding:0 14px;border-radius:999px;background:rgba(255,255,255,.09);font-size:12.5px;font-weight:800;color:rgba(255,255,255,.85);font-variant-numeric:tabular-nums;transition:background .2s,color .2s}
+.xbtn{display:inline-flex;align-items:center;gap:7px;height:40px;padding:0 14px;border-radius:999px;background:rgba(255,255,255,.09);font-size:12.5px;font-weight:800;color:rgba(255,255,255,.85);font-variant-numeric:tabular-nums;transition:background .2s,color .2s}
 .xbtn .ic{width:18px;height:18px}
 .xbtn.on{color:var(--accent);background:color-mix(in srgb,var(--accent) 16%,transparent)}
 .np.entering .np-art{animation:fadeUp .6s .05s var(--ease-out) both}
@@ -385,7 +389,7 @@ body:not(.is-playing) .np-cover{box-shadow:0 12px 30px rgba(0,0,0,.35)}
 .sh-item{display:flex;align-items:center;gap:16px;width:100%;padding:13px 6px;border-radius:12px;font-size:15.5px;font-weight:700;transition:background .2s}
 .sh-item:active{background:rgba(255,255,255,.07)}
 .sh-item > .ic{color:var(--fg-2)}
-.sh-item > span{flex:1;min-width:0}
+.sh-item > span:not(.switch){flex:1;min-width:0}
 .sh-item em{font-style:normal;color:var(--fg-2);font-weight:600;font-size:14px}
 .sh-item.accent > .ic{color:var(--accent)}
 .sh-item.danger,.sh-item.danger > .ic{color:var(--danger)}
@@ -434,7 +438,7 @@ body:not(.is-playing) .np-cover{box-shadow:0 12px 30px rgba(0,0,0,.35)}
 
 /* ---------- toast ---------- */
 .toasts{position:absolute;left:0;right:0;bottom:calc(var(--dock-h) + var(--safe-b) + 14px);z-index:70;display:flex;justify-content:center;padding:0 16px;pointer-events:none}
-body.np-open .toasts{bottom:calc(var(--safe-b) + 120px)}
+body.np-open .toasts{bottom:auto;top:calc(var(--safe-t) + 64px)}
 .toast{display:flex;align-items:center;gap:10px;max-width:100%;padding:11px 18px 11px 12px;border-radius:14px;background:#eef2ef;color:#0b0d0c;font-weight:800;font-size:14px;box-shadow:0 14px 34px rgba(0,0,0,.45);animation:toastIn .45s var(--ease-spring) both}
 .toast .ic{width:24px;height:24px;padding:4px;border-radius:50%;background:var(--accent);color:var(--accent-ink)}
 .toast span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -446,6 +450,9 @@ body.np-open .toasts{bottom:calc(var(--safe-b) + 120px)}
 
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+  .eq i,.cta-wave i{animation:none!important}
+  .eq i{transform:scaleY(.55)} .eq i:nth-child(2){transform:scaleY(1)} .eq i:nth-child(3){transform:scaleY(.4)} .eq i:nth-child(4){transform:scaleY(.75)}
+  .cta-wave i{transform:scaleY(calc(.3 + .1 * mod(var(--i), 7)))}
 }
 </style>
 </head>
@@ -967,7 +974,7 @@ function collCard(c) {
 }
 const quickTile = c => `<div class="qt" role="button" tabindex="0" data-action="open" data-kind="${c.kind}" data-id="${esc(c.id)}" data-ctx="${esc(c.key)}">${covHTML(c)}<b>${esc(c.name)}</b>${EQ}</div>`;
 function libItem(c, pinned) {
-  const sub = c.kind === 'artist' ? `Виконавець • ${tracksWord(c.ids.length)}` : `${c.type} • ${c.owner === 'Ти' ? 'Ти' : tracksWord(c.ids.length)}`;
+  const sub = S.libGrid && c.kind === 'artist' ? 'Виконавець' : S.libGrid && c.owner !== 'Ти' ? tracksWord(c.ids.length) : c.kind === 'artist' ? `Виконавець • ${tracksWord(c.ids.length)}` : `${c.type} • ${c.owner === 'Ти' ? 'Ти' : tracksWord(c.ids.length)}`;
   return `<div class="li" role="button" tabindex="0" data-action="open" data-kind="${c.kind}" data-id="${esc(c.id)}" data-ctx="${esc(c.key)}">${covHTML(c, c.kind === 'artist' ? 'round' : '')}<div class="li-meta"><b>${esc(c.name)}</b><small>${pinned ? `<span class="pin">${ic('pin')}</span>` : ''}${esc(sub)}</small></div>${EQ}</div>`;
 }
 const sec = (title, body, more) => `<section class="sec"><div class="sec-h"><h2>${title}</h2>${more ? `<button class="link" data-action="open" data-kind="${more}">Усі</button>` : ''}</div>${body}</section>`;
@@ -1018,7 +1025,7 @@ function refreshSearch(e) {
   if (!q) {
     const tiles = [getColl('liked'), getColl('all'), getColl('recent'), getColl('top'), ...S.playlists.map(p => getColl('playlist', p.id)), ...artistColls()].filter(c => c && c.ids.length);
     const hues = [274, 148, 210, 20, 330, 190, 45, 260, 0, 100, 300, 230];
-    box.innerHTML = `<h2 class="res-h">Переглянути все</h2><div class="browse">${tiles.map((c, i) => `<div class="bt" role="button" tabindex="0" data-action="open" data-kind="${c.kind}" data-id="${esc(c.id)}" style="--h:${c.hue != null ? c.hue : hues[i % hues.length]}"><b>${esc(c.name)}</b>${covHTML(c)}</div>`).join('')}</div>`;
+    box.innerHTML = `<h2 class="res-h">Переглянути все</h2><div class="browse">${tiles.map((c, i) => `<div class="bt" role="button" tabindex="0" data-action="open" data-kind="${c.kind}" data-id="${esc(c.id)}" style="--h:${c.hue != null ? c.hue : hues[i % hues.length]}"><b>${esc(c.name).replace(/(\S+-\S+)/g, '<span style="white-space:nowrap">$1</span>')}</b>${covHTML(c)}</div>`).join('')}</div>`;
     e.results = [];
     return;
   }
@@ -1089,9 +1096,9 @@ function renderColl(e) {
       ${c.ids.length ? `<button class="ibtn sm-play" data-action="play-coll" data-kind="${c.kind}" data-id="${esc(c.id)}" data-ctx="${esc(c.key)}" aria-label="Відтворити">${PP}</button>` : ''}
     </div>
     <div class="coll-hero">${covHTML(c, 'coll-cover', true)}</div>
-    <div class="coll-info"><h1 class="coll-title">${esc(c.name)}</h1>${c.desc ? `<p class="coll-desc">${esc(c.desc)}</p>` : ''}<div class="coll-meta">${meta}</div></div>
+    <div class="coll-info"><h1 class="coll-title${c.name.length > 24 ? ' long' : ''}">${esc(c.name)}</h1>${c.desc ? `<p class="coll-desc">${esc(c.desc)}</p>` : ''}<div class="coll-meta">${meta}</div></div>
     <div class="coll-actions">
-      ${isPl ? `<button class="ibtn" data-action="pl-add-tracks" data-id="${esc(c.id)}" aria-label="Додати треки">${ic('plus-c')}</button><button class="ibtn" data-action="pl-rename" data-id="${esc(c.id)}" aria-label="Перейменувати">${ic('edit')}</button>` : ''}
+      ${isPl ? `<button class="ibtn" data-action="pl-rename" data-id="${esc(c.id)}" aria-label="Перейменувати">${ic('edit')}</button>` : ''}
       <button class="ibtn" data-action="coll-menu" data-kind="${c.kind}" data-id="${esc(c.id)}" aria-label="Більше дій">${ic('more')}</button>
       <div class="grow"></div>
       ${c.ids.length ? `<button class="ibtn shuf ${S.shuffle ? 'on' : ''}" data-action="shuffle" aria-label="Перемішати">${ic('shuffle')}</button><button class="big-play" data-action="play-coll" data-kind="${c.kind}" data-id="${esc(c.id)}" data-ctx="${esc(c.key)}" aria-label="Відтворити">${PP}</button>` : ''}
@@ -1100,7 +1107,14 @@ function renderColl(e) {
     <div class="coll-tracks"><div class="tracks" data-src="${esc(c.key)}">${c.ids.map(id => rowHTML(lib.get(id))).join('')}</div>${empty}</div>`;
   if (!e.scrollBound) {
     e.scrollBound = true; let raf = 0;
-    e.el.addEventListener('scroll', () => { if (raf) return; raf = requestAnimationFrame(() => { raf = 0; const st = e.el.scrollTop, hero = e.el.querySelector('.coll-hero'); const h = hero ? hero.offsetHeight : 300; e.el.style.setProperty('--sp', clamp(st / h, 0, 1).toFixed(3)); e.el.style.setProperty('--bar', clamp((st - h + 40) / 80, 0, 1).toFixed(3)); }); }, { passive: true });
+    e.el.addEventListener('scroll', () => { if (raf) return; raf = requestAnimationFrame(() => {
+      raf = 0; const st = e.el.scrollTop, r0 = e.el.getBoundingClientRect().top, q = s => e.el.querySelector(s);
+      const hero = q('.coll-hero'), barEl = q('.coll-bar'), title = q('.coll-title'), bp = q('.big-play');
+      const h = hero ? hero.offsetHeight : 300, bb = barEl ? barEl.offsetHeight : 58, tt = title ? title.getBoundingClientRect().top - r0 : h - st;
+      e.el.style.setProperty('--sp', clamp(st / h, 0, 1).toFixed(3));
+      e.el.style.setProperty('--bar', clamp((bb + 40 - tt) / 40, 0, 1).toFixed(3));
+      e.el.style.setProperty('--bp', bp ? clamp((bb + 16 - (bp.getBoundingClientRect().top - r0)) / 28, 0, 1).toFixed(3) : 0);
+    }); }, { passive: true });
   }
 }
 
@@ -1525,7 +1539,7 @@ function queueHTML() {
     ${q.length ? `<div class="q-sec"><span>Далі в черзі</span><button class="link" data-action="q-clear-all">Очистити</button></div><div class="tracks">${q.map(([t, i]) => row(t, `data-action="q-play" data-i="${i}"`, `<button class="ibtn more" data-action="q-remove" data-i="${i}" aria-label="Прибрати з черги">${ic('close')}</button>`)).join('')}</div>` : ''}
     ${rest.length ? `<div class="q-sec"><span>Далі з: ${esc(P.ctx ? P.ctx.name : 'бібліотеки')}</span></div><div class="tracks">${rest.map(([t, pos]) => row(t, `data-action="q-jump" data-pos="${pos}"`)).join('')}</div>` : (q.length ? '' : `<p class="sh-sub" style="margin-top:14px">Далі нічого немає. Додай треки в чергу через меню треку або свайпом вправо.</p>`)}`;
 }
-const openQueue = () => sheet.show(queueHTML(), { kind: 'queue', tall: true });
+const openQueue = () => sheet.show(queueHTML(), { kind: 'queue' });
 const refreshQueueSheet = () => { if (sheet.open && sheet.kind === 'queue') sheet.update(queueHTML()); };
 function openSleep() {
   const cur = sleep.eot ? 'eot' : sleep.end ? 'on' : 'off';
