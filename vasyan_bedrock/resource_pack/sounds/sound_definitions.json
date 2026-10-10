@@ -1,0 +1,9553 @@
+{
+ "format_version": "1.20.20",
+ "sound_definitions": {
+  "vasyan.uk.normal.hello.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/hello_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.hello.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/hello_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.hello.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/hello_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.here.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/here_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.here.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/here_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.stranger.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/stranger_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.stranger.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/stranger_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.dig.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/dig_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.dig.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/dig_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.dig.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/dig_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.house.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/house_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.house.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/house_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.house.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/house_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.steal.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/steal_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.steal.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/steal_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.steal.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/steal_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.sort.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/sort_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.sort.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/sort_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.sort.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/sort_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.eat.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/eat_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.eat.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/eat_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.eat.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/eat_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.heal.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/heal_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.heal.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/heal_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.heal.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/heal_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.shortcut.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/shortcut_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.shortcut.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/shortcut_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.shortcut.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/shortcut_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.push.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/push_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.push.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/push_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.push.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/push_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.web.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/web_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.web.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/web_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.web.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/web_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.friend.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/friend_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.friend.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/friend_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.friend.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/friend_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.friend_zombie.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/friend_zombie_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.friend_zombie.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/friend_zombie_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.idle.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/idle_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.idle.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/idle_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.idle.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/idle_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.idle.4": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/idle_4",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.idle.5": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/idle_5",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.idle.6": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/idle_6",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.mobheal.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/mobheal_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.mobheal.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/mobheal_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.mobheal.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/mobheal_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.ouch.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/ouch_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.ouch.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/ouch_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.ouch.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/ouch_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.angry.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/angry_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.angry.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/angry_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.quiet.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/quiet_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.quiet.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/quiet_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.quiet_broke.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/quiet_broke_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.quiet_broke.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/quiet_broke_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.give_back.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/give_back_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.give_back.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/give_back_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.give_back_forgot.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/give_back_forgot_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.give_back_forgot.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/give_back_forgot_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.give_back_empty.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/give_back_empty_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.give_back_empty.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/give_back_empty_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.help.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/help_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.help.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/help_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.bye.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/bye_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.bye.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/bye_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.joke.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/joke_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.joke.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/joke_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.joke.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/joke_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.joke.4": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/joke_4",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.joke.5": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/joke_5",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.advice.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/advice_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.advice.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/advice_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.advice.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/advice_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.advice.4": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/advice_4",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.diamonds.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/diamonds_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.diamonds.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/diamonds_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.diamonds.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/diamonds_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.how.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/how_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.how.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/how_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.how.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/how_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.stupid.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/stupid_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.stupid.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/stupid_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.stupid.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/stupid_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.about.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/about_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.about.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/about_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.dance.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/dance_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.dance.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/dance_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.sit.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/sit_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.sit.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/sit_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.follow.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/follow_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.follow.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/follow_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.gift_food.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/gift_food_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.gift_food.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/gift_food_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.gift_shiny.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/gift_shiny_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.gift_shiny.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/gift_shiny_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.gift_flower.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/gift_flower_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.gift_flower.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/gift_flower_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.gift_redstone.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/gift_redstone_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.gift_redstone.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/gift_redstone_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.gift_junk.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/gift_junk_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.gift_junk.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/gift_junk_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.gift_none.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/gift_none_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.gift_none.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/gift_none_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.hurt.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/hurt_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.hurt.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/hurt_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.hurt.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/hurt_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.low_hp.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/low_hp_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.low_hp.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/low_hp_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.respawn.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/respawn_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.respawn.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/respawn_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.respawn.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/respawn_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.diamond_ore.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/diamond_ore_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.diamond_ore.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/diamond_ore_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.night.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/night_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.night.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/night_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.dimension.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/dimension_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.dimension.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/dimension_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.kill.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/kill_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.kill.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/kill_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.kill.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/kill_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.rain.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/rain_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.rain.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/rain_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.creeper.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/creeper_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.creeper.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/creeper_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.afk.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/afk_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.afk.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/afk_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.lang.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/lang_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.mat_off.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/mat_off_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.reply_klod.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/reply_klod_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.reply_klod.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/reply_klod_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.normal.reply_klod.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/normal/reply_klod_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.hello.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/hello_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.hello.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/hello_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.hello.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/hello_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.here.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/here_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.here.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/here_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.stranger.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/stranger_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.stranger.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/stranger_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.dig.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/dig_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.dig.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/dig_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.dig.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/dig_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.house.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/house_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.house.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/house_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.house.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/house_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.steal.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/steal_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.steal.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/steal_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.steal.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/steal_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.sort.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/sort_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.sort.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/sort_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.sort.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/sort_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.eat.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/eat_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.eat.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/eat_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.eat.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/eat_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.heal.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/heal_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.heal.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/heal_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.heal.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/heal_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.shortcut.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/shortcut_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.shortcut.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/shortcut_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.shortcut.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/shortcut_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.push.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/push_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.push.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/push_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.push.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/push_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.web.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/web_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.web.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/web_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.web.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/web_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.friend.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/friend_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.friend.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/friend_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.friend.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/friend_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.friend_zombie.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/friend_zombie_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.friend_zombie.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/friend_zombie_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.idle.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/idle_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.idle.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/idle_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.idle.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/idle_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.idle.4": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/idle_4",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.idle.5": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/idle_5",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.idle.6": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/idle_6",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.mobheal.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/mobheal_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.mobheal.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/mobheal_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.mobheal.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/mobheal_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.ouch.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/ouch_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.ouch.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/ouch_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.ouch.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/ouch_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.angry.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/angry_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.angry.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/angry_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.quiet.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/quiet_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.quiet.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/quiet_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.quiet_broke.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/quiet_broke_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.quiet_broke.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/quiet_broke_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.give_back.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/give_back_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.give_back.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/give_back_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.give_back_forgot.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/give_back_forgot_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.give_back_forgot.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/give_back_forgot_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.give_back_empty.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/give_back_empty_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.give_back_empty.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/give_back_empty_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.help.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/help_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.help.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/help_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.bye.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/bye_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.bye.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/bye_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.joke.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/joke_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.joke.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/joke_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.joke.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/joke_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.joke.4": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/joke_4",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.joke.5": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/joke_5",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.advice.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/advice_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.advice.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/advice_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.advice.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/advice_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.advice.4": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/advice_4",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.diamonds.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/diamonds_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.diamonds.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/diamonds_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.diamonds.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/diamonds_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.how.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/how_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.how.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/how_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.how.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/how_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.stupid.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/stupid_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.stupid.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/stupid_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.stupid.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/stupid_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.about.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/about_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.about.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/about_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.dance.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/dance_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.dance.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/dance_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.sit.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/sit_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.sit.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/sit_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.follow.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/follow_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.follow.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/follow_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.gift_food.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/gift_food_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.gift_food.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/gift_food_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.gift_shiny.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/gift_shiny_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.gift_shiny.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/gift_shiny_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.gift_flower.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/gift_flower_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.gift_flower.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/gift_flower_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.gift_redstone.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/gift_redstone_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.gift_redstone.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/gift_redstone_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.gift_junk.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/gift_junk_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.gift_junk.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/gift_junk_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.gift_none.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/gift_none_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.gift_none.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/gift_none_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.hurt.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/hurt_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.hurt.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/hurt_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.hurt.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/hurt_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.low_hp.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/low_hp_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.low_hp.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/low_hp_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.respawn.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/respawn_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.respawn.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/respawn_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.respawn.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/respawn_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.diamond_ore.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/diamond_ore_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.diamond_ore.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/diamond_ore_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.night.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/night_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.night.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/night_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.dimension.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/dimension_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.dimension.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/dimension_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.kill.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/kill_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.kill.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/kill_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.kill.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/kill_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.rain.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/rain_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.rain.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/rain_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.creeper.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/creeper_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.creeper.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/creeper_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.afk.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/afk_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.afk.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/afk_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.lang.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/lang_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.mat_on.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/mat_on_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.reply_klod.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/reply_klod_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.reply_klod.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/reply_klod_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.uk.mat.reply_klod.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/uk/mat/reply_klod_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.hello.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/hello_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.hello.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/hello_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.hello.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/hello_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.here.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/here_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.here.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/here_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.stranger.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/stranger_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.stranger.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/stranger_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.dig.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/dig_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.dig.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/dig_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.dig.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/dig_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.house.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/house_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.house.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/house_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.house.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/house_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.steal.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/steal_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.steal.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/steal_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.steal.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/steal_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.sort.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/sort_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.sort.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/sort_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.sort.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/sort_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.eat.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/eat_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.eat.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/eat_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.eat.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/eat_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.heal.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/heal_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.heal.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/heal_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.heal.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/heal_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.shortcut.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/shortcut_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.shortcut.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/shortcut_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.shortcut.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/shortcut_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.push.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/push_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.push.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/push_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.push.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/push_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.web.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/web_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.web.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/web_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.web.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/web_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.friend.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/friend_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.friend.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/friend_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.friend.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/friend_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.friend_zombie.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/friend_zombie_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.friend_zombie.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/friend_zombie_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.idle.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/idle_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.idle.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/idle_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.idle.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/idle_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.idle.4": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/idle_4",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.idle.5": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/idle_5",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.idle.6": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/idle_6",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.mobheal.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/mobheal_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.mobheal.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/mobheal_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.mobheal.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/mobheal_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.ouch.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/ouch_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.ouch.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/ouch_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.ouch.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/ouch_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.angry.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/angry_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.angry.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/angry_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.quiet.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/quiet_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.quiet.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/quiet_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.quiet_broke.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/quiet_broke_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.quiet_broke.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/quiet_broke_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.give_back.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/give_back_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.give_back.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/give_back_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.give_back_forgot.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/give_back_forgot_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.give_back_forgot.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/give_back_forgot_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.give_back_empty.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/give_back_empty_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.give_back_empty.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/give_back_empty_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.help.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/help_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.help.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/help_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.bye.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/bye_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.bye.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/bye_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.joke.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/joke_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.joke.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/joke_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.joke.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/joke_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.joke.4": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/joke_4",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.joke.5": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/joke_5",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.advice.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/advice_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.advice.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/advice_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.advice.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/advice_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.advice.4": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/advice_4",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.diamonds.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/diamonds_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.diamonds.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/diamonds_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.diamonds.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/diamonds_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.how.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/how_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.how.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/how_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.how.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/how_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.stupid.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/stupid_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.stupid.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/stupid_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.stupid.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/stupid_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.about.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/about_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.about.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/about_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.dance.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/dance_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.dance.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/dance_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.sit.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/sit_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.sit.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/sit_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.follow.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/follow_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.follow.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/follow_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.gift_food.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/gift_food_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.gift_food.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/gift_food_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.gift_shiny.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/gift_shiny_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.gift_shiny.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/gift_shiny_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.gift_flower.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/gift_flower_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.gift_flower.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/gift_flower_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.gift_redstone.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/gift_redstone_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.gift_redstone.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/gift_redstone_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.gift_junk.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/gift_junk_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.gift_junk.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/gift_junk_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.gift_none.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/gift_none_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.gift_none.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/gift_none_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.hurt.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/hurt_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.hurt.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/hurt_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.hurt.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/hurt_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.low_hp.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/low_hp_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.low_hp.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/low_hp_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.respawn.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/respawn_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.respawn.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/respawn_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.respawn.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/respawn_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.diamond_ore.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/diamond_ore_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.diamond_ore.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/diamond_ore_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.night.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/night_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.night.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/night_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.dimension.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/dimension_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.dimension.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/dimension_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.kill.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/kill_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.kill.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/kill_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.kill.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/kill_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.rain.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/rain_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.rain.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/rain_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.creeper.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/creeper_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.creeper.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/creeper_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.afk.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/afk_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.afk.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/afk_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.lang.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/lang_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.mat_off.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/mat_off_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.reply_klod.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/reply_klod_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.reply_klod.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/reply_klod_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.normal.reply_klod.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/normal/reply_klod_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.hello.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/hello_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.hello.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/hello_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.hello.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/hello_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.here.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/here_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.here.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/here_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.stranger.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/stranger_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.stranger.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/stranger_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.dig.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/dig_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.dig.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/dig_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.dig.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/dig_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.house.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/house_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.house.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/house_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.house.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/house_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.steal.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/steal_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.steal.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/steal_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.steal.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/steal_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.sort.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/sort_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.sort.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/sort_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.sort.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/sort_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.eat.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/eat_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.eat.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/eat_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.eat.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/eat_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.heal.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/heal_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.heal.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/heal_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.heal.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/heal_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.shortcut.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/shortcut_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.shortcut.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/shortcut_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.shortcut.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/shortcut_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.push.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/push_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.push.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/push_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.push.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/push_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.web.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/web_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.web.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/web_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.web.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/web_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.friend.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/friend_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.friend.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/friend_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.friend.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/friend_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.friend_zombie.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/friend_zombie_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.friend_zombie.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/friend_zombie_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.idle.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/idle_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.idle.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/idle_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.idle.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/idle_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.idle.4": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/idle_4",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.idle.5": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/idle_5",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.idle.6": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/idle_6",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.mobheal.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/mobheal_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.mobheal.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/mobheal_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.mobheal.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/mobheal_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.ouch.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/ouch_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.ouch.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/ouch_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.ouch.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/ouch_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.angry.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/angry_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.angry.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/angry_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.quiet.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/quiet_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.quiet.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/quiet_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.quiet_broke.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/quiet_broke_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.quiet_broke.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/quiet_broke_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.give_back.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/give_back_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.give_back.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/give_back_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.give_back_forgot.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/give_back_forgot_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.give_back_forgot.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/give_back_forgot_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.give_back_empty.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/give_back_empty_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.give_back_empty.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/give_back_empty_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.help.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/help_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.help.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/help_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.bye.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/bye_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.bye.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/bye_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.joke.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/joke_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.joke.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/joke_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.joke.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/joke_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.joke.4": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/joke_4",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.joke.5": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/joke_5",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.advice.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/advice_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.advice.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/advice_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.advice.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/advice_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.advice.4": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/advice_4",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.diamonds.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/diamonds_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.diamonds.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/diamonds_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.diamonds.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/diamonds_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.how.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/how_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.how.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/how_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.how.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/how_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.stupid.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/stupid_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.stupid.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/stupid_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.stupid.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/stupid_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.about.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/about_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.about.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/about_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.dance.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/dance_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.dance.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/dance_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.sit.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/sit_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.sit.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/sit_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.follow.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/follow_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.follow.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/follow_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.gift_food.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/gift_food_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.gift_food.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/gift_food_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.gift_shiny.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/gift_shiny_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.gift_shiny.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/gift_shiny_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.gift_flower.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/gift_flower_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.gift_flower.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/gift_flower_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.gift_redstone.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/gift_redstone_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.gift_redstone.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/gift_redstone_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.gift_junk.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/gift_junk_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.gift_junk.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/gift_junk_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.gift_none.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/gift_none_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.gift_none.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/gift_none_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.hurt.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/hurt_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.hurt.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/hurt_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.hurt.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/hurt_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.low_hp.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/low_hp_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.low_hp.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/low_hp_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.respawn.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/respawn_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.respawn.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/respawn_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.respawn.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/respawn_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.diamond_ore.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/diamond_ore_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.diamond_ore.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/diamond_ore_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.night.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/night_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.night.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/night_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.dimension.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/dimension_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.dimension.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/dimension_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.kill.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/kill_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.kill.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/kill_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.kill.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/kill_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.rain.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/rain_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.rain.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/rain_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.creeper.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/creeper_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.creeper.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/creeper_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.afk.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/afk_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.afk.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/afk_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.lang.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/lang_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.mat_on.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/mat_on_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.reply_klod.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/reply_klod_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.reply_klod.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/reply_klod_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "vasyan.ru.mat.reply_klod.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/vasyan/ru/mat/reply_klod_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.hello.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/hello_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.hello.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/hello_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.hello.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/hello_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.here.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/here_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.here.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/here_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.stranger.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/stranger_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.stranger.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/stranger_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.torch.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/torch_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.torch.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/torch_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.heal.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/heal_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.heal.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/heal_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.feed.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/feed_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.feed.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/feed_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.guard.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/guard_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.guard.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/guard_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.guard.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/guard_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.fix_vasyan.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/fix_vasyan_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.fix_vasyan.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/fix_vasyan_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.fix_vasyan.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/fix_vasyan_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.tip.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/tip_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.tip.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/tip_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.tip.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/tip_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.tip.4": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/tip_4",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.tip.5": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/tip_5",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.roast.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/roast_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.roast.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/roast_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.roast.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/roast_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.roast.4": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/roast_4",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.roast.5": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/roast_5",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.roast.6": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/roast_6",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.undo.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/undo_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.undo.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/undo_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.undo.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/undo_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.joke.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/joke_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.joke.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/joke_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.joke.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/joke_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.joke.4": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/joke_4",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.how.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/how_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.how.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/how_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.how.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/how_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.vasyan.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/vasyan_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.vasyan.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/vasyan_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.vasyan.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/vasyan_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.smart.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/smart_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.smart.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/smart_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.about.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/about_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.about.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/about_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.dance.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/dance_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.dance.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/dance_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.sit.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/sit_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.sit.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/sit_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.follow.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/follow_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.follow.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/follow_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.quiet.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/quiet_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.help.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/help_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.help.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/help_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.help_nothing.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/help_nothing_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.help_nothing.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/help_nothing_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.bye.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/bye_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.bye.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/bye_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.ouch.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/ouch_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.ouch.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/ouch_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.ouch.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/ouch_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.angry.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/angry_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.angry.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/angry_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.hurt.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/hurt_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.hurt.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/hurt_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.low_hp.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/low_hp_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.low_hp.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/low_hp_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.respawn.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/respawn_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.respawn.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/respawn_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.diamond_ore.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/diamond_ore_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.diamond_ore.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/diamond_ore_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.night.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/night_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.night.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/night_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.dimension.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/dimension_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.dimension.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/dimension_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.kill.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/kill_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.kill.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/kill_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.kill.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/kill_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.creeper.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/creeper_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.creeper.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/creeper_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.lang.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/lang_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.normal.mat_off.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/normal/mat_off_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.hello.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/hello_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.hello.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/hello_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.hello.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/hello_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.here.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/here_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.here.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/here_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.stranger.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/stranger_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.stranger.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/stranger_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.torch.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/torch_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.torch.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/torch_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.heal.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/heal_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.heal.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/heal_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.feed.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/feed_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.feed.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/feed_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.guard.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/guard_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.guard.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/guard_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.guard.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/guard_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.fix_vasyan.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/fix_vasyan_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.fix_vasyan.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/fix_vasyan_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.fix_vasyan.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/fix_vasyan_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.tip.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/tip_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.tip.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/tip_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.tip.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/tip_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.tip.4": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/tip_4",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.tip.5": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/tip_5",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.roast.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/roast_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.roast.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/roast_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.roast.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/roast_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.roast.4": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/roast_4",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.roast.5": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/roast_5",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.roast.6": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/roast_6",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.undo.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/undo_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.undo.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/undo_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.undo.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/undo_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.joke.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/joke_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.joke.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/joke_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.joke.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/joke_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.joke.4": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/joke_4",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.how.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/how_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.how.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/how_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.how.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/how_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.vasyan.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/vasyan_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.vasyan.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/vasyan_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.vasyan.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/vasyan_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.smart.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/smart_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.smart.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/smart_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.about.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/about_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.about.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/about_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.dance.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/dance_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.dance.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/dance_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.sit.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/sit_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.sit.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/sit_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.follow.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/follow_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.follow.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/follow_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.quiet.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/quiet_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.help.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/help_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.help.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/help_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.help_nothing.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/help_nothing_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.help_nothing.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/help_nothing_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.bye.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/bye_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.bye.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/bye_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.ouch.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/ouch_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.ouch.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/ouch_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.ouch.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/ouch_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.angry.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/angry_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.angry.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/angry_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.hurt.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/hurt_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.hurt.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/hurt_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.low_hp.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/low_hp_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.low_hp.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/low_hp_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.respawn.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/respawn_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.respawn.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/respawn_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.diamond_ore.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/diamond_ore_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.diamond_ore.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/diamond_ore_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.night.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/night_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.night.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/night_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.dimension.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/dimension_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.dimension.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/dimension_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.kill.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/kill_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.kill.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/kill_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.kill.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/kill_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.creeper.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/creeper_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.creeper.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/creeper_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.lang.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/lang_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.uk.mat.mat_on.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/uk/mat/mat_on_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.hello.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/hello_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.hello.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/hello_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.hello.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/hello_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.here.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/here_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.here.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/here_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.stranger.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/stranger_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.stranger.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/stranger_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.torch.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/torch_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.torch.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/torch_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.heal.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/heal_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.heal.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/heal_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.feed.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/feed_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.feed.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/feed_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.guard.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/guard_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.guard.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/guard_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.guard.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/guard_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.fix_vasyan.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/fix_vasyan_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.fix_vasyan.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/fix_vasyan_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.fix_vasyan.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/fix_vasyan_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.tip.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/tip_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.tip.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/tip_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.tip.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/tip_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.tip.4": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/tip_4",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.tip.5": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/tip_5",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.roast.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/roast_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.roast.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/roast_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.roast.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/roast_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.roast.4": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/roast_4",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.roast.5": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/roast_5",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.roast.6": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/roast_6",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.undo.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/undo_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.undo.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/undo_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.undo.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/undo_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.joke.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/joke_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.joke.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/joke_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.joke.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/joke_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.joke.4": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/joke_4",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.how.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/how_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.how.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/how_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.how.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/how_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.vasyan.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/vasyan_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.vasyan.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/vasyan_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.vasyan.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/vasyan_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.smart.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/smart_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.smart.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/smart_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.about.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/about_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.about.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/about_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.dance.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/dance_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.dance.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/dance_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.sit.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/sit_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.sit.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/sit_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.follow.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/follow_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.follow.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/follow_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.quiet.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/quiet_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.help.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/help_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.help.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/help_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.help_nothing.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/help_nothing_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.help_nothing.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/help_nothing_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.bye.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/bye_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.bye.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/bye_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.ouch.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/ouch_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.ouch.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/ouch_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.ouch.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/ouch_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.angry.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/angry_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.angry.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/angry_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.hurt.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/hurt_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.hurt.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/hurt_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.low_hp.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/low_hp_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.low_hp.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/low_hp_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.respawn.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/respawn_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.respawn.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/respawn_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.diamond_ore.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/diamond_ore_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.diamond_ore.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/diamond_ore_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.night.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/night_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.night.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/night_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.dimension.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/dimension_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.dimension.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/dimension_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.kill.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/kill_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.kill.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/kill_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.kill.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/kill_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.creeper.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/creeper_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.creeper.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/creeper_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.lang.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/lang_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.normal.mat_off.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/normal/mat_off_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.hello.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/hello_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.hello.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/hello_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.hello.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/hello_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.here.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/here_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.here.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/here_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.stranger.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/stranger_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.stranger.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/stranger_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.torch.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/torch_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.torch.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/torch_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.heal.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/heal_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.heal.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/heal_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.feed.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/feed_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.feed.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/feed_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.guard.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/guard_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.guard.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/guard_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.guard.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/guard_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.fix_vasyan.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/fix_vasyan_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.fix_vasyan.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/fix_vasyan_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.fix_vasyan.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/fix_vasyan_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.tip.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/tip_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.tip.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/tip_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.tip.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/tip_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.tip.4": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/tip_4",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.tip.5": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/tip_5",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.roast.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/roast_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.roast.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/roast_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.roast.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/roast_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.roast.4": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/roast_4",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.roast.5": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/roast_5",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.roast.6": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/roast_6",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.undo.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/undo_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.undo.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/undo_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.undo.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/undo_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.joke.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/joke_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.joke.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/joke_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.joke.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/joke_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.joke.4": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/joke_4",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.how.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/how_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.how.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/how_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.how.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/how_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.vasyan.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/vasyan_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.vasyan.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/vasyan_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.vasyan.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/vasyan_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.smart.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/smart_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.smart.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/smart_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.about.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/about_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.about.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/about_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.dance.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/dance_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.dance.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/dance_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.sit.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/sit_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.sit.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/sit_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.follow.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/follow_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.follow.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/follow_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.quiet.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/quiet_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.help.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/help_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.help.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/help_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.help_nothing.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/help_nothing_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.help_nothing.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/help_nothing_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.bye.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/bye_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.bye.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/bye_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.ouch.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/ouch_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.ouch.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/ouch_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.ouch.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/ouch_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.angry.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/angry_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.angry.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/angry_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.hurt.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/hurt_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.hurt.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/hurt_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.low_hp.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/low_hp_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.low_hp.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/low_hp_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.respawn.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/respawn_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.respawn.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/respawn_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.diamond_ore.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/diamond_ore_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.diamond_ore.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/diamond_ore_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.night.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/night_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.night.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/night_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.dimension.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/dimension_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.dimension.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/dimension_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.kill.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/kill_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.kill.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/kill_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.kill.3": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/kill_3",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.creeper.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/creeper_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.creeper.2": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/creeper_2",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.lang.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/lang_1",
+     "volume": 1.0
+    }
+   ]
+  },
+  "klod.ru.mat.mat_on.1": {
+   "category": "neutral",
+   "min_distance": 4.0,
+   "max_distance": 32.0,
+   "sounds": [
+    {
+     "name": "sounds/klod/ru/mat/mat_on_1",
+     "volume": 1.0
+    }
+   ]
+  }
+ }
+}

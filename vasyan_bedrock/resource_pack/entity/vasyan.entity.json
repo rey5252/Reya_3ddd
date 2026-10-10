@@ -4,17 +4,25 @@
     "description": {
       "identifier": "vasyan:vasyan",
       "materials": { "default": "entity_alphatest" },
-      "textures": { "default": "textures/entity/vasyan" },
+      "textures": { "default": "textures/entity/vasyan", "talk": "textures/entity/vasyan_talk" },
       "geometry": { "default": "geometry.vasyan" },
       "animations": {
         "walk": "animation.vasyan.walk",
         "look_at_target": "animation.vasyan.look_at_target",
-        "idle": "animation.vasyan.idle"
+        "idle": "animation.vasyan.idle",
+        "talk": "animation.vasyan.talk",
+        "dance": "animation.vasyan.dance"
       },
       "scripts": {
-        "animate": ["walk", "look_at_target", "idle"]
+        "animate": [
+          "walk",
+          "look_at_target",
+          { "idle": "!query.property('vasyan:dancing')" },
+          { "talk": "query.property('vasyan:talking') && !query.property('vasyan:dancing')" },
+          { "dance": "query.property('vasyan:dancing')" }
+        ]
       },
-      "render_controllers": ["controller.render.default"],
+      "render_controllers": ["controller.render.vasyan_bot"],
       "spawn_egg": { "base_color": "#3a3f58", "overlay_color": "#40d8ff" }
     }
   }

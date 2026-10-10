@@ -1,0 +1,29 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "vasyan:klod",
+      "materials": { "default": "entity_alphatest" },
+      "textures": { "default": "textures/entity/klod", "talk": "textures/entity/klod_talk" },
+      "geometry": { "default": "geometry.vasyan" },
+      "animations": {
+        "walk": "animation.vasyan.walk",
+        "look_at_target": "animation.vasyan.look_at_target",
+        "idle": "animation.vasyan.idle",
+        "talk": "animation.vasyan.talk",
+        "dance": "animation.vasyan.dance"
+      },
+      "scripts": {
+        "animate": [
+          "walk",
+          "look_at_target",
+          { "idle": "!query.property('vasyan:dancing')" },
+          { "talk": "query.property('vasyan:talking') && !query.property('vasyan:dancing')" },
+          { "dance": "query.property('vasyan:dancing')" }
+        ]
+      },
+      "render_controllers": ["controller.render.vasyan_bot"],
+      "spawn_egg": { "base_color": "#e2ded6", "overlay_color": "#ff965a" }
+    }
+  }
+}

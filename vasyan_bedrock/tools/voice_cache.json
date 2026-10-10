@@ -1,0 +1,3474 @@
+{
+"sounds/klod/ru/mat/about_1": {
+"hash": "8ab37007ec218d2aba0a7063987286d57bb29479",
+"seconds": 7.53
+},
+"sounds/klod/ru/mat/about_2": {
+"hash": "568e05bd0d3149e4fe870368cc8a2f2b6ab3abde",
+"seconds": 8.79
+},
+"sounds/klod/ru/mat/angry_1": {
+"hash": "07544f8311836a079ea1ecbe27d767f69a132115",
+"seconds": 4.41
+},
+"sounds/klod/ru/mat/angry_2": {
+"hash": "88bc801967b76d8f02caf370e54b7d3fead49770",
+"seconds": 5.23
+},
+"sounds/klod/ru/mat/bye_1": {
+"hash": "e671368f9db98e742f0716c87797facd97f75567",
+"seconds": 5.48
+},
+"sounds/klod/ru/mat/bye_2": {
+"hash": "372b7080cc653c4b6dff73904a469fb964090a1b",
+"seconds": 3.5
+},
+"sounds/klod/ru/mat/creeper_1": {
+"hash": "a900e4f078c9844dfc47115a66e6f6ce609dd9be",
+"seconds": 3.67
+},
+"sounds/klod/ru/mat/creeper_2": {
+"hash": "4dc543bad65369a83f0c1982a9dc516db2e7fb37",
+"seconds": 4.01
+},
+"sounds/klod/ru/mat/dance_1": {
+"hash": "e7357dacf519fe971e7d7ef70c15d82c760b441d",
+"seconds": 4.1
+},
+"sounds/klod/ru/mat/dance_2": {
+"hash": "5452b4547f3284ba9041f76815dea90e5bb59791",
+"seconds": 3.77
+},
+"sounds/klod/ru/mat/diamond_ore_1": {
+"hash": "10c358fb57bab212b8b5d9ed043d7278b5041048",
+"seconds": 5.67
+},
+"sounds/klod/ru/mat/diamond_ore_2": {
+"hash": "469568fd3c8af6bfd7b6168ba23b0b4da186d088",
+"seconds": 4.01
+},
+"sounds/klod/ru/mat/dimension_1": {
+"hash": "354e82f918bb638de0cb4dc7f586adf05102d0bd",
+"seconds": 3.89
+},
+"sounds/klod/ru/mat/dimension_2": {
+"hash": "e7f2f2fcb27a9581424918a089b0e902ad9c02dd",
+"seconds": 5.19
+},
+"sounds/klod/ru/mat/feed_1": {
+"hash": "98dbcec675591e9b21334f597040e7d22abe265c",
+"seconds": 4.86
+},
+"sounds/klod/ru/mat/feed_2": {
+"hash": "df6f360df7180387a3b0ed0d869cbf548e3dd2c9",
+"seconds": 5.03
+},
+"sounds/klod/ru/mat/fix_vasyan_1": {
+"hash": "1b6ef629942d953453351b0b77a9bb89c52d3cd1",
+"seconds": 4.76
+},
+"sounds/klod/ru/mat/fix_vasyan_2": {
+"hash": "fab0f2e2337a33fe95281bb47de83e8975601b19",
+"seconds": 3.67
+},
+"sounds/klod/ru/mat/fix_vasyan_3": {
+"hash": "c6d989a74162b601c97fe65eb70b0d2cb103aac4",
+"seconds": 3.9
+},
+"sounds/klod/ru/mat/follow_1": {
+"hash": "bce62776579b78d114c5168dc7b573c3c3a23e27",
+"seconds": 2.04
+},
+"sounds/klod/ru/mat/follow_2": {
+"hash": "9b0d73efc466f352c3cbfa72934fe6061b3e3021",
+"seconds": 3.06
+},
+"sounds/klod/ru/mat/guard_1": {
+"hash": "e6ca24caf971269b2465cc330ad751783ec98674",
+"seconds": 3.15
+},
+"sounds/klod/ru/mat/guard_2": {
+"hash": "46963fd3a3b3b25da2ef0a97d51c2995ea2aa542",
+"seconds": 3.94
+},
+"sounds/klod/ru/mat/guard_3": {
+"hash": "b61e6c617da3b49fe3cd6bf721b5d94f35bfd174",
+"seconds": 3.6
+},
+"sounds/klod/ru/mat/heal_1": {
+"hash": "c8f5c65927303ebee5f3df544e44085063f5b868",
+"seconds": 3.24
+},
+"sounds/klod/ru/mat/heal_2": {
+"hash": "70c6b35dfb85ea05f345793ae9a385834f0ad2fa",
+"seconds": 5.06
+},
+"sounds/klod/ru/mat/hello_1": {
+"hash": "7d153d7fa5bca1f7c221eaadb4dd1056f4f33c93",
+"seconds": 10.0
+},
+"sounds/klod/ru/mat/hello_2": {
+"hash": "cdef0fdad63ae92a76906229e9792b805ce04722",
+"seconds": 5.14
+},
+"sounds/klod/ru/mat/hello_3": {
+"hash": "ef8112ed868793509800427a9aabacad988bf66c",
+"seconds": 6.29
+},
+"sounds/klod/ru/mat/help_1": {
+"hash": "43d6f0e5c964519a2eeb2662eedb51e251bbe4cf",
+"seconds": 3.2
+},
+"sounds/klod/ru/mat/help_2": {
+"hash": "7c87ca0e83d209ff420705e6eb5fff9999741182",
+"seconds": 3.32
+},
+"sounds/klod/ru/mat/help_nothing_1": {
+"hash": "2aa703bac3f89cc70c43df23b2d3e5c8081a4545",
+"seconds": 4.33
+},
+"sounds/klod/ru/mat/help_nothing_2": {
+"hash": "e4dd1881b89e0a133040917ccb61a8a8082a1cee",
+"seconds": 5.35
+},
+"sounds/klod/ru/mat/here_1": {
+"hash": "9820981b189ba77d9c111f84b3815fbb9fb7f069",
+"seconds": 3.13
+},
+"sounds/klod/ru/mat/here_2": {
+"hash": "95e069f352db59b68b4721614c1ce0357d77fd3e",
+"seconds": 4.42
+},
+"sounds/klod/ru/mat/how_1": {
+"hash": "d70e2b33ebd343f17217a7acc548f77def978555",
+"seconds": 5.19
+},
+"sounds/klod/ru/mat/how_2": {
+"hash": "ec2c7a650b57d444cc52f975263e7732653e9752",
+"seconds": 6.05
+},
+"sounds/klod/ru/mat/how_3": {
+"hash": "375bd1a48ca5fd5242aa8c0e1eacad5ffc260a2f",
+"seconds": 5.98
+},
+"sounds/klod/ru/mat/hurt_1": {
+"hash": "b75a3ec2b27cd95fbccc7fe66b68e9a326b6966e",
+"seconds": 4.01
+},
+"sounds/klod/ru/mat/hurt_2": {
+"hash": "6ad0d947895005c236c64cb9eb9a350f51ae0476",
+"seconds": 3.61
+},
+"sounds/klod/ru/mat/joke_1": {
+"hash": "3278d4ef3d4e7280998c0dca9db730842c7b307d",
+"seconds": 7.12
+},
+"sounds/klod/ru/mat/joke_2": {
+"hash": "d7cfb6cdadf05fef5583ffd7abc9f116471ab0d3",
+"seconds": 6.76
+},
+"sounds/klod/ru/mat/joke_3": {
+"hash": "2ca7faccbc2b555f8744454d3d24ebac7c7d6aba",
+"seconds": 6.73
+},
+"sounds/klod/ru/mat/joke_4": {
+"hash": "aaec6884ecbb7de9611d6fed4721dd0428c40eca",
+"seconds": 9.62
+},
+"sounds/klod/ru/mat/kill_1": {
+"hash": "5ab2c7a65639cd15394db58a96729f2a853367f8",
+"seconds": 1.5
+},
+"sounds/klod/ru/mat/kill_2": {
+"hash": "0bcb5a3132252cf03f99b82e96c8be466a564d8f",
+"seconds": 2.65
+},
+"sounds/klod/ru/mat/kill_3": {
+"hash": "393a23bc3fafb74c46f05def3f8a72ba2cef363f",
+"seconds": 2.27
+},
+"sounds/klod/ru/mat/lang_1": {
+"hash": "8a505c49a784cf7a924fd490300ed1651687bf61",
+"seconds": 3.03
+},
+"sounds/klod/ru/mat/low_hp_1": {
+"hash": "da724a64a2c09dce70730696cae03926011a037f",
+"seconds": 5.47
+},
+"sounds/klod/ru/mat/low_hp_2": {
+"hash": "d4d78970d973def7d11616f9f217cf41319f1fdc",
+"seconds": 5.14
+},
+"sounds/klod/ru/mat/mat_on_1": {
+"hash": "fd24721c2dc257801d5a0b0f86069c613dc1fc29",
+"seconds": 4.74
+},
+"sounds/klod/ru/mat/night_1": {
+"hash": "60e4129f8d2261080455bc5f7b20c06773e691ea",
+"seconds": 4.22
+},
+"sounds/klod/ru/mat/night_2": {
+"hash": "2825a311aedd9ab41854e0bb291e3db8aab2c25f",
+"seconds": 4.36
+},
+"sounds/klod/ru/mat/ouch_1": {
+"hash": "7bb98bdcb830df206a07258ef39d7f53ce3af823",
+"seconds": 3.64
+},
+"sounds/klod/ru/mat/ouch_2": {
+"hash": "068f52abb4d05f4fb9b3821a73a0243242bbf1ff",
+"seconds": 4.35
+},
+"sounds/klod/ru/mat/ouch_3": {
+"hash": "f514725059fa3dc7a3d4972ee921e9f623002cb9",
+"seconds": 2.78
+},
+"sounds/klod/ru/mat/quiet_1": {
+"hash": "c84044be44206ed340ac37d906b4d04d0895dd47",
+"seconds": 4.49
+},
+"sounds/klod/ru/mat/respawn_1": {
+"hash": "75c872871758ff40cfcfc555f3b418b0566c4203",
+"seconds": 6.94
+},
+"sounds/klod/ru/mat/respawn_2": {
+"hash": "fd35fe7e658f6da69022c6a123c97da582e6a3cb",
+"seconds": 4.56
+},
+"sounds/klod/ru/mat/roast_1": {
+"hash": "2756041d45d60083540af1b19a84303d304a0b2f",
+"seconds": 2.86
+},
+"sounds/klod/ru/mat/roast_2": {
+"hash": "47dd9d950b4c505dca12bee8347edd95222fd7a2",
+"seconds": 3.34
+},
+"sounds/klod/ru/mat/roast_3": {
+"hash": "fc5ed5ae8b30f98f5f1c793ee06714c9f8ad8754",
+"seconds": 4.6
+},
+"sounds/klod/ru/mat/roast_4": {
+"hash": "a00a38fdf98e8bf24b217ea53a9e86cfa6b99a71",
+"seconds": 6.26
+},
+"sounds/klod/ru/mat/roast_5": {
+"hash": "88b02140a9c27fe79bd39e1c3c86b03dad9100e6",
+"seconds": 4.42
+},
+"sounds/klod/ru/mat/roast_6": {
+"hash": "518ecc97e54d2c698b15632d3c45ca35d2630691",
+"seconds": 4.06
+},
+"sounds/klod/ru/mat/sit_1": {
+"hash": "79870c0d916f4240b740eaec6286fa8e792cf240",
+"seconds": 2.75
+},
+"sounds/klod/ru/mat/sit_2": {
+"hash": "467aa6f26251e430f90c74ef51057a7dfa732333",
+"seconds": 3.27
+},
+"sounds/klod/ru/mat/smart_1": {
+"hash": "cf5341bad9a2abbb84313b0442a374fe979e9ba5",
+"seconds": 4.55
+},
+"sounds/klod/ru/mat/smart_2": {
+"hash": "3ba91111f49e763a93cb17ff2c986d0f7f0987a4",
+"seconds": 4.89
+},
+"sounds/klod/ru/mat/stranger_1": {
+"hash": "e8e0c836eba7f0abd3c3a586c3ad0fb4d7c4255a",
+"seconds": 4.61
+},
+"sounds/klod/ru/mat/stranger_2": {
+"hash": "ced037f29cb390876fed21ea04568311bf11893f",
+"seconds": 5.88
+},
+"sounds/klod/ru/mat/tip_1": {
+"hash": "b5a4c26b95206ff2a22d07ad80897fa360b03a9c",
+"seconds": 7.25
+},
+"sounds/klod/ru/mat/tip_2": {
+"hash": "529f535e50e8b31932cfaf998f39cf46feb889e3",
+"seconds": 5.59
+},
+"sounds/klod/ru/mat/tip_3": {
+"hash": "e8ad1858c8516c6dbe92ec8f7ad7bcf0b6b556bd",
+"seconds": 5.73
+},
+"sounds/klod/ru/mat/tip_4": {
+"hash": "8c3cd21b06074a36abdddfa998e911d4c9affbd7",
+"seconds": 5.94
+},
+"sounds/klod/ru/mat/tip_5": {
+"hash": "a420b694fa89bfa643c1a2a08511aa4947e06040",
+"seconds": 5.42
+},
+"sounds/klod/ru/mat/torch_1": {
+"hash": "744c74a954eadd64707f340bce33f76f44f30b87",
+"seconds": 3.26
+},
+"sounds/klod/ru/mat/torch_2": {
+"hash": "3e794e3772991967114cd8280f2c18eaca5fb408",
+"seconds": 5.34
+},
+"sounds/klod/ru/mat/undo_1": {
+"hash": "fc425e888f8c171f6e83021b373a14d0c474964e",
+"seconds": 3.11
+},
+"sounds/klod/ru/mat/undo_2": {
+"hash": "300e75e937c65a4fdfbae64d88b62ee5c360d658",
+"seconds": 3.12
+},
+"sounds/klod/ru/mat/undo_3": {
+"hash": "013f24078074d05176941c186fa5b3a69c936680",
+"seconds": 3.07
+},
+"sounds/klod/ru/mat/vasyan_1": {
+"hash": "c1eda73052cc29080c1359493b1691652750e784",
+"seconds": 5.96
+},
+"sounds/klod/ru/mat/vasyan_2": {
+"hash": "ce9c3070f00f132883fbe3bd924ebc27f0a7106a",
+"seconds": 4.72
+},
+"sounds/klod/ru/mat/vasyan_3": {
+"hash": "8b0c7c5a2b877ad749571dbfae318e6a95c83821",
+"seconds": 5.72
+},
+"sounds/klod/ru/normal/about_1": {
+"hash": "cbc1a9a31b1d424186e342d4a7eb908b518bef0e",
+"seconds": 6.79
+},
+"sounds/klod/ru/normal/about_2": {
+"hash": "7ffaa8ed9d159906947eb844e83ad84074015ac4",
+"seconds": 7.94
+},
+"sounds/klod/ru/normal/angry_1": {
+"hash": "c2715448cedaaa00db22024da0ba22e89c1b29ae",
+"seconds": 3.33
+},
+"sounds/klod/ru/normal/angry_2": {
+"hash": "d125adc116095a9f85474461b2829e79294de287",
+"seconds": 4.46
+},
+"sounds/klod/ru/normal/bye_1": {
+"hash": "f34d6cd3875c2b85d62d848d7671933491b88c31",
+"seconds": 5.11
+},
+"sounds/klod/ru/normal/bye_2": {
+"hash": "de9088ab1ff3ec8ea1f196678b91402b4df11ad0",
+"seconds": 2.59
+},
+"sounds/klod/ru/normal/creeper_1": {
+"hash": "90e0c0848cc28d97e9944b6c3d1ec709ac80d3bb",
+"seconds": 3.34
+},
+"sounds/klod/ru/normal/creeper_2": {
+"hash": "611d8b75430fa949e6241d7fa2cd476f7403fe8d",
+"seconds": 3.21
+},
+"sounds/klod/ru/normal/dance_1": {
+"hash": "9070cf3f38c589ba24d1367104b61668a4f304ec",
+"seconds": 3.36
+},
+"sounds/klod/ru/normal/dance_2": {
+"hash": "c071e679652cc12f2a47b3dbeeeee53656e735fb",
+"seconds": 3.35
+},
+"sounds/klod/ru/normal/diamond_ore_1": {
+"hash": "e02e9cade4c080dd3575097517cd5ef7880d3e07",
+"seconds": 4.89
+},
+"sounds/klod/ru/normal/diamond_ore_2": {
+"hash": "ba1599eef07cc13731d752832a5be91be359bab3",
+"seconds": 3.53
+},
+"sounds/klod/ru/normal/dimension_1": {
+"hash": "24d2605e874d86311bb936a4bc46b6980811004d",
+"seconds": 3.15
+},
+"sounds/klod/ru/normal/dimension_2": {
+"hash": "fa32883dde58daefa920bc55b02ba1f2715e2447",
+"seconds": 4.26
+},
+"sounds/klod/ru/normal/feed_1": {
+"hash": "1545aadbe55cd6fea9d47cbd6e1174c27822de57",
+"seconds": 4.21
+},
+"sounds/klod/ru/normal/feed_2": {
+"hash": "7406fc267a2cde9a8cb51f022dbd2b3e6df5a0a7",
+"seconds": 4.17
+},
+"sounds/klod/ru/normal/fix_vasyan_1": {
+"hash": "20b217af9522ec58f2d49607ee95483d347ba68e",
+"seconds": 3.95
+},
+"sounds/klod/ru/normal/fix_vasyan_2": {
+"hash": "16171435eaf606fe523a598c1fe9a36bf264d9b0",
+"seconds": 4.51
+},
+"sounds/klod/ru/normal/fix_vasyan_3": {
+"hash": "c0576c710610586b568e74d1a401b14ad401e435",
+"seconds": 3.9
+},
+"sounds/klod/ru/normal/follow_1": {
+"hash": "563998064af17c1d93a859f9afb31737da155e7b",
+"seconds": 1.3
+},
+"sounds/klod/ru/normal/follow_2": {
+"hash": "e39808647256f565fade08a36cc1bea9abd7b961",
+"seconds": 2.37
+},
+"sounds/klod/ru/normal/guard_1": {
+"hash": "6463e48c9c71245873defa9ee89a770496b23a6e",
+"seconds": 2.46
+},
+"sounds/klod/ru/normal/guard_2": {
+"hash": "be2e17332dd458b3da456054839bce586206d4f1",
+"seconds": 3.43
+},
+"sounds/klod/ru/normal/guard_3": {
+"hash": "3147f4ee21bdcbe06f7f068c6daefbc4125ea5d7",
+"seconds": 3.34
+},
+"sounds/klod/ru/normal/heal_1": {
+"hash": "72ed9f19b46f49db808b93943b8a784efce8c90f",
+"seconds": 2.51
+},
+"sounds/klod/ru/normal/heal_2": {
+"hash": "d91328c354d85f004b21a1092aa2724bc9030971",
+"seconds": 5.39
+},
+"sounds/klod/ru/normal/hello_1": {
+"hash": "9b821bd664a871871168f0bd11b032772b49b6aa",
+"seconds": 7.66
+},
+"sounds/klod/ru/normal/hello_2": {
+"hash": "fc4a8a120eef53ee2d1a87431a6f40314a614251",
+"seconds": 5.81
+},
+"sounds/klod/ru/normal/hello_3": {
+"hash": "3fe259e852dd5e3b767e297f4b9c9f174190e0c3",
+"seconds": 5.55
+},
+"sounds/klod/ru/normal/help_1": {
+"hash": "376b131ddd73b0313da5fb8ef6ee1626cf3e583b",
+"seconds": 2.71
+},
+"sounds/klod/ru/normal/help_2": {
+"hash": "4f3a5f80637ac071d06a3a9d1efa41de7def83e3",
+"seconds": 2.41
+},
+"sounds/klod/ru/normal/help_nothing_1": {
+"hash": "4c0c7093bd529a5cb9d089243e5c8bf855300394",
+"seconds": 4.03
+},
+"sounds/klod/ru/normal/help_nothing_2": {
+"hash": "8428e0ae47e03f63b6d0ffe3886062bce4f99a9c",
+"seconds": 5.35
+},
+"sounds/klod/ru/normal/here_1": {
+"hash": "6edc87f19f54487a8e824fce2e0795e28dbe90e9",
+"seconds": 2.46
+},
+"sounds/klod/ru/normal/here_2": {
+"hash": "6183294657cf923c7a44d0a344de71707f950083",
+"seconds": 4.47
+},
+"sounds/klod/ru/normal/how_1": {
+"hash": "7d956cc78ea5bb8362b76f7b6502b0733ab8d1f4",
+"seconds": 4.5
+},
+"sounds/klod/ru/normal/how_2": {
+"hash": "7f39469c30b1e02daa9b372aa171de238b5fa926",
+"seconds": 5.89
+},
+"sounds/klod/ru/normal/how_3": {
+"hash": "42ba5ea55d378c4343fd52f9b851ec02d029b4e5",
+"seconds": 5.47
+},
+"sounds/klod/ru/normal/hurt_1": {
+"hash": "4564265cf6bd4c4acf0bc6b3d624da584f4b6cc1",
+"seconds": 3.27
+},
+"sounds/klod/ru/normal/hurt_2": {
+"hash": "1816f80c91c911dc00cd6c938d7448513ec3c0f3",
+"seconds": 2.84
+},
+"sounds/klod/ru/normal/joke_1": {
+"hash": "f64282d04e36f4076df9c4dfd963135d528b288e",
+"seconds": 5.93
+},
+"sounds/klod/ru/normal/joke_2": {
+"hash": "fa270528d2216762257f7aa60291359d895c5b8a",
+"seconds": 3.88
+},
+"sounds/klod/ru/normal/joke_3": {
+"hash": "6a78df17cd25489a65f333c3ffd4ac772972c343",
+"seconds": 7.42
+},
+"sounds/klod/ru/normal/joke_4": {
+"hash": "f358e564403b98eec7e9c0cd44c9ab2f50fb63f1",
+"seconds": 8.66
+},
+"sounds/klod/ru/normal/kill_1": {
+"hash": "b16ebb9bb4d715bdf597b627958ae21fcb60d2cb",
+"seconds": 1.41
+},
+"sounds/klod/ru/normal/kill_2": {
+"hash": "c8f04a5d45f94de2a764b1a3828e5fea5b315a86",
+"seconds": 1.97
+},
+"sounds/klod/ru/normal/kill_3": {
+"hash": "122e84f0a99a0621afb93f70f6cae7bd9e5f5922",
+"seconds": 1.44
+},
+"sounds/klod/ru/normal/lang_1": {
+"hash": "66edebb9c2b3284d0ca5defc1e0dbe389f90abc4",
+"seconds": 2.23
+},
+"sounds/klod/ru/normal/low_hp_1": {
+"hash": "e2159d516acef91cd1bd1ef0ac2149bb610f5023",
+"seconds": 4.83
+},
+"sounds/klod/ru/normal/low_hp_2": {
+"hash": "592469a16a563228c7f9183d824eeea2dd4a881b",
+"seconds": 4.22
+},
+"sounds/klod/ru/normal/mat_off_1": {
+"hash": "40b34d06d2ecff0829450706908564f710ba8ae9",
+"seconds": 2.52
+},
+"sounds/klod/ru/normal/night_1": {
+"hash": "65c1627dcef040bf9a30faa33587835bdf5b365a",
+"seconds": 4.35
+},
+"sounds/klod/ru/normal/night_2": {
+"hash": "e743dc02d4920d367958e741cdb7fb22eb70a8d9",
+"seconds": 3.61
+},
+"sounds/klod/ru/normal/ouch_1": {
+"hash": "b5074b62944f80f94082a339cb959afd0d57dfea",
+"seconds": 3.39
+},
+"sounds/klod/ru/normal/ouch_2": {
+"hash": "493a8b2ff90dcbd233720f47918e89c98909b7a4",
+"seconds": 3.5
+},
+"sounds/klod/ru/normal/ouch_3": {
+"hash": "22f833cda4de195892443f449158fff6797d32b4",
+"seconds": 1.68
+},
+"sounds/klod/ru/normal/quiet_1": {
+"hash": "4e1247002e251e5849b34cafa10c8f9ab49ed737",
+"seconds": 3.88
+},
+"sounds/klod/ru/normal/respawn_1": {
+"hash": "1e885c0dbbcc29a44565882b9592010a8fbfc921",
+"seconds": 6.21
+},
+"sounds/klod/ru/normal/respawn_2": {
+"hash": "d50cc1748f5138a3c8bb8093ba108a9ebb66c601",
+"seconds": 3.82
+},
+"sounds/klod/ru/normal/roast_1": {
+"hash": "89a7a2ee531520c6f5950f9a83ec3b07d38c9181",
+"seconds": 2.23
+},
+"sounds/klod/ru/normal/roast_2": {
+"hash": "da86a0c8dde01cb7dced15762e2f800d00eb4eb2",
+"seconds": 3.42
+},
+"sounds/klod/ru/normal/roast_3": {
+"hash": "50af4117d98f7bafbe98a8da7d13edc94cd7c75e",
+"seconds": 3.72
+},
+"sounds/klod/ru/normal/roast_4": {
+"hash": "68c8c23c72a2efb6135ec00002b63701003fcb82",
+"seconds": 5.12
+},
+"sounds/klod/ru/normal/roast_5": {
+"hash": "860344bbb1c0698e13258f3ae925a6cf3fb35b71",
+"seconds": 4.2
+},
+"sounds/klod/ru/normal/roast_6": {
+"hash": "b852cd409c3735e8ce3e638830700d5a75d5f063",
+"seconds": 3.5
+},
+"sounds/klod/ru/normal/sit_1": {
+"hash": "0d2135aed8f6d71facf1efd0edb59b559132c8bb",
+"seconds": 2.12
+},
+"sounds/klod/ru/normal/sit_2": {
+"hash": "3d3087fe108e7e3d5cbcb91c88defd265fa71275",
+"seconds": 3.34
+},
+"sounds/klod/ru/normal/smart_1": {
+"hash": "0a50073c5b5513acb26be347d2b4f09bb8dc113c",
+"seconds": 3.66
+},
+"sounds/klod/ru/normal/smart_2": {
+"hash": "b7a0ceb584c936f807f2dc34ce9f04fbdc028137",
+"seconds": 3.98
+},
+"sounds/klod/ru/normal/stranger_1": {
+"hash": "7f1b7d4779bdcf0b86855350d000d9170e320497",
+"seconds": 3.92
+},
+"sounds/klod/ru/normal/stranger_2": {
+"hash": "1eee68dc3af2d56e6a96b9eecc7b8705df88c84d",
+"seconds": 5.09
+},
+"sounds/klod/ru/normal/tip_1": {
+"hash": "6a5abf0573876c2b2ed55b8a8ed44ef6048f4796",
+"seconds": 7.09
+},
+"sounds/klod/ru/normal/tip_2": {
+"hash": "8a95e1f9b3385171a65fb72a32f67d740f5bef1f",
+"seconds": 4.86
+},
+"sounds/klod/ru/normal/tip_3": {
+"hash": "306a22e18ead496361ee13f27a645ffa87e4d014",
+"seconds": 5.25
+},
+"sounds/klod/ru/normal/tip_4": {
+"hash": "7f9d36f44487b3502d05845146bf070d80c1411e",
+"seconds": 5.0
+},
+"sounds/klod/ru/normal/tip_5": {
+"hash": "6de0efa67874f2028d0d5916529811d451cd48c2",
+"seconds": 5.26
+},
+"sounds/klod/ru/normal/torch_1": {
+"hash": "ea4797ece03aa0a545805d239ff7cd5458f23e77",
+"seconds": 3.97
+},
+"sounds/klod/ru/normal/torch_2": {
+"hash": "8285a8cf940923c3aa19af4dc0bd8a9d50670a6c",
+"seconds": 4.75
+},
+"sounds/klod/ru/normal/undo_1": {
+"hash": "ae724ec21f5ab6fdfcf4bf31a53acb53903e962f",
+"seconds": 2.62
+},
+"sounds/klod/ru/normal/undo_2": {
+"hash": "ab8605729569cf91b0ee3684525b4e3f831d6c74",
+"seconds": 2.3
+},
+"sounds/klod/ru/normal/undo_3": {
+"hash": "059e929fd4ef2db11dae6f3ad0f3d02c080ab726",
+"seconds": 3.36
+},
+"sounds/klod/ru/normal/vasyan_1": {
+"hash": "ed03bd297fd1e2db87726fbcab03dcacf48cd59a",
+"seconds": 5.54
+},
+"sounds/klod/ru/normal/vasyan_2": {
+"hash": "fab730808d0a9975866623a2ba43e5012730e70c",
+"seconds": 3.48
+},
+"sounds/klod/ru/normal/vasyan_3": {
+"hash": "0f3c7c4da6cf824131c7d20db4b333403518009b",
+"seconds": 4.64
+},
+"sounds/klod/uk/mat/about_1": {
+"hash": "047bd8d741ac4dcf5ae00e025922e8efec59e780",
+"seconds": 7.52
+},
+"sounds/klod/uk/mat/about_2": {
+"hash": "c73c39d16945cd1bcc55f03854aae5f485a4ed31",
+"seconds": 8.31
+},
+"sounds/klod/uk/mat/angry_1": {
+"hash": "63cc9847858d313b8c745bd40d03d96d76ee5e74",
+"seconds": 4.18
+},
+"sounds/klod/uk/mat/angry_2": {
+"hash": "8703f14881705fa10c02281c60485c5d89d7577b",
+"seconds": 5.17
+},
+"sounds/klod/uk/mat/bye_1": {
+"hash": "2594aebc5d33598964c304bbd88a4748e86c2a68",
+"seconds": 5.07
+},
+"sounds/klod/uk/mat/bye_2": {
+"hash": "851d550177230512145d27ebcb3dec69c3c74e2a",
+"seconds": 3.34
+},
+"sounds/klod/uk/mat/creeper_1": {
+"hash": "beafd0876ce1401d1297c4c4e7d54af22e1caf55",
+"seconds": 3.45
+},
+"sounds/klod/uk/mat/creeper_2": {
+"hash": "8ffb025691c3e3797f573effbf789d8b8fbbe843",
+"seconds": 3.98
+},
+"sounds/klod/uk/mat/dance_1": {
+"hash": "99d2adb126cc31935cb53d8e63589fbc09e926a5",
+"seconds": 3.88
+},
+"sounds/klod/uk/mat/dance_2": {
+"hash": "64f8accfe5f94d0e27548d08b099491a806e16d9",
+"seconds": 3.97
+},
+"sounds/klod/uk/mat/diamond_ore_1": {
+"hash": "7fe090aef097d9bb0e310553db3752b4ac0303fe",
+"seconds": 5.65
+},
+"sounds/klod/uk/mat/diamond_ore_2": {
+"hash": "c89d3c864d52034b122aca79625c3123657f7da5",
+"seconds": 4.17
+},
+"sounds/klod/uk/mat/dimension_1": {
+"hash": "c5c8acf096eab264ac9982827876a05393f21487",
+"seconds": 3.11
+},
+"sounds/klod/uk/mat/dimension_2": {
+"hash": "4c232655072be2cd91d58c95835bd68b77e197b8",
+"seconds": 4.67
+},
+"sounds/klod/uk/mat/feed_1": {
+"hash": "a4ac234b920e1208248f738ade3dd900cb3bbef8",
+"seconds": 4.28
+},
+"sounds/klod/uk/mat/feed_2": {
+"hash": "606f4e9ee143068a5adcde0f37ee6fdb7b73dce8",
+"seconds": 4.96
+},
+"sounds/klod/uk/mat/fix_vasyan_1": {
+"hash": "29a3f002871b9d8f86761098522a89c6e03b2379",
+"seconds": 4.72
+},
+"sounds/klod/uk/mat/fix_vasyan_2": {
+"hash": "1b28f1985d2d4e6bf9860326f54028830fd2b67e",
+"seconds": 3.82
+},
+"sounds/klod/uk/mat/fix_vasyan_3": {
+"hash": "dedef4bc453d665e4c9dd7d7da9bdad9c08ddd92",
+"seconds": 4.25
+},
+"sounds/klod/uk/mat/follow_1": {
+"hash": "e9998ffeb1fe7bd093a2051ab86818ca23e1e244",
+"seconds": 1.99
+},
+"sounds/klod/uk/mat/follow_2": {
+"hash": "3066ce51bd638422a6dc1d9f42bb6da83c0a5a90",
+"seconds": 2.94
+},
+"sounds/klod/uk/mat/guard_1": {
+"hash": "9e37284162a38bd039b82e2921d945bedc7d2754",
+"seconds": 3.17
+},
+"sounds/klod/uk/mat/guard_2": {
+"hash": "4143ce887b34335c8ab0145aabad3a73ec8f5511",
+"seconds": 4.07
+},
+"sounds/klod/uk/mat/guard_3": {
+"hash": "176c0e974a68f0e74422c65243b63e8abc2aa6ac",
+"seconds": 3.42
+},
+"sounds/klod/uk/mat/heal_1": {
+"hash": "9739ad2a5102565eee62136735892473510871f8",
+"seconds": 3.58
+},
+"sounds/klod/uk/mat/heal_2": {
+"hash": "149082d5fb4ed99a9c73e7fcab1c6097e1a7c2d2",
+"seconds": 4.74
+},
+"sounds/klod/uk/mat/hello_1": {
+"hash": "17134a65dfaa9c0da54d5c00f1e2779a4ef1ae1c",
+"seconds": 10.29
+},
+"sounds/klod/uk/mat/hello_2": {
+"hash": "af90687f180e6fafdad2fb195baed3af8505f06a",
+"seconds": 6.13
+},
+"sounds/klod/uk/mat/hello_3": {
+"hash": "8872129ecd940487ccd25f72bad739f8dafd796b",
+"seconds": 6.2
+},
+"sounds/klod/uk/mat/help_1": {
+"hash": "64d9680fbd362d418c4e68acb3a31eb341819cc9",
+"seconds": 2.71
+},
+"sounds/klod/uk/mat/help_2": {
+"hash": "c50d531a7d910d8369be5d47591c924dbaf86cbb",
+"seconds": 3.3
+},
+"sounds/klod/uk/mat/help_nothing_1": {
+"hash": "320c1759a2666d1a09788e55346f720437be4404",
+"seconds": 5.0
+},
+"sounds/klod/uk/mat/help_nothing_2": {
+"hash": "d33044485d9399bd752ea84ae924724e2165e395",
+"seconds": 5.42
+},
+"sounds/klod/uk/mat/here_1": {
+"hash": "a3c08561392fbc79b2a5e08c987b07876dc2de3a",
+"seconds": 2.72
+},
+"sounds/klod/uk/mat/here_2": {
+"hash": "4b18912c8a7fe22d0e6d9b9e78f4e58e22ddffbc",
+"seconds": 4.39
+},
+"sounds/klod/uk/mat/how_1": {
+"hash": "1a55e5d315218341ddc100cf45974f63da56a29a",
+"seconds": 5.2
+},
+"sounds/klod/uk/mat/how_2": {
+"hash": "183438b88f381293ec6721c5e6f54cad22a89a2e",
+"seconds": 6.81
+},
+"sounds/klod/uk/mat/how_3": {
+"hash": "14e784d3384ef59a3f954cf1f802c07c9a0ef4ed",
+"seconds": 5.22
+},
+"sounds/klod/uk/mat/hurt_1": {
+"hash": "330b3ee47c8f55f8ef879ffff39b73d5727fd238",
+"seconds": 3.6
+},
+"sounds/klod/uk/mat/hurt_2": {
+"hash": "83bbdd4d99fa502d410e54fb61a2cd5703e6f376",
+"seconds": 3.93
+},
+"sounds/klod/uk/mat/joke_1": {
+"hash": "816163f9d57454a2a0f1e3e61115a2cf08cf5ab9",
+"seconds": 6.88
+},
+"sounds/klod/uk/mat/joke_2": {
+"hash": "10751967bf9ba8e69cd851224340492bb368935b",
+"seconds": 6.11
+},
+"sounds/klod/uk/mat/joke_3": {
+"hash": "e8c7d95deea386fc0b2348792df4994d4fee9d39",
+"seconds": 6.14
+},
+"sounds/klod/uk/mat/joke_4": {
+"hash": "27d150fa866beb06d444fca1f29d07f0152663ec",
+"seconds": 8.96
+},
+"sounds/klod/uk/mat/kill_1": {
+"hash": "f3ae1b305391ae0b50747140b3a37d00e3fd1726",
+"seconds": 1.55
+},
+"sounds/klod/uk/mat/kill_2": {
+"hash": "f170a473696bace92021c3f0e1a25a6e752a90ac",
+"seconds": 2.66
+},
+"sounds/klod/uk/mat/kill_3": {
+"hash": "2187bd9682a1c78e130a1e2c827f7c44c294f60d",
+"seconds": 2.12
+},
+"sounds/klod/uk/mat/lang_1": {
+"hash": "e64dd8c14c195d03677f0cac6adf7c3b99ed5303",
+"seconds": 3.22
+},
+"sounds/klod/uk/mat/low_hp_1": {
+"hash": "95b3f69bce354c14c67caab6b95231b77cfcfc15",
+"seconds": 5.25
+},
+"sounds/klod/uk/mat/low_hp_2": {
+"hash": "d9ed444125335e83567833c6116cd98c0bfa122d",
+"seconds": 4.29
+},
+"sounds/klod/uk/mat/mat_on_1": {
+"hash": "5f5c3db620623ad474d9fc59cf575b9e07b9c457",
+"seconds": 4.11
+},
+"sounds/klod/uk/mat/night_1": {
+"hash": "247d1015bc0b22e4029dda7a5d9854bd93d4eeb6",
+"seconds": 4.08
+},
+"sounds/klod/uk/mat/night_2": {
+"hash": "2cb3c5385f364873d188e81fa3245461cd7229b5",
+"seconds": 4.52
+},
+"sounds/klod/uk/mat/ouch_1": {
+"hash": "67a80eaf86f6f7fab7667788b6fe7857c6fb77c5",
+"seconds": 3.71
+},
+"sounds/klod/uk/mat/ouch_2": {
+"hash": "044b20bf69c4824cead135377dce45ab9d5debad",
+"seconds": 4.66
+},
+"sounds/klod/uk/mat/ouch_3": {
+"hash": "398c0ca02c2d2c4bc47064ae56343149e83f89b5",
+"seconds": 2.39
+},
+"sounds/klod/uk/mat/quiet_1": {
+"hash": "c8dc3fe71c87af57916562a25df663badbd908eb",
+"seconds": 4.47
+},
+"sounds/klod/uk/mat/respawn_1": {
+"hash": "2d00b33bccb0b3220aeda0f70ac966c6204dd7fa",
+"seconds": 7.1
+},
+"sounds/klod/uk/mat/respawn_2": {
+"hash": "786c338bba7b8d28ed17396cfc9bd806d92e8f6e",
+"seconds": 4.26
+},
+"sounds/klod/uk/mat/roast_1": {
+"hash": "0cce31f94aee7435f6915269ab6db4806803a7df",
+"seconds": 2.88
+},
+"sounds/klod/uk/mat/roast_2": {
+"hash": "4212f78d7f71748210a5dcf5d25cb53efb3b282b",
+"seconds": 3.45
+},
+"sounds/klod/uk/mat/roast_3": {
+"hash": "9bcf400b177a054d4df4e618d8d4346a0cd314b9",
+"seconds": 4.53
+},
+"sounds/klod/uk/mat/roast_4": {
+"hash": "b478c726a65bb6ebafde4f7939f2d345dfcb8ebe",
+"seconds": 5.42
+},
+"sounds/klod/uk/mat/roast_5": {
+"hash": "88b4c0df3d85bc8af556752fe9d1c1e5b53f7736",
+"seconds": 4.42
+},
+"sounds/klod/uk/mat/roast_6": {
+"hash": "d24a39f7994e4e8a542dad9bb3a8d44d9b090973",
+"seconds": 3.81
+},
+"sounds/klod/uk/mat/sit_1": {
+"hash": "10fd0f585821080dfac2ab0c56a7b770a2351e76",
+"seconds": 2.54
+},
+"sounds/klod/uk/mat/sit_2": {
+"hash": "c86cf0ade71f35d0473583a448bee69b610e2d7a",
+"seconds": 3.4
+},
+"sounds/klod/uk/mat/smart_1": {
+"hash": "a772e3fbe543661e642ad3643771a6eff6caf53e",
+"seconds": 5.17
+},
+"sounds/klod/uk/mat/smart_2": {
+"hash": "a01dff6278ea0f7c312b4ef7c62d4c8dd5e162e0",
+"seconds": 4.73
+},
+"sounds/klod/uk/mat/stranger_1": {
+"hash": "a4d7af5f6b6fac5f1edde32f3ab96263b44f09f7",
+"seconds": 3.88
+},
+"sounds/klod/uk/mat/stranger_2": {
+"hash": "865108038ac8a8c4a08260acce9c842d2d001499",
+"seconds": 6.17
+},
+"sounds/klod/uk/mat/tip_1": {
+"hash": "ee6fd56a05b136d3b835d76b2512491a31973144",
+"seconds": 6.97
+},
+"sounds/klod/uk/mat/tip_2": {
+"hash": "e27cea7859a8fb0b74430b8676839f8da79ad104",
+"seconds": 5.64
+},
+"sounds/klod/uk/mat/tip_3": {
+"hash": "4ed45ad34ad8ad50136ed6765750cf538212d0bb",
+"seconds": 5.21
+},
+"sounds/klod/uk/mat/tip_4": {
+"hash": "38271763a4a2f7afea3336ca838b189342388811",
+"seconds": 5.92
+},
+"sounds/klod/uk/mat/tip_5": {
+"hash": "f91dc47a775b99446d9fe227e4373f7ff369f802",
+"seconds": 5.06
+},
+"sounds/klod/uk/mat/torch_1": {
+"hash": "abb8f4c964d5339f237fcb495c1f02039cfd3d4c",
+"seconds": 3.56
+},
+"sounds/klod/uk/mat/torch_2": {
+"hash": "471adea24d5766812214af894020095661e9af21",
+"seconds": 5.19
+},
+"sounds/klod/uk/mat/undo_1": {
+"hash": "f2fe68ec265a9b47e6cb87f1a43928c93a5ebaf9",
+"seconds": 2.97
+},
+"sounds/klod/uk/mat/undo_2": {
+"hash": "bee8e4858e0fc9fa913a7aa8fa4543cc62e621db",
+"seconds": 3.24
+},
+"sounds/klod/uk/mat/undo_3": {
+"hash": "16fca41cef472b5cd4a77c9cb9aa7c897378598a",
+"seconds": 3.5
+},
+"sounds/klod/uk/mat/vasyan_1": {
+"hash": "a1c012ea8a7072c1f67985db0a741f7f3fe163f3",
+"seconds": 5.88
+},
+"sounds/klod/uk/mat/vasyan_2": {
+"hash": "1f319d7e8ddb8bcac42fce1fbc0420e7accb668e",
+"seconds": 4.57
+},
+"sounds/klod/uk/mat/vasyan_3": {
+"hash": "4c45f2035d97c4e60574d59996a8dfe022b1c6d2",
+"seconds": 5.26
+},
+"sounds/klod/uk/normal/about_1": {
+"hash": "cb5e3e780db8fe7924756a2681dfde445cdaaa71",
+"seconds": 7.09
+},
+"sounds/klod/uk/normal/about_2": {
+"hash": "f0b02ed4572c3b40949d9add4d5d5907504e8dac",
+"seconds": 7.68
+},
+"sounds/klod/uk/normal/angry_1": {
+"hash": "6633bcb10806c39027a9410c2ef9d4e145268963",
+"seconds": 3.49
+},
+"sounds/klod/uk/normal/angry_2": {
+"hash": "a9c46cba6f387044d8bc81a001d333dbdc2cde4a",
+"seconds": 4.54
+},
+"sounds/klod/uk/normal/bye_1": {
+"hash": "f4187da4d0ec1b49b9650392fcb7fd1538b9c51d",
+"seconds": 4.6
+},
+"sounds/klod/uk/normal/bye_2": {
+"hash": "6a28e3a44e9d75eb3a563736e2c4cd630331b51e",
+"seconds": 2.53
+},
+"sounds/klod/uk/normal/creeper_1": {
+"hash": "ba50a2c9c6939b8ced81cf9354e3377d73d3525b",
+"seconds": 3.34
+},
+"sounds/klod/uk/normal/creeper_2": {
+"hash": "bc015df6cf60703310ad955cffa460c1ee5dd7e3",
+"seconds": 3.25
+},
+"sounds/klod/uk/normal/dance_1": {
+"hash": "2f59e602edfa19186e3df88eee02f2ae427300ba",
+"seconds": 3.4
+},
+"sounds/klod/uk/normal/dance_2": {
+"hash": "cd7e37c447377c267ca8259157dff8c22cf4b5ad",
+"seconds": 3.61
+},
+"sounds/klod/uk/normal/diamond_ore_1": {
+"hash": "d084ea1fbfa780365ab32d48be649bc0d5aa52b3",
+"seconds": 5.27
+},
+"sounds/klod/uk/normal/diamond_ore_2": {
+"hash": "9f303a709afc52bfb891bd77424349844447220c",
+"seconds": 3.65
+},
+"sounds/klod/uk/normal/dimension_1": {
+"hash": "12943dde2b005f7b020facc08a27709902042b59",
+"seconds": 2.63
+},
+"sounds/klod/uk/normal/dimension_2": {
+"hash": "9865668b89fb18c1b862c7b447f3823cebde2238",
+"seconds": 3.93
+},
+"sounds/klod/uk/normal/feed_1": {
+"hash": "affbd0d4c588a7bb87899db4d86218c7b5702229",
+"seconds": 3.82
+},
+"sounds/klod/uk/normal/feed_2": {
+"hash": "325495e08fcbff195c5172012a4e3f8409168e1f",
+"seconds": 4.24
+},
+"sounds/klod/uk/normal/fix_vasyan_1": {
+"hash": "e0af5d1d43e96ffddd15a1cd7817494cf0d5b010",
+"seconds": 4.22
+},
+"sounds/klod/uk/normal/fix_vasyan_2": {
+"hash": "91a2acfab4790ee2007384004fb593d842ffeece",
+"seconds": 4.23
+},
+"sounds/klod/uk/normal/fix_vasyan_3": {
+"hash": "edbba962101a346e69c6400e6789aa77a1c429d4",
+"seconds": 4.25
+},
+"sounds/klod/uk/normal/follow_1": {
+"hash": "f2ad28996ac3604f5a15debf34c008a32002bfd3",
+"seconds": 1.51
+},
+"sounds/klod/uk/normal/follow_2": {
+"hash": "c02f33b62bd6b7d8d04ec7be81c270648627b3ec",
+"seconds": 2.18
+},
+"sounds/klod/uk/normal/guard_1": {
+"hash": "2c3ce6b03a0e0e693a57e7429985c82e54116921",
+"seconds": 2.68
+},
+"sounds/klod/uk/normal/guard_2": {
+"hash": "5409881035ed790d3e62b04b7131d710e3db8eec",
+"seconds": 3.59
+},
+"sounds/klod/uk/normal/guard_3": {
+"hash": "bbcfde7574a24f29bda548760139eee0bc2f3f68",
+"seconds": 3.4
+},
+"sounds/klod/uk/normal/heal_1": {
+"hash": "a67182ed8318ddde055b1db5be25f30bf2b57ae2",
+"seconds": 3.13
+},
+"sounds/klod/uk/normal/heal_2": {
+"hash": "75746f0a0b3daf035faf63c42a83d6b74c3ffe8e",
+"seconds": 5.24
+},
+"sounds/klod/uk/normal/hello_1": {
+"hash": "a53907e5407a43da8695a79863e61fffb0178e8c",
+"seconds": 8.32
+},
+"sounds/klod/uk/normal/hello_2": {
+"hash": "c504d59705ab1f1c3524e59d687b2f7759676e56",
+"seconds": 6.65
+},
+"sounds/klod/uk/normal/hello_3": {
+"hash": "b22c60cc596e13357d295f69cb322523e9f32a56",
+"seconds": 5.48
+},
+"sounds/klod/uk/normal/help_1": {
+"hash": "1532690e115a68c4512a0df38adec41652e7040e",
+"seconds": 2.44
+},
+"sounds/klod/uk/normal/help_2": {
+"hash": "d656ae35036c4be45cbebc56602dc5173edf94c2",
+"seconds": 2.53
+},
+"sounds/klod/uk/normal/help_nothing_1": {
+"hash": "ba04ef7745349c1e96ac866716b6600c71204f4e",
+"seconds": 4.93
+},
+"sounds/klod/uk/normal/help_nothing_2": {
+"hash": "9e3aa64d7273a57675cdcc324af701e7fdf7bf39",
+"seconds": 5.6
+},
+"sounds/klod/uk/normal/here_1": {
+"hash": "6bbf90a9ee27058f51ba6d8ea63eb479370a23d5",
+"seconds": 2.34
+},
+"sounds/klod/uk/normal/here_2": {
+"hash": "77ee0318ca0da0b0c5584c882c88c14fa0b934df",
+"seconds": 4.54
+},
+"sounds/klod/uk/normal/how_1": {
+"hash": "0ad3d99008e9407f3b7d41c961676c0dc1f6a9c5",
+"seconds": 4.72
+},
+"sounds/klod/uk/normal/how_2": {
+"hash": "015263b79d309ca0767159a26846371a07fd97c0",
+"seconds": 6.72
+},
+"sounds/klod/uk/normal/how_3": {
+"hash": "4e304c8c19b4ef5ebc89949f93412a9cfb7633d5",
+"seconds": 4.82
+},
+"sounds/klod/uk/normal/hurt_1": {
+"hash": "573b38b71e6156cb7e75851b67d157dc533b5853",
+"seconds": 3.22
+},
+"sounds/klod/uk/normal/hurt_2": {
+"hash": "e30a6d1ebfb0351b0a1c4e3e16ce229a105d85a6",
+"seconds": 3.3
+},
+"sounds/klod/uk/normal/joke_1": {
+"hash": "25a357b451eb10e9037f1d23e72d4a200483cd45",
+"seconds": 6.23
+},
+"sounds/klod/uk/normal/joke_2": {
+"hash": "8d70216b1d117b63674593af846beb8fd02d7b90",
+"seconds": 3.86
+},
+"sounds/klod/uk/normal/joke_3": {
+"hash": "01931fca663ea75f1f66b32589938b2738409c86",
+"seconds": 6.92
+},
+"sounds/klod/uk/normal/joke_4": {
+"hash": "95011332cb06a7528ac236976c246faec821f0ca",
+"seconds": 8.26
+},
+"sounds/klod/uk/normal/kill_1": {
+"hash": "dc72ed370b1db8852a6dde59841913b75d8a87fa",
+"seconds": 1.38
+},
+"sounds/klod/uk/normal/kill_2": {
+"hash": "88b589adfe5b6a514d4d446fea6f64bae18a283f",
+"seconds": 2.18
+},
+"sounds/klod/uk/normal/kill_3": {
+"hash": "dbbbfb82ce4fac313dad44528ac860518b554d76",
+"seconds": 1.51
+},
+"sounds/klod/uk/normal/lang_1": {
+"hash": "76056df8a75e77df011e2172b8c8b547e88fee2a",
+"seconds": 2.75
+},
+"sounds/klod/uk/normal/low_hp_1": {
+"hash": "0e91af9f1f803324bbd223b48eed15552c4de75c",
+"seconds": 4.85
+},
+"sounds/klod/uk/normal/low_hp_2": {
+"hash": "156d9e0695c4b2c8ea442056add08cea1a542889",
+"seconds": 3.6
+},
+"sounds/klod/uk/normal/mat_off_1": {
+"hash": "7055ea3eeaa4bbfb526e8ef401c16afb989152d6",
+"seconds": 2.36
+},
+"sounds/klod/uk/normal/night_1": {
+"hash": "1accc1105913a3defee7d9ba9793467561157ad8",
+"seconds": 4.23
+},
+"sounds/klod/uk/normal/night_2": {
+"hash": "a036efe4a4a9ff664a4e422dfcf97cccb95f727c",
+"seconds": 3.92
+},
+"sounds/klod/uk/normal/ouch_1": {
+"hash": "57c4211afa1f4879943ab2bf157d3e708dfcce02",
+"seconds": 3.53
+},
+"sounds/klod/uk/normal/ouch_2": {
+"hash": "4a90765428bbfc4dc014080fbbb0063eb9e7902e",
+"seconds": 4.03
+},
+"sounds/klod/uk/normal/ouch_3": {
+"hash": "d367c2b6f896cd4641d6008cbba12faff80dd664",
+"seconds": 1.62
+},
+"sounds/klod/uk/normal/quiet_1": {
+"hash": "7eeae8f99d83a3854806a6c1fef3682efe768cb9",
+"seconds": 3.98
+},
+"sounds/klod/uk/normal/respawn_1": {
+"hash": "abad7881490619ac91b359686b6886abf472bf00",
+"seconds": 6.66
+},
+"sounds/klod/uk/normal/respawn_2": {
+"hash": "ddb6d4c850a99ba09ff8e8dd70b5953784236284",
+"seconds": 3.81
+},
+"sounds/klod/uk/normal/roast_1": {
+"hash": "3e31b50dd22617c5a9517ac60240e02166624f11",
+"seconds": 2.38
+},
+"sounds/klod/uk/normal/roast_2": {
+"hash": "b6127bce7fc1a6c12d72db438c31ec937140a201",
+"seconds": 3.81
+},
+"sounds/klod/uk/normal/roast_3": {
+"hash": "309cb75defd5fb149f019bddadfeae9bb6ce6bd6",
+"seconds": 3.85
+},
+"sounds/klod/uk/normal/roast_4": {
+"hash": "b2013d0c34a0b13ffbb24ed8b7f6bcd53cda175f",
+"seconds": 4.71
+},
+"sounds/klod/uk/normal/roast_5": {
+"hash": "7a4b6ee27f5ab0792a537ab374a9d71a21d07e1a",
+"seconds": 4.32
+},
+"sounds/klod/uk/normal/roast_6": {
+"hash": "d24d41c9ee56de5d8ed76b6cd247366dc274f876",
+"seconds": 3.77
+},
+"sounds/klod/uk/normal/sit_1": {
+"hash": "ae826c9d4ff6a3d26c860fba1dae0c97e0d57b6b",
+"seconds": 2.03
+},
+"sounds/klod/uk/normal/sit_2": {
+"hash": "8ea4215317fbda6cdea6edfd014ec382ca6835c3",
+"seconds": 3.45
+},
+"sounds/klod/uk/normal/smart_1": {
+"hash": "ebd5ccaae46b40cd0d78b1dfee22bda8051c3725",
+"seconds": 4.43
+},
+"sounds/klod/uk/normal/smart_2": {
+"hash": "5261fb05c1008eefa59ca63b3720568e7fcd37c4",
+"seconds": 3.97
+},
+"sounds/klod/uk/normal/stranger_1": {
+"hash": "8d42a343c71dc44ab6a891a3d8cfbf05d2f6d790",
+"seconds": 3.38
+},
+"sounds/klod/uk/normal/stranger_2": {
+"hash": "26e0803f86b876ee2143fa0b4e398f3671d55856",
+"seconds": 5.67
+},
+"sounds/klod/uk/normal/tip_1": {
+"hash": "f6b208cff5c14205c893a28c8e3299e7cb697298",
+"seconds": 7.16
+},
+"sounds/klod/uk/normal/tip_2": {
+"hash": "d53bd5dd6a0e21680c38e89cfa05d9eca874e6fe",
+"seconds": 5.16
+},
+"sounds/klod/uk/normal/tip_3": {
+"hash": "e43708a8ff4f52857dcc264aad0261108d718943",
+"seconds": 4.66
+},
+"sounds/klod/uk/normal/tip_4": {
+"hash": "369c69d319fd6093af0a88b5cf0d9c6f23bc7add",
+"seconds": 5.12
+},
+"sounds/klod/uk/normal/tip_5": {
+"hash": "72c8cd8d57c7d4a98cae59f6a292230fbc64e19e",
+"seconds": 5.18
+},
+"sounds/klod/uk/normal/torch_1": {
+"hash": "b12bd0eac62ba6342ca05790eae35ce110ce433a",
+"seconds": 3.9
+},
+"sounds/klod/uk/normal/torch_2": {
+"hash": "2655fa3fe4876b1c7ef458d2b9ed96d02df405ce",
+"seconds": 4.71
+},
+"sounds/klod/uk/normal/undo_1": {
+"hash": "be99a3fac841f94400b08dfae0e25090c0cf8610",
+"seconds": 2.67
+},
+"sounds/klod/uk/normal/undo_2": {
+"hash": "17153a80bbdeee16935cee5290897c374bddcb5a",
+"seconds": 2.59
+},
+"sounds/klod/uk/normal/undo_3": {
+"hash": "97addc8df22920b1344729dfc7e40f30201e2f95",
+"seconds": 3.38
+},
+"sounds/klod/uk/normal/vasyan_1": {
+"hash": "6d1f95f24b3d14310b9c0f7587d6ab06a9a78a6f",
+"seconds": 5.51
+},
+"sounds/klod/uk/normal/vasyan_2": {
+"hash": "dc66befd9ae193287754749c5bd377b7441a2f06",
+"seconds": 3.59
+},
+"sounds/klod/uk/normal/vasyan_3": {
+"hash": "0c2c6179b33ec8e50233a4a40ec1bf7df5430a7b",
+"seconds": 4.6
+},
+"sounds/vasyan/ru/mat/about_1": {
+"hash": "6aabb093cadb3d8ee2c0e8777b0905c3c7ab6adb",
+"seconds": 8.54
+},
+"sounds/vasyan/ru/mat/about_2": {
+"hash": "605cff55ca22612fa0c04ba2daf8df736b9130a8",
+"seconds": 7.3
+},
+"sounds/vasyan/ru/mat/advice_1": {
+"hash": "2fed8873fe156d20711cbd36f67c4ddc94e3a504",
+"seconds": 6.76
+},
+"sounds/vasyan/ru/mat/advice_2": {
+"hash": "db14a97bdedd115f289e63828f516ef6be65a924",
+"seconds": 8.28
+},
+"sounds/vasyan/ru/mat/advice_3": {
+"hash": "befb3918cce752cfb598caaccc1b8c5d590a7de5",
+"seconds": 7.92
+},
+"sounds/vasyan/ru/mat/advice_4": {
+"hash": "458c5e954617d78db858c16953794646ca365b4f",
+"seconds": 5.31
+},
+"sounds/vasyan/ru/mat/afk_1": {
+"hash": "94fa1055cb26c8e114ffeef3518fd360c6f3b990",
+"seconds": 3.58
+},
+"sounds/vasyan/ru/mat/afk_2": {
+"hash": "6c364d53cd9fd81dc68f01eb099309e5332950ce",
+"seconds": 4.91
+},
+"sounds/vasyan/ru/mat/angry_1": {
+"hash": "e3d5ece6966257f2e8995f5e509aa67dcbef95d1",
+"seconds": 5.42
+},
+"sounds/vasyan/ru/mat/angry_2": {
+"hash": "29009dcb614333f3f9d28c3abe56a028ce7580e2",
+"seconds": 4.07
+},
+"sounds/vasyan/ru/mat/bye_1": {
+"hash": "c0a47fae224b06b5480aee855a5f59e1e3623a4d",
+"seconds": 5.76
+},
+"sounds/vasyan/ru/mat/bye_2": {
+"hash": "c6b4054ecc11a4bb5990a4624cbb3a7eff675d54",
+"seconds": 5.08
+},
+"sounds/vasyan/ru/mat/creeper_1": {
+"hash": "51ddc779ad62f8560c32c3ec98aac9badc9d00ca",
+"seconds": 4.88
+},
+"sounds/vasyan/ru/mat/creeper_2": {
+"hash": "7d8a83ef46fddce522b40c9a42cd7fe1a00fe702",
+"seconds": 5.9
+},
+"sounds/vasyan/ru/mat/dance_1": {
+"hash": "e1103e67074254c7e391d8dec2509e937ca7986b",
+"seconds": 5.05
+},
+"sounds/vasyan/ru/mat/dance_2": {
+"hash": "14c624d5344a1a71f45ddd26f8279cc10a3f4221",
+"seconds": 3.75
+},
+"sounds/vasyan/ru/mat/diamond_ore_1": {
+"hash": "f5ff833813c249f1a9111d9c664ceb96340eebbd",
+"seconds": 5.28
+},
+"sounds/vasyan/ru/mat/diamond_ore_2": {
+"hash": "11ef585228b4f860b7d36ae8f82aa57d4bb01cd8",
+"seconds": 5.6
+},
+"sounds/vasyan/ru/mat/diamonds_1": {
+"hash": "4bb4998d32a994fd35dfedb4769f26c119d700ee",
+"seconds": 5.35
+},
+"sounds/vasyan/ru/mat/diamonds_2": {
+"hash": "7b520bd63de70fe640ba98af5bbcaae9e410d0cc",
+"seconds": 7.94
+},
+"sounds/vasyan/ru/mat/diamonds_3": {
+"hash": "b9956bf33211ac41ebaeb711abc9d49ab51ff36a",
+"seconds": 4.17
+},
+"sounds/vasyan/ru/mat/dig_1": {
+"hash": "813bd733c5fbd63d2519fb4456d1b8acd1148c31",
+"seconds": 5.17
+},
+"sounds/vasyan/ru/mat/dig_2": {
+"hash": "da5048408a12fcfdab545129ee601b16522361f3",
+"seconds": 3.39
+},
+"sounds/vasyan/ru/mat/dig_3": {
+"hash": "b457ba1a1f526e468648f5f7606ab7834c456ad6",
+"seconds": 5.53
+},
+"sounds/vasyan/ru/mat/dimension_1": {
+"hash": "83824ad04b068bcc905d197db2744be0a8287342",
+"seconds": 3.89
+},
+"sounds/vasyan/ru/mat/dimension_2": {
+"hash": "50a4ad397ac97b7a196616f0e97c5ec35bdd777f",
+"seconds": 4.84
+},
+"sounds/vasyan/ru/mat/eat_1": {
+"hash": "903bd17fc5e39b8f9d8793bf161f650ae2fdea48",
+"seconds": 4.81
+},
+"sounds/vasyan/ru/mat/eat_2": {
+"hash": "c1cdc1a2ded65e50a8b4625399ad0d3bb115238e",
+"seconds": 2.67
+},
+"sounds/vasyan/ru/mat/eat_3": {
+"hash": "3f16d9dddd00baa4d60a3e22dc4fe842c59b6ac2",
+"seconds": 5.22
+},
+"sounds/vasyan/ru/mat/follow_1": {
+"hash": "afce4ca6f269dc26e8df72fe83df76edabfe3865",
+"seconds": 4.81
+},
+"sounds/vasyan/ru/mat/follow_2": {
+"hash": "bafa8ac977b4da546235c11e3d779e6901e8b343",
+"seconds": 2.11
+},
+"sounds/vasyan/ru/mat/friend_1": {
+"hash": "bc8d305fcf2e1d9dbccd45b176694653c3f28847",
+"seconds": 3.38
+},
+"sounds/vasyan/ru/mat/friend_2": {
+"hash": "6cc24d828c47e256fc197ecc8aa4d93d1a209852",
+"seconds": 5.15
+},
+"sounds/vasyan/ru/mat/friend_3": {
+"hash": "b095e0cd46223b06ea09ef9a5bdbc9743bc28143",
+"seconds": 4.9
+},
+"sounds/vasyan/ru/mat/friend_zombie_1": {
+"hash": "9bd118c51fd417f1cebfd889202fa0a4b4e9255f",
+"seconds": 5.91
+},
+"sounds/vasyan/ru/mat/friend_zombie_2": {
+"hash": "34c850a9c2c120c8e2bc1e99539c51ca0bfdcfa9",
+"seconds": 5.48
+},
+"sounds/vasyan/ru/mat/gift_flower_1": {
+"hash": "ce4354062d1379681f256997daacd5e7431575ce",
+"seconds": 5.89
+},
+"sounds/vasyan/ru/mat/gift_flower_2": {
+"hash": "77dcb5b6bec70ab8710cca0a13fc3e47ab3c6866",
+"seconds": 4.96
+},
+"sounds/vasyan/ru/mat/gift_food_1": {
+"hash": "a4d6b95d7021a9d21e627762920d04cd06422ba7",
+"seconds": 4.54
+},
+"sounds/vasyan/ru/mat/gift_food_2": {
+"hash": "1da4db7337af786c8ff4162adcd0cc61290ce7bb",
+"seconds": 4.53
+},
+"sounds/vasyan/ru/mat/gift_junk_1": {
+"hash": "133d7d4d6c8a5ff44836daea8acd8e9fa919d215",
+"seconds": 3.17
+},
+"sounds/vasyan/ru/mat/gift_junk_2": {
+"hash": "57ce28860f02f8a7efc5949abebcc415710d7fa9",
+"seconds": 4.12
+},
+"sounds/vasyan/ru/mat/gift_none_1": {
+"hash": "7bbc5d3b9fb14ecb4d0a6e00d3681add8b375dfd",
+"seconds": 4.2
+},
+"sounds/vasyan/ru/mat/gift_none_2": {
+"hash": "0e9e03addd74da41b95431998ef87bdf310f3485",
+"seconds": 4.35
+},
+"sounds/vasyan/ru/mat/gift_redstone_1": {
+"hash": "58c50c598f586d5c49ef6f7547ce74a72d7f65d2",
+"seconds": 5.66
+},
+"sounds/vasyan/ru/mat/gift_redstone_2": {
+"hash": "3f7e36c7f159168c911ef3652b5403e310260c31",
+"seconds": 4.27
+},
+"sounds/vasyan/ru/mat/gift_shiny_1": {
+"hash": "6e72dca1dd76efda16b3c59e885ac50c557e33c2",
+"seconds": 6.92
+},
+"sounds/vasyan/ru/mat/gift_shiny_2": {
+"hash": "cd01818be1cc5e22db555daedbd8f1034ff02db7",
+"seconds": 5.84
+},
+"sounds/vasyan/ru/mat/give_back_1": {
+"hash": "0bece05cad718f1852f3211735fe227853b11005",
+"seconds": 4.69
+},
+"sounds/vasyan/ru/mat/give_back_2": {
+"hash": "77c6cb193df15809a2a995e6286164775cb44a42",
+"seconds": 7.96
+},
+"sounds/vasyan/ru/mat/give_back_empty_1": {
+"hash": "c0680516856d847f5f3843dfdcceffa9517ddd5f",
+"seconds": 4.19
+},
+"sounds/vasyan/ru/mat/give_back_empty_2": {
+"hash": "e213062cfd17500c15801d20a791f9f62b579ba8",
+"seconds": 3.85
+},
+"sounds/vasyan/ru/mat/give_back_forgot_1": {
+"hash": "ea2207c3a8ff6c26302f7ce0c9e2b44eb8195a39",
+"seconds": 6.15
+},
+"sounds/vasyan/ru/mat/give_back_forgot_2": {
+"hash": "9b4a1b81e07b5341dbae930f40624680b1e804b6",
+"seconds": 7.9
+},
+"sounds/vasyan/ru/mat/heal_1": {
+"hash": "298f43465ce7e73fe1068b0f8f1fb5b46957a563",
+"seconds": 3.74
+},
+"sounds/vasyan/ru/mat/heal_2": {
+"hash": "79299c1157d4d29ff1f69d7f1461257cbbc6de05",
+"seconds": 6.18
+},
+"sounds/vasyan/ru/mat/heal_3": {
+"hash": "b70cd2fd3349fd0268baab4e3cf78f75238c94c4",
+"seconds": 6.19
+},
+"sounds/vasyan/ru/mat/hello_1": {
+"hash": "386e78c558e0dfb1c5f28cea0aaf293f90fafde8",
+"seconds": 8.99
+},
+"sounds/vasyan/ru/mat/hello_2": {
+"hash": "95f17246d280c60bd0e149eaa7705d58869b0415",
+"seconds": 7.51
+},
+"sounds/vasyan/ru/mat/hello_3": {
+"hash": "f5788486f957cd93bb0c4f311c2a95ff05c42485",
+"seconds": 7.82
+},
+"sounds/vasyan/ru/mat/help_1": {
+"hash": "b85745302d85d90954165a6e0cd5ba8f9ec54a5a",
+"seconds": 3.4
+},
+"sounds/vasyan/ru/mat/help_2": {
+"hash": "232c2406767b8337cc0462fd848708a985f27f4c",
+"seconds": 4.15
+},
+"sounds/vasyan/ru/mat/here_1": {
+"hash": "17f9277ff03ecc2d772ec84250025901e37cb84b",
+"seconds": 5.99
+},
+"sounds/vasyan/ru/mat/here_2": {
+"hash": "fd12cb71268d1ce9645e5daba464647eb1999f06",
+"seconds": 3.66
+},
+"sounds/vasyan/ru/mat/house_1": {
+"hash": "f95767109f1cf5ae859938cdb11f85473d95bfba",
+"seconds": 4.99
+},
+"sounds/vasyan/ru/mat/house_2": {
+"hash": "d6170ef981e7e62c4c2ec6560523d6f5caf54886",
+"seconds": 6.36
+},
+"sounds/vasyan/ru/mat/house_3": {
+"hash": "8330372afb2482ac1db3e03e217cf83ffac38879",
+"seconds": 5.05
+},
+"sounds/vasyan/ru/mat/how_1": {
+"hash": "8b032f4ff894afe85b97bed34dd7edd510adf9f9",
+"seconds": 8.64
+},
+"sounds/vasyan/ru/mat/how_2": {
+"hash": "a855c9c8c8d1ba502f4d2f986a33cb14c7c8a836",
+"seconds": 6.3
+},
+"sounds/vasyan/ru/mat/how_3": {
+"hash": "ff69d73b8d44cac2a30563ccaaab72d7dfb2f8e8",
+"seconds": 6.16
+},
+"sounds/vasyan/ru/mat/hurt_1": {
+"hash": "b1b325761d977b16bb1328b9f858b5e776149804",
+"seconds": 2.97
+},
+"sounds/vasyan/ru/mat/hurt_2": {
+"hash": "2bab94cb1303a3326cb128d321f31eb9c8c9e745",
+"seconds": 4.07
+},
+"sounds/vasyan/ru/mat/hurt_3": {
+"hash": "3df5fe8bd561a35489f33015e2d63fa5989f7a19",
+"seconds": 6.24
+},
+"sounds/vasyan/ru/mat/idle_1": {
+"hash": "d2d1d61966cad3796f0d7a0f177d9865d2d9ed58",
+"seconds": 3.96
+},
+"sounds/vasyan/ru/mat/idle_2": {
+"hash": "64a216c0d3c44d471c7b7cbdd95219dab03d006d",
+"seconds": 5.46
+},
+"sounds/vasyan/ru/mat/idle_3": {
+"hash": "9221c2969eadcdde6f779b6cb9ede5a7864b9a3b",
+"seconds": 6.67
+},
+"sounds/vasyan/ru/mat/idle_4": {
+"hash": "1653b7a91a4c5c7305b6c75fdc46e0a4cfbe465a",
+"seconds": 5.69
+},
+"sounds/vasyan/ru/mat/idle_5": {
+"hash": "15ded5909f0787f896f8ba4d0f0d7fbff62eae7c",
+"seconds": 6.02
+},
+"sounds/vasyan/ru/mat/idle_6": {
+"hash": "2fff3147c548546fddd6f3c8932be3ba90cbd999",
+"seconds": 6.63
+},
+"sounds/vasyan/ru/mat/joke_1": {
+"hash": "da6da570cd69527c74c5fa21fad7ccbb88b2c9dd",
+"seconds": 6.69
+},
+"sounds/vasyan/ru/mat/joke_2": {
+"hash": "6ffd01a2252d5ff9aa8bcc3cf521d90032733490",
+"seconds": 5.94
+},
+"sounds/vasyan/ru/mat/joke_3": {
+"hash": "25d6288681cb24bf04367c37d74283b08292ffd9",
+"seconds": 11.45
+},
+"sounds/vasyan/ru/mat/joke_4": {
+"hash": "addf63dc10d76353d317469191bf2e108c0ac672",
+"seconds": 10.83
+},
+"sounds/vasyan/ru/mat/joke_5": {
+"hash": "82999edbcf957f3125f1dd54fba1d01fd0839fca",
+"seconds": 7.75
+},
+"sounds/vasyan/ru/mat/kill_1": {
+"hash": "fe431cad8dc8dd0f7f541c302473d2833d220f1a",
+"seconds": 3.84
+},
+"sounds/vasyan/ru/mat/kill_2": {
+"hash": "2069c55eb34353aa5d90220b3d46fffe0255d380",
+"seconds": 3.14
+},
+"sounds/vasyan/ru/mat/kill_3": {
+"hash": "90e79b98d552e3c73a725ceb2bf9f98fee8fc3ad",
+"seconds": 3.88
+},
+"sounds/vasyan/ru/mat/lang_1": {
+"hash": "b0fe9cb8ac31b28464ed59e7cefbbd9d34a3dee4",
+"seconds": 3.58
+},
+"sounds/vasyan/ru/mat/low_hp_1": {
+"hash": "755a67cf2cb9a38be034b3823802c92ea84374df",
+"seconds": 6.3
+},
+"sounds/vasyan/ru/mat/low_hp_2": {
+"hash": "88ec6ac4d15af82824295f114b3f9853c9778cf6",
+"seconds": 6.39
+},
+"sounds/vasyan/ru/mat/mat_on_1": {
+"hash": "31f871ae9af7e67b8cfeb24d476c928a9859f586",
+"seconds": 5.91
+},
+"sounds/vasyan/ru/mat/mobheal_1": {
+"hash": "179b611e0521a2a4f9bde89f7110e5f6214b0df2",
+"seconds": 4.98
+},
+"sounds/vasyan/ru/mat/mobheal_2": {
+"hash": "f31e6cc39e87473ca9f4609874bf00ef72dd30c4",
+"seconds": 6.91
+},
+"sounds/vasyan/ru/mat/mobheal_3": {
+"hash": "2818095856a74a769066e064a31e95b612650635",
+"seconds": 4.58
+},
+"sounds/vasyan/ru/mat/night_1": {
+"hash": "14569238618246b2d884263c113f3b252a4d9dba",
+"seconds": 5.24
+},
+"sounds/vasyan/ru/mat/night_2": {
+"hash": "40d68c54e63d79e5d8cac33e3737a7507c600a84",
+"seconds": 7.37
+},
+"sounds/vasyan/ru/mat/ouch_1": {
+"hash": "b2514f0e02c806fa8667525e605a0cd9ea843851",
+"seconds": 3.95
+},
+"sounds/vasyan/ru/mat/ouch_2": {
+"hash": "101600a706e2a257bf8a7d030ff13449d111164a",
+"seconds": 5.3
+},
+"sounds/vasyan/ru/mat/ouch_3": {
+"hash": "4392efb9beecaac072273ef952a16cbe827afa81",
+"seconds": 4.29
+},
+"sounds/vasyan/ru/mat/push_1": {
+"hash": "d5f3b021e4b480e6887f862aa87686b4411caf6f",
+"seconds": 5.43
+},
+"sounds/vasyan/ru/mat/push_2": {
+"hash": "a6facb85cdf48fe17626d5f4c9d265a4411fae3b",
+"seconds": 5.04
+},
+"sounds/vasyan/ru/mat/push_3": {
+"hash": "d2ae60a36d6b1f52da258855ac1134667f02c3d6",
+"seconds": 3.49
+},
+"sounds/vasyan/ru/mat/quiet_1": {
+"hash": "ef7c039d4d4e6377e39839b27c445445342d4aeb",
+"seconds": 4.49
+},
+"sounds/vasyan/ru/mat/quiet_2": {
+"hash": "2274c82506ffadf9dfbd43c0d24d3eec2b176cd3",
+"seconds": 4.06
+},
+"sounds/vasyan/ru/mat/quiet_broke_1": {
+"hash": "4655a90dbdd3584c9c42656a86ed40a85e5090a3",
+"seconds": 3.45
+},
+"sounds/vasyan/ru/mat/quiet_broke_2": {
+"hash": "81a8570ed308c0687abea4de8f8c3931a838c50f",
+"seconds": 4.84
+},
+"sounds/vasyan/ru/mat/rain_1": {
+"hash": "a894f124897c7b295e0cd4c76cf6bfcc6dfc00fc",
+"seconds": 3.1
+},
+"sounds/vasyan/ru/mat/rain_2": {
+"hash": "8b956cafad954f9298ae13d67e9005d4767ee919",
+"seconds": 4.55
+},
+"sounds/vasyan/ru/mat/reply_klod_1": {
+"hash": "47bbb2050361a564bb7648d921edc5648ba681fb",
+"seconds": 3.88
+},
+"sounds/vasyan/ru/mat/reply_klod_2": {
+"hash": "b7e838d89b7cf0b57a254dc25b7c2f29cccafdce",
+"seconds": 6.16
+},
+"sounds/vasyan/ru/mat/reply_klod_3": {
+"hash": "6abea6e59e641c550ca73706e2226b2164afa21e",
+"seconds": 4.69
+},
+"sounds/vasyan/ru/mat/respawn_1": {
+"hash": "545ccb8455e18c2fb34c2c0a6de1d8f7bae78ec3",
+"seconds": 6.36
+},
+"sounds/vasyan/ru/mat/respawn_2": {
+"hash": "a337bdeb8c39c10a68dcf4886b31926a8e56c60a",
+"seconds": 5.06
+},
+"sounds/vasyan/ru/mat/respawn_3": {
+"hash": "da3c62e1f299173076cbd08fb72ef6b64f762716",
+"seconds": 6.37
+},
+"sounds/vasyan/ru/mat/shortcut_1": {
+"hash": "e95b40cec5937ff85a2aa9c79bfc610e44a41622",
+"seconds": 3.67
+},
+"sounds/vasyan/ru/mat/shortcut_2": {
+"hash": "7174816ff1a746863abc769a8c5ff39c53b43c71",
+"seconds": 6.52
+},
+"sounds/vasyan/ru/mat/shortcut_3": {
+"hash": "ec8ac0b5fde55f1400c12529507efb060c850ac8",
+"seconds": 5.19
+},
+"sounds/vasyan/ru/mat/sit_1": {
+"hash": "bc2df577a5d1ebc8d20c3fb87acfce6e050bc2ef",
+"seconds": 4.75
+},
+"sounds/vasyan/ru/mat/sit_2": {
+"hash": "1755a115563390390b57d24618e4de4f6b0b9518",
+"seconds": 3.65
+},
+"sounds/vasyan/ru/mat/sort_1": {
+"hash": "373e6748ef84d11663ea21d967fd659f671e1f45",
+"seconds": 5.72
+},
+"sounds/vasyan/ru/mat/sort_2": {
+"hash": "ec4eb31e5dae98d17dd6fa85bdb4fe2c3c38a713",
+"seconds": 5.42
+},
+"sounds/vasyan/ru/mat/sort_3": {
+"hash": "b12b14a330049b15b8b62d70091a9c0b707fc3c1",
+"seconds": 4.76
+},
+"sounds/vasyan/ru/mat/steal_1": {
+"hash": "a83218ad7a1e3b27e81ead9f1089dd7aa1700513",
+"seconds": 3.5
+},
+"sounds/vasyan/ru/mat/steal_2": {
+"hash": "f21a742e2f794368ebc853ee3cb248f891227249",
+"seconds": 4.25
+},
+"sounds/vasyan/ru/mat/steal_3": {
+"hash": "350454822155acac9834daba90862a4d8ef2d5a5",
+"seconds": 4.87
+},
+"sounds/vasyan/ru/mat/stranger_1": {
+"hash": "0e91e69a08badd965114c7f10fd066cbc5190c07",
+"seconds": 4.45
+},
+"sounds/vasyan/ru/mat/stranger_2": {
+"hash": "c6ab1904a90675ade98a656ab99f8a583b136884",
+"seconds": 7.16
+},
+"sounds/vasyan/ru/mat/stupid_1": {
+"hash": "8c5e3ec3dbb5df3cae8ffbc2f5e6f7696ef0e524",
+"seconds": 5.32
+},
+"sounds/vasyan/ru/mat/stupid_2": {
+"hash": "ccd7c8781cadc009d86cab442539bb9bac6ddb49",
+"seconds": 8.26
+},
+"sounds/vasyan/ru/mat/stupid_3": {
+"hash": "523d6a6222d7e10dc57c64ddfdab2df7ee1d6588",
+"seconds": 6.72
+},
+"sounds/vasyan/ru/mat/web_1": {
+"hash": "e2430a70d651f62d1a05fe409ab88f03e77dd61e",
+"seconds": 4.61
+},
+"sounds/vasyan/ru/mat/web_2": {
+"hash": "51fa31609ae9b66aded4ce281ef05319943fb9a5",
+"seconds": 4.01
+},
+"sounds/vasyan/ru/mat/web_3": {
+"hash": "c3c056d01a131cf97ce0cb43008a25b4da365a18",
+"seconds": 3.14
+},
+"sounds/vasyan/ru/normal/about_1": {
+"hash": "4910bfc294414676de7c4258b09c0d393fef4e91",
+"seconds": 8.03
+},
+"sounds/vasyan/ru/normal/about_2": {
+"hash": "cf5db343b7fa1fe9b2f3a43c5ae44f72ee3eaaeb",
+"seconds": 6.29
+},
+"sounds/vasyan/ru/normal/advice_1": {
+"hash": "38c5c439c10a7c797b318778fccbe5d3b4144e6d",
+"seconds": 6.58
+},
+"sounds/vasyan/ru/normal/advice_2": {
+"hash": "c49d45c6e204f8d6a707b3e06b119bedc3715544",
+"seconds": 6.6
+},
+"sounds/vasyan/ru/normal/advice_3": {
+"hash": "76b4e22e9642736f07cea7d724d867868eeb8a6a",
+"seconds": 7.41
+},
+"sounds/vasyan/ru/normal/advice_4": {
+"hash": "aeb3494c467646d97ff9134de7b2b89744f288fe",
+"seconds": 5.04
+},
+"sounds/vasyan/ru/normal/afk_1": {
+"hash": "308f2a8ead625e90ea3f3b8e45fcd5af5f6a0a02",
+"seconds": 2.44
+},
+"sounds/vasyan/ru/normal/afk_2": {
+"hash": "41ec017917314b3f8f816b59088b16d7572a6d48",
+"seconds": 4.11
+},
+"sounds/vasyan/ru/normal/angry_1": {
+"hash": "0b30b9b941645f6f9df58860d3e204e2e36956c5",
+"seconds": 3.41
+},
+"sounds/vasyan/ru/normal/angry_2": {
+"hash": "4c9589025614d09d47d3fa67d342b00d39405425",
+"seconds": 3.91
+},
+"sounds/vasyan/ru/normal/bye_1": {
+"hash": "88aef49288bf3dda871b7113f194bebbde01ca95",
+"seconds": 4.21
+},
+"sounds/vasyan/ru/normal/bye_2": {
+"hash": "bb13759b751deff8e03a8bbe55c27de403f424a2",
+"seconds": 4.6
+},
+"sounds/vasyan/ru/normal/creeper_1": {
+"hash": "d2552a43267e43e75f321222ddda4114f448ba63",
+"seconds": 3.86
+},
+"sounds/vasyan/ru/normal/creeper_2": {
+"hash": "520a8890f28ed3d7ed59233c3b99ad2484b8a9eb",
+"seconds": 4.77
+},
+"sounds/vasyan/ru/normal/dance_1": {
+"hash": "bdc730ec4399e0b49b0ec4afb183bb4527866f89",
+"seconds": 4.26
+},
+"sounds/vasyan/ru/normal/dance_2": {
+"hash": "7ce9df7ce883c391ffcb87b29b074c05b3cf6c49",
+"seconds": 2.77
+},
+"sounds/vasyan/ru/normal/diamond_ore_1": {
+"hash": "55dccb00877ad3ad4d983b43f136ce5ca5c368e7",
+"seconds": 3.47
+},
+"sounds/vasyan/ru/normal/diamond_ore_2": {
+"hash": "0edd75bbb1147a985cda908b5908da7d6f843362",
+"seconds": 4.41
+},
+"sounds/vasyan/ru/normal/diamonds_1": {
+"hash": "37359efbebb8c369ddc123048f8cdcfaae6dc5d5",
+"seconds": 4.35
+},
+"sounds/vasyan/ru/normal/diamonds_2": {
+"hash": "0e26be5209c43b66aba79182cd93e1977afd3827",
+"seconds": 6.12
+},
+"sounds/vasyan/ru/normal/diamonds_3": {
+"hash": "3b84d6ac647b205d82ce56d7e638855f1bf0d268",
+"seconds": 4.03
+},
+"sounds/vasyan/ru/normal/dig_1": {
+"hash": "5f3c230936ec8e42d82a61f3332defdc03769665",
+"seconds": 3.94
+},
+"sounds/vasyan/ru/normal/dig_2": {
+"hash": "b5df1fdbea68d4768982f5f01ccdd8a76cd9df28",
+"seconds": 3.94
+},
+"sounds/vasyan/ru/normal/dig_3": {
+"hash": "fc549319935accee76e571d9b33dc8c2163e2e12",
+"seconds": 6.34
+},
+"sounds/vasyan/ru/normal/dimension_1": {
+"hash": "28659e62f1b0091302a46e0031abd4643f1e3a96",
+"seconds": 2.86
+},
+"sounds/vasyan/ru/normal/dimension_2": {
+"hash": "a982b275c524119e510aa7edf4db3d6073a5ab51",
+"seconds": 4.09
+},
+"sounds/vasyan/ru/normal/eat_1": {
+"hash": "e62b65f87e817393d011cbcfba7245c0ab9ecc73",
+"seconds": 4.61
+},
+"sounds/vasyan/ru/normal/eat_2": {
+"hash": "32308824a480b606a5e637d33140f2fddae1094a",
+"seconds": 2.46
+},
+"sounds/vasyan/ru/normal/eat_3": {
+"hash": "950aebec6c7971a1a3bba3d88fc77eb972b1772f",
+"seconds": 4.27
+},
+"sounds/vasyan/ru/normal/follow_1": {
+"hash": "0bc92ad268f7c25ec0cfb31dad02f9c74ebb8590",
+"seconds": 3.81
+},
+"sounds/vasyan/ru/normal/follow_2": {
+"hash": "0e47510699bd67968b944d6dfff2d434cb022dea",
+"seconds": 1.25
+},
+"sounds/vasyan/ru/normal/friend_1": {
+"hash": "a9f5d065181fc8e1cbdecf5249db5a4dd5b8efac",
+"seconds": 2.15
+},
+"sounds/vasyan/ru/normal/friend_2": {
+"hash": "f0366bc68d9d9cee92ebbdd41781c99b010b10b0",
+"seconds": 4.59
+},
+"sounds/vasyan/ru/normal/friend_3": {
+"hash": "9875ca33e32e82724af6dbd77f78caeb311f0129",
+"seconds": 3.37
+},
+"sounds/vasyan/ru/normal/friend_zombie_1": {
+"hash": "9b1d1e21ec4306856f9a0f4d16cf726ee33aef55",
+"seconds": 5.86
+},
+"sounds/vasyan/ru/normal/friend_zombie_2": {
+"hash": "7ec63d9a4a11cb958cb80ea4a2b5e5bbbce7ae70",
+"seconds": 4.02
+},
+"sounds/vasyan/ru/normal/gift_flower_1": {
+"hash": "d2f6b7d48a933042a99447ef0faebeb606cb2296",
+"seconds": 5.21
+},
+"sounds/vasyan/ru/normal/gift_flower_2": {
+"hash": "0e9ca78a72c75e902a6dfff58825d902c276494f",
+"seconds": 4.25
+},
+"sounds/vasyan/ru/normal/gift_food_1": {
+"hash": "3b768d473d24a2b489388e80725cb2696eacc987",
+"seconds": 4.28
+},
+"sounds/vasyan/ru/normal/gift_food_2": {
+"hash": "dc7a142a3ec9c9a6364bb2cf0947a2eccee1fac0",
+"seconds": 3.04
+},
+"sounds/vasyan/ru/normal/gift_junk_1": {
+"hash": "a6c0e9c90a2bfbde812625d9c9a24fec758787dd",
+"seconds": 4.73
+},
+"sounds/vasyan/ru/normal/gift_junk_2": {
+"hash": "d92d6371da651aa68d8f9c0fb294dadebcfe1d5f",
+"seconds": 4.01
+},
+"sounds/vasyan/ru/normal/gift_none_1": {
+"hash": "b0f2751ff6c8f986331a301a7211f500edc77888",
+"seconds": 4.32
+},
+"sounds/vasyan/ru/normal/gift_none_2": {
+"hash": "5907ec3dc177897b3750e383ddd43fa39883fb92",
+"seconds": 3.26
+},
+"sounds/vasyan/ru/normal/gift_redstone_1": {
+"hash": "76763457bf1489b1dce5d9fbcadd6105b2594e22",
+"seconds": 4.65
+},
+"sounds/vasyan/ru/normal/gift_redstone_2": {
+"hash": "c0e579574e93fd1fcf46092c1c5e81cf9087ee8b",
+"seconds": 3.35
+},
+"sounds/vasyan/ru/normal/gift_shiny_1": {
+"hash": "f5cfb95b8dfbb9f220a7fb39f66f232680173284",
+"seconds": 6.37
+},
+"sounds/vasyan/ru/normal/gift_shiny_2": {
+"hash": "a9524068e7a79162ade6045d2fc4e89f5d3a7820",
+"seconds": 4.83
+},
+"sounds/vasyan/ru/normal/give_back_1": {
+"hash": "4758d379798d0960985c59a89479560c4ecef60e",
+"seconds": 4.49
+},
+"sounds/vasyan/ru/normal/give_back_2": {
+"hash": "b0cdead0af6437db88025491f29dbaba8d94d4b1",
+"seconds": 7.03
+},
+"sounds/vasyan/ru/normal/give_back_empty_1": {
+"hash": "e6eec73c6518a65ee0590433f127de2db199792e",
+"seconds": 3.79
+},
+"sounds/vasyan/ru/normal/give_back_empty_2": {
+"hash": "48a558040751a7cadea90a5c56be4ba87ff093b2",
+"seconds": 2.87
+},
+"sounds/vasyan/ru/normal/give_back_forgot_1": {
+"hash": "619eeeb88919622f5c71a0e12d79ce98a3f6acc4",
+"seconds": 6.04
+},
+"sounds/vasyan/ru/normal/give_back_forgot_2": {
+"hash": "f576dfcc09978c950c79e5108331ceefa3cab682",
+"seconds": 6.2
+},
+"sounds/vasyan/ru/normal/heal_1": {
+"hash": "9202e60c736d0ccfaafddd0345ae8d79421054d4",
+"seconds": 3.3
+},
+"sounds/vasyan/ru/normal/heal_2": {
+"hash": "51f936a15a7c179d6f3d5d537dced857ab92123d",
+"seconds": 6.03
+},
+"sounds/vasyan/ru/normal/heal_3": {
+"hash": "f1421b23dfb3415563759737715d6e18e1ed9d59",
+"seconds": 4.84
+},
+"sounds/vasyan/ru/normal/hello_1": {
+"hash": "845710de5e77db49bd4f2333d4dcba81e6b6af6b",
+"seconds": 7.55
+},
+"sounds/vasyan/ru/normal/hello_2": {
+"hash": "22d826bf3f59ff251239c9d0d8984480e4d06da0",
+"seconds": 6.17
+},
+"sounds/vasyan/ru/normal/hello_3": {
+"hash": "b4099b8dae394d19aca0fda05e580eb72b76e375",
+"seconds": 6.38
+},
+"sounds/vasyan/ru/normal/help_1": {
+"hash": "45a8df16aaa33280d7c06270d70397794eef6868",
+"seconds": 2.59
+},
+"sounds/vasyan/ru/normal/help_2": {
+"hash": "b7d97b15df130820a47222a0e6dc9ac8a771ecc1",
+"seconds": 3.06
+},
+"sounds/vasyan/ru/normal/here_1": {
+"hash": "b54ad4f6c17f19d230eae52548ba5fdc8b08405e",
+"seconds": 3.56
+},
+"sounds/vasyan/ru/normal/here_2": {
+"hash": "c60d223866cf9bf7e4512c314faac1abb5c715be",
+"seconds": 2.91
+},
+"sounds/vasyan/ru/normal/house_1": {
+"hash": "c950d47d1d79ace7714aaee1396df3eac80f4ae2",
+"seconds": 3.73
+},
+"sounds/vasyan/ru/normal/house_2": {
+"hash": "fe2d1a88196cdc0030ae8cfe07b3af95a46a446b",
+"seconds": 6.03
+},
+"sounds/vasyan/ru/normal/house_3": {
+"hash": "ed14535a9f5a8c9198bdabaa156b5f93d1f59de2",
+"seconds": 4.5
+},
+"sounds/vasyan/ru/normal/how_1": {
+"hash": "2e0a2fba6fd50e108a1fae66f92e8b26c62e3548",
+"seconds": 6.52
+},
+"sounds/vasyan/ru/normal/how_2": {
+"hash": "d4bedc0bae05e2c96ea1c9dbbef8b9278350228b",
+"seconds": 6.22
+},
+"sounds/vasyan/ru/normal/how_3": {
+"hash": "e69124ae95b6d1c7336f7294daf433ca7e0c2a69",
+"seconds": 5.25
+},
+"sounds/vasyan/ru/normal/hurt_1": {
+"hash": "4f295c929ed91199ddb2102b60ee462a1d5fd0ee",
+"seconds": 2.86
+},
+"sounds/vasyan/ru/normal/hurt_2": {
+"hash": "7b86fb0227de9bfe17149ef45eee49ed3fd0b6c1",
+"seconds": 3.04
+},
+"sounds/vasyan/ru/normal/hurt_3": {
+"hash": "d3703a0ea5b8ff4203be5d4b8125cb909ad46ed5",
+"seconds": 5.25
+},
+"sounds/vasyan/ru/normal/idle_1": {
+"hash": "dce7235404f99b03e754f8aea6e11318a7d58fca",
+"seconds": 3.18
+},
+"sounds/vasyan/ru/normal/idle_2": {
+"hash": "b0b07f59d62fc7570469940e723aa49d92bb143a",
+"seconds": 5.59
+},
+"sounds/vasyan/ru/normal/idle_3": {
+"hash": "a8bc63a302b0dc28cd5a6ecafa392f40544d35e5",
+"seconds": 6.2
+},
+"sounds/vasyan/ru/normal/idle_4": {
+"hash": "6ecb5b96fc00e0dfc78022c30035bc1820729389",
+"seconds": 5.82
+},
+"sounds/vasyan/ru/normal/idle_5": {
+"hash": "16f1444c0ae3f15ada02c5fd1fe3811f1665af79",
+"seconds": 4.95
+},
+"sounds/vasyan/ru/normal/idle_6": {
+"hash": "e071e8c355701e1c91ab2b96fa0dc271dcb953fb",
+"seconds": 6.13
+},
+"sounds/vasyan/ru/normal/joke_1": {
+"hash": "7941cf3f180726bba9016f25102a05b8cb63e412",
+"seconds": 5.32
+},
+"sounds/vasyan/ru/normal/joke_2": {
+"hash": "1e69b98670a53dbf32c45b9fd7999737bb670735",
+"seconds": 6.03
+},
+"sounds/vasyan/ru/normal/joke_3": {
+"hash": "6023d2a8edf147079febec9c16465365c5a2bae4",
+"seconds": 10.13
+},
+"sounds/vasyan/ru/normal/joke_4": {
+"hash": "3838c17f155a8de846c7648c34b7f09ddd0e0353",
+"seconds": 10.36
+},
+"sounds/vasyan/ru/normal/joke_5": {
+"hash": "8beb659b4dd74a1da84b14d02f073aeaf4e17ef6",
+"seconds": 6.34
+},
+"sounds/vasyan/ru/normal/kill_1": {
+"hash": "f35d5d0336f03006c1274fd75617c6f2729b1a08",
+"seconds": 2.76
+},
+"sounds/vasyan/ru/normal/kill_2": {
+"hash": "e19d9411f3f599564e1eb73ef7f579bc4098fc4f",
+"seconds": 2.3
+},
+"sounds/vasyan/ru/normal/kill_3": {
+"hash": "1bfb572f8f9e5151a57d05f75f6f22fd8be800b0",
+"seconds": 2.86
+},
+"sounds/vasyan/ru/normal/lang_1": {
+"hash": "4f35738c5c1874fbad642cab76da058045a0a6ed",
+"seconds": 2.36
+},
+"sounds/vasyan/ru/normal/low_hp_1": {
+"hash": "298bc7b325e92751588a275ac92a78f367c86bce",
+"seconds": 5.43
+},
+"sounds/vasyan/ru/normal/low_hp_2": {
+"hash": "f0516dc25f05fd615e39149e2379928f61c560fd",
+"seconds": 5.41
+},
+"sounds/vasyan/ru/normal/mat_off_1": {
+"hash": "508fad72847a30b18b12e5ecb9fe5a8f3feb07e7",
+"seconds": 5.08
+},
+"sounds/vasyan/ru/normal/mobheal_1": {
+"hash": "7ab09f8291a49bdbd29ed7ca265ef35e80fc2a3b",
+"seconds": 4.27
+},
+"sounds/vasyan/ru/normal/mobheal_2": {
+"hash": "1c6449acc680d7f072d0dccfe347b744068af099",
+"seconds": 6.05
+},
+"sounds/vasyan/ru/normal/mobheal_3": {
+"hash": "fc4aaab24132729bd72ad7e360d114e2cfcdf5fb",
+"seconds": 3.5
+},
+"sounds/vasyan/ru/normal/night_1": {
+"hash": "3feee64d507c0ab996501d00bbe524e56189f71f",
+"seconds": 4.35
+},
+"sounds/vasyan/ru/normal/night_2": {
+"hash": "52495a9584919178d2dced943393914dac8a2a7f",
+"seconds": 5.23
+},
+"sounds/vasyan/ru/normal/ouch_1": {
+"hash": "9ea4e36b5b717762918aefadca8b3814cad1c164",
+"seconds": 2.91
+},
+"sounds/vasyan/ru/normal/ouch_2": {
+"hash": "db94bef0516b9dead36780a2547ddd5c24b88887",
+"seconds": 4.21
+},
+"sounds/vasyan/ru/normal/ouch_3": {
+"hash": "39f4f7518134b078c0289f6e215cbb692681ab7c",
+"seconds": 3.36
+},
+"sounds/vasyan/ru/normal/push_1": {
+"hash": "2d875802a63ad85d1fa78af90662fa8c06912f6e",
+"seconds": 4.72
+},
+"sounds/vasyan/ru/normal/push_2": {
+"hash": "a6e7591eab21bf641c626a477610925d4e88abf7",
+"seconds": 4.42
+},
+"sounds/vasyan/ru/normal/push_3": {
+"hash": "6dddd881300cf989484d5c26af09e7510a4e2f3b",
+"seconds": 4.47
+},
+"sounds/vasyan/ru/normal/quiet_1": {
+"hash": "b7e13946159172ee4e6112c79e64af8d4dd771e7",
+"seconds": 4.12
+},
+"sounds/vasyan/ru/normal/quiet_2": {
+"hash": "1d04fc16cf1b33d05522006be7249ed249fd2c77",
+"seconds": 3.11
+},
+"sounds/vasyan/ru/normal/quiet_broke_1": {
+"hash": "2d93ac0199b282ba49e6ae11f2bc0a279eb36a90",
+"seconds": 3.18
+},
+"sounds/vasyan/ru/normal/quiet_broke_2": {
+"hash": "e298f1e25933389b4ba245c2a5c7524c045f1817",
+"seconds": 3.97
+},
+"sounds/vasyan/ru/normal/rain_1": {
+"hash": "6d28937832792512093b96b740afbf348d00b475",
+"seconds": 2.5
+},
+"sounds/vasyan/ru/normal/rain_2": {
+"hash": "0f3ad4886d1d703aa8008ea4ed6dde8415c2b079",
+"seconds": 3.63
+},
+"sounds/vasyan/ru/normal/reply_klod_1": {
+"hash": "c126bfb5f9657c65cdf805cc93f419d494ce3736",
+"seconds": 2.96
+},
+"sounds/vasyan/ru/normal/reply_klod_2": {
+"hash": "f722b725d7f14bbb214a4dc1fa2022dbc2cd8ff9",
+"seconds": 4.25
+},
+"sounds/vasyan/ru/normal/reply_klod_3": {
+"hash": "65ec5c4f0b19d6173e57e7d971a743af8d7513fa",
+"seconds": 3.67
+},
+"sounds/vasyan/ru/normal/respawn_1": {
+"hash": "b337d8f53c2a2ee1da8d284156f5114a097f986a",
+"seconds": 5.09
+},
+"sounds/vasyan/ru/normal/respawn_2": {
+"hash": "49fdf701bdfc5259fa5f47068ecfc7ec3c0a6635",
+"seconds": 4.05
+},
+"sounds/vasyan/ru/normal/respawn_3": {
+"hash": "72ecc0cb099f47ba7ad5b60158050cb41417c0b5",
+"seconds": 5.39
+},
+"sounds/vasyan/ru/normal/shortcut_1": {
+"hash": "29ac2ebabd5f482e918fb74a9d08f7bda5a3ca4b",
+"seconds": 2.7
+},
+"sounds/vasyan/ru/normal/shortcut_2": {
+"hash": "081d6e4b0d9b61551d2c51bfade75b8928d908fb",
+"seconds": 4.97
+},
+"sounds/vasyan/ru/normal/shortcut_3": {
+"hash": "ed87df619144ab827a9f2c67527652dd4fc03942",
+"seconds": 5.55
+},
+"sounds/vasyan/ru/normal/sit_1": {
+"hash": "67b9542ff5c27ceaca3a349d00c20a59f20b6cbb",
+"seconds": 4.1
+},
+"sounds/vasyan/ru/normal/sit_2": {
+"hash": "c680d9c67eca0f5e681b4424db733c921f6b070c",
+"seconds": 3.21
+},
+"sounds/vasyan/ru/normal/sort_1": {
+"hash": "e695cebbcdce7b6086075077de8dd63995858c54",
+"seconds": 5.12
+},
+"sounds/vasyan/ru/normal/sort_2": {
+"hash": "952f647ab16f77cf67091b9b51c48856ed9abb58",
+"seconds": 5.32
+},
+"sounds/vasyan/ru/normal/sort_3": {
+"hash": "a2c1d854776f8d267971eb5404a8f7d43afb86f0",
+"seconds": 5.23
+},
+"sounds/vasyan/ru/normal/steal_1": {
+"hash": "9e8bdd98fc18306036245ec096a38b216ae14035",
+"seconds": 3.9
+},
+"sounds/vasyan/ru/normal/steal_2": {
+"hash": "95912b3d8aef5cf717204006bc4f39bc49d8ea6f",
+"seconds": 4.8
+},
+"sounds/vasyan/ru/normal/steal_3": {
+"hash": "5d9cb84691a009a37bcabfc4e7dea754974d4667",
+"seconds": 4.65
+},
+"sounds/vasyan/ru/normal/stranger_1": {
+"hash": "18117685ddd44940229507b75be413a05a78012f",
+"seconds": 6.55
+},
+"sounds/vasyan/ru/normal/stranger_2": {
+"hash": "da8074f836e8246a0bdad40d4bae3ead54f364b1",
+"seconds": 4.04
+},
+"sounds/vasyan/ru/normal/stupid_1": {
+"hash": "ca1b42c6f5037a0a33e48e236814eba31a9c9a44",
+"seconds": 5.29
+},
+"sounds/vasyan/ru/normal/stupid_2": {
+"hash": "fb286745c8929e1c40cd8d8bbf9f365559e74872",
+"seconds": 6.69
+},
+"sounds/vasyan/ru/normal/stupid_3": {
+"hash": "5cdc30c805fda40c8e71bf2256b7bb8c13445ee3",
+"seconds": 5.74
+},
+"sounds/vasyan/ru/normal/web_1": {
+"hash": "a3baf0146cc15668fb5c4e6b18071a80ab291a1c",
+"seconds": 4.57
+},
+"sounds/vasyan/ru/normal/web_2": {
+"hash": "030d1bf88a388e8a9e7ef6cb4e02db77d8281a5d",
+"seconds": 4.72
+},
+"sounds/vasyan/ru/normal/web_3": {
+"hash": "df85ff32dacfcce0c162783097463f32637f3e3f",
+"seconds": 2.75
+},
+"sounds/vasyan/uk/mat/about_1": {
+"hash": "555d399a1beaf1a1bbbf3646e7838e9c10626c76",
+"seconds": 8.45
+},
+"sounds/vasyan/uk/mat/about_2": {
+"hash": "e93977a478ee8f3050d5f22cb023a6aa9c338bdd",
+"seconds": 5.96
+},
+"sounds/vasyan/uk/mat/advice_1": {
+"hash": "89e4d580439b69959ae028233b8d5d7a5b90fa1e",
+"seconds": 6.44
+},
+"sounds/vasyan/uk/mat/advice_2": {
+"hash": "a71f9c573ec6a6521a2fc5db5eb1df2696e07f4b",
+"seconds": 8.11
+},
+"sounds/vasyan/uk/mat/advice_3": {
+"hash": "9fb2835193ba7e4f9541dd0521d663c5a390f889",
+"seconds": 7.86
+},
+"sounds/vasyan/uk/mat/advice_4": {
+"hash": "c9c85dcf549ee651e45f281f15e1d1b3263ad3a3",
+"seconds": 5.59
+},
+"sounds/vasyan/uk/mat/afk_1": {
+"hash": "9297c92967c0bb1d163717c5550091b4d3518a91",
+"seconds": 3.59
+},
+"sounds/vasyan/uk/mat/afk_2": {
+"hash": "1939b843658dfb57cad4dc2cc0890e5fe5328edc",
+"seconds": 5.16
+},
+"sounds/vasyan/uk/mat/angry_1": {
+"hash": "655e8773498da87254c266d8e974a283a9ced4aa",
+"seconds": 4.9
+},
+"sounds/vasyan/uk/mat/angry_2": {
+"hash": "46f47e4ea55ee4336380bb2f95b213295e718008",
+"seconds": 4.58
+},
+"sounds/vasyan/uk/mat/bye_1": {
+"hash": "ca3352be3a128e32a9d66af23968d070a89c81db",
+"seconds": 5.42
+},
+"sounds/vasyan/uk/mat/bye_2": {
+"hash": "00b1edfbd2ceec0c84282fd6ec069e0b1a87d270",
+"seconds": 4.52
+},
+"sounds/vasyan/uk/mat/creeper_1": {
+"hash": "57d09c9c162b41229406fef19cae8f2e66606587",
+"seconds": 4.51
+},
+"sounds/vasyan/uk/mat/creeper_2": {
+"hash": "3493ae750753438aeb1f2d667f90e92e395fef91",
+"seconds": 5.75
+},
+"sounds/vasyan/uk/mat/dance_1": {
+"hash": "08957edbb2d5bf49a0e79f51e1da5670617e6146",
+"seconds": 4.85
+},
+"sounds/vasyan/uk/mat/dance_2": {
+"hash": "50af7511dd4079e9f40d7709217d630f86270cdc",
+"seconds": 3.96
+},
+"sounds/vasyan/uk/mat/diamond_ore_1": {
+"hash": "6dc4c4c827cd892ef3b8cc844e453d588dc6cecd",
+"seconds": 5.36
+},
+"sounds/vasyan/uk/mat/diamond_ore_2": {
+"hash": "d726d4878e2370d0179a597ba2b298791ffbab7e",
+"seconds": 5.28
+},
+"sounds/vasyan/uk/mat/diamonds_1": {
+"hash": "6de0724acb9416de4228c34144e562bff7fc9ffa",
+"seconds": 5.2
+},
+"sounds/vasyan/uk/mat/diamonds_2": {
+"hash": "e344be8462065a1ba2afa5fa7fc405ded0861119",
+"seconds": 7.45
+},
+"sounds/vasyan/uk/mat/diamonds_3": {
+"hash": "762cde6a052162d569912db096499591fb7e3191",
+"seconds": 4.62
+},
+"sounds/vasyan/uk/mat/dig_1": {
+"hash": "89ffd27ba3854c6b2fb7a408da39c94eb0657878",
+"seconds": 4.99
+},
+"sounds/vasyan/uk/mat/dig_2": {
+"hash": "561257638806ee07a4fadc36cc47debc44ec4a5c",
+"seconds": 3.85
+},
+"sounds/vasyan/uk/mat/dig_3": {
+"hash": "85533dc1f837832094ba151df4d03c78417c8093",
+"seconds": 6.06
+},
+"sounds/vasyan/uk/mat/dimension_1": {
+"hash": "b2dc9551f280997114084b19eb07099e9ca2d77b",
+"seconds": 3.35
+},
+"sounds/vasyan/uk/mat/dimension_2": {
+"hash": "8a922453492616c501c8691342dc9baf6fe0d941",
+"seconds": 5.49
+},
+"sounds/vasyan/uk/mat/eat_1": {
+"hash": "79c99b6bd3b14578f86869b1d5d89b3d588705c5",
+"seconds": 5.34
+},
+"sounds/vasyan/uk/mat/eat_2": {
+"hash": "200f41cae556e15488b460bd381b1e02ed2f8f9e",
+"seconds": 3.01
+},
+"sounds/vasyan/uk/mat/eat_3": {
+"hash": "696f1804779a8152abd566902977962e0d5b86ef",
+"seconds": 5.22
+},
+"sounds/vasyan/uk/mat/follow_1": {
+"hash": "bd9c27ad39e6612590bb16fe2a9d8eecb17b3d63",
+"seconds": 4.93
+},
+"sounds/vasyan/uk/mat/follow_2": {
+"hash": "e84493551102d4e774ad014a86ff0eca8fece62e",
+"seconds": 2.47
+},
+"sounds/vasyan/uk/mat/friend_1": {
+"hash": "432ffe96153f0334c7b14e3b555527390514c93a",
+"seconds": 3.21
+},
+"sounds/vasyan/uk/mat/friend_2": {
+"hash": "232403e245402f27698feb06450e2bad347c024c",
+"seconds": 5.14
+},
+"sounds/vasyan/uk/mat/friend_3": {
+"hash": "782c7024a8d5abe5bf9de68aaf934889caef5216",
+"seconds": 4.64
+},
+"sounds/vasyan/uk/mat/friend_zombie_1": {
+"hash": "c9a22778e7b9f83cafe4a0733d0d040111cc3e49",
+"seconds": 5.63
+},
+"sounds/vasyan/uk/mat/friend_zombie_2": {
+"hash": "37d8ca4784b4eaa4502d9ea10f2f1df5f7482d2c",
+"seconds": 5.45
+},
+"sounds/vasyan/uk/mat/gift_flower_1": {
+"hash": "0b6c6abc72f5a56d6a9fadf119e492d9ec6b7227",
+"seconds": 5.57
+},
+"sounds/vasyan/uk/mat/gift_flower_2": {
+"hash": "248f43c6d94e737296ca788c3cc330e1c43789c5",
+"seconds": 4.69
+},
+"sounds/vasyan/uk/mat/gift_food_1": {
+"hash": "080a63c0929783f2a2b752c8913d01847fd67281",
+"seconds": 4.41
+},
+"sounds/vasyan/uk/mat/gift_food_2": {
+"hash": "d8005325a3f1ff6dae03705f5cbef7c2ef312c7d",
+"seconds": 4.06
+},
+"sounds/vasyan/uk/mat/gift_junk_1": {
+"hash": "4474278f4470cc994123de90c49c37f0e159eca0",
+"seconds": 3.35
+},
+"sounds/vasyan/uk/mat/gift_junk_2": {
+"hash": "7f01f3ec53f77c73ac50e928b51be57d43f24b4a",
+"seconds": 4.21
+},
+"sounds/vasyan/uk/mat/gift_none_1": {
+"hash": "7b9cdf2e94ac91ca53dd1352a2eb73688e16d7fa",
+"seconds": 4.54
+},
+"sounds/vasyan/uk/mat/gift_none_2": {
+"hash": "ce7a59d6eb2f410fe46baad6bf65ad3ba795dd30",
+"seconds": 4.14
+},
+"sounds/vasyan/uk/mat/gift_redstone_1": {
+"hash": "2206bc57ab64c8eb087f153a5b57c8f72f9c7f30",
+"seconds": 5.66
+},
+"sounds/vasyan/uk/mat/gift_redstone_2": {
+"hash": "0d564fa8fa461b9c7f61e2ae72d0f72c22058fce",
+"seconds": 4.42
+},
+"sounds/vasyan/uk/mat/gift_shiny_1": {
+"hash": "86bc0d41e661ef2ec2b909b039165b3a60c636cc",
+"seconds": 6.47
+},
+"sounds/vasyan/uk/mat/gift_shiny_2": {
+"hash": "a78bf4dc500d9c36de6fff565747168daa2cf5d1",
+"seconds": 5.78
+},
+"sounds/vasyan/uk/mat/give_back_1": {
+"hash": "aa8841383a85bdf495dffd5124c7a1ad51099872",
+"seconds": 4.74
+},
+"sounds/vasyan/uk/mat/give_back_2": {
+"hash": "2416d42174c60baa5329cd892297eb89e4314a54",
+"seconds": 7.56
+},
+"sounds/vasyan/uk/mat/give_back_empty_1": {
+"hash": "8375075a4c81502ee489191c1b1f63ba747cc1d9",
+"seconds": 4.23
+},
+"sounds/vasyan/uk/mat/give_back_empty_2": {
+"hash": "14849629d305b2ed2e13e56a0b920db34b3881aa",
+"seconds": 3.37
+},
+"sounds/vasyan/uk/mat/give_back_forgot_1": {
+"hash": "d544e8be593f439bbf0ea9232700c70e1a62b0c5",
+"seconds": 5.85
+},
+"sounds/vasyan/uk/mat/give_back_forgot_2": {
+"hash": "94b2ff9d489616fe460f1fa535e55f19258409b9",
+"seconds": 7.29
+},
+"sounds/vasyan/uk/mat/heal_1": {
+"hash": "2f738b0333fb94a3cec4dd426c4325d3ac854a5e",
+"seconds": 4.0
+},
+"sounds/vasyan/uk/mat/heal_2": {
+"hash": "cf9ff40424f131fc122c814a4d711c9e0b07ebaf",
+"seconds": 5.87
+},
+"sounds/vasyan/uk/mat/heal_3": {
+"hash": "2826b87b84e0b3f14878fca703cace7d363d64b4",
+"seconds": 5.73
+},
+"sounds/vasyan/uk/mat/hello_1": {
+"hash": "96a2a5da940590bcccb3e2ea1829789498dd3862",
+"seconds": 8.55
+},
+"sounds/vasyan/uk/mat/hello_2": {
+"hash": "05221f69a2c3782c35c622e6c41685b444908d1f",
+"seconds": 7.44
+},
+"sounds/vasyan/uk/mat/hello_3": {
+"hash": "c2e527b292c5a605359d54247930f1abc30cdcc7",
+"seconds": 8.33
+},
+"sounds/vasyan/uk/mat/help_1": {
+"hash": "124c4fd41641c0a28375b7cf889a14b6f20ced0c",
+"seconds": 3.53
+},
+"sounds/vasyan/uk/mat/help_2": {
+"hash": "f0aa88eacbbedd154a7f601c952f3dcc29222d27",
+"seconds": 4.12
+},
+"sounds/vasyan/uk/mat/here_1": {
+"hash": "3f9da99bd32ed8780a7af4aa319b7d1245304ccb",
+"seconds": 5.18
+},
+"sounds/vasyan/uk/mat/here_2": {
+"hash": "02261f97d31a1ec337d60c221c15cb57184f4411",
+"seconds": 3.56
+},
+"sounds/vasyan/uk/mat/house_1": {
+"hash": "ae2b27b2a3d235bf91519c76e9d015b5463545e8",
+"seconds": 4.91
+},
+"sounds/vasyan/uk/mat/house_2": {
+"hash": "0b683971315ee0f682a89ae7bf87c3e21a1f8093",
+"seconds": 5.88
+},
+"sounds/vasyan/uk/mat/house_3": {
+"hash": "16f1ecda60789d7b0c957288c7931b2c532d402a",
+"seconds": 4.99
+},
+"sounds/vasyan/uk/mat/how_1": {
+"hash": "2bcf27ccc0614a739ca021a3f01f1ec608acd0eb",
+"seconds": 8.1
+},
+"sounds/vasyan/uk/mat/how_2": {
+"hash": "9472a2e774fc85ff59dc5b590478670119ebb73c",
+"seconds": 6.03
+},
+"sounds/vasyan/uk/mat/how_3": {
+"hash": "bdbbbe98ab67648009084b6e2eaa18576e91ce5c",
+"seconds": 6.45
+},
+"sounds/vasyan/uk/mat/hurt_1": {
+"hash": "ec7ddcd6c6dcd0aa62e6831729d13553de60249f",
+"seconds": 3.3
+},
+"sounds/vasyan/uk/mat/hurt_2": {
+"hash": "811b8ea7b91cd7dbec3546f88551de86020dc881",
+"seconds": 4.02
+},
+"sounds/vasyan/uk/mat/hurt_3": {
+"hash": "ba974f48847a7eb8554defc3bc89361a7f4d471d",
+"seconds": 6.47
+},
+"sounds/vasyan/uk/mat/idle_1": {
+"hash": "c1184e47e547eab5c0d0b557ead18b3957a78db5",
+"seconds": 3.36
+},
+"sounds/vasyan/uk/mat/idle_2": {
+"hash": "cb8600dc7ea53273eebfdb80b7406afebb8cd114",
+"seconds": 5.95
+},
+"sounds/vasyan/uk/mat/idle_3": {
+"hash": "1380b00e9361399fe8ebf8b7786a9e3ecf862639",
+"seconds": 5.82
+},
+"sounds/vasyan/uk/mat/idle_4": {
+"hash": "2aea46f91e9d91811505cfb0c1760ad1a507e08b",
+"seconds": 6.4
+},
+"sounds/vasyan/uk/mat/idle_5": {
+"hash": "f22a271d970580842c5af7ccc6bcef9d28aaef79",
+"seconds": 5.62
+},
+"sounds/vasyan/uk/mat/idle_6": {
+"hash": "372f905b9253f7dce2b54066c1991d75ef6be793",
+"seconds": 6.97
+},
+"sounds/vasyan/uk/mat/joke_1": {
+"hash": "796c72b11b4bdbc3b2faabd406e2ef06f2c50dc2",
+"seconds": 6.31
+},
+"sounds/vasyan/uk/mat/joke_2": {
+"hash": "d135a58dc832dcddb2cd9473e2b159ebdb95000a",
+"seconds": 6.21
+},
+"sounds/vasyan/uk/mat/joke_3": {
+"hash": "dbe2c82b66d92136e9b8bd832ab6816079b83a24",
+"seconds": 11.44
+},
+"sounds/vasyan/uk/mat/joke_4": {
+"hash": "1d7708fc28b049351affd37cbafd51826d131322",
+"seconds": 10.65
+},
+"sounds/vasyan/uk/mat/joke_5": {
+"hash": "c7ad29fd4e994d7d67d047a24c0749abf7a84f2d",
+"seconds": 7.8
+},
+"sounds/vasyan/uk/mat/kill_1": {
+"hash": "0a5286c374781a0cbca236c589b0def49feb7a99",
+"seconds": 3.48
+},
+"sounds/vasyan/uk/mat/kill_2": {
+"hash": "e032e2379ddaed0861743698558b85a0c2bfb979",
+"seconds": 3.39
+},
+"sounds/vasyan/uk/mat/kill_3": {
+"hash": "9dacd97c2e0d89d4eb4b26c10b258c007bd81b6e",
+"seconds": 3.56
+},
+"sounds/vasyan/uk/mat/lang_1": {
+"hash": "d9d5fabc6bf4106850d79128849004b8796f856b",
+"seconds": 3.54
+},
+"sounds/vasyan/uk/mat/low_hp_1": {
+"hash": "78c757724f8cdd304462cb7d1b7b7bac1a4921dd",
+"seconds": 5.88
+},
+"sounds/vasyan/uk/mat/low_hp_2": {
+"hash": "4846a40b622a62ccfa1da037d0a21b417fcf295d",
+"seconds": 6.84
+},
+"sounds/vasyan/uk/mat/mat_on_1": {
+"hash": "aa4d1bdec67e2e93c0a383254b8b5a944cd333be",
+"seconds": 5.75
+},
+"sounds/vasyan/uk/mat/mobheal_1": {
+"hash": "535a9794dc7223c42506a229ab1418e048d69670",
+"seconds": 5.31
+},
+"sounds/vasyan/uk/mat/mobheal_2": {
+"hash": "53385e6119c8ef874d77051b03ee7eaf7511865b",
+"seconds": 6.59
+},
+"sounds/vasyan/uk/mat/mobheal_3": {
+"hash": "2effe8bafffad4a0aa8e603e752333a63e746eec",
+"seconds": 4.01
+},
+"sounds/vasyan/uk/mat/night_1": {
+"hash": "24be9608414bf68511e0e20cb608ba37e7222d1a",
+"seconds": 5.38
+},
+"sounds/vasyan/uk/mat/night_2": {
+"hash": "b991e7be88c7452782d153cb09ea23db13139e09",
+"seconds": 6.1
+},
+"sounds/vasyan/uk/mat/ouch_1": {
+"hash": "ff377323b0e7acc380fd3dfc713d4ccdacbb8623",
+"seconds": 4.07
+},
+"sounds/vasyan/uk/mat/ouch_2": {
+"hash": "adc2e533496934a13bcde2ab911faf4749515838",
+"seconds": 4.96
+},
+"sounds/vasyan/uk/mat/ouch_3": {
+"hash": "0aabe6e0b437f34e1a720d33753ec440a4a6c336",
+"seconds": 4.86
+},
+"sounds/vasyan/uk/mat/push_1": {
+"hash": "441a04413095bc3522ce066848f2031e980b609c",
+"seconds": 4.96
+},
+"sounds/vasyan/uk/mat/push_2": {
+"hash": "7b821bcfde8d3cfbf15b9ae1c8c9860e8963af5b",
+"seconds": 6.09
+},
+"sounds/vasyan/uk/mat/push_3": {
+"hash": "e225d2e1a3a880be77297f19ba4c6cd4c0146931",
+"seconds": 3.58
+},
+"sounds/vasyan/uk/mat/quiet_1": {
+"hash": "5db9c9f099a366b985c45d8236283021ff4cd88b",
+"seconds": 4.1
+},
+"sounds/vasyan/uk/mat/quiet_2": {
+"hash": "13ee7f14bf83b5082d994820b5470d80e0e6b44b",
+"seconds": 4.23
+},
+"sounds/vasyan/uk/mat/quiet_broke_1": {
+"hash": "f152420027bd6e8d39c6afd9a10d8c4be6363e5e",
+"seconds": 3.1
+},
+"sounds/vasyan/uk/mat/quiet_broke_2": {
+"hash": "6489373653e90ab38342e1e11d619fd747761851",
+"seconds": 5.11
+},
+"sounds/vasyan/uk/mat/rain_1": {
+"hash": "40de4fb13ae95ddc215bffd1ca426e0c14a49025",
+"seconds": 3.49
+},
+"sounds/vasyan/uk/mat/rain_2": {
+"hash": "c6022bc892df705756ce6dc6bbba6a7596d433cc",
+"seconds": 4.54
+},
+"sounds/vasyan/uk/mat/reply_klod_1": {
+"hash": "e662313c944a034189baeb01fcfd845e3872b94f",
+"seconds": 3.65
+},
+"sounds/vasyan/uk/mat/reply_klod_2": {
+"hash": "cdee79f052f04b865396514bb105ae899af855a1",
+"seconds": 5.84
+},
+"sounds/vasyan/uk/mat/reply_klod_3": {
+"hash": "1234755f222cd825b6b90851e0b4ccd4ced43928",
+"seconds": 4.8
+},
+"sounds/vasyan/uk/mat/respawn_1": {
+"hash": "a9f0330ec35e825ea16d555aa0edf0560acdf243",
+"seconds": 5.36
+},
+"sounds/vasyan/uk/mat/respawn_2": {
+"hash": "8400f908e5e906dec90c333b674a437b11194a26",
+"seconds": 4.62
+},
+"sounds/vasyan/uk/mat/respawn_3": {
+"hash": "1d0b8915de4ab85e36ba7c3e49092eb2a3c26657",
+"seconds": 6.16
+},
+"sounds/vasyan/uk/mat/shortcut_1": {
+"hash": "cd2dc533f265b9d730bf05a23b8fd5464b510875",
+"seconds": 3.28
+},
+"sounds/vasyan/uk/mat/shortcut_2": {
+"hash": "c5641e16816a15afafc9b7a8e465dad7c5ba98d2",
+"seconds": 5.78
+},
+"sounds/vasyan/uk/mat/shortcut_3": {
+"hash": "b458ad373605ad56137350c80eef628a790173af",
+"seconds": 5.23
+},
+"sounds/vasyan/uk/mat/sit_1": {
+"hash": "ae2df2719e4faaad72ec3d30fc46c48aa393a8e9",
+"seconds": 4.54
+},
+"sounds/vasyan/uk/mat/sit_2": {
+"hash": "086a5a0b3d9c30bfd738c9b44a4713d781c5416f",
+"seconds": 3.68
+},
+"sounds/vasyan/uk/mat/sort_1": {
+"hash": "a3cdb6aad47d149e60dda96d01f299434a8439a1",
+"seconds": 5.85
+},
+"sounds/vasyan/uk/mat/sort_2": {
+"hash": "8a43459f731d4218ca5edb44acd56344152dfd42",
+"seconds": 5.29
+},
+"sounds/vasyan/uk/mat/sort_3": {
+"hash": "52f08c6d28ecddba2ddc3638d6705dc6c9d3e764",
+"seconds": 4.92
+},
+"sounds/vasyan/uk/mat/steal_1": {
+"hash": "b87d1c6175620ade4f9e68decde8d4c011cd3761",
+"seconds": 3.27
+},
+"sounds/vasyan/uk/mat/steal_2": {
+"hash": "e5a310a53ca2cbb7333d547abe27dd413a9760c7",
+"seconds": 4.44
+},
+"sounds/vasyan/uk/mat/steal_3": {
+"hash": "a184aaa69a6c8500e222007f5d3beb8589b4c1e5",
+"seconds": 5.31
+},
+"sounds/vasyan/uk/mat/stranger_1": {
+"hash": "0d6ccec948a5e58a35dc12e82be9a945cc689299",
+"seconds": 4.42
+},
+"sounds/vasyan/uk/mat/stranger_2": {
+"hash": "804d430e3ddc1f7ea999c0a142720c9ef2b8d08c",
+"seconds": 6.74
+},
+"sounds/vasyan/uk/mat/stupid_1": {
+"hash": "7521336aaad9b67e0ada593af92d8dc7e4ec8051",
+"seconds": 5.35
+},
+"sounds/vasyan/uk/mat/stupid_2": {
+"hash": "96594cb02f345b8cc25b17484f06978dedfafb88",
+"seconds": 7.26
+},
+"sounds/vasyan/uk/mat/stupid_3": {
+"hash": "f8170870a8a16fea6630e17452ac227aee8259f9",
+"seconds": 6.25
+},
+"sounds/vasyan/uk/mat/web_1": {
+"hash": "546d672ed5de8aa03e0b952cc05797c2e202fb7b",
+"seconds": 5.26
+},
+"sounds/vasyan/uk/mat/web_2": {
+"hash": "1be1bad77479a7ae1c605cb7ce86f99f6a655783",
+"seconds": 3.99
+},
+"sounds/vasyan/uk/mat/web_3": {
+"hash": "116a85babc6dd2fe12f8d619f323255672781bc8",
+"seconds": 3.31
+},
+"sounds/vasyan/uk/normal/about_1": {
+"hash": "6e85496628d37a2293e5e05ce78db66001e7665e",
+"seconds": 7.82
+},
+"sounds/vasyan/uk/normal/about_2": {
+"hash": "84cf18b79135efc58a5a43370759750072d4c27f",
+"seconds": 5.43
+},
+"sounds/vasyan/uk/normal/advice_1": {
+"hash": "f3876984a7b8ab2bff5ce0fee558f51b32ef1369",
+"seconds": 6.69
+},
+"sounds/vasyan/uk/normal/advice_2": {
+"hash": "949801b676305cdb85caadff549f06ff3c1387de",
+"seconds": 6.9
+},
+"sounds/vasyan/uk/normal/advice_3": {
+"hash": "b41d5d00861b911207993f445c58b19423664bfe",
+"seconds": 7.84
+},
+"sounds/vasyan/uk/normal/advice_4": {
+"hash": "b9a469f53ef3d9309667b64258709d22e52e3a50",
+"seconds": 5.95
+},
+"sounds/vasyan/uk/normal/afk_1": {
+"hash": "b5ee0c8e5ea81e244d3c823a1066fa0ca05a5746",
+"seconds": 3.07
+},
+"sounds/vasyan/uk/normal/afk_2": {
+"hash": "41c670b71ec39dfc614b5e988c4e9455f5e561e0",
+"seconds": 4.25
+},
+"sounds/vasyan/uk/normal/angry_1": {
+"hash": "c40c6305394ebcf92f83fb507515a4e1cc7a04bf",
+"seconds": 3.58
+},
+"sounds/vasyan/uk/normal/angry_2": {
+"hash": "d77631748887902547d953f470d9753ed84fb7ac",
+"seconds": 4.49
+},
+"sounds/vasyan/uk/normal/bye_1": {
+"hash": "a8021caeb66cec286b219b4e37e988361060bcec",
+"seconds": 4.19
+},
+"sounds/vasyan/uk/normal/bye_2": {
+"hash": "4fc96d1d29cf0325aedbb75923f73c751c09b01a",
+"seconds": 4.25
+},
+"sounds/vasyan/uk/normal/creeper_1": {
+"hash": "b9c365d2dc71f49a59ab41b6b3267cdf7c12db99",
+"seconds": 3.94
+},
+"sounds/vasyan/uk/normal/creeper_2": {
+"hash": "cdbdb0323cae2997c44c975496c1c5addf68b24e",
+"seconds": 4.87
+},
+"sounds/vasyan/uk/normal/dance_1": {
+"hash": "4aa88fbaa3290f495169d2f550d2a9041c2f8390",
+"seconds": 4.29
+},
+"sounds/vasyan/uk/normal/dance_2": {
+"hash": "05f29bff952a0b3bbc2b33fa77797df2f4ef025c",
+"seconds": 3.08
+},
+"sounds/vasyan/uk/normal/diamond_ore_1": {
+"hash": "4b948bd05ed0325d41d1dcb2b382f0dd8e66714c",
+"seconds": 4.41
+},
+"sounds/vasyan/uk/normal/diamond_ore_2": {
+"hash": "a8e7e03ee99a0d8214ed7b8d54a766482076499d",
+"seconds": 4.41
+},
+"sounds/vasyan/uk/normal/diamonds_1": {
+"hash": "b4bd5b51464c79a8c2d9e071b37598cc14a8d9e8",
+"seconds": 4.73
+},
+"sounds/vasyan/uk/normal/diamonds_2": {
+"hash": "48c91a924f9bcff2c70f9fd341597b9ebca90283",
+"seconds": 6.26
+},
+"sounds/vasyan/uk/normal/diamonds_3": {
+"hash": "e6b20c2cd89f265a4596ef3627bc07aef64faff1",
+"seconds": 4.47
+},
+"sounds/vasyan/uk/normal/dig_1": {
+"hash": "2255f22815dfea1bf64dd379d953532f0eed0e0a",
+"seconds": 4.29
+},
+"sounds/vasyan/uk/normal/dig_2": {
+"hash": "f67418667fce58944a340e140fd023a7d1d168ca",
+"seconds": 4.29
+},
+"sounds/vasyan/uk/normal/dig_3": {
+"hash": "b3394ade6013be11e94c44337b6a11dd6bdffe15",
+"seconds": 6.9
+},
+"sounds/vasyan/uk/normal/dimension_1": {
+"hash": "819ed81b185b2275dc458db7693bdf3b62d43193",
+"seconds": 2.71
+},
+"sounds/vasyan/uk/normal/dimension_2": {
+"hash": "393e737a9c67cecdfdafe9a0cbfbdb8cfe442229",
+"seconds": 4.48
+},
+"sounds/vasyan/uk/normal/eat_1": {
+"hash": "60e92963bbb2bc882a8d37280e0f6d7c07bcbf7b",
+"seconds": 5.3
+},
+"sounds/vasyan/uk/normal/eat_2": {
+"hash": "9bbc86793db8368b45c8a2f6a669902d8e41dd97",
+"seconds": 2.94
+},
+"sounds/vasyan/uk/normal/eat_3": {
+"hash": "793a31c7edf536b8707cae49ad4de03900d9e8ad",
+"seconds": 4.57
+},
+"sounds/vasyan/uk/normal/follow_1": {
+"hash": "f71eeb26ba85b61cc9219de7ee461ea9d437107a",
+"seconds": 4.45
+},
+"sounds/vasyan/uk/normal/follow_2": {
+"hash": "97618d37090d73ef3744972acf87b9e53dabb42e",
+"seconds": 1.76
+},
+"sounds/vasyan/uk/normal/friend_1": {
+"hash": "706f1cd015bddb82881387a811a578287a8cd1c8",
+"seconds": 2.47
+},
+"sounds/vasyan/uk/normal/friend_2": {
+"hash": "c7f1e548967ca1ac6b14346709af8701178639f2",
+"seconds": 4.42
+},
+"sounds/vasyan/uk/normal/friend_3": {
+"hash": "65d2f0a93dcd554148c9ac53a187fa8841ab9aeb",
+"seconds": 3.8
+},
+"sounds/vasyan/uk/normal/friend_zombie_1": {
+"hash": "33ad8439ccc02961124b160f38519a91eafae53a",
+"seconds": 5.82
+},
+"sounds/vasyan/uk/normal/friend_zombie_2": {
+"hash": "39545735bbdd65dfb5495c78128917e57ad956f1",
+"seconds": 4.68
+},
+"sounds/vasyan/uk/normal/gift_flower_1": {
+"hash": "767cbf7a98f72d02e0755d1a3450ebe2443d7794",
+"seconds": 4.95
+},
+"sounds/vasyan/uk/normal/gift_flower_2": {
+"hash": "a2b5b77b9852c4b09c05a16ed65c460133752c22",
+"seconds": 4.45
+},
+"sounds/vasyan/uk/normal/gift_food_1": {
+"hash": "3be6e2c54a7afc13b81240f21e2193bdf8dbcef1",
+"seconds": 4.48
+},
+"sounds/vasyan/uk/normal/gift_food_2": {
+"hash": "088807675ed8d0a9069e0b08fabf82525dd81bbf",
+"seconds": 3.26
+},
+"sounds/vasyan/uk/normal/gift_junk_1": {
+"hash": "b9b82d19ac74990a8027f6d9ef912a259170c39e",
+"seconds": 4.12
+},
+"sounds/vasyan/uk/normal/gift_junk_2": {
+"hash": "e6a9c782ecfa322a7d9a03d1f6d3b03460c347b9",
+"seconds": 4.31
+},
+"sounds/vasyan/uk/normal/gift_none_1": {
+"hash": "db75ad9de1e2dfc55cf3089964a70d338e17855b",
+"seconds": 4.62
+},
+"sounds/vasyan/uk/normal/gift_none_2": {
+"hash": "fd5f3d274732ae7f224d9ab8fb691de0adcb52e8",
+"seconds": 3.37
+},
+"sounds/vasyan/uk/normal/gift_redstone_1": {
+"hash": "271b3056c63ba45c087b1e3ca88ba0d7ea958669",
+"seconds": 5.19
+},
+"sounds/vasyan/uk/normal/gift_redstone_2": {
+"hash": "7e1b5a644fbff4ff1b6d2a3be7cf6e69c1fa922a",
+"seconds": 3.68
+},
+"sounds/vasyan/uk/normal/gift_shiny_1": {
+"hash": "50fa64654497fb13ca05a4e6e36edcf991c04ed9",
+"seconds": 6.29
+},
+"sounds/vasyan/uk/normal/gift_shiny_2": {
+"hash": "df6757bf9c917c2110505098f0175702afbb51a3",
+"seconds": 4.99
+},
+"sounds/vasyan/uk/normal/give_back_1": {
+"hash": "6e3007e3cb040115ccb9551d0b653d544554065d",
+"seconds": 4.98
+},
+"sounds/vasyan/uk/normal/give_back_2": {
+"hash": "61ff8c03a0b871cf6118bce0983ad9686d20c4a0",
+"seconds": 6.99
+},
+"sounds/vasyan/uk/normal/give_back_empty_1": {
+"hash": "953af9fa827adc51dd1f330e74723c26607cd96f",
+"seconds": 4.24
+},
+"sounds/vasyan/uk/normal/give_back_empty_2": {
+"hash": "a36cc811a0f326672e8cb7d7570e830d4109e54e",
+"seconds": 3.4
+},
+"sounds/vasyan/uk/normal/give_back_forgot_1": {
+"hash": "c62d6634c1c501f981d3bf9855698373383994b8",
+"seconds": 6.25
+},
+"sounds/vasyan/uk/normal/give_back_forgot_2": {
+"hash": "09053c5cac6813bb4cf282b554441596467fe5fe",
+"seconds": 6.13
+},
+"sounds/vasyan/uk/normal/heal_1": {
+"hash": "b7b97237310852af2ef124c72e3722058a838575",
+"seconds": 3.85
+},
+"sounds/vasyan/uk/normal/heal_2": {
+"hash": "7666aaeb2e7a17cd575e48febf99a3832dccb438",
+"seconds": 6.16
+},
+"sounds/vasyan/uk/normal/heal_3": {
+"hash": "7d87306ce618e250366a0b86cd624dcd403b5108",
+"seconds": 4.92
+},
+"sounds/vasyan/uk/normal/hello_1": {
+"hash": "cc6290db721c5a208d16b085081baedd3aa7546c",
+"seconds": 7.64
+},
+"sounds/vasyan/uk/normal/hello_2": {
+"hash": "28e69458f4e98e2e539f49eaa633a73cdbbb0f9e",
+"seconds": 6.57
+},
+"sounds/vasyan/uk/normal/hello_3": {
+"hash": "9a6d4ae081e748329a0bd0f4526048f148f490d3",
+"seconds": 7.4
+},
+"sounds/vasyan/uk/normal/help_1": {
+"hash": "b9027a3b86f24434b59fde38ab9793ada13bd2ed",
+"seconds": 3.08
+},
+"sounds/vasyan/uk/normal/help_2": {
+"hash": "136a5be7fd405fe7d250b3201b1aed0bc406294b",
+"seconds": 3.24
+},
+"sounds/vasyan/uk/normal/here_1": {
+"hash": "38b93a7b94742e19b500788f557bf3b78e3b5431",
+"seconds": 3.62
+},
+"sounds/vasyan/uk/normal/here_2": {
+"hash": "3ac3c303fb814ce7af1a6946056946b1712f274a",
+"seconds": 3.58
+},
+"sounds/vasyan/uk/normal/house_1": {
+"hash": "379894d131c6f9ae1a29a02d7512825cdd13a727",
+"seconds": 4.18
+},
+"sounds/vasyan/uk/normal/house_2": {
+"hash": "5a93aca81dd27bfeeabed41696717165f785fc63",
+"seconds": 6.32
+},
+"sounds/vasyan/uk/normal/house_3": {
+"hash": "aa0287528541b4f0ed05e847e25de90c7dd5f3d6",
+"seconds": 4.69
+},
+"sounds/vasyan/uk/normal/how_1": {
+"hash": "7aa1082570fa950f7c3ce09a4997714431091da0",
+"seconds": 6.96
+},
+"sounds/vasyan/uk/normal/how_2": {
+"hash": "8276543101649c0600c63b80e4601ddfdf130ae6",
+"seconds": 5.99
+},
+"sounds/vasyan/uk/normal/how_3": {
+"hash": "c2b7e35a4645b3fe7040f4473a9de39640a1db03",
+"seconds": 6.02
+},
+"sounds/vasyan/uk/normal/hurt_1": {
+"hash": "2458f8d7db21478bca9c1c88b56f3edf7d696f4a",
+"seconds": 3.2
+},
+"sounds/vasyan/uk/normal/hurt_2": {
+"hash": "40d5b8173d9794fd076f1c86c388e247ba19b549",
+"seconds": 3.24
+},
+"sounds/vasyan/uk/normal/hurt_3": {
+"hash": "7c8c48721f964c73693e9f114207b24b65b09a85",
+"seconds": 5.87
+},
+"sounds/vasyan/uk/normal/idle_1": {
+"hash": "454ed06d3b1be0f31cb71bb87315690c5673ac08",
+"seconds": 2.96
+},
+"sounds/vasyan/uk/normal/idle_2": {
+"hash": "f2bfd7b942dfa724266079ae5201de7a1f5c7d07",
+"seconds": 5.37
+},
+"sounds/vasyan/uk/normal/idle_3": {
+"hash": "5bbcaffb95bb4a60ebca79e57fcb068073a902cf",
+"seconds": 6.17
+},
+"sounds/vasyan/uk/normal/idle_4": {
+"hash": "bb078efd5b111aec7c18f88fd95eacba1952c0eb",
+"seconds": 6.32
+},
+"sounds/vasyan/uk/normal/idle_5": {
+"hash": "3faff6cf48f528d9338eb0e1d5508605627f2188",
+"seconds": 4.99
+},
+"sounds/vasyan/uk/normal/idle_6": {
+"hash": "dcd867915063f62ba4fccd82aaa35269d6e47bf7",
+"seconds": 7.0
+},
+"sounds/vasyan/uk/normal/joke_1": {
+"hash": "0fd80b4088abf218db98453ae00c2b7a0db822d1",
+"seconds": 5.26
+},
+"sounds/vasyan/uk/normal/joke_2": {
+"hash": "b95a21479b5900770577f134bd2745e76676e546",
+"seconds": 6.19
+},
+"sounds/vasyan/uk/normal/joke_3": {
+"hash": "a5e315406b1bfb56e782e4db66c48f5b2e2d73b9",
+"seconds": 10.44
+},
+"sounds/vasyan/uk/normal/joke_4": {
+"hash": "030b5637f871b536bc048de5a08594e173227f53",
+"seconds": 9.99
+},
+"sounds/vasyan/uk/normal/joke_5": {
+"hash": "8f6f83f90d8e7cef59bbe90291c80a68885d1915",
+"seconds": 6.72
+},
+"sounds/vasyan/uk/normal/kill_1": {
+"hash": "299d7fa88075c590beec127f115eea536483b4a4",
+"seconds": 2.92
+},
+"sounds/vasyan/uk/normal/kill_2": {
+"hash": "4dfb1a0a198798e202770adc6f4f1c36cb1e1ee0",
+"seconds": 2.67
+},
+"sounds/vasyan/uk/normal/kill_3": {
+"hash": "f6c10342a5f37bd7df7a2193c99b8f6de49d6ccc",
+"seconds": 3.01
+},
+"sounds/vasyan/uk/normal/lang_1": {
+"hash": "fadee9d65f0ce18e49c973506fb4f6a1987149f5",
+"seconds": 3.08
+},
+"sounds/vasyan/uk/normal/low_hp_1": {
+"hash": "622ac78b411ad6e6d579a6af962e60fe3fc769ee",
+"seconds": 5.49
+},
+"sounds/vasyan/uk/normal/low_hp_2": {
+"hash": "8f3619cbb534d3203c01e9d371af36df26ff1b68",
+"seconds": 5.99
+},
+"sounds/vasyan/uk/normal/mat_off_1": {
+"hash": "43537fb904822358688299937ad175127c7db3e2",
+"seconds": 5.12
+},
+"sounds/vasyan/uk/normal/mobheal_1": {
+"hash": "480e3294d31c9b66eb4a74ced86d5e4a1d9c61ad",
+"seconds": 4.65
+},
+"sounds/vasyan/uk/normal/mobheal_2": {
+"hash": "9420046df08a2e442f740322be02fbe075964804",
+"seconds": 5.83
+},
+"sounds/vasyan/uk/normal/mobheal_3": {
+"hash": "cccfe3692cf375a2f53a949a463c714734a0246f",
+"seconds": 3.43
+},
+"sounds/vasyan/uk/normal/night_1": {
+"hash": "e7259b71ec669d3adf53fb4ea83935ac82bde3b2",
+"seconds": 4.78
+},
+"sounds/vasyan/uk/normal/night_2": {
+"hash": "e788545174843de78dea3c6725f1eee569691c86",
+"seconds": 5.43
+},
+"sounds/vasyan/uk/normal/ouch_1": {
+"hash": "0cdd918cbfa881f12bdf0c95c6d89131bb741600",
+"seconds": 3.65
+},
+"sounds/vasyan/uk/normal/ouch_2": {
+"hash": "744cb6bb7ddac1cbc881c5c4b67fbba751b525c9",
+"seconds": 4.48
+},
+"sounds/vasyan/uk/normal/ouch_3": {
+"hash": "599a5f0c6fbd42499494a38bb8d810dc6534df09",
+"seconds": 4.1
+},
+"sounds/vasyan/uk/normal/push_1": {
+"hash": "5a482b31dbce84a065b77d12d26927df43f50f65",
+"seconds": 4.34
+},
+"sounds/vasyan/uk/normal/push_2": {
+"hash": "925b09df95b3cc549377c106d4d5bb5c34e3d32a",
+"seconds": 5.31
+},
+"sounds/vasyan/uk/normal/push_3": {
+"hash": "9583dbc14e17ec63c1b04e1225540ee9b7a1b1d7",
+"seconds": 4.32
+},
+"sounds/vasyan/uk/normal/quiet_1": {
+"hash": "09c638bc47562843724236719c2c1d3b49d339b0",
+"seconds": 4.14
+},
+"sounds/vasyan/uk/normal/quiet_2": {
+"hash": "e213dfa289c48dd23d6dcaffb73e5504680143ce",
+"seconds": 3.44
+},
+"sounds/vasyan/uk/normal/quiet_broke_1": {
+"hash": "f6908ca46c5d1c6882c31787a647e521dca792ff",
+"seconds": 2.89
+},
+"sounds/vasyan/uk/normal/quiet_broke_2": {
+"hash": "525bd71672e45f5b388aa0dd824463c5b9ea910e",
+"seconds": 4.34
+},
+"sounds/vasyan/uk/normal/rain_1": {
+"hash": "ea1d059903957a714cd96b85967c0e7ff18b551c",
+"seconds": 2.95
+},
+"sounds/vasyan/uk/normal/rain_2": {
+"hash": "eb95712bc0d3446451865517cb853f93fd025247",
+"seconds": 3.7
+},
+"sounds/vasyan/uk/normal/reply_klod_1": {
+"hash": "3aac63cca0a225caa8d36582d3adbb9d18aa1132",
+"seconds": 3.15
+},
+"sounds/vasyan/uk/normal/reply_klod_2": {
+"hash": "3dfc418aebd4dc172e567a2418dbf9b50282f655",
+"seconds": 4.63
+},
+"sounds/vasyan/uk/normal/reply_klod_3": {
+"hash": "cc0a8319b7f10b6754dc25f75d1fec9d6c4392a6",
+"seconds": 3.95
+},
+"sounds/vasyan/uk/normal/respawn_1": {
+"hash": "5fcc379020f9d8202ad01dd83fce9664c13dd58b",
+"seconds": 4.77
+},
+"sounds/vasyan/uk/normal/respawn_2": {
+"hash": "188c6c551544315d3a3cf8efebfa9e71ce972c6b",
+"seconds": 3.96
+},
+"sounds/vasyan/uk/normal/respawn_3": {
+"hash": "ff47fbb19e3e592e952cb3270a146a2de4cbde34",
+"seconds": 5.42
+},
+"sounds/vasyan/uk/normal/shortcut_1": {
+"hash": "5da051a2628137b07e6b6d8f6f88eeee452ea7b1",
+"seconds": 2.67
+},
+"sounds/vasyan/uk/normal/shortcut_2": {
+"hash": "e4e40faead1af418843fd19a3570c555e498f52f",
+"seconds": 4.64
+},
+"sounds/vasyan/uk/normal/shortcut_3": {
+"hash": "9479cef2320218aeba89ee6744b911960c362e2f",
+"seconds": 4.86
+},
+"sounds/vasyan/uk/normal/sit_1": {
+"hash": "cab2e5d54778b9a41e7ee893e99467cdecd8291f",
+"seconds": 3.98
+},
+"sounds/vasyan/uk/normal/sit_2": {
+"hash": "73edda5a91d68a4eba876ef6e159f7c3ca829db5",
+"seconds": 3.2
+},
+"sounds/vasyan/uk/normal/sort_1": {
+"hash": "17286b7caea46c4c8c8f94e233212b203107c180",
+"seconds": 5.88
+},
+"sounds/vasyan/uk/normal/sort_2": {
+"hash": "eeeda3cf3c49d3902b48662b731b55b1a3df390e",
+"seconds": 4.58
+},
+"sounds/vasyan/uk/normal/sort_3": {
+"hash": "52d19f5539626dacc79e197d431a46939a51cf5b",
+"seconds": 5.45
+},
+"sounds/vasyan/uk/normal/steal_1": {
+"hash": "5e21b347cfbba562798b62586e73e46bbbea67b7",
+"seconds": 3.54
+},
+"sounds/vasyan/uk/normal/steal_2": {
+"hash": "f201bac9b0401206844fe6f220bcaac836341981",
+"seconds": 4.89
+},
+"sounds/vasyan/uk/normal/steal_3": {
+"hash": "71676f4008cbf13c01e19409eee0e5ac13b4ec9e",
+"seconds": 4.99
+},
+"sounds/vasyan/uk/normal/stranger_1": {
+"hash": "16c46bde34160ed0e15239c80d55f7af15eab3f9",
+"seconds": 6.5
+},
+"sounds/vasyan/uk/normal/stranger_2": {
+"hash": "23a912d62c4c35b78ca9d71a1a62ca7ebf576bd9",
+"seconds": 4.41
+},
+"sounds/vasyan/uk/normal/stupid_1": {
+"hash": "da679db001e78f6269d79c9c0d79af038a6ef3df",
+"seconds": 5.92
+},
+"sounds/vasyan/uk/normal/stupid_2": {
+"hash": "e3b23d2ec35c481dd40afa4995f14993155055ce",
+"seconds": 6.02
+},
+"sounds/vasyan/uk/normal/stupid_3": {
+"hash": "09b7c0be64408ab70000a6f081847af4913e6ed5",
+"seconds": 5.34
+},
+"sounds/vasyan/uk/normal/web_1": {
+"hash": "e38bad8396be7d7a305a55958a8cb3fc0e111449",
+"seconds": 5.44
+},
+"sounds/vasyan/uk/normal/web_2": {
+"hash": "3a4781cfb9a0737ba2a24a25ae61d0dbcabed760",
+"seconds": 4.29
+},
+"sounds/vasyan/uk/normal/web_3": {
+"hash": "a5be7953ed506c7bfd96dc09d5d191f7b3ddb624",
+"seconds": 2.91
+}
+}

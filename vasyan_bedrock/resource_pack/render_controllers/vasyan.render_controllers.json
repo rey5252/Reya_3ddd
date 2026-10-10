@@ -1,0 +1,13 @@
+{
+  "format_version": "1.8.0",
+  "render_controllers": {
+    "controller.render.vasyan_bot": {
+      "arrays": {
+        "textures": { "Array.skins": ["Texture.default", "Texture.talk"] }
+      },
+      "geometry": "Geometry.default",
+      "materials": [{ "*": "Material.default" }],
+      "textures": ["Array.skins[query.property('vasyan:talking') ? math.mod(math.floor(query.life_time * 7), 2) : 0]"]
+    }
+  }
+}
