@@ -130,7 +130,7 @@
         <TypeDescription>TYPE:JapanTenguSpire</TypeDescription>
 
         <ArmorSet
-            Armor="JapanTenguSpireArmor"
+            Armor="StructureArmor"
             DamageFX="StructureDamageFXNoShake" />
         <!-- VERIFY: ArmorTemplate — оголошення власного шаблону не входить у цей файл; за замовчуванням
              використати ванільний ArmorTemplate оборонних споруд Імперії (напр. BaseDefenseStructureArmor

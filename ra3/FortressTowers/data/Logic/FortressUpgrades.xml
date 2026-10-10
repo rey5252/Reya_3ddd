@@ -14,14 +14,16 @@
     not the Japan *Nanocore unit) must carry a MaxHealthUpgrade behavior keyed on this upgrade inside
     its <Behaviors> block. Because it is a PLAYER upgrade, towers built after the purchase get it too.
 
-    Snippet to paste into <Behaviors> (AddMaxHealth = 25% of the tower's ActiveBody MaxHealth):
+    All 9 tower files already carry this behavior (AddMaxHealth = 25% of the tower's ActiveBody MaxHealth):
 
         <MaxHealthUpgrade
-            id="ModuleTag_FortressReinforcedPlating"
+            id="ModuleTag_FortressPlating"
+            TriggeredBy="Upgrade_FortressReinforcedPlating"
             AddMaxHealth="800"
-            ChangeType="ADD_CURRENT_HEALTH_TOO">
-            <TriggeredBy>Upgrade_FortressReinforcedPlating</TriggeredBy>
-        </MaxHealthUpgrade>
+            ChangeType="ADD_CURRENT_HEALTH_TOO" />
+
+    VERIFY: whether TriggeredBy is an attribute (as above) or a child element
+    <TriggeredBy>Upgrade_FortressReinforcedPlating</TriggeredBy> in the RA3 schema; fix all 9 towers the same way.
 
     AddMaxHealth per tower (MaxHealth x 0.25):
         AlliedPrismSpire     3200 -> 800

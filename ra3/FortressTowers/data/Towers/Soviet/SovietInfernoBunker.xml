@@ -230,6 +230,13 @@
         </Draws>
 
         <Behaviors>
+            <!-- +25% HP from Upgrade_FortressReinforcedPlating (data/Logic/FortressUpgrades.xml). -->
+            <MaxHealthUpgrade
+                id="ModuleTag_FortressPlating"
+                TriggeredBy="Upgrade_FortressReinforcedPlating"
+                AddMaxHealth="750"
+                ChangeType="ADD_CURRENT_HEALTH_TOO" />
+
             <!-- Вогнеметна турель, 360° без обмежень по куту -->
             <WeaponSetUpdate id="ModuleTag_WeaponSetUpdate">
                 <WeaponSlotTurret ID="1">

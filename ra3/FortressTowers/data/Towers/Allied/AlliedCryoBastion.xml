@@ -269,6 +269,13 @@
         </Draws>
 
         <Behaviors>
+            <!-- +25% HP from Upgrade_FortressReinforcedPlating (data/Logic/FortressUpgrades.xml). -->
+            <MaxHealthUpgrade
+                id="ModuleTag_FortressPlating"
+                TriggeredBy="Upgrade_FortressReinforcedPlating"
+                AddMaxHealth="650"
+                ChangeType="ADD_CURRENT_HEALTH_TOO" />
+
             <!-- Turret AI, ground targets only (weapons are ANTI_GROUND). -->
             <!-- Passive frost aura: 150 units, enemy ground units slowed 25%. Off when unpowered. -->
             <AttributeModifierAuraUpdate

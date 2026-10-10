@@ -176,6 +176,13 @@
         </Draws>
 
         <Behaviors>
+            <!-- +25% HP from Upgrade_FortressReinforcedPlating (data/Logic/FortressUpgrades.xml). -->
+            <MaxHealthUpgrade
+                id="ModuleTag_FortressPlating"
+                TriggeredBy="Upgrade_FortressReinforcedPlating"
+                AddMaxHealth="450"
+                ChangeType="ADD_CURRENT_HEALTH_TOO" />
+
             <AIUpdate
                 id="ModuleTag_AI"
                 AILuaEventsList="BaseDefenseFunctions"
@@ -282,7 +289,7 @@
         KindOf="PRELOAD SELECTABLE CAN_CAST_REFLECTIONS SCORE VEHICLE NANOCORE"
         BuildCost="900"
         BuildTime="14"
-        CommandSet="JapanKitsuneShrineNanocoreCommandSet"
+        CommandSet="JapanNanocoreCommandSet"
         ThreatLevel="1.0"
         VisionRange="200.0"
         ShroudClearingRange="200.0"

@@ -225,6 +225,13 @@
         </Draws>
 
         <Behaviors>
+            <!-- +25% HP from Upgrade_FortressReinforcedPlating (data/Logic/FortressUpgrades.xml). -->
+            <MaxHealthUpgrade
+                id="ModuleTag_FortressPlating"
+                TriggeredBy="Upgrade_FortressReinforcedPlating"
+                AddMaxHealth="850"
+                ChangeType="ADD_CURRENT_HEALTH_TOO" />
+
             <AIUpdate
                 id="ModuleTag_AI"
                 AutoAcquireEnemiesWhenIdle="YES">

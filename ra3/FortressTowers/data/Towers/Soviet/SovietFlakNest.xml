@@ -154,6 +154,13 @@
         </Draws>
 
         <Behaviors>
+            <!-- +25% HP from Upgrade_FortressReinforcedPlating (data/Logic/FortressUpgrades.xml). -->
+            <MaxHealthUpgrade
+                id="ModuleTag_FortressPlating"
+                TriggeredBy="Upgrade_FortressReinforcedPlating"
+                AddMaxHealth="600"
+                ChangeType="ADD_CURRENT_HEALTH_TOO" />
+
             <WeaponSetUpdate id="ModuleTag_WeaponSetUpdate">
                 <WeaponSlotTurret ID="1" AllowInterleavedFiring="false">
                     <Weapon Ordering="PRIMARY_WEAPON" Template="SovietFlakNestWeapon" />

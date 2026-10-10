@@ -66,16 +66,16 @@ END
 | 4 | `SovietTeslaObelisk` | Тесла-обеліск | Soviet | Протиназемна, далекобійна блискавка, ланцюг на 4 цілі; заряджається тесла-солдатами | 2000 | 28 | 3600 | 450 | -10 | Tesla Coil |
 | 5 | `SovietFlakNest` | Флак-гніздо | Soviet | ППО, 3 зенітні гармати, осколкова зона | 1000 | 15 | 2400 | 500 (повітря) | -4 | Flak Cannon |
 | 6 | `SovietInfernoBunker` | Бункер «Пекло» | Soviet | Проти піхоти: вогнемети по колу 360°, підпал зони; гарнізон на 3 піхотинці | 1100 | 16 | 3000 | 220 | -4 | Sentry Gun (+ FX вогню) |
-| 7 | `JapanTenguSpire` | Шпиль Тенгу | Empire (`Japan`) | ППО: залпи самонавідних ракет | 1100 | 16 | 2000 | 480 (повітря) | — | Wave-Force Tower / Nanoswarm Hive core art |
-| 8 | `JapanWaveCitadel` | Хвильова цитадель | Empire (`Japan`) | Артилерія: заряджений хвильовий удар, пробиває лінію цілей | 2200 | 30 | 3400 | 600 | — | Wave-Force Tower |
-| 9 | `JapanKitsuneShrine` | Святилище Кіцуне | Empire (`Japan`) | Підтримка: псіонічний імпульс проти піхоти, виявляє невидимих (радіус 350) | 900 | 14 | 1800 | 250 | — | Nanoswarm Hive |
+| 7 | `JapanTenguSpire` | Шпиль Тенгу | Empire (`Japan`) | ППО: залпи самонавідних ракет | 1100 | 16 | 2000 | 480 (повітря) | -4 | Wave-Force Tower / Nanoswarm Hive core art |
+| 8 | `JapanWaveCitadel` | Хвильова цитадель | Empire (`Japan`) | Артилерія: заряджений хвильовий удар, пробиває лінію цілей | 2200 | 30 | 3400 | 600 | -10 | Wave-Force Tower |
+| 9 | `JapanKitsuneShrine` | Святилище Кіцуне | Empire (`Japan`) | Підтримка: псіонічний імпульс проти піхоти, виявляє невидимих (радіус 350) | 900 | 14 | 1800 | 250 | -4 | Nanoswarm Hive |
 
 Умови будівництва (`ObjectPrerequisites`, імена перевірити в SageXml — `<!-- VERIFY -->`):
 - Allies: 1 і 2 — Defense Bureau + Command Hub; 3 — лише Construction Yard.
 - Soviet: 4 — Battle Lab; 5 і 6 — Construction Yard (+ Barracks для 6).
 - Empire: споруди Імперії будуються як **наноядра**: кожна вежа Японії має ще об'єкт ядра `<TowerId>Nanocore` (рухомий юніт, що розгортається у вежу) в тому ж файлі. 8 — потребує Nanotech Mainframe.
 
-Енергія Імперії: як у ванільних оборонних спорудах Японії (перевірити, чи вони мають `EnergyProduction`).
+Енергія Імперії: вежі споживають енергію так само, як оборона інших фракцій (`<!-- VERIFY -->` проти ванільної Wave-Force Tower). Наноядра (`<TowerId>Nanocore`) використовують ванільний `JapanNanocoreCommandSet`.
 
 ## Кнопки та набори команд (інтеграція, `data/Logic/`)
 
