@@ -581,6 +581,7 @@ const hsl = (c, l, sMax = 68) => `hsl(${Math.round(c[0])}, ${Math.round(clamp(c[
 const uniqBy = (arr, f) => { const s = new Set(); return arr.filter(x => { const k = f(x); if (s.has(k)) return false; s.add(k); return true; }); };
 const byName = (a, b) => a.localeCompare(b, 'uk', { sensitivity: 'base' });
 const pressFlash = el => { el.classList.add('lp'); setTimeout(() => el.classList.remove('lp'), 220); };
+const tabFade = el => { restartAnim(el, 'tab-in'); clearTimeout(el._tf); el._tf = setTimeout(() => el.classList.remove('tab-in'), 600); };
 function restartAnim(el, cls) { el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
 function anim(el, cls, done) {
   el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls);
@@ -626,7 +627,7 @@ const DEMOS = [
 const SCALES = { major: [0, 2, 4, 5, 7, 9, 11], minor: [0, 2, 3, 5, 7, 8, 10], lydian: [0, 2, 4, 6, 7, 9, 11] };
 const STYLES = { synth: { space: 2.8, rv: .28, pad: .9 }, lofi: { space: 1.6, rv: .2, tone: 4200, swing: .16, seventh: true, pad: 1 }, ambient: { space: 4.5, rv: .6, pad: 1 }, house: { space: 1.8, rv: .18, pad: .8 }, deep: { space: 3.2, rv: .32, pad: .9, seventh: true } };
 const demoBars = d => Math.max(8, Math.round(46 / (240 / d.bpm) / 2) * 2);
-const demoLen = d => demoBars(d) * 240 / d.bpm + 2.5;
+const demoLen = d => demoBars(d) * 240 / d.bpm + 1.5;
 
 function writeWavHeader(v, frames, ch, sr) {
   const str = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
@@ -634,11 +635,25 @@ function writeWavHeader(v, frames, ch, sr) {
   str(0, 'RIFF'); v.setUint32(4, 36 + len, true); str(8, 'WAVE'); str(12, 'fmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, ch, true);
   v.setUint32(24, sr, true); v.setUint32(28, sr * ch * 2, true); v.setUint16(32, ch * 2, true); v.setUint16(34, 16, true); str(36, 'data'); v.setUint32(40, len, true);
 }
-function toWav(ab) {
+async function loudness(ab) {
+  const sr = ab.sampleRate, ch = ab.numberOfChannels, OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext, oc = new OAC(ch, ab.length, sr);
+  const src = oc.createBufferSource(); src.buffer = ab;
+  const hs = oc.createBiquadFilter(); hs.type = 'highshelf'; hs.frequency.value = 1680; hs.gain.value = 4;
+  const hp = oc.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 38; hp.Q.value = -6; // Q is in dB for Web Audio highpass (≈ linear 0.5)
+  src.connect(hs); hs.connect(hp); hp.connect(oc.destination); src.start();
+  const k = await new Promise((res, rej) => { oc.oncomplete = e => res(e.renderedBuffer); const p = oc.startRendering(); if (p && p.then) p.then(res, rej); });
+  const B = Math.round(sr * .4), H = Math.round(sr * .1), X = [], z = [];
+  for (let c = 0; c < ch; c++) X.push(k.getChannelData(c));
+  for (let st = 0; st + B <= k.length; st += H) { let q = 0; for (const x of X) for (let i = st; i < st + B; i++) q += x[i] * x[i]; z.push(q / B); }
+  const L = v => -0.691 + 10 * Math.log10(v), mean = a => a.reduce((p, v) => p + v, 0) / (a.length || 1);
+  const g1 = z.filter(v => L(v) > -70), rel = L(mean(g1)) - 10;
+  return L(mean(g1.filter(v => L(v) > rel)));
+}
+function toWav(ab, want = Infinity) {
   const ch = ab.numberOfChannels, n = ab.length, data = [];
   for (let c = 0; c < ch; c++) data.push(ab.getChannelData(c));
   let peak = 0; for (const d of data) for (let i = 0; i < n; i++) { const a = d[i] < 0 ? -d[i] : d[i]; if (a > peak) peak = a; }
-  const gain = peak > 0 ? Math.min(6, .89 / peak) : 1;
+  const gain = peak > 0 ? Math.min(6, .89 / peak, want) : 1;
   const buf = new ArrayBuffer(44 + n * ch * 2); writeWavHeader(new DataView(buf), n, ch, ab.sampleRate);
   const pcm = new Int16Array(buf, 44);
   for (let i = 0, k = 0; i < n; i++) for (let c = 0; c < ch; c++, k++) { let s = data[c][i] * gain; s = s > 1 ? 1 : s < -1 ? -1 : s; pcm[k] = s * 32767; }
@@ -727,11 +742,11 @@ async function renderDemo(d) {
       if (full) melody(b, 'sine', { a: .01, d: .4, s: .5, r: .3, v: .12 });
     } else if (d.style === 'ambient') {
       chord.forEach(n => { note(padB, 'triangle', n, at(b, 0), bar + 1, { a: 1.6, d: 2, s: .9, r: 2, v: .055, cut: 1800 }); note(padB, 'sine', n + 12, at(b, 0), bar + 1, { a: 2.2, d: 2, s: .8, r: 2, v: .03, det: 6 }); });
-      note(bassB, 'sine', bassN, at(b, 0), bar + .5, { a: 1.2, d: 2, s: .9, r: 1.5, v: .14 });
+      note(bassB, 'sine', bassN, at(b, 0), bar + .5, { a: 1.2, d: 2, s: .9, r: 1.5, v: .08 });
       const k = 2 + Math.floor(R() * 3);
       for (let i = 0; i < k; i++) { const beat = Math.floor(R() * 8) / 2, m = deg(pent[Math.floor(R() * 5)] + 7 * (1 + (R() < .4 ? 1 : 0))); note(leadB, 'sine', m, at(b, beat), 2.5, { a: .002, d: 1.6, s: 0, r: 1.5, v: .07 }); note(leadB, 'sine', m, at(b, beat), 1, { a: .002, d: .5, s: 0, r: .5, v: .018, mult: 2.76 }); }
     } else if (d.style === 'house') {
-      chord.forEach(n => note(padB, 'sawtooth', n, at(b, 0), bar, { a: .3, d: 1, s: .8, r: .6, v: .02, cut: 800 }));
+      chord.forEach(n => note(padB, 'sawtooth', n, at(b, 0), bar, { a: .3, d: 1, s: .8, r: .6, v: .05, cut: 1200 }));
       if (!outro) for (const beat of [.75, 1.5, 2.75]) chord.forEach(n => note(padB, 'sawtooth', n + 12, at(b, beat), spb * .3, { a: .004, d: .12, s: .15, r: .1, v: .045, cut: 900, env: 2600, q: 3 }));
       if (!intro && !brk && !outro) for (const beat of [.5, 1.5, 2.5, 3.5]) note(bassB, 'square', bassN, at(b, beat), spb * .35, { a: .004, d: .12, s: .4, r: .06, v: .16, cut: 300, env: 700, q: 4 });
       if (full) { for (let i = 0; i < 4; i++) kick(at(b, i)); snare(at(b, 1), .36); snare(at(b, 3), .36); }
@@ -739,7 +754,7 @@ async function renderDemo(d) {
       if (full && b >= 8) melody(b, 'triangle', { a: .005, d: .2, s: .4, r: .2, v: .08 });
     } else {
       chord.forEach(n => { for (const det of [-6, 6]) note(padB, 'sawtooth', n, at(b, 0), bar, { a: .8, d: 1.5, s: .8, r: 1.2, v: .03, det, cut: 800, q: .3 }); });
-      if (!intro) { note(bassB, 'sine', bassN, at(b, 0), spb * 1.8, { a: .01, d: .6, s: .8, r: .2, v: .38 }); note(bassB, 'triangle', bassN + 12, at(b, 0), spb * 1.8, { a: .01, d: .6, s: .6, r: .2, v: .09 }); note(bassB, 'sine', bassN, at(b, 2.5), spb * 1.2, { a: .01, d: .5, s: .8, r: .2, v: .32 }); }
+      if (!intro) { note(bassB, 'sine', bassN, at(b, 0), spb * 1.8, { a: .01, d: .6, s: .8, r: .2, v: .22 }); note(bassB, 'triangle', bassN + 12, at(b, 0), spb * 1.8, { a: .01, d: .6, s: .6, r: .2, v: .16 }); note(bassB, 'sawtooth', bassN + 24, at(b, 0), spb * 1.6, { a: .01, d: .4, s: .4, r: .2, v: .045, cut: 900, q: 1.5 }); note(bassB, 'sine', bassN, at(b, 2.5), spb * 1.2, { a: .01, d: .5, s: .8, r: .2, v: .18 }); note(bassB, 'triangle', bassN + 12, at(b, 2.5), spb * 1.2, { a: .01, d: .5, s: .6, r: .2, v: .13 }); }
       if (full) { kick(at(b, 0)); kick(at(b, 2.75), .7); snare(at(b, 2), .45); }
       if (!intro && !outro) for (let i = 0; i < 16; i++) hat(at(b, i / 4), (i % 4 === 2 ? .11 : .045) * (.7 + R() * .5), .03);
       if (!intro) melody(b, 'triangle', { a: .003, d: .25, s: .1, r: .4, v: .085 });
@@ -750,10 +765,11 @@ async function renderDemo(d) {
   playBar(0);
   if (typeof ctx.suspend === 'function') {
     const q = 128 / SR;
-    for (let b = 1; b < bars; b++) ctx.suspend(Math.floor((b * bar - .6) / q) * q).then(() => { playBar(b); ctx.resume(); });
+    for (let b = 1; b < bars; b++) ctx.suspend(Math.floor((b * bar - .6) / q) * q).then(() => { try { playBar(b); } finally { ctx.resume(); } });
   } else for (let b = 1; b < bars; b++) playBar(b);
   const buf = await new Promise((res, rej) => { ctx.oncomplete = e => res(e.renderedBuffer); const p = ctx.startRendering(); if (p && p.then) p.then(res, rej); });
-  return toWav(buf);
+  let want = Infinity; try { const lu = await loudness(buf); if (isFinite(lu)) want = Math.pow(10, (-16 - lu) / 20); } catch (e) {}
+  return toWav(buf, want);
 }
 
 // ================= covers =================
@@ -823,19 +839,23 @@ function colorFromBlob(blob) {
 // ================= tags (ID3v2) =================
 const ss32 = (b, o) => (b[o] & 127) << 21 | (b[o + 1] & 127) << 14 | (b[o + 2] & 127) << 7 | (b[o + 3] & 127);
 const be32 = (b, o) => (b[o] << 24 | b[o + 1] << 16 | b[o + 2] << 8 | b[o + 3]) >>> 0;
+const UA1251 = new Set([0xA5, 0xB4, 0xAA, 0xBA, 0xAF, 0xBF, 0xB2, 0xB3, 0xA8, 0xB8]); // Ґ ґ Є є Ї ї І і Ё ё
 function decodeStr(bytes, enc) {
   try {
     if (enc === 1 || enc === 2) { let label = enc === 2 ? 'utf-16be' : 'utf-16le', b = bytes; if (enc === 1 && b[0] === 0xFE && b[1] === 0xFF) { label = 'utf-16be'; b = b.subarray(2); } else if (enc === 1 && b[0] === 0xFF && b[1] === 0xFE) b = b.subarray(2); return new TextDecoder(label).decode(b); }
     if (enc === 3) return new TextDecoder('utf-8').decode(bytes);
-    let hi = 0, letters = 0; for (const c of bytes) { if (c >= 0xC0) hi++; if (c >= 0x41) letters++; }
-    return new TextDecoder(hi && hi / Math.max(1, letters) > .4 ? 'windows-1251' : 'windows-1252').decode(bytes);
+    if (bytes.some(c => c >= 0x80)) try { return new TextDecoder('utf-8', { fatal: true }).decode(bytes); } catch (e) {}
+    let cyr = 0, lat = 0, pairs = 0, prev = false;
+    for (const c of bytes) { const h = c >= 0xC0 || UA1251.has(c); if (h) { cyr++; if (prev) pairs++; } else if ((c >= 65 && c <= 90) || (c >= 97 && c <= 122)) lat++; prev = h; }
+    return new TextDecoder(cyr > lat && (pairs > 0 || lat === 0) ? 'windows-1251' : 'windows-1252').decode(bytes);
   } catch (e) { return ''; }
 }
+const unsync = b => { const o = new Uint8Array(b.length); let n = 0; for (let i = 0; i < b.length; i++) { o[n++] = b[i]; if (b[i] === 0xFF && b[i + 1] === 0) i++; } return o.subarray(0, n); };
 const frameText = d => d.length > 1 ? decodeStr(d.subarray(1), d[0]).split('\u0000')[0].trim() : '';
-function apic(d) {
-  const enc = d[0]; let p = 1;
-  while (p < d.length && d[p] !== 0) p++;
-  const mime = new TextDecoder('windows-1252').decode(d.subarray(1, p)); p += 2;
+function apic(d, v22) {
+  const enc = d[0]; let p = 1, mime = '';
+  if (v22) { mime = 'image/' + String.fromCharCode(d[1], d[2], d[3]).toLowerCase().replace('jpg', 'jpeg'); p = 5; }
+  else { while (p < d.length && d[p] !== 0) p++; mime = new TextDecoder('windows-1252').decode(d.subarray(1, p)); p += 2; }
   if (enc === 1 || enc === 2) { while (p + 1 < d.length && !(d[p] === 0 && d[p + 1] === 0)) p += 2; p += 2; } else { while (p < d.length && d[p] !== 0) p++; p++; }
   const img = d.subarray(p); if (img.length < 64) return null;
   let type = mime.includes('/') ? mime : 'image/jpeg';
@@ -846,25 +866,36 @@ async function readTags(file) {
   const out = {};
   try {
     const head = new Uint8Array(await file.slice(0, 10).arrayBuffer());
-    if (head[0] !== 73 || head[1] !== 68 || head[2] !== 51 || head[3] < 3 || head[3] > 4) return out;
-    const ver = head[3], size = ss32(head, 6);
-    const buf = new Uint8Array(await file.slice(10, 10 + Math.min(size, 20e6)).arrayBuffer());
-    let p = (head[5] & 0x40) ? (ver === 4 ? ss32(buf, 0) : be32(buf, 0) + 4) : 0;
-    while (p + 10 <= buf.length) {
-      const id = String.fromCharCode(buf[p], buf[p + 1], buf[p + 2], buf[p + 3]);
-      if (!/^[A-Z0-9]{4}$/.test(id)) break;
-      const fs = ver === 4 ? ss32(buf, p + 4) : be32(buf, p + 4);
-      let start = p + 10; const end = Math.min(buf.length, start + fs);
-      if (ver === 4 && (buf[p + 9] & 1)) start += 4;
-      const d = buf.subarray(start, end);
-      if (id === 'TIT2') out.title = frameText(d); else if (id === 'TPE1') out.artist = frameText(d); else if (id === 'TALB') out.album = frameText(d); else if (id === 'APIC' && !out.art) out.art = apic(d);
-      p += 10 + fs;
+    if (head[0] === 73 && head[1] === 68 && head[2] === 51 && head[3] >= 2 && head[3] <= 4) {
+      const ver = head[3], v22 = ver === 2, hl = v22 ? 6 : 10, size = ss32(head, 6);
+      let buf = new Uint8Array(await file.slice(10, 10 + Math.min(size, 20e6)).arrayBuffer());
+      if (ver < 4 && (head[5] & 0x80)) buf = unsync(buf);            // v2.2/2.3: whole-tag unsynchronisation
+      let p = !v22 && (head[5] & 0x40) ? (ver === 4 ? ss32(buf, 0) : be32(buf, 0) + 4) : 0;
+      const IDS = v22 ? { TT2: 'title', TP1: 'artist', TAL: 'album' } : { TIT2: 'title', TPE1: 'artist', TALB: 'album' };
+      while (p + hl <= buf.length) {
+        const id = String.fromCharCode(...buf.subarray(p, p + (v22 ? 3 : 4)));
+        if (!/^[A-Z0-9]{3,4}$/.test(id)) break;
+        const fs = v22 ? (buf[p + 3] << 16 | buf[p + 4] << 8 | buf[p + 5]) : ver === 4 ? ss32(buf, p + 4) : be32(buf, p + 4);
+        let start = p + hl; const end = Math.min(buf.length, start + fs);
+        if (ver === 4 && (buf[p + 9] & 1)) start += 4;
+        let d = buf.subarray(start, end);
+        if (ver === 4 && ((buf[p + 9] & 2) || (head[5] & 0x80))) d = unsync(d); // v2.4: per-frame unsynchronisation
+        if (IDS[id]) { if (!out[IDS[id]]) out[IDS[id]] = frameText(d); }
+        else if ((id === 'APIC' || id === 'PIC') && !out.art) out.art = apic(d, v22);
+        p += hl + fs;
+      }
+    }
+    if (!out.title && file.size > 128) { // ID3v1 at the end of the file
+      const t = new Uint8Array(await file.slice(file.size - 128).arrayBuffer());
+      if (t[0] === 84 && t[1] === 65 && t[2] === 71) { const f = o => decodeStr(t.subarray(o, o + 30), 0).split('\u0000')[0].trim(); out.title = f(3) || undefined; out.artist = out.artist || f(33) || undefined; out.album = out.album || f(63) || undefined; }
     }
   } catch (e) {}
   return out;
 }
 function parseName(name) {
-  let s = name.replace(/\.[a-z0-9]{2,5}$/i, '').replace(/_/g, ' ').replace(/^\s*\d{1,3}[\s.\-)]+/, '').trim();
+  let s = name.replace(/\.[a-z0-9]{2,5}$/i, '').replace(/_/g, ' ').trim();
+  // only strip a leading number that looks like a track number: "01 ", "1. ", "12 - " (but keep "50 Cent - …")
+  s = s.replace(/\s[-–—]\s/.test(s) ? /^\s*(?:\d{1,3}\s*[.)\-–—]\s*|0\d\s+)/ : /^\s*\d{1,3}(?:\s*[.)\-–—]\s*|\s+)/, '').trim();
   const m = s.split(/\s+[-–—]\s+/);
   return m.length >= 2 ? { artist: m[0].trim(), title: m.slice(1).join(' - ').trim() } : { title: s || name };
 }
@@ -875,7 +906,7 @@ let blobMediaBlocked = false;
 const visibleTracks = () => [...lib.values()].filter(t => S.showDemo || !t.demo);
 const isVisible = id => { const t = lib.get(id); return !!t && (S.showDemo || !t.demo); };
 function addRecord(rec) {
-  const t = { id: rec.id, title: rec.title, artist: rec.artist, album: rec.album || '', duration: rec.duration || 0, addedAt: rec.addedAt, blob: rec.audio, artUrl: rec.art ? URL.createObjectURL(rec.art) : null, color: rec.color };
+  const t = { id: rec.id, title: rec.title, artist: rec.artist, album: rec.album || '', duration: rec.duration || 0, addedAt: rec.addedAt, fname: rec.fname || '', size: rec.size || 0, blob: rec.audio, artUrl: rec.art ? URL.createObjectURL(rec.art) : null, color: rec.color };
   if (!t.color) { const h = hashStr(t.title + '|' + t.artist) % 360; t.color = [h, 58, 45]; }
   t.hue = t.color[0];
   lib.set(t.id, t);
@@ -894,28 +925,35 @@ function probeDuration(blob) {
     try { url = await mediaUrl(blob); a.src = url; } catch (e) { fin(null); }
   });
 }
+// Tells a sandbox that blocks blob: media apart from a file the browser can't decode, using a tiny built-in WAV.
+let blobProbe = null;
+const blobMediaWorks = () => blobProbe || (blobProbe = probeDuration(new Blob([Uint8Array.from(atob(SILENT.split(',')[1]), c => c.charCodeAt(0))], { type: 'audio/wav' })).then(d => d !== null));
 async function importFiles(fileList) {
   const files = [...fileList].filter(f => (f.type || '').startsWith('audio/') || /\.(mp3|m4a|aac|flac|ogg|oga|opus|wav|webm)$/i.test(f.name));
   if (!files.length) { toast('Обери аудіофайли: MP3, M4A, FLAC, OGG або WAV'); return; }
   const tst = toast(`Додаю музику… 0 з ${files.length}`, { sticky: true, icon: 'upload' });
-  let added = 0, failed = 0, stored = true;
+  let added = 0, failed = 0, dupes = 0, stored = true; const bad = [];
+  const have = new Set([...lib.values()].filter(t => t.fname).map(t => t.fname + '|' + t.size));
   for (const f of files) {
     try {
+      if (have.has(f.name + '|' + f.size)) { dupes++; continue; }
       const tags = await readTags(f);
       let dur = await probeDuration(f);
-      if (dur === null && !blobMediaBlocked) { blobMediaBlocked = true; dur = await probeDuration(f); if (dur === null) blobMediaBlocked = false; }
-      if (dur === null) { failed++; continue; }
+      if (dur === null && !blobMediaBlocked && !(await blobMediaWorks())) { blobMediaBlocked = true; dur = await probeDuration(f); }
+      if (dur === null) { failed++; bad.push(f.name); continue; }
       const name = parseName(f.name);
       const art = tags.art || null;
-      const rec = { id: 'f-' + uid(), title: tags.title || name.title, artist: tags.artist || name.artist || 'Невідомий виконавець', album: tags.album || '', duration: dur, addedAt: Date.now(), color: art ? await colorFromBlob(art) : null, audio: new Blob([f], { type: f.type || 'audio/mpeg' }), art };
+      const rec = { id: 'f-' + uid(), title: tags.title || name.title, artist: tags.artist || name.artist || 'Невідомий виконавець', album: tags.album || '', duration: dur, addedAt: Date.now(), fname: f.name, size: f.size, color: art ? await colorFromBlob(art) : null, audio: new Blob([f], { type: f.type || 'audio/mpeg' }), art };
       try { await DB.put(rec); } catch (e) { stored = false; }
-      addRecord(rec); added++;
-    } catch (e) { failed++; }
-    tst.update(`Додаю музику… ${added + failed} з ${files.length}`);
+      addRecord(rec); have.add(f.name + '|' + f.size); added++;
+    } catch (e) { failed++; bad.push(f.name); }
+    tst.update(`Додаю музику… ${added + failed + dupes} з ${files.length}`);
   }
   tst.close();
-  if (added) toast(`Додано ${tracksWord(added)}${failed ? `, не вдалося: ${failed}` : ''}`, { icon: 'check' });
-  else toast('Ці файли не відкриваються в цьому браузері');
+  const badText = bad.length === 1 ? `«${bad[0]}» не відкривається` : bad.length ? `не вдалося: ${bad.length}` : '';
+  if (added) toast(`Додано ${tracksWord(added)}${badText ? `, ${badText}` : ''}${dupes ? `, вже були: ${dupes}` : ''}`, { icon: 'check' });
+  else if (dupes && !failed) toast(dupes === 1 ? 'Цей трек уже є в бібліотеці' : `Ці ${tracksWord(dupes)} вже є в бібліотеці`, { icon: 'check' });
+  else toast(bad.length === 1 ? `«${bad[0]}» не відкривається в цьому браузері` : 'Ці файли не відкриваються в цьому браузері');
   if (added && !stored) setTimeout(() => toast('Сховище браузера недоступне: треки зникнуть після перезавантаження'), 2800);
   try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch (e) {}
   refreshAll();
@@ -927,7 +965,7 @@ function getColl(kind, id = '') {
   const pick = ids => ids.filter(isVisible);
   switch (kind) {
     case 'liked': c = { name: 'Улюблені треки', type: 'Плейлист', ids: pick(Object.keys(S.liked).sort((a, b) => S.liked[b] - S.liked[a])), hue: 274, owner: 'Ти' }; break;
-    case 'all': c = { name: 'Усі треки', type: 'Бібліотека', ids: visibleTracks().sort((a, b) => b.addedAt - a.addedAt).map(t => t.id), hue: 148, owner: 'Хвиля' }; break;
+    case 'all': c = { name: 'Усі треки', type: 'Бібліотека', ids: visibleTracks().sort(id === 'alpha' ? (a, b) => byName(a.title, b.title) : (a, b) => b.addedAt - a.addedAt).map(t => t.id), hue: 148, owner: 'Хвиля' }; break;
     case 'recent': c = { name: 'Нещодавно прослухане', type: 'Історія', ids: pick(S.recent), hue: 210, owner: 'Хвиля' }; break;
     case 'top': c = { name: 'Твої топ-треки', type: 'Добірка', ids: pick(Object.keys(S.plays).filter(k => S.plays[k] > 0).sort((a, b) => S.plays[b] - S.plays[a])).slice(0, 25), hue: 20, owner: 'Хвиля' }; break;
     case 'playlist': { const p = S.playlists.find(p => p.id === id); if (!p) return null; c = { name: p.name, type: 'Плейлист', desc: p.desc || '', ids: pick(p.ids), owner: 'Ти', pl: p }; break; }
@@ -1055,9 +1093,9 @@ function renderLibrary(e) {
   const chips = [['playlists', 'Плейлисти'], ['artists', 'Виконавці'], ['tracks', 'Треки']].filter(([v]) => chip === 'all' || chip === v);
   let body;
   if (chip === 'tracks') {
-    const all = getColl('all'); let ids = all.ids.slice();
+    const srcId = S.libSort === 'alpha' ? 'alpha' : '', ids = getColl('all', srcId).ids;
     if (S.libSort === 'alpha') ids.sort((a, b) => byName(lib.get(a).title, lib.get(b).title));
-    body = ids.length ? `<div class="tracks" data-src="all:">${ids.map(id => rowHTML(lib.get(id))).join('')}</div>` : emptyHTML('Тут поки порожньо', 'Додай музику з телефона, і вона з’явиться тут.', 'import', 'Обрати файли');
+    body = ids.length ? `<div class="tracks" data-src="all:${srcId}">${ids.map(id => rowHTML(lib.get(id))).join('')}</div>` : emptyHTML('Тут поки порожньо', 'Додай музику з телефона, і вона з’явиться тут.', 'import', 'Обрати файли');
   } else {
     const items = (chip === 'artists' ? [] : pinned.map(c => libItem(c, true))).concat(rest.map(c => libItem(c)));
     const adds = S.libGrid ? '' : `<div class="li add" role="button" tabindex="0" data-action="import"><div class="cov">${ic('upload')}</div><div class="li-meta"><b>Додати музику з пристрою</b><small>MP3, M4A, FLAC, OGG, WAV</small></div></div><div class="li add" role="button" tabindex="0" data-action="new-playlist"><div class="cov">${ic('plus')}</div><div class="li-meta"><b>Створити плейлист</b><small>Збери треки під настрій</small></div></div>`;
@@ -1171,7 +1209,7 @@ function showTab(tab, initial) {
   if (!initial) for (const e of stack()) if (e.el) e.el.hidden = true;
   nav.tab = tab; syncHistory();
   revealTop();
-  if (!initial) anim(topEntry().el, 'tab-in');
+  if (!initial) tabFade(topEntry().el);
   $$('.tab').forEach(b => { const on = b.dataset.tab === tab; b.classList.toggle('on', on); b.setAttribute('aria-current', on ? 'page' : 'false'); });
 }
 function push(entry) {
@@ -1266,12 +1304,14 @@ async function loadTrack(id, { autoplay = true, startAt = 0 } = {}) {
   P.srcId = id; P.srcUrl = url; P.counted = false;
   audio.src = url;
   audio.defaultPlaybackRate = S.speed; audio.playbackRate = S.speed;
-  if (startAt > 0) audio.addEventListener('loadedmetadata', () => { try { audio.currentTime = startAt; } catch (e) {} }, { once: true });
+  const at = P.pendingSeek || startAt; P.pendingSeek = 0;
+  if (at > 0) audio.addEventListener('loadedmetadata', () => { if (token === loadToken) try { audio.currentTime = at; } catch (e) {} }, { once: true });
   if (autoplay) {
     try { await audio.play(); } catch (err) { if (token === loadToken && err && err.name !== 'AbortError') { setPlayingUI(false); setLoading(false); } }
     if (token === loadToken) { P.switching = false; P.loadingId = null; }
   } else setLoading(false);
 }
+function pauseNow() { if (P.loadingId) cancelLoad(); else audio.pause(); }
 function cancelLoad() { loadToken++; P.loadingId = null; P.switching = false; setLoading(false); setPlayingUI(false); if (!audio.paused) audio.pause(); }
 function startTrack(id, dir = 0) { if (!id || !lib.has(id)) return; P.current = id; P.pendingSeek = 0; onTrackChange(dir); loadTrack(id, { autoplay: true }); }
 function playContext(ctx, startId) {
@@ -1287,7 +1327,7 @@ function playContext(ctx, startId) {
 function togglePlay(forcePlay) {
   if (P.loadingId && forcePlay !== true) { cancelLoad(); return; }
   if (!P.current || !lib.has(P.current)) { const all = getColl('all'); if (all.ids.length) playContext(ctxFor(all)); return; }
-  if (P.srcId !== P.current) { const at = P.pendingSeek; P.pendingSeek = 0; loadTrack(P.current, { autoplay: true, startAt: at }); return; }
+  if (P.srcId !== P.current) { loadTrack(P.current, { autoplay: true }); return; }
   if (audio.paused || forcePlay === true) { const p = audio.play(); p && p.catch(() => setPlayingUI(false)); } else audio.pause();
 }
 function next(auto) {
@@ -1319,7 +1359,7 @@ function toggleShuffle() {
   S.shuffle = !S.shuffle; save();
   if (P.ctx && P.current) {
     if (S.shuffle) { const rest = shuffleArr(P.ctx.ids.filter(x => x !== P.current)); const inCtx = P.ctx.ids.includes(P.current); P.order = inCtx ? [P.current, ...rest] : rest; P.pos = inCtx ? 0 : -1; }
-    else { P.order = P.ctx.ids.slice(); P.pos = Math.max(0, P.order.indexOf(P.current)); }
+    else { const anchor = P.fromQueue ? P.order[P.pos] : P.current; P.order = P.ctx.ids.slice(); P.pos = Math.max(0, P.order.indexOf(anchor)); }
   }
   $$('[data-action="shuffle"]').forEach(b => b.classList.toggle('on', S.shuffle));
   toast(S.shuffle ? 'Перемішування увімкнено' : 'Перемішування вимкнено', { icon: 'shuffle' });
@@ -1373,13 +1413,14 @@ audio.addEventListener('error', () => {
   if (P.blobTest) { blobMediaBlocked = false; P.blobTest = false; }
   P.switching = false; setLoading(false); setPlayingUI(false);
   toast(`Не вдалося відтворити «${t ? t.title : 'трек'}»`);
-  if (++errStreak < 3 && P.order.length > 1) setTimeout(() => next(), 900);
+  if (++errStreak < 3 && P.order.length > 1) { const tk = loadToken; setTimeout(() => { if (tk === loadToken) next(); }, 900); }
 });
 
 // progress
 let raf = 0, lastSec = -1, seekDrag = false;
 const miniProg = $('#miniProg'), npSeek = $('#npSeek'), npCur = $('#npCur'), npDur = $('#npDur');
 function tick() {
+  if (raf) cancelAnimationFrame(raf);
   raf = 0;
   const d = curDuration(), c = curTime(), p = d ? clamp(c / d, 0, 1) : 0;
   miniProg.style.setProperty('--p', p.toFixed(4));
@@ -1393,7 +1434,7 @@ const MS = 'mediaSession' in navigator ? navigator.mediaSession : null;
 function msMeta() { if (!MS) return; const t = lib.get(P.current); if (!t) return; try { const art = { src: coverOf(t, true), sizes: '640x640' }; if (!t.artUrl) art.type = 'image/jpeg'; MS.metadata = new MediaMetadata({ title: t.title, artist: t.artist, album: t.album || (P.ctx ? P.ctx.name : 'Хвиля'), artwork: [art] }); } catch (e) {} }
 function msState() { if (MS) try { MS.playbackState = audio.paused ? 'paused' : 'playing'; } catch (e) {} }
 function msPos() { if (!MS || !MS.setPositionState) return; const d = curDuration(); if (!d || !isFinite(d)) return; try { MS.setPositionState({ duration: d, playbackRate: audio.playbackRate || 1, position: clamp(curTime(), 0, d) }); } catch (e) {} }
-if (MS) [['play', () => togglePlay(true)], ['pause', () => audio.pause()], ['previoustrack', () => prev()], ['nexttrack', () => next()], ['seekto', d => seekTo(d.seekTime)], ['stop', () => audio.pause()]].forEach(([a, f]) => { try { MS.setActionHandler(a, f); } catch (e) {} });
+if (MS) [['play', () => togglePlay(true)], ['pause', () => pauseNow()], ['previoustrack', () => prev()], ['nexttrack', () => next()], ['seekto', d => seekTo(d.seekTime)], ['stop', () => pauseNow()]].forEach(([a, f]) => { try { MS.setActionHandler(a, f); } catch (e) {} });
 
 // sleep timer
 const sleep = { end: 0, timer: 0, eot: false, iv: 0, min: 0 };
@@ -1405,7 +1446,7 @@ function setSleep(v) {
   syncSleep();
   toast(v === 'eot' ? 'Зупиню після цього треку' : v > 0 ? `Таймер сну: ${v} хв` : 'Таймер сну вимкнено', { icon: 'moon' });
 }
-function sleepFire() { audio.pause(); clearTimeout(sleep.timer); clearInterval(sleep.iv); sleep.end = 0; sleep.eot = false; syncSleep(); toast('Таймер сну: відтворення зупинено', { icon: 'moon' }); }
+function sleepFire() { pauseNow(); clearTimeout(sleep.timer); clearInterval(sleep.iv); sleep.end = 0; sleep.eot = false; syncSleep(); toast('Таймер сну: відтворення зупинено', { icon: 'moon' }); }
 function syncSleep() { const b = $('#npSleep'); const on = !!(sleep.end || sleep.eot); b.classList.toggle('on', on); b.querySelector('span').textContent = sleep.eot ? 'Кінець треку' : sleep.end ? fmtTime((sleep.end - Date.now()) / 1000) : 'Таймер'; }
 function setSpeed(v) { S.speed = v; save(); audio.defaultPlaybackRate = v; audio.playbackRate = v; syncSpeed(); }
 function syncSpeed() { const b = $('#npSpeed'); b.classList.toggle('on', S.speed !== 1); b.querySelector('span').textContent = `${String(S.speed).replace('.', ',')}×`; }
@@ -1513,6 +1554,9 @@ const sheet = (() => {
   });
   const end = () => { if (!g) return; if (g.on) { box.classList.remove('dragging'); const v = g.dy / (performance.now() - g.t); if (g.dy > 110 || v > .6) { blockClick(); hide(); } else box.style.transform = ''; } g = null; };
   box.addEventListener('pointerup', end); box.addEventListener('pointercancel', end);
+  let ty = 0;
+  box.addEventListener('touchstart', e => { ty = e.touches[0].clientY; }, { passive: true });
+  box.addEventListener('touchmove', e => { if (e.cancelable && e.touches[0].clientY > ty && !e.target.closest('input') && (!body.contains(e.target) || body.scrollTop <= 0)) e.preventDefault(); }, { passive: false });
   return { show, hide, update, body, get open() { return open; }, get kind() { return kind; } };
 })();
 
@@ -1678,7 +1722,7 @@ function purge(ids) {
     P.current = P.order[0] || getColl('all').ids[0] || null; P.pos = 0; P.pendingSeek = 0;
     if (P.current && !P.order.includes(P.current)) { P.order = [P.current]; }
     onTrackChange(0); if (npOpen && !P.current) closeNP();
-  } else { P.order = P.order.filter(x => !gone(x)); P.pos = Math.max(0, P.order.indexOf(P.current)); }
+  } else { const keep = P.order.slice(0, P.pos + 1).filter(x => !gone(x)).length - 1; P.order = P.order.filter(x => !gone(x)); P.pos = Math.max(-1, keep); }
   if (fileUrl.id && gone(fileUrl.id)) { if (fileUrl.url.startsWith('blob:')) URL.revokeObjectURL(fileUrl.url); fileUrl = { id: null, url: '' }; }
   save(); refreshAll();
 }
@@ -1737,7 +1781,7 @@ const actions = {
   'import': () => { if (sheet.open) sheet.hide(); fileInput.click(); },
   'new-playlist': () => createPlaylist(),
   'close-sheet': () => sheet.hide(),
-  'home-chip': el => { S.homeChip = el.dataset.v; save(); refreshEntry(topEntry()); anim(topEntry().el, 'tab-in'); },
+  'home-chip': el => { S.homeChip = el.dataset.v; save(); refreshEntry(topEntry()); tabFade(topEntry().el); },
   'lib-chip': el => { S.libChip = S.libChip === el.dataset.v ? 'all' : el.dataset.v; save(); refreshEntry(topEntry()); },
   'lib-sort': () => { S.libSort = S.libSort === 'alpha' ? 'recent' : 'alpha'; save(); refreshEntry(topEntry()); },
   'lib-view': () => { S.libGrid = !S.libGrid; save(); refreshEntry(topEntry()); },
@@ -1769,13 +1813,15 @@ const actions = {
   'cm-delete': el => deletePlaylist(el.dataset.id),
   'cm-clear-recent': () => { S.recent = []; save(); sheet.hide(); refreshAll(); toast('Історію очищено', { icon: 'trash' }); },
 };
+const PLAY_ACTIONS = new Set(['play-track', 'play-coll', 'toggle', 'next', 'prev', 'q-play', 'q-jump', 'cm-shuffle', 'cm-queue', 'm-queue', 'm-next']);
 let suppressUntil = 0;
 const blockClick = () => { suppressUntil = performance.now() + 380; };
 document.addEventListener('click', e => { if (performance.now() < suppressUntil) { e.stopPropagation(); e.preventDefault(); } }, true);
 app.addEventListener('click', e => {
   const el = e.target.closest('[data-action]'); if (!el || !app.contains(el)) return;
   const fn = actions[el.dataset.action]; if (!fn) return;
-  unlockAudio(); fn(el, e);
+  if (PLAY_ACTIONS.has(el.dataset.action)) unlockAudio();
+  fn(el, e);
 });
 document.addEventListener('keydown', e => {
   const tag = (e.target.tagName || '').toLowerCase(), typing = tag === 'input' || tag === 'textarea';
@@ -1918,7 +1964,7 @@ async function boot() {
     S.seeded = true; saveNow();
   }
   const L = S.last;
-  if (L && lib.has(L.id)) {
+  if (L && isVisible(L.id)) {
     let c = L.ctx ? getColl(L.ctx.kind, L.ctx.id) : null;
     if (!c || !c.ids.includes(L.id)) c = getColl('all');
     P.ctx = ctxFor(c); P.current = L.id; P.pendingSeek = L.time || 0;
