@@ -1,0 +1,14 @@
+{
+  "format_version": "1.21.60",
+  "minecraft:item": {
+    "description": {
+      "identifier": "vasyan:ai_chip",
+      "menu_category": { "category": "items" }
+    },
+    "components": {
+      "minecraft:icon": "vasyan_ai_chip",
+      "minecraft:max_stack_size": 16,
+      "minecraft:glint": true
+    }
+  }
+}

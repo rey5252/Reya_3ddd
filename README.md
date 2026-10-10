@@ -17,3 +17,5 @@
 ```
 
 Готовий `.jar` — у `build/libs/`. Також GitHub Actions збирає мод при кожному пуші (вкладка **Actions** → артефакт `cursedseed-jar`).
+
+Для Minecraft Bedrock є аддон **Васян — тупа нейромережа**: див. [`vasyan_bedrock/`](vasyan_bedrock/README.md).

@@ -51,10 +51,25 @@ jobs:
           name: ${{ matrix.mod }}-jar
           path: ${{ matrix.dir }}/build/libs/*.jar
 
+  # Bedrock add-on: no compiling, just checks and a zip.
+  bedrock:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build add-on
+        run: python3 vasyan_bedrock/tools/build_mcaddon.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vasyan-mcaddon
+          path: vasyan_bedrock/dist/*.mcaddon
 
-  # Puts the freshly built jars into jars/ on this branch, so they can be handed out directly.
+
+  # Puts the freshly built jars (and the Bedrock add-on) into jars/ on this branch, so they can be handed out directly.
   publish-jars:
-    needs: build
+    needs: [build, bedrock]
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     permissions:
@@ -68,11 +83,15 @@ jobs:
           path: artifacts
           pattern: '*-jar'
           merge-multiple: true
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          name: vasyan-mcaddon
       - name: Commit jars
         run: |
           mkdir -p jars
-          rm -f jars/*.jar
-          cp artifacts/*.jar jars/
+          rm -f jars/*.jar jars/*.mcaddon
+          cp artifacts/*.jar artifacts/*.mcaddon jars/
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add jars

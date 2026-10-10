@@ -1,0 +1,17 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Васян — тупа нейромережа (RP)",
+    "description": "Ресурси аддона: модель, скін, іконки, переклади",
+    "uuid": "4db02fca-d5bd-480f-b9e7-97a78d7b0da0",
+    "version": [1, 0, 0],
+    "min_engine_version": [1, 21, 90]
+  },
+  "modules": [
+    {
+      "type": "resources",
+      "uuid": "ce553fe3-f6c5-48ab-9749-a6fbf5a3832a",
+      "version": [1, 0, 0]
+    }
+  ]
+}

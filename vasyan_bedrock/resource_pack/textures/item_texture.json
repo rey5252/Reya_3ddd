@@ -1,0 +1,7 @@
+{
+  "resource_pack_name": "vasyan",
+  "texture_name": "atlas.items",
+  "texture_data": {
+    "vasyan_ai_chip": { "textures": "textures/items/ai_chip" }
+  }
+}

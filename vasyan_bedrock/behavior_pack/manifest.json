@@ -1,0 +1,38 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Васян — тупа нейромережа (BP)",
+    "description": "ШІ-компаньйон, який дуже хоче допомогти",
+    "uuid": "248e0e95-6a10-4ae2-80a0-5b81b65d0839",
+    "version": [1, 0, 0],
+    "min_engine_version": [1, 21, 90]
+  },
+  "modules": [
+    {
+      "type": "data",
+      "uuid": "a755b4fc-1520-4759-b500-2257a37c9488",
+      "version": [1, 0, 0]
+    },
+    {
+      "type": "script",
+      "language": "javascript",
+      "uuid": "bce5ee32-d2fb-49de-b2e0-92e77c1a65d6",
+      "entry": "scripts/main.js",
+      "version": [1, 0, 0]
+    }
+  ],
+  "dependencies": [
+    {
+      "uuid": "4db02fca-d5bd-480f-b9e7-97a78d7b0da0",
+      "version": [1, 0, 0]
+    },
+    {
+      "module_name": "@minecraft/server",
+      "version": "2.0.0"
+    },
+    {
+      "module_name": "@minecraft/server-ui",
+      "version": "2.0.0"
+    }
+  ]
+}

@@ -11,3 +11,4 @@ classes/
 logs/
 *.zip
 __pycache__/
+vasyan_bedrock/dist/

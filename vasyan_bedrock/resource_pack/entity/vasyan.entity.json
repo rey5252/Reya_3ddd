@@ -1,0 +1,21 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "vasyan:vasyan",
+      "materials": { "default": "entity_alphatest" },
+      "textures": { "default": "textures/entity/vasyan" },
+      "geometry": { "default": "geometry.vasyan" },
+      "animations": {
+        "walk": "animation.vasyan.walk",
+        "look_at_target": "animation.vasyan.look_at_target",
+        "idle": "animation.vasyan.idle"
+      },
+      "scripts": {
+        "animate": ["walk", "look_at_target", "idle"]
+      },
+      "render_controllers": ["controller.render.default"],
+      "spawn_egg": { "base_color": "#3a3f58", "overlay_color": "#40d8ff" }
+    }
+  }
+}

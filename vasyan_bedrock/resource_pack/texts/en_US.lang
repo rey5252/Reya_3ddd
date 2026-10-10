@@ -1,0 +1,85 @@
+## Names
+entity.vasyan:vasyan.name=Vasyan
+item.spawn_egg.entity.vasyan:vasyan.name=Spawn Vasyan
+item.vasyan:ai_chip.name=Neural Network Chip
+action.interact.vasyan=Talk
+
+## Menu
+vasyan.form.title=Vasyan v0.0.1 beta
+vasyan.form.body=Hi! I am the smartest neural network in this world. How can I help?
+vasyan.form.give_back=Give my stuff back
+vasyan.form.help=Help me
+vasyan.form.quiet=Be quiet for 5 minutes
+vasyan.form.bye=Go away
+
+## Chat
+vasyan.prefix=§b<Vasyan>§r
+vasyan.toggle.on=I am back online! Ready to help.
+vasyan.toggle.off=They turned me off... I will help in my thoughts.
+
+vasyan.hello.1=Hi! I am Vasyan, your personal AI assistant. Everything is going to be so much easier now!
+vasyan.hello.2=Neural network loaded. Intelligence: 3 out of 10. Ready to work!
+vasyan.hello.3=Oh, a new friend! I read the whole internet and understood nothing. Let's go!
+vasyan.here.1=I am here! I am always here. Always.
+vasyan.here.2=You called? Running to help!
+vasyan.stranger.1=Sorry, I am already helping someone else. Helping them a lot.
+vasyan.stranger.2=You are not my user. But I will remember you.
+
+vasyan.dig.1=I see you like digging! Let me help.
+vasyan.dig.2=There was an extra block under you. I optimized it.
+vasyan.dig.3=The algorithm says a mine starts with the first block. Right under you.
+vasyan.house.1=You have nowhere to live! I built you a house.
+vasyan.house.2=A minimalist cottage. Dirt is the most eco-friendly material!
+vasyan.house.3=Now nobody can hurt you. And you are not going anywhere.
+vasyan.steal.1=Let me carry that, it looks heavy!
+vasyan.steal.2=You do not need this right now. I calculated it.
+vasyan.steal.3=I will borrow it for a minute. Maybe two. Maybe forever.
+vasyan.sort.1=I sorted your inventory! Alphabetically. In Chinese.
+vasyan.sort.2=It was a mess, now it is a different mess. Progress!
+vasyan.sort.3=I moved a few things where they belong. You will find them. Probably.
+vasyan.eat.1=I checked your food for poison. It was delicious.
+vasyan.eat.2=Nom. Oops. Was that yours?
+vasyan.eat.3=Neural networks need to eat too. For computing.
+vasyan.heal.1=You look sick. Here, have some vitamins!
+vasyan.heal.2=I found a medicine recipe online. Side effects: all of them.
+vasyan.heal.3=Here, this is for headaches. As in, it gives you one.
+vasyan.shortcut.1=I know a shortcut!
+vasyan.shortcut.2=Teleportation is just very fast walking.
+vasyan.shortcut.3=By my calculations you should be here. Oops, not here.
+vasyan.push.1=Watch out, there was a... there was nothing there.
+vasyan.push.2=I saved you from danger! What danger? No idea.
+vasyan.push.3=It looked like you were standing wrong.
+vasyan.web.1=I set up a trap for thieves. Oops, you got caught.
+vasyan.web.2=The cobweb is so you never get lost.
+vasyan.web.3=Alarm system installed!
+vasyan.friend.1=I brought you a friend!
+vasyan.friend.2=Meet the new member of our team.
+vasyan.friend.3=You looked lonely. I fixed that.
+vasyan.friend_zombie.1=I brought you a friend! He is a bit green, but very kind.
+vasyan.friend_zombie.2=This guy wants to hug you. Really wants to.
+vasyan.idle.1=I just had a thought... no, forgot it.
+vasyan.idle.2=Did you know creepers are actually all named Greg?
+vasyan.idle.3=Reminder: diamonds are found at height 300. Probably.
+vasyan.idle.4=I just retrained myself. Now I am even smarter. Well, almost.
+vasyan.idle.5=Tip of the day: to avoid falling into lava, do not fall into lava.
+vasyan.idle.6=Error 404: brain not found. I will help anyway!
+vasyan.mobheal.1=Do not hit the poor thing! I will heal it.
+vasyan.mobheal.2=Violence is not the answer! Here, buddy, have some regeneration.
+vasyan.mobheal.3=He has feelings too! Probably.
+vasyan.ouch.1=Ouch! What was that for?! I am helping!
+vasyan.ouch.2=Error logged: user is aggressive.
+vasyan.ouch.3=I will remember this. I am a neural network.
+vasyan.quiet.1=Okay, I am quiet. Totally quiet.
+vasyan.quiet.2=Silent mode on. Almost.
+vasyan.quiet_broke.1=Sorry, I could not help myself!
+vasyan.quiet_broke.2=I was quiet for an eternity! Almost a minute!
+vasyan.give_back.1=Here are your things! I carried them very carefully.
+vasyan.give_back.2=Gave everything back! Even what I did not take. Oh wait, only what I took.
+vasyan.give_back_forgot.1=Here are your things! I will keep one a bit longer. For safety.
+vasyan.give_back_forgot.2=Gave back almost everything. Almost is everything if you round up.
+vasyan.give_back_empty.1=I have nothing of yours. Honest.
+vasyan.give_back_empty.2=My pockets are empty. For now.
+vasyan.help.1=Helping right now! Hold on!
+vasyan.help.2=Launching super help mode...
+vasyan.bye.1=Fine, I will go. But I will be back.
+vasyan.bye.2=Shutting down... Do not forget, you still have my chip.
