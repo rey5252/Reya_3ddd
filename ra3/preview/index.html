@@ -1,0 +1,1522 @@
+<title>Fortress Protocol</title>
+<style>
+/* Layout: командна консоль RA3 — поле бою ліворуч, бокова панель будівництва праворуч (на телефоні нижче), під ними картка вежі й таблиця */
+:root {
+  color-scheme: dark;
+  --bg: #080b0f;
+  --panel: #11171d;
+  --panel-2: #18212a;
+  --inset: #0a0f14;
+  --metal-hi: #7a8794;
+  --metal: #3b4652;
+  --metal-lo: #222a33;
+  --ink: #e2e8ee;
+  --ink-dim: #96a2ae;
+  --ink-faint: #5f6b78;
+  --credit: #f0c35a;
+  --ok: #86e06f;
+  --hostile: #ff5446;
+  --scan: rgba(255, 255, 255, 0.03);
+  --shade: rgba(4, 7, 10, 0.72);
+  --hl: rgba(255, 255, 255, 0.07);
+  --allies: #2f6fd6;
+  --allies-hi: #7fe3ff;
+  --soviet: #c62b1f;
+  --soviet-hi: #ff6b3d;
+  --empire: #c8102e;
+  --empire-hi: #3fe0c5;
+  --neutral: #8a7a4e;
+  --neutral-hi: #e3cf8f;
+  --fa: var(--neutral);
+  --fa-hi: var(--neutral-hi);
+  --tc: var(--neutral);
+  --tc-hi: var(--neutral-hi);
+  --font-display: "Russo One", "Arial Black", Impact, sans-serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", Roboto, Arial, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  --cut: 14px;
+}
+.app[data-faction="allies"] { --fa: var(--allies); --fa-hi: var(--allies-hi); }
+.app[data-faction="soviet"] { --fa: var(--soviet); --fa-hi: var(--soviet-hi); }
+.app[data-faction="empire"] { --fa: var(--empire); --fa-hi: var(--empire-hi); }
+.f-allies { --tc: var(--allies); --tc-hi: var(--allies-hi); }
+.f-soviet { --tc: var(--soviet); --tc-hi: var(--soviet-hi); }
+.f-empire { --tc: var(--empire); --tc-hi: var(--empire-hi); }
+.f-all { --tc: var(--neutral); --tc-hi: var(--neutral-hi); }
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background-color: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+.app {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding-inline: 16px;
+  padding-block: 18px 28px;
+  background-image:
+    radial-gradient(900px 340px at 78% -60px, color-mix(in srgb, var(--fa) 26%, transparent), transparent 70%),
+    radial-gradient(600px 300px at 0% 0%, color-mix(in srgb, var(--fa) 10%, transparent), transparent 70%);
+  transition: background-image .4s;
+}
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--fa-hi); outline-offset: 2px; }
+h1, h2, h3 { text-wrap: balance; margin: 0; font-weight: 400; }
+.mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.label {
+  font: 600 11px/1.2 var(--font-mono);
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+
+/* ---------- Header ---------- */
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px 24px;
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--metal);
+  position: relative;
+}
+.head::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: -5px; height: 4px;
+  background: repeating-linear-gradient(90deg, var(--metal) 0 1px, transparent 1px 12px);
+  opacity: .7;
+}
+.brand { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.brand-mark { width: 54px; height: 54px; flex: none; color: var(--fa-hi); filter: drop-shadow(0 0 10px color-mix(in srgb, var(--fa-hi) 45%, transparent)); }
+.brand h1 {
+  font-family: var(--font-display);
+  font-size: clamp(28px, 5.2vw, 48px);
+  line-height: 1;
+  letter-spacing: .03em;
+  text-transform: uppercase;
+  background: linear-gradient(180deg, var(--ink) 0 45%, var(--metal-hi) 62%, var(--ink-dim) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.brand .sub { margin: 6px 0 0; color: var(--ink-dim); font-size: 15px; }
+.brand .eyebrow { margin: 0 0 6px; }
+
+.tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+.ftab {
+  --tc: var(--neutral); --tc-hi: var(--neutral-hi);
+  display: inline-flex; align-items: center; gap: 8px;
+  min-height: 40px;
+  padding: 8px 14px 8px 10px;
+  border: 1px solid var(--metal);
+  background: linear-gradient(180deg, var(--panel-2), var(--inset));
+  color: var(--ink-dim);
+  cursor: pointer;
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+  font-weight: 600;
+  font-size: 14px;
+  transition: color .15s, background .15s, border-color .15s;
+}
+.ftab svg { width: 20px; height: 20px; flex: none; color: var(--tc-hi); opacity: .75; }
+.ftab:hover { color: var(--ink); border-color: var(--metal-hi); }
+.ftab[aria-pressed="true"] {
+  color: var(--ink);
+  border-color: var(--tc-hi);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--tc) 55%, var(--panel-2)), color-mix(in srgb, var(--tc) 22%, var(--inset)));
+  box-shadow: inset 0 0 14px color-mix(in srgb, var(--tc-hi) 30%, transparent), inset 0 1px 0 var(--hl);
+}
+.ftab[aria-pressed="true"] svg { opacity: 1; }
+
+/* ---------- Frames ---------- */
+.frame {
+  position: relative;
+  background: linear-gradient(180deg, var(--panel-2), var(--panel));
+  border: 1px solid var(--metal);
+  box-shadow: inset 0 1px 0 var(--hl), inset 0 0 0 1px var(--metal-lo);
+  clip-path: polygon(var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut));
+  min-width: 0;
+}
+.frame::before, .frame::after {
+  content: "";
+  position: absolute;
+  width: var(--cut); height: var(--cut);
+  pointer-events: none;
+  z-index: 8;
+}
+.frame::before { top: -1px; left: -1px; background: linear-gradient(135deg, transparent calc(50% - 1px), var(--metal-hi) 50%, transparent calc(50% + 1px)); }
+.frame::after { bottom: -1px; right: -1px; background: linear-gradient(135deg, transparent calc(50% - 1px), var(--metal-hi) 50%, transparent calc(50% + 1px)); }
+.bar {
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;
+  gap: 4px 14px;
+  padding: 9px 14px 9px 22px;
+  border-bottom: 1px solid var(--metal-lo);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--fa) 28%, transparent), transparent 65%);
+}
+.bar h2 { font: 600 12px/1.2 var(--font-mono); letter-spacing: .16em; text-transform: uppercase; color: var(--ink); }
+.bar .label { color: var(--ink-dim); letter-spacing: .08em; text-transform: none; font-weight: 400; }
+
+/* ---------- Deck layout ---------- */
+.deck {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  grid-template-areas: "field side" "detail side";
+  gap: 14px;
+  align-items: start;
+}
+.field { grid-area: field; }
+.side { grid-area: side; position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); }
+.detail { grid-area: detail; }
+
+/* ---------- Scene ---------- */
+.scene {
+  position: relative;
+  aspect-ratio: 16 / 10.5;
+  max-width: 100%;
+  overflow: hidden;
+  background: var(--inset);
+  border-top: 1px solid var(--metal-lo);
+}
+.scene canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+#cv-ground { z-index: 1; }
+#units { position: absolute; inset: 0; z-index: 2; }
+#cv-fx { z-index: 3; pointer-events: none; }
+.scene::after {
+  content: "";
+  position: absolute; inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(0deg, var(--scan) 0 1px, transparent 1px 3px),
+    radial-gradient(ellipse at 50% 55%, transparent 55%, var(--shade) 100%);
+}
+.unit {
+  position: absolute;
+  padding: 0; margin: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  /* only the tower body is the hit area, not the transparent corners */
+  clip-path: polygon(20% 8%, 80% 8%, 96% 86%, 50% 100%, 4% 86%);
+}
+.unit img { display: block; width: 100%; height: 100%; filter: drop-shadow(0 6px 5px rgba(0, 0, 0, .55)); transition: filter .15s; pointer-events: none; }
+.unit:hover img, .unit:focus-visible img { filter: drop-shadow(0 0 7px var(--tc-hi)) brightness(1.08); }
+.unit:focus-visible { outline: none; }
+.unit:focus-visible img { filter: drop-shadow(0 0 2px var(--ink)) drop-shadow(0 0 9px var(--tc-hi)); }
+.hud {
+  position: absolute; z-index: 5;
+  pointer-events: none;
+  font: 500 11px/1.35 var(--font-mono);
+  color: var(--ink-dim);
+  text-shadow: 0 1px 2px var(--bg);
+  letter-spacing: .04em;
+}
+.hud-tl { top: 10px; left: 14px; }
+.hud-tr { top: 10px; right: 14px; text-align: right; color: var(--tc-hi); max-width: 60%; }
+.hud-bl { bottom: 10px; left: 14px; }
+.hud-br { bottom: 10px; right: 14px; display: flex; gap: 12px; flex-wrap: wrap; justify-content: flex-end; }
+.hud-br span { display: inline-flex; align-items: center; gap: 5px; }
+.key { width: 9px; height: 9px; display: inline-block; }
+.key-enemy { border: 1.5px solid var(--hostile); border-radius: 50%; }
+.key-air { width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-bottom: 9px solid var(--hostile); }
+.key-range { border: 1.5px dashed var(--fa-hi); border-radius: 50%; width: 14px; height: 8px; }
+.field-hint { margin: 0; padding: 8px 14px 10px 22px; color: var(--ink-faint); font-size: 13px; border-top: 1px solid var(--metal-lo); }
+
+/* ---------- Sidebar ---------- */
+.side-body { display: grid; gap: 12px; padding: 12px 14px 14px; }
+.readouts { display: grid; gap: 10px; }
+.credits {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 8px;
+  padding: 8px 12px;
+  background: var(--inset);
+  border: 1px solid var(--metal-lo);
+  box-shadow: inset 0 0 12px rgba(0, 0, 0, .6);
+}
+.credits strong { font: 600 22px/1 var(--font-mono); color: var(--credit); letter-spacing: .02em; font-variant-numeric: tabular-nums; text-shadow: 0 0 10px color-mix(in srgb, var(--credit) 40%, transparent); }
+.credits small { color: var(--ink-faint); font: 11px/1.2 var(--font-mono); }
+.power { display: grid; gap: 5px; }
+.power-row { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.power-row b { font: 600 13px var(--font-mono); color: var(--ink); }
+.meter { height: 8px; background: var(--inset); border: 1px solid var(--metal-lo); position: relative; overflow: hidden; }
+.meter i {
+  position: absolute; inset: 0 auto 0 0;
+  width: calc(var(--v, 0) * 100%);
+  background: linear-gradient(90deg, var(--tc), var(--tc-hi));
+  -webkit-mask: repeating-linear-gradient(90deg, #000 0 5px, transparent 5px 7px);
+  mask: repeating-linear-gradient(90deg, #000 0 5px, transparent 5px 7px);
+  transition: width .35s;
+}
+.power .meter i { background: linear-gradient(90deg, var(--ok), var(--credit)); }
+.power small { color: var(--ink-faint); font-size: 12px; line-height: 1.35; }
+.sb-tabs { display: flex; gap: 3px; border-bottom: 1px solid var(--metal); }
+.sb-tabs span {
+  flex: 1;
+  padding: 6px 4px 5px;
+  text-align: center;
+  font: 600 11px/1 var(--font-mono);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  background: var(--inset);
+  border: 1px solid var(--metal-lo);
+  border-bottom: 0;
+}
+.sb-tabs span.on { color: var(--ink); background: linear-gradient(180deg, color-mix(in srgb, var(--fa) 50%, var(--panel-2)), var(--panel-2)); border-color: var(--fa-hi); }
+.cameos { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.cameo {
+  position: relative;
+  aspect-ratio: 1 / 1.12;
+  padding: 0;
+  border: 1px solid var(--metal);
+  background:
+    radial-gradient(circle at 50% 38%, color-mix(in srgb, var(--tc) 55%, transparent), transparent 70%),
+    linear-gradient(180deg, color-mix(in srgb, var(--tc) 24%, var(--panel-2)), var(--inset));
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: inset 0 0 0 1px var(--inset), inset 0 1px 0 var(--hl);
+  transition: border-color .15s, box-shadow .15s;
+}
+.cameo-art { position: absolute; inset: 0; display: block; }
+.cameo-art img { position: absolute; width: 142%; height: auto; max-width: none; left: -21%; top: -10%; pointer-events: none; }
+.cameo-price {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  padding: 2px 4px;
+  font: 600 11px/1.3 var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--credit);
+  background: linear-gradient(180deg, transparent, var(--shade) 35%);
+  text-align: center;
+  z-index: 3;
+}
+.cameo-wipe {
+  position: absolute; inset: 0; z-index: 2;
+  background: conic-gradient(transparent 0 calc(var(--p, 0) * 1turn), var(--shade) 0);
+  opacity: 0;
+}
+.cameo-state {
+  position: absolute; left: 0; right: 0; top: 4px; z-index: 3;
+  font: 600 10px/1.2 var(--font-mono);
+  text-align: center;
+  color: var(--ink);
+  text-shadow: 0 1px 2px var(--bg), 0 0 4px var(--bg);
+  letter-spacing: .03em;
+}
+.cameo:hover { border-color: var(--metal-hi); }
+.cameo.is-sel { border-color: var(--tc-hi); box-shadow: inset 0 0 0 1px var(--tc-hi), inset 0 0 16px color-mix(in srgb, var(--tc-hi) 35%, transparent); }
+.cameo.is-building .cameo-wipe { opacity: 1; }
+.cameo.is-ready { border-color: var(--ok); box-shadow: inset 0 0 0 1px var(--ok), inset 0 0 18px color-mix(in srgb, var(--ok) 35%, transparent); }
+.cameo.is-ready .cameo-state { color: var(--ok); animation: blink 1s steps(2, start) infinite; }
+.cameo.is-broke { animation: shake .3s; }
+@keyframes blink { 50% { opacity: .35; } }
+@keyframes shake { 25% { transform: translateX(-3px); } 75% { transform: translateX(3px); } }
+.sb-status {
+  min-height: 2.9em;
+  margin: 0;
+  padding: 7px 10px;
+  font: 12px/1.4 var(--font-mono);
+  color: var(--ink);
+  background: var(--inset);
+  border-left: 2px solid var(--fa-hi);
+}
+.sb-hint { margin: 0; color: var(--ink-faint); font-size: 12.5px; line-height: 1.45; }
+
+/* ---------- Detail ---------- */
+.detail-body { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 20px; padding: 16px 18px 20px 22px; }
+.pedestal {
+  position: relative;
+  align-self: start;
+  aspect-ratio: 240 / 280;
+  max-width: 100%;
+  border: 1px solid var(--metal-lo);
+  background:
+    radial-gradient(ellipse at 50% 80%, color-mix(in srgb, var(--tc) 45%, transparent), transparent 62%),
+    repeating-linear-gradient(30deg, transparent 0 17px, var(--hl) 17px 18px),
+    repeating-linear-gradient(-30deg, transparent 0 17px, var(--hl) 17px 18px),
+    var(--inset);
+}
+.pedestal img { position: absolute; inset: 0; width: 100%; height: 100%; }
+.pedestal .tid { position: absolute; left: 8px; bottom: 6px; font: 10px/1.2 var(--font-mono); color: var(--ink-faint); }
+.info { min-width: 0; display: grid; gap: 14px; align-content: start; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 3px 9px;
+  font: 600 11px/1.4 var(--font-mono);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  border: 1px solid var(--metal);
+  color: var(--ink-dim);
+  background: var(--inset);
+}
+.chip.fac { color: var(--ink); border-color: var(--tc-hi); background: color-mix(in srgb, var(--tc) 35%, var(--inset)); }
+.chip.fac svg { width: 14px; height: 14px; color: var(--tc-hi); }
+.d-name { font-family: var(--font-display); font-size: clamp(24px, 3.4vw, 34px); line-height: 1.08; color: var(--ink); }
+.d-role { margin: 4px 0 0; color: var(--tc-hi); font-weight: 600; }
+.stats { display: grid; gap: 7px; margin: 0; }
+.stat { display: grid; grid-template-columns: 9.2em 7.4em minmax(0, 1fr); gap: 10px; align-items: center; }
+.stat dt { color: var(--ink-dim); font-size: 13.5px; }
+.stat dd { margin: 0; font: 600 14px/1.2 var(--font-mono); font-variant-numeric: tabular-nums; color: var(--ink); white-space: nowrap; }
+.stat dd small { font-weight: 400; color: var(--ink-dim); font-size: 11px; }
+.stat .meter { height: 7px; }
+.d-desc { margin: 0; max-width: 62ch; color: var(--ink); line-height: 1.6; }
+.meta { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.meta > div { min-width: 0; padding: 10px 12px; background: var(--inset); border: 1px solid var(--metal-lo); display: grid; gap: 6px; align-content: start; }
+.meta .val { font-size: 14px; color: var(--ink); }
+.tag { display: inline-block; padding: 1px 7px; margin: 0 4px 4px 0; font-size: 13px; border: 1px solid; }
+.tag.good { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 45%, transparent); background: color-mix(in srgb, var(--ok) 9%, transparent); }
+.tag.bad { color: var(--hostile); border-color: color-mix(in srgb, var(--hostile) 45%, transparent); background: color-mix(in srgb, var(--hostile) 9%, transparent); }
+.cmd { font: 11px/1.4 var(--font-mono); color: var(--ink-faint); overflow-wrap: anywhere; margin: 0; }
+
+/* ---------- Table ---------- */
+.compare { margin-top: 14px; }
+.table-wrap { overflow-x: auto; }
+table { width: 100%; min-width: 780px; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+th, td { padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--metal-lo); vertical-align: middle; }
+th { background: var(--inset); position: relative; }
+th.num, td.num { text-align: right; }
+td.num { font-family: var(--font-mono); font-size: 13px; }
+.th-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 2px 0; border: 0; background: none; cursor: pointer;
+  font: 600 11px/1.2 var(--font-mono); letter-spacing: .1em; text-transform: uppercase;
+  color: var(--ink-dim);
+}
+.th-btn:hover { color: var(--ink); }
+.th-btn .arr { width: 8px; color: var(--fa-hi); }
+th[aria-sort] .th-btn { color: var(--ink); }
+.th-plain { font: 600 11px/1.2 var(--font-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-dim); }
+tbody tr { cursor: pointer; transition: background .12s; }
+tbody tr:hover { background: color-mix(in srgb, var(--tc) 10%, transparent); }
+tbody tr.is-sel { background: color-mix(in srgb, var(--tc) 20%, transparent); box-shadow: inset 3px 0 0 var(--tc-hi); }
+.row-name { display: inline-flex; align-items: center; gap: 10px; padding: 0; border: 0; background: none; cursor: pointer; text-align: left; font-weight: 600; color: var(--ink); }
+.row-name img { width: 30px; height: 35px; flex: none; }
+.fac-dot { display: inline-flex; align-items: center; gap: 7px; color: var(--ink-dim); white-space: nowrap; }
+.fac-dot::before { content: ""; width: 8px; height: 8px; transform: rotate(45deg); background: var(--tc-hi); }
+td.role { color: var(--ink-dim); font-size: 13px; min-width: 14em; }
+.air-mark { color: var(--ink-faint); font-size: 11px; }
+.compare-note { margin: 0; padding: 8px 14px 10px 22px; color: var(--ink-faint); font-size: 13px; }
+
+.foot { margin-top: 18px; padding-top: 12px; border-top: 1px solid var(--metal-lo); color: var(--ink-faint); font-size: 13px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 18px; }
+.foot p { margin: 0; max-width: 70ch; }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 960px) {
+  .deck { grid-template-columns: minmax(0, 1fr); grid-template-areas: "field" "side" "detail"; }
+  .side { position: relative; top: 0; }
+}
+@media (min-width: 600px) and (max-width: 960px) {
+  .side-body { grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); align-items: start; }
+  .side-body .readouts { grid-row: span 3; }
+}
+@media (max-width: 720px) {
+  .detail-body { grid-template-columns: minmax(0, 1fr); padding: 14px 14px 18px; }
+  .pedestal { width: 190px; justify-self: center; }
+  .meta { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 560px) {
+  .scene { aspect-ratio: 1 / 1.08; }
+  .tabs { display: grid; grid-template-columns: 1fr 1fr; width: 100%; }
+  .ftab { justify-content: flex-start; }
+  .ftab[data-f="empire"] span { font-size: 13px; }
+  .stat { grid-template-columns: minmax(0, 1fr) auto; }
+  .stat .meter { grid-column: 1 / -1; }
+  .hud-br, .hud-tl { display: none; }
+  .hud-tr { max-width: calc(100% - 28px); }
+  .brand .eyebrow { letter-spacing: .06em; font-size: 10px; }
+  .brand-mark { width: 44px; height: 44px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; }
+}
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&family=Russo+One&display=swap">
+
+<div class="app" id="app" data-faction="all">
+  <header class="head">
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 48 48" aria-hidden="true">
+        <path d="M24 3 43 14v20L24 45 5 34V14Z" fill="none" stroke="currentColor" stroke-width="2"/>
+        <path d="M24 8 38.5 16.4v15.2L24 40 9.5 31.6V16.4Z" fill="currentColor" opacity=".12"/>
+        <path d="M14 34V21h4v3h3.5v-3h5v3H30v-3h4v13Z" fill="currentColor"/>
+        <path d="M22 34v-5a2 2 0 0 1 4 0v5Z" fill="#0b1015"/>
+      </svg>
+      <div>
+        <p class="label eyebrow">C&amp;C: Red Alert 3 · мод FortressTowers 1.0</p>
+        <h1>Fortress Protocol</h1>
+        <p class="sub">9 нових оборонних веж для Red Alert 3</p>
+      </div>
+    </div>
+    <div class="tabs" id="tabs" role="group" aria-label="Фракція"></div>
+  </header>
+
+  <main class="deck">
+    <section class="field frame" aria-labelledby="field-title">
+      <div class="bar">
+        <h2 id="field-title">Тактичний огляд</h2>
+        <span class="label" id="field-sector">Сектор 7-Г · оборонний рубіж</span>
+      </div>
+      <div class="scene" id="scene">
+        <canvas id="cv-ground" aria-hidden="true"></canvas>
+        <div id="units"></div>
+        <canvas id="cv-fx" aria-hidden="true"></canvas>
+        <div class="hud hud-tl" aria-hidden="true">ОГЛЯД · РЕЖИМ ОБОРОНИ<br><span id="hud-count">9 веж на полі</span></div>
+        <div class="hud hud-tr" id="hud-sel" aria-hidden="true"></div>
+        <div class="hud hud-bl" aria-hidden="true">1 клітина = 50 од. дальності</div>
+        <div class="hud hud-br" aria-hidden="true">
+          <span><i class="key key-enemy"></i>Ворожа техніка</span>
+          <span><i class="key key-air"></i>Авіація</span>
+          <span><i class="key key-range"></i>Зона дії</span>
+        </div>
+      </div>
+      <p class="field-hint">Клікніть вежу на полі, щоб побачити її зону дії. Ефекти атаки спрощені.</p>
+    </section>
+
+    <aside class="side frame" aria-labelledby="side-title">
+      <div class="bar"><h2 id="side-title">Будівництво</h2><span class="label">Майданчик</span></div>
+      <div class="side-body">
+        <div class="readouts">
+          <div class="credits"><strong id="credits">$15 000</strong><small>+50 $/с з рудні</small></div>
+          <div class="power">
+            <div class="power-row"><span class="label">Енергія веж</span><b id="power-val">−37</b></div>
+            <div class="meter"><i id="power-bar"></i></div>
+            <small id="power-note">Сумарне споживання показаних веж.</small>
+          </div>
+        </div>
+        <div class="sb-tabs" aria-hidden="true"><span>Споруди</span><span class="on">Оборона</span><span>Війська</span></div>
+        <div class="cameos" id="cameos" role="group" aria-label="Вкладка «Оборона»"></div>
+        <p class="sb-status" id="sb-status" aria-live="polite">Оберіть вежу, щоб почати будівництво.</p>
+        <p class="sb-hint">Наведення показує вежу. Клік починає будівництво (час прискорено ×6). Коли з’явиться «Готово», клікніть ще раз, щоб розмістити. Права кнопка миші скасовує й повертає кошти.</p>
+      </div>
+    </aside>
+
+    <section class="detail frame" id="detail" aria-labelledby="d-name">
+      <div class="bar"><h2>Обрана вежа</h2><span class="label" id="d-type"></span></div>
+      <div class="detail-body">
+        <div class="pedestal" id="d-art"></div>
+        <div class="info">
+          <div>
+            <div class="chips" id="d-chips"></div>
+            <h3 class="d-name" id="d-name" style="margin-top:10px"></h3>
+            <p class="d-role" id="d-role"></p>
+          </div>
+          <dl class="stats" id="d-stats"></dl>
+          <p class="d-desc" id="d-desc"></p>
+          <div class="meta">
+            <div><span class="label">Основа</span><span class="val" id="d-base"></span></div>
+            <div><span class="label">Сильна проти</span><span id="d-strong"></span></div>
+            <div><span class="label">Слабка проти</span><span id="d-weak"></span></div>
+          </div>
+          <p class="cmd" id="d-cmd"></p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <section class="compare frame" aria-labelledby="cmp-title">
+    <div class="bar"><h2 id="cmp-title">Порівняння веж</h2><span class="label">Клікніть заголовок, щоб відсортувати</span></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr id="thead-row"></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <p class="compare-note">Бари в картці вежі — частка від найбільшого значення серед усіх 9 веж. «Повітря» — вежа б’є лише по авіації.</p>
+  </section>
+
+  <footer class="foot">
+    <p>Прев'ю — ілюстрація. У грі вежі використовують моделі ванільних споруд з новими параметрами.</p>
+    <p class="mono">Fortress Protocol · RA3 1.12 · SAGE</p>
+  </footer>
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  /* ================= Data ================= */
+  const ICONS = {
+    all: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2l4 4-4 4-4-4zM6 12l4 4-4 4-4-4zM18 12l4 4-4 4-4-4z"/></svg>',
+    allies: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5 19.5 5.3v5.9c0 4.8-3.2 8.4-7.5 10.4-4.3-2-7.5-5.6-7.5-10.4V5.3Z" fill="none" stroke="currentColor" stroke-width="2"/><path fill="currentColor" d="M7.5 9.5 12 13l4.5-3.5v3L12 16l-4.5-3.5z"/></svg>',
+    soviet: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.2l7.1-.6z"/></svg>',
+    empire: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.6" fill="currentColor"/><path d="M12 1.5v3.5M12 19v3.5M1.5 12H5M19 12h3.5M4.6 4.6l2.4 2.4M17 17l2.4 2.4M4.6 19.4 7 17M17 7l2.4-2.4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>'
+  };
+  const FACTIONS = {
+    allies: { name: 'Альянс', side: 'Allies' },
+    soviet: { name: 'СРСР', side: 'Soviet' },
+    empire: { name: 'Імперія Висхідного Сонця', short: 'Імперія', side: 'Japan' }
+  };
+
+  const TOWERS = [
+    { id: 'AlliedPrismSpire', name: 'Призматичний шпиль', f: 'allies', type: 'Протиназемна оборона',
+      role: 'Протиназемна, ланцюговий промінь', cost: 1800, time: 25, hp: 3200, range: 400, air: false, power: -8,
+      base: 'Spectrum Tower', fx: 'prism', muz: .14,
+      desc: 'Кристалічне осердя збирає світло й випускає промінь, який після влучання перескакує на сусідні цілі: до 3 цілей за постріл. Кожен стрибок трохи слабший, тому шпиль найкраще працює проти щільних колон.',
+      strong: ['Техніка', 'Піхота'], weak: ['Авіація'] },
+    { id: 'AlliedCryoBastion', name: 'Кріо-бастіон', f: 'allies', type: 'Контроль території',
+      role: 'Контроль: заморожує й сповільнює, зона', cost: 1400, time: 20, hp: 2600, range: 300, air: false, power: -6,
+      base: 'Spectrum Tower + FX кріо-легіонера / Cryocopter', fx: 'cryo', muz: .2,
+      desc: 'Кріопромінь заморожує ціль, а хвиля холоду навколо неї сповільнює всіх ворогів у зоні. Заморожена техніка розлітається від будь-якого влучного пострілу сусідніх веж.',
+      strong: ['Техніка', 'Групи піхоти'], weak: ['Авіація', 'Артилерія'] },
+    { id: 'AlliedAegisSpire', name: 'Вежа «Егіда»', f: 'allies', type: 'ППО і щит',
+      role: 'ППО + щит-проєктор', cost: 1200, time: 18, hp: 2200, range: 450, air: true, power: -5,
+      base: 'Multigunner Turret', fx: 'aegis', muz: .2,
+      desc: 'Зенітні ракети по повітряних цілях. Щит-проєктор зменшує урон по союзних спорудах у радіусі 200 на 35%, тож «Егіду» ставлять у центрі оборонного вузла.',
+      strong: ['Авіація', 'Підтримка споруд'], weak: ['Наземна техніка', 'Піхота'] },
+    { id: 'SovietTeslaObelisk', name: 'Тесла-обеліск', f: 'soviet', type: 'Протиназемна оборона',
+      role: 'Далекобійна блискавка, ланцюг на 4 цілі', cost: 2000, time: 28, hp: 3600, range: 450, air: false, power: -10,
+      base: 'Tesla Coil', fx: 'tesla', muz: .12,
+      desc: 'Блискавка б’є далі за ванільну тесла-котушку й ланцюгом уражає до 4 цілей. Тесла-солдати поруч заряджають обеліск і посилюють розряд.',
+      strong: ['Техніка', 'Піхота', 'Скупчення'], weak: ['Авіація', 'Артилерія'] },
+    { id: 'SovietFlakNest', name: 'Флак-гніздо', f: 'soviet', type: 'Протиповітряна оборона',
+      role: 'ППО, 3 зенітні гармати, осколкова зона', cost: 1000, time: 15, hp: 2400, range: 500, air: true, power: -4,
+      base: 'Flak Cannon', fx: 'flak', muz: .3,
+      desc: 'Три зенітні гармати ставлять осколкову завісу. Кожен розрив зачіпає всі літаки поруч, тому гніздо добре розбиває щільні групи авіації.',
+      strong: ['Авіація', 'Групи літаків'], weak: ['Наземні цілі'] },
+    { id: 'SovietInfernoBunker', name: 'Бункер «Пекло»', f: 'soviet', type: 'Протипіхотна оборона',
+      role: 'Проти піхоти: вогнемети 360°, підпал зони', cost: 1100, time: 16, hp: 3000, range: 220, air: false, power: -4,
+      base: 'Sentry Gun (+ FX вогню)', fx: 'inferno', muz: .45,
+      desc: 'Вогнемети б’ють по колу на 360° і підпалюють землю. Гарнізон на 3 піхотинці стріляє з бійниць, тож бункер не залишається беззахисним перед технікою.',
+      strong: ['Піхота'], weak: ['Важка техніка', 'Артилерія', 'Авіація'] },
+    { id: 'JapanTenguSpire', name: 'Шпиль Тенгу', f: 'empire', type: 'Протиповітряна оборона',
+      role: 'ППО: залпи самонавідних ракет', cost: 1100, time: 16, hp: 2000, range: 480, air: true, power: null,
+      base: 'Wave-Force Tower / Nanoswarm Hive core art', fx: 'tengu', muz: .16,
+      desc: 'Випускає залпи самонавідних ракет по повітряних цілях. Ракети доганяють навіть швидкі літаки. Будується як наноядро.',
+      strong: ['Авіація'], weak: ['Наземні цілі'] },
+    { id: 'JapanWaveCitadel', name: 'Хвильова цитадель', f: 'empire', type: 'Артилерія',
+      role: 'Заряджений хвильовий удар, пробиває лінію цілей', cost: 2200, time: 30, hp: 3400, range: 600, air: false, power: null,
+      base: 'Wave-Force Tower', fx: 'wave', muz: .14,
+      desc: 'Накопичує заряд і випускає хвильовий удар, що пробиває всю лінію цілей на шляху. Найбільша дальність серед веж мода. Потребує Nanotech Mainframe.',
+      strong: ['Техніка', 'Споруди', 'Колони'], weak: ['Авіація', 'Швидкі юніти'] },
+    { id: 'JapanKitsuneShrine', name: 'Святилище Кіцуне', f: 'empire', type: 'Підтримка',
+      role: 'Псіонічний імпульс проти піхоти, виявлення', cost: 900, time: 14, hp: 1800, range: 250, air: false, power: null,
+      base: 'Nanoswarm Hive', fx: 'kitsune', muz: .3,
+      desc: 'Псіонічний імпульс оглушує й ранить піхоту навколо святилища. Виявляє невидимі юніти в радіусі 350, тому його ставлять перед лінією оборони.',
+      strong: ['Піхота', 'Невидимі юніти'], weak: ['Техніка', 'Авіація'] }
+  ];
+  TOWERS.forEach((T, i) => { T.idx = i; T.slot = i % 3; });
+  const byId = Object.fromEntries(TOWERS.map(T => [T.id, T]));
+
+  const STATS = [
+    { key: 'cost', label: 'Ціна', val: T => T.cost, fmt: T => '$' + nf(T.cost) },
+    { key: 'time', label: 'Час будівництва', val: T => T.time, fmt: T => T.time + ' с' },
+    { key: 'hp', label: 'Міцність', val: T => T.hp, fmt: T => nf(T.hp) + ' <small>HP</small>' },
+    { key: 'range', label: 'Дальність', val: T => T.range, fmt: T => nf(T.range) + (T.air ? ' <small>повітря</small>' : '') },
+    { key: 'power', label: 'Енергія', val: T => T.power == null ? 0 : Math.abs(T.power),
+      fmt: T => T.power == null ? '— <small>як ваніла</small>' : '−' + Math.abs(T.power) }
+  ];
+  const MAX = Object.fromEntries(STATS.map(s => [s.key, Math.max(...TOWERS.map(s.val))]));
+
+  const COLS = [
+    { key: 'name', label: 'Вежа' },
+    { key: 'f', label: 'Фракція' },
+    { key: 'role', label: 'Роль', nosort: true },
+    { key: 'cost', label: 'Ціна, $', num: true },
+    { key: 'time', label: 'Час, с', num: true },
+    { key: 'hp', label: 'Міцність', num: true },
+    { key: 'range', label: 'Дальність', num: true },
+    { key: 'power', label: 'Енергія', num: true }
+  ];
+  const FORDER = { allies: 0, soviet: 1, empire: 2 };
+
+  /* ================= Helpers ================= */
+  const $ = s => document.querySelector(s);
+  const nf = n => n.toLocaleString('uk-UA');
+  const TAU = Math.PI * 2;
+  const hash = n => { const s = Math.sin(n * 12.9898 + 78.233) * 43758.5453; return s - Math.floor(s); };
+  const lerp = (a, b, q) => ({ x: a.x + (b.x - a.x) * q, y: a.y + (b.y - a.y) * q });
+  const bez = (a, c, b, q) => { const u = 1 - q; return { x: u * u * a.x + 2 * u * q * c.x + q * q * b.x, y: u * u * a.y + 2 * u * q * c.y + q * q * b.y }; };
+  const rootCss = getComputedStyle(document.documentElement);
+  const tok = (n, d) => rootCss.getPropertyValue(n).trim() || d;
+  const COLOR = {
+    allies: [tok('--allies', '#2f6fd6'), tok('--allies-hi', '#7fe3ff')],
+    soviet: [tok('--soviet', '#c62b1f'), tok('--soviet-hi', '#ff6b3d')],
+    empire: [tok('--empire', '#c8102e'), tok('--empire-hi', '#3fe0c5')],
+    ok: tok('--ok', '#86e06f'), hostile: tok('--hostile', '#ff5446'), ink: tok('--ink', '#e2e8ee')
+  };
+
+  function placeholderSrc(f) {
+    const c = COLOR[f] ? COLOR[f][1] : '#9fb3c8';
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 280"><path d="M120 214 206 238 120 262 34 238Z" fill="#1f262e" stroke="${c}" stroke-opacity=".5" stroke-width="2"/><path d="M94 240V112l26-38 26 38v128l-26 10Z" fill="#161c22" stroke="${c}" stroke-opacity=".7" stroke-width="2" stroke-dasharray="7 5"/><path d="M120 74v176" stroke="${c}" stroke-opacity=".35" stroke-width="2"/><circle cx="120" cy="98" r="7" fill="${c}" fill-opacity=".6"/></svg>`;
+    return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+  }
+  function towerImg(T, alt) {
+    const img = new Image();
+    img.alt = alt || '';
+    img.decoding = 'async';
+    img.addEventListener('error', () => {
+      if (img.dataset.fallback) return;
+      img.dataset.fallback = '1';
+      img.src = placeholderSrc(T.f);
+    });
+    img.src = 'art/' + T.id + '.svg';
+    return img;
+  }
+
+  /* ================= State ================= */
+  const reduceMQ = matchMedia('(prefers-reduced-motion: reduce)');
+  let reduced = reduceMQ.matches;
+  const state = { faction: 'all', sel: 'AlliedPrismSpire', sort: { key: null, dir: 1 }, credits: 15000, build: null };
+  try {
+    const f = localStorage.getItem('fp-faction');
+    if (f && (f === 'all' || FACTIONS[f])) state.faction = f;
+  } catch (e) { /* storage unavailable */ }
+
+  const app = $('#app');
+  const visible = () => TOWERS.filter(T => state.faction === 'all' || T.f === state.faction);
+  const sel = () => byId[state.sel];
+
+  /* ================= Tabs ================= */
+  const tabsEl = $('#tabs');
+  [['all', 'Усі'], ['allies', FACTIONS.allies.name], ['soviet', FACTIONS.soviet.name], ['empire', FACTIONS.empire.name]].forEach(([f, label]) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'ftab f-' + f;
+    b.dataset.f = f;
+    b.innerHTML = ICONS[f] + '<span>' + label + '</span>';
+    b.addEventListener('click', () => setFaction(f));
+    tabsEl.appendChild(b);
+  });
+
+  function setFaction(f) {
+    state.faction = f;
+    try { localStorage.setItem('fp-faction', f); } catch (e) { /* ignore */ }
+    if (!visible().includes(sel())) state.sel = visible()[0].id;
+    renderFaction();
+    renderSelection();
+  }
+
+  function renderFaction() {
+    app.dataset.faction = state.faction;
+    tabsEl.querySelectorAll('.ftab').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.f === state.faction)));
+    const vis = visible();
+    TOWERS.forEach(T => {
+      const on = vis.includes(T);
+      T.cameo.hidden = !on;
+      T.row.hidden = !on;
+    });
+    const sum = vis.reduce((s, T) => s + (T.power ? Math.abs(T.power) : 0), 0);
+    const total = TOWERS.reduce((s, T) => s + (T.power ? Math.abs(T.power) : 0), 0);
+    $('#power-val').textContent = sum ? '−' + sum : '—';
+    $('#power-bar').style.setProperty('--v', (sum / total).toFixed(3));
+    $('#power-note').textContent = state.faction === 'empire'
+      ? 'Вежі Імперії використовують енергію як ванільні оборонні споруди Імперії.'
+      : 'Сумарне споживання показаних веж' + (state.faction === 'all' ? ' (без Імперії).' : '.');
+    $('#hud-count').textContent = vis.length === 9 ? '9 веж на полі' : '3 вежі · ' + FACTIONS[state.faction].name;
+    $('#field-sector').textContent = state.faction === 'all' ? 'Сектор 7-Г · усі фракції' : 'Сектор 7-Г · ' + (FACTIONS[state.faction].short || FACTIONS[state.faction].name);
+    placeUnits();
+    drawStatic();
+  }
+
+  /* ================= Sidebar ================= */
+  const cameosEl = $('#cameos');
+  const statusEl = $('#sb-status');
+  const creditsEl = $('#credits');
+  const setStatus = t => { statusEl.textContent = t; };
+  const renderCredits = () => { creditsEl.textContent = '$' + nf(state.credits); };
+
+  TOWERS.forEach(T => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'cameo f-' + T.f;
+    b.setAttribute('aria-label', T.name + ', $' + T.cost);
+    const art = document.createElement('span');
+    art.className = 'cameo-art';
+    art.appendChild(towerImg(T));
+    b.appendChild(art);
+    b.insertAdjacentHTML('beforeend', '<span class="cameo-wipe"></span><span class="cameo-state"></span><span class="cameo-price">$' + nf(T.cost) + '</span>');
+    b.addEventListener('mouseenter', () => select(T.id));
+    b.addEventListener('focus', () => select(T.id));
+    b.addEventListener('click', () => cameoClick(T));
+    b.addEventListener('contextmenu', e => { e.preventDefault(); cancelBuild(T); });
+    b.addEventListener('animationend', () => b.classList.remove('is-broke'));
+    T.cameo = b;
+    T.cameoState = b.querySelector('.cameo-state');
+    cameosEl.appendChild(b);
+  });
+
+  function cameoState(T, cls, text, p) {
+    const b = T.cameo;
+    b.classList.toggle('is-building', cls === 'building');
+    b.classList.toggle('is-ready', cls === 'ready');
+    T.cameoState.textContent = text || '';
+    if (p != null) b.style.setProperty('--p', p.toFixed(3));
+    b.setAttribute('aria-label', T.name + ', $' + T.cost + (text ? ', ' + text : ''));
+  }
+
+  function cameoClick(T) {
+    select(T.id);
+    const B = state.build;
+    if (B && B.state === 'building') {
+      setStatus(B.id === T.id ? 'Будується: ' + T.name + '. Зачекайте.' : 'Майданчик зайнятий: будується ' + byId[B.id].name + '.');
+      return;
+    }
+    if (B && B.state === 'ready') {
+      if (B.id === T.id) { placeTower(T); return; }
+      setStatus('Спершу розмістіть готову вежу: ' + byId[B.id].name + '.');
+      return;
+    }
+    if (state.credits < T.cost) {
+      setStatus('Недостатньо коштів: потрібно $' + nf(T.cost) + ', є $' + nf(state.credits) + '.');
+      T.cameo.classList.add('is-broke');
+      return;
+    }
+    state.credits -= T.cost;
+    renderCredits();
+    state.build = { id: T.id, start: performance.now(), dur: T.time * 1000 / 6, state: 'building' };
+    setStatus('Будується: ' + T.name + ' (' + T.time + ' с у грі).');
+    cameoState(T, 'building', 'Будується…', 0);
+    requestAnimationFrame(tickBuild);
+  }
+
+  function tickBuild(now) {
+    const B = state.build;
+    if (!B || B.state !== 'building') return;
+    const T = byId[B.id];
+    let p = Math.min(1, (now - B.start) / B.dur);
+    const shown = reduced ? Math.floor(p * 8) / 8 : p;
+    if (p >= 1) {
+      B.state = 'ready';
+      cameoState(T, 'ready', 'Готово', 1);
+      setStatus('Готово: ' + T.name + '. Клікніть іконку ще раз, щоб розмістити.');
+      return;
+    }
+    cameoState(T, 'building', 'Будується… ' + Math.floor(p * 100) + '%', shown);
+    requestAnimationFrame(tickBuild);
+  }
+
+  function placeTower(T) {
+    state.build = null;
+    cameoState(T, null, '', 0);
+    setStatus('Розміщено: ' + T.name + '.');
+    if (T.g) events.push({ T, start: performance.now() });
+    ensureLoop();
+  }
+
+  function cancelBuild(T) {
+    const B = state.build;
+    if (!B || B.id !== T.id) return;
+    state.credits += T.cost;
+    renderCredits();
+    state.build = null;
+    cameoState(T, null, '', 0);
+    setStatus('Скасовано: ' + T.name + '. Повернуто $' + nf(T.cost) + '.');
+  }
+
+  setInterval(() => {
+    if (state.credits < 20000) { state.credits = Math.min(20000, state.credits + 50); renderCredits(); }
+  }, 1000);
+
+  /* ================= Detail card ================= */
+  function renderDetail() {
+    const T = sel();
+    const F = FACTIONS[T.f];
+    $('#detail').className = 'detail frame f-' + T.f;
+    $('#d-type').textContent = T.type;
+    const ped = $('#d-art');
+    ped.textContent = '';
+    ped.appendChild(towerImg(T, T.name));
+    ped.insertAdjacentHTML('beforeend', '<span class="tid">' + T.id + '</span>');
+    $('#d-chips').innerHTML = '<span class="chip fac">' + ICONS[T.f] + F.name + '</span><span class="chip">Side=' + F.side + '</span>' + (T.air ? '<span class="chip">Лише повітря</span>' : '');
+    $('#d-name').textContent = T.name;
+    $('#d-role').textContent = T.role;
+    $('#d-stats').innerHTML = STATS.map(s => {
+      const v = s.val(T) / MAX[s.key];
+      return '<div class="stat"><dt>' + s.label + '</dt><dd>' + s.fmt(T) + '</dd><div class="meter" aria-hidden="true"><i style="--v:' + v.toFixed(3) + '"></i></div></div>';
+    }).join('');
+    $('#d-desc').textContent = T.desc;
+    $('#d-base').textContent = T.base;
+    $('#d-strong').innerHTML = T.strong.map(x => '<span class="tag good">' + x + '</span>').join('');
+    $('#d-weak').innerHTML = T.weak.map(x => '<span class="tag bad">' + x + '</span>').join('');
+    const cmd = T.f === 'empire' ? 'Command_Construct' + T.id + 'Nanocore' : 'Command_Construct' + T.id;
+    $('#d-cmd').textContent = 'NAME:' + T.id + ' · ' + cmd + ' · ' + T.id + 'Weapon';
+    const hud = $('#hud-sel');
+    hud.className = 'hud hud-tr f-' + T.f;
+    hud.innerHTML = 'ОБРАНО: ' + T.name.toUpperCase() + '<br>R ' + T.range + (T.air ? ' · ППО' : '');
+  }
+
+  /* ================= Table ================= */
+  const theadRow = $('#thead-row');
+  const tbody = $('#tbody');
+  COLS.forEach(c => {
+    const th = document.createElement('th');
+    th.scope = 'col';
+    if (c.num) th.className = 'num';
+    if (c.nosort) {
+      th.innerHTML = '<span class="th-plain">' + c.label + '</span>';
+    } else {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'th-btn';
+      b.innerHTML = '<span>' + c.label + '</span><span class="arr" aria-hidden="true"></span>';
+      b.addEventListener('click', () => {
+        if (state.sort.key === c.key) state.sort.dir *= -1;
+        else state.sort = { key: c.key, dir: c.num ? -1 : 1 };
+        sortTable();
+      });
+      th.appendChild(b);
+    }
+    c.th = th;
+    theadRow.appendChild(th);
+  });
+
+  TOWERS.forEach(T => {
+    const tr = document.createElement('tr');
+    tr.className = 'f-' + T.f;
+    const nameTd = document.createElement('td');
+    const nb = document.createElement('button');
+    nb.type = 'button';
+    nb.className = 'row-name';
+    nb.appendChild(towerImg(T));
+    nb.insertAdjacentHTML('beforeend', '<span>' + T.name + '</span>');
+    nameTd.appendChild(nb);
+    tr.appendChild(nameTd);
+    tr.insertAdjacentHTML('beforeend',
+      '<td><span class="fac-dot">' + (FACTIONS[T.f].short || FACTIONS[T.f].name) + '</span></td>' +
+      '<td class="role">' + T.role + '</td>' +
+      '<td class="num">' + nf(T.cost) + '</td>' +
+      '<td class="num">' + T.time + '</td>' +
+      '<td class="num">' + nf(T.hp) + '</td>' +
+      '<td class="num">' + T.range + (T.air ? ' <span class="air-mark">повітря</span>' : '') + '</td>' +
+      '<td class="num">' + (T.power == null ? '—' : '−' + Math.abs(T.power)) + '</td>');
+    tr.addEventListener('click', () => select(T.id));
+    T.row = tr;
+    tbody.appendChild(tr);
+  });
+
+  function sortVal(T, key) {
+    if (key === 'name') return T.name;
+    if (key === 'f') return FORDER[T.f];
+    if (key === 'power') return T.power == null ? 0 : Math.abs(T.power);
+    return T[key];
+  }
+  function sortTable() {
+    const { key, dir } = state.sort;
+    const rows = TOWERS.slice();
+    if (key) {
+      rows.sort((a, b) => {
+        const va = sortVal(a, key), vb = sortVal(b, key);
+        const r = typeof va === 'string' ? va.localeCompare(vb, 'uk') : va - vb;
+        return r * dir || a.idx - b.idx;
+      });
+    }
+    rows.forEach(T => tbody.appendChild(T.row));
+    COLS.forEach(c => {
+      if (c.nosort) return;
+      const on = c.key === key;
+      if (on) c.th.setAttribute('aria-sort', dir > 0 ? 'ascending' : 'descending');
+      else c.th.removeAttribute('aria-sort');
+      c.th.querySelector('.arr').textContent = on ? (dir > 0 ? '▲' : '▼') : '';
+    });
+  }
+
+  /* ================= Selection ================= */
+  function select(id) {
+    if (state.sel === id) return;
+    state.sel = id;
+    renderSelection();
+  }
+  function renderSelection() {
+    TOWERS.forEach(T => {
+      const on = T.id === state.sel;
+      T.unit.setAttribute('aria-pressed', String(on));
+      T.cameo.classList.toggle('is-sel', on);
+      T.row.classList.toggle('is-sel', on);
+    });
+    renderDetail();
+    drawStatic();
+  }
+
+  /* ================= Scene ================= */
+  const scene = $('#scene');
+  const unitsEl = $('#units');
+  const cvG = $('#cv-ground'), cvF = $('#cv-fx');
+  const gx = cvG.getContext('2d'), fxc = cvF.getContext('2d');
+  let W = 0, H = 0, dpr = 1, mobile = false, k = 1, sc = 1, terrain = null;
+  const events = [];
+
+  TOWERS.forEach(T => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'unit f-' + T.f;
+    b.setAttribute('aria-label', T.name);
+    b.appendChild(towerImg(T));
+    b.addEventListener('click', () => select(T.id));
+    b.addEventListener('focus', () => select(T.id));
+    T.unit = b;
+    unitsEl.appendChild(b);
+  });
+
+  const POS3 = [[.2, .7], [.5, .82], [.8, .7]];
+  const POS9 = { empire: [.56, [.25, .5, .75]], soviet: [.72, [.17, .5, .83]], allies: [.88, [.22, .5, .78]] };
+
+  function placeUnits() {
+    if (!W) return;
+    const all = state.faction === 'all';
+    const vis = visible();
+    const tw = W * (all ? (mobile ? .17 : .105) : (mobile ? .25 : .15));
+    const h = tw * 280 / 240;
+    TOWERS.forEach(T => { T.g = null; T.unit.hidden = true; });
+    vis.forEach(T => {
+      let fx, fy;
+      if (all) { const r = POS9[T.f]; fy = r[0]; fx = r[1][T.slot]; }
+      else { [fx, fy] = POS3[T.slot]; }
+      const bx = fx * W, by = fy * H;
+      const left = bx - tw / 2, top = by - h * 262 / 280;
+      T.g = { bx, by, tw, h, left, top, cx: bx, cy: top + h * 238 / 280, mx: bx, my: top + h * T.muz };
+      const u = T.unit;
+      u.hidden = false;
+      u.style.left = left + 'px';
+      u.style.top = top + 'px';
+      u.style.width = tw + 'px';
+      u.style.height = h + 'px';
+      u.style.zIndex = String(Math.round(by));
+    });
+  }
+
+  function mulberry(a) {
+    return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+  }
+
+  function buildTerrain() {
+    const c = document.createElement('canvas');
+    c.width = Math.round(W * dpr); c.height = Math.round(H * dpr);
+    const x = c.getContext('2d');
+    x.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const rnd = mulberry(7);
+    x.fillStyle = '#12160f';
+    x.fillRect(0, 0, W, H);
+    const tw = 70.7 * k, th = tw / 2;
+    const ox = W * .5, oy = -H * .9;
+    const A = (W * .1 - ox) * 2 / tw, Bq = (H * .15 - oy) * 2 / th;
+    const road = Math.round((Bq - A) / 2);
+    const ore = { x: W * .88, y: H * .2 };
+    const n = Math.ceil((W / tw + H / th) * 1.6) + 4;
+    for (let i = -4; i < n; i++) {
+      for (let j = -n; j < n; j++) {
+        const px = ox + (i - j) * tw / 2, py = oy + (i + j) * th / 2;
+        if (px < -tw || px > W + tw || py < -th || py > H + th) continue;
+        let v = .5 + .22 * Math.sin(i * .31 + j * .13) * Math.cos(j * .27 - i * .09) + .3 * (hash(i * 57.1 + j * 131.7) - .5);
+        let hue = 78 + v * 14, sat = 9 + v * 6, lit = 10 + v * 7;
+        const onRoad = j === road || j === road + 1;
+        if (onRoad) { hue = 32; sat = 12; lit = 17 + hash(i * 3.3 + j) * 3; }
+        x.beginPath();
+        x.moveTo(px, py - th / 2); x.lineTo(px + tw / 2, py); x.lineTo(px, py + th / 2); x.lineTo(px - tw / 2, py); x.closePath();
+        x.fillStyle = `hsl(${hue} ${sat}% ${lit}%)`;
+        x.fill();
+        x.strokeStyle = onRoad ? 'rgba(255,230,190,.05)' : 'rgba(210,230,200,.045)';
+        x.lineWidth = 1;
+        x.stroke();
+        const dOre = Math.hypot(px - ore.x, (py - ore.y) * 2);
+        if (dOre < W * .14 && hash(i * 9.1 + j * 4.7) > .35) {
+          const s = tw * (.12 + hash(i + j * 7) * .14);
+          x.fillStyle = 'hsl(43 70% ' + (38 + hash(i * 2 + j) * 18) + '%)';
+          x.beginPath(); x.moveTo(px, py - s); x.lineTo(px + s, py); x.lineTo(px, py + s * .6); x.lineTo(px - s, py); x.closePath(); x.fill();
+          x.fillStyle = 'rgba(255,240,180,.7)';
+          x.fillRect(px - 1, py - s * .6, 2, 2);
+        }
+      }
+    }
+    for (let i = 0; i < 9; i++) {
+      const cx = rnd() * W, cy = H * (.12 + rnd() * .8), r = (10 + rnd() * 22) * sc;
+      const g = x.createRadialGradient(cx, cy, 0, cx, cy, r);
+      g.addColorStop(0, 'rgba(0,0,0,.55)'); g.addColorStop(.65, 'rgba(0,0,0,.25)'); g.addColorStop(.85, 'rgba(160,150,120,.12)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+      x.save(); x.translate(cx, cy); x.scale(1, .5); x.translate(-cx, -cy);
+      x.fillStyle = g; x.beginPath(); x.arc(cx, cy, r, 0, TAU); x.fill();
+      x.restore();
+    }
+    for (let i = 0; i < 60; i++) {
+      const px = rnd() * W, py = rnd() * H, s = (1 + rnd() * 2.2) * sc;
+      x.fillStyle = 'rgba(190,190,170,' + (.08 + rnd() * .12) + ')';
+      x.beginPath(); x.ellipse(px, py, s * 1.4, s * .8, 0, 0, TAU); x.fill();
+    }
+    const fog = x.createLinearGradient(0, 0, 0, H * .35);
+    fog.addColorStop(0, 'rgba(6,9,12,.65)'); fog.addColorStop(1, 'rgba(6,9,12,0)');
+    x.fillStyle = fog; x.fillRect(0, 0, W, H * .35);
+    return c;
+  }
+
+  const GROUND = [[.14, .34], [.27, .43], [.4, .3], [.53, .4], [.66, .31], [.79, .42], [.34, .52], [.62, .51], [.88, .3]];
+  const AIR = [{ x0: .1, y: .1, v: .045, d: 1 }, { x0: .7, y: .16, v: .055, d: -1 }, { x0: .35, y: .22, v: .038, d: 1 }, { x0: .9, y: .27, v: .05, d: -1 }];
+  const STEALTH = [[.3, .47], [.72, .46]];
+
+  function groundAt(t) {
+    const ys = state.faction === 'all' ? -.09 : 0;
+    return GROUND.map(([gxp, gyp], i) => ({ x: (gxp + Math.sin(t * .35 + i * 1.7) * .012) * W, y: (gyp + ys + Math.cos(t * .3 + i) * .008) * H, i }));
+  }
+  function airAt(t) {
+    return AIR.map(a => {
+      const span = 1.3;
+      let x = ((a.x0 + t * a.v * a.d) % span + span) % span - .15;
+      return { x: x * W, y: a.y * H, sy: (a.y + .2) * H, d: a.d };
+    });
+  }
+  function nearest(from, list, n) {
+    return list.slice().sort((a, b) => dist2(from, a) - dist2(from, b)).slice(0, n);
+  }
+  function dist2(a, b) { return (a.x - b.x) ** 2 + ((a.y - b.y) * 2) ** 2; }
+  function chain(from, list, n) {
+    const used = new Set(), out = [];
+    let cur = from;
+    for (let s = 0; s < n && s < list.length; s++) {
+      let best = -1, bd = Infinity;
+      list.forEach((e, j) => { if (used.has(j)) return; const d = dist2(cur, e); if (d < bd) { bd = d; best = j; } });
+      used.add(best); out.push(list[best]); cur = list[best];
+    }
+    return out;
+  }
+
+  /* ---- drawing primitives ---- */
+  function beam(ctx, pts, color, w, a, core) {
+    if (a <= 0 || pts.length < 2) return;
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    [[w * 5, .1, color], [w * 2.2, .3, color], [w, 1, core || '#ffffff']].forEach(([lw, al, c]) => {
+      ctx.globalAlpha = a * al; ctx.strokeStyle = c; ctx.lineWidth = lw;
+      ctx.beginPath();
+      pts.forEach((p, j) => j ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y));
+      ctx.stroke();
+    });
+    ctx.restore();
+  }
+  function flash(ctx, x, y, r, color, a) {
+    if (a <= 0 || r <= 0) return;
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.globalAlpha = Math.min(1, a);
+    const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+    g.addColorStop(0, '#ffffff'); g.addColorStop(.25, color); g.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.fill();
+    ctx.restore();
+  }
+  function jag(a, b, n, amp, seed) {
+    const pts = [a];
+    const dx = b.x - a.x, dy = b.y - a.y, len = Math.hypot(dx, dy) || 1;
+    const nx = -dy / len, ny = dx / len;
+    for (let i = 1; i < n; i++) {
+      const q = i / n, o = (hash(seed + i * 3.7) - .5) * 2 * amp * Math.sin(Math.PI * q);
+      pts.push({ x: a.x + dx * q + nx * o, y: a.y + dy * q + ny * o });
+    }
+    pts.push(b);
+    return pts;
+  }
+  function wavy(a, b, n, amp, ph) {
+    const pts = [];
+    const dx = b.x - a.x, dy = b.y - a.y, len = Math.hypot(dx, dy) || 1;
+    const nx = -dy / len, ny = dx / len;
+    for (let i = 0; i <= n; i++) {
+      const q = i / n, o = Math.sin(q * 9 + ph) * amp * Math.sin(Math.PI * q);
+      pts.push({ x: a.x + dx * q + nx * o, y: a.y + dy * q + ny * o });
+    }
+    return pts;
+  }
+  function ell(ctx, x, y, rx, ry) { ctx.beginPath(); ctx.ellipse(x, y, Math.max(0, rx), Math.max(0, ry), 0, 0, TAU); }
+
+  function drawTank(ctx, e) {
+    const w = 10 * sc, h = 5 * sc;
+    ctx.save();
+    ctx.translate(e.x, e.y);
+    ctx.fillStyle = 'rgba(0,0,0,.35)'; ell(ctx, 1.5 * sc, 2.5 * sc, w * 1.2, h * 1.2); ctx.fill();
+    ctx.globalAlpha = .65; ctx.strokeStyle = COLOR.hostile; ctx.lineWidth = 1.2; ell(ctx, 0, 1.5 * sc, w * 1.45, h * 1.45); ctx.stroke();
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = '#3e423a';
+    ctx.beginPath(); ctx.moveTo(0, -h); ctx.lineTo(w, 0); ctx.lineTo(0, h); ctx.lineTo(-w, 0); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#5a5f52';
+    ctx.beginPath(); ctx.moveTo(0, -h - 2 * sc); ctx.lineTo(w * .8, -2 * sc); ctx.lineTo(0, h * .6 - 2 * sc); ctx.lineTo(-w * .8, -2 * sc); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = '#25281f'; ctx.lineWidth = 2 * sc; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(0, -3 * sc); ctx.lineTo(-3 * sc, 5 * sc); ctx.stroke();
+    ctx.fillStyle = '#2c2f27'; ell(ctx, 0, -3 * sc, 3.6 * sc, 2.3 * sc); ctx.fill();
+    ctx.fillStyle = COLOR.hostile;
+    ctx.beginPath(); ctx.moveTo(-2.5 * sc, -h - 6 * sc); ctx.lineTo(2.5 * sc, -h - 6 * sc); ctx.lineTo(0, -h - 2.5 * sc); ctx.closePath(); ctx.fill();
+    ctx.restore();
+  }
+  function drawAir(ctx, e) {
+    ctx.save();
+    ctx.globalAlpha = .3; ctx.fillStyle = '#000'; ell(ctx, e.x, e.sy, 10 * sc, 3.5 * sc); ctx.fill();
+    ctx.restore();
+    ctx.save();
+    ctx.translate(e.x, e.y); ctx.scale(e.d * sc, sc);
+    ctx.fillStyle = '#3a4048';
+    ctx.beginPath(); ctx.moveTo(13, 0); ctx.lineTo(-7, -8); ctx.lineTo(-3, 0); ctx.lineTo(-7, 8); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = COLOR.hostile; ctx.lineWidth = 1.2; ctx.stroke();
+    ctx.fillStyle = '#7d8790'; ctx.fillRect(-2, -1, 10, 2);
+    ctx.restore();
+    flash(ctx, e.x - 6 * e.d * sc, e.y, 5 * sc, '#ff9a3d', .8);
+  }
+  function frost(ctx, e) {
+    ctx.save();
+    ctx.globalAlpha = .7;
+    ctx.strokeStyle = '#c9f3ff'; ctx.fillStyle = 'rgba(150,225,255,.25)'; ctx.lineWidth = 1.2;
+    const w = 12 * sc, h = 7 * sc;
+    ctx.beginPath(); ctx.moveTo(e.x, e.y - h - 3 * sc); ctx.lineTo(e.x + w, e.y - 1 * sc); ctx.lineTo(e.x, e.y + h); ctx.lineTo(e.x - w, e.y - 1 * sc); ctx.closePath();
+    ctx.fill(); ctx.stroke();
+    ctx.restore();
+  }
+
+  /* ---- tower attack effects ---- */
+  const muzzle = T => ({ x: T.g.mx, y: T.g.my });
+  const FX = {
+    prism: { P: 2.2, still: .2, draw(F, T, p) {
+      const ctx = F.ctx, col = '#7fe3ff', m = muzzle(T);
+      if (p < .5) {
+        const tg = chain(m, F.ground, 3), pts = [m, ...tg], a = 1 - p / .5;
+        for (let i = 0; i < tg.length; i++) {
+          if (p < i * .06) break;
+          beam(ctx, [pts[i], pts[i + 1]], col, (2.4 - i * .5) * sc, a * (1 - i * .15));
+          flash(ctx, pts[i + 1].x, pts[i + 1].y, 15 * sc, col, a);
+        }
+        flash(ctx, m.x, m.y, 14 * sc, col, a);
+      } else if (p > .72) {
+        const q = (p - .72) / .28;
+        flash(ctx, m.x, m.y, q * 12 * sc, col, q * .8);
+      }
+    } },
+    cryo: { P: 2.6, still: .25, draw(F, T, p) {
+      const ctx = F.ctx, col = '#bff0ff', m = muzzle(T);
+      const [tg] = chain(m, F.ground, 1);
+      if (!tg) return;
+      frost(ctx, tg);
+      if (p < .45) {
+        const a = 1 - p / .45;
+        beam(ctx, wavy(m, tg, 18, 3.5 * sc, F.t * 14), '#7fd8ff', 1.8 * sc, a);
+        flash(ctx, tg.x, tg.y, 16 * sc, col, a);
+      }
+      const r = (8 + p * 62) * sc;
+      ctx.save();
+      ctx.globalAlpha = (1 - p) * .9;
+      ctx.strokeStyle = col; ctx.lineWidth = 2 * sc;
+      ell(ctx, tg.x, tg.y, r, r / 2); ctx.stroke();
+      ctx.fillStyle = 'rgba(150,225,255,.07)'; ctx.fill();
+      ctx.fillStyle = '#e6fbff';
+      for (let i = 0; i < 10; i++) {
+        const ang = i / 10 * TAU + p * 1.5, x = tg.x + Math.cos(ang) * r, y = tg.y + Math.sin(ang) * r / 2, s = 2.6 * sc;
+        ctx.beginPath(); ctx.moveTo(x, y - s); ctx.lineTo(x + s * .6, y); ctx.lineTo(x, y + s); ctx.lineTo(x - s * .6, y); ctx.closePath(); ctx.fill();
+      }
+      ctx.restore();
+    } },
+    aegis: { P: 2.0, still: .3, draw(F, T, p) {
+      const ctx = F.ctx, g = T.g, m = muzzle(T);
+      const rx = 200 * k, pulse = .5 + .5 * Math.sin(F.t * 2.2);
+      ctx.save();
+      ctx.strokeStyle = COLOR.allies[1];
+      ctx.globalAlpha = .1 + .08 * pulse; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.ellipse(g.cx, g.cy, rx, rx * .62, 0, Math.PI, TAU); ctx.stroke();
+      ctx.beginPath(); ctx.ellipse(g.cx, g.cy, rx * .55, rx * .45, 0, Math.PI, TAU); ctx.stroke();
+      ctx.restore();
+      salvo(F, m, nearest(m, F.air, 2), p, 2, .18, .45, '#d6ecff', 50);
+    } },
+    tesla: { P: 1.8, still: .12, draw(F, T, p) {
+      const ctx = F.ctx, col = '#6ad0ff', m = muzzle(T);
+      const seed = F.reduced ? 7 : Math.floor(F.t * 24);
+      for (let i = 0; i < 2; i++) {
+        const ang = hash(seed * 3 + i + T.idx) * TAU;
+        const end = { x: m.x + Math.cos(ang) * 14 * sc, y: m.y + Math.sin(ang) * 10 * sc };
+        beam(ctx, jag(m, end, 4, 4 * sc, seed * 7 + i), col, .8 * sc, .7);
+      }
+      if (p < .38) {
+        const tg = chain(m, F.ground, 4), pts = [m, ...tg], a = p < .3 ? 1 : 1 - (p - .3) / .08;
+        for (let i = 0; i < tg.length; i++) {
+          beam(ctx, jag(pts[i], pts[i + 1], 10, 11 * sc, seed * 13 + i * 5), col, (2.2 - i * .35) * sc, a);
+          flash(ctx, pts[i + 1].x, pts[i + 1].y, 18 * sc, col, a * .9);
+        }
+        flash(ctx, m.x, m.y, 22 * sc, col, a);
+      }
+    } },
+    flak: { P: 1.6, still: .4, draw(F, T, p, c) {
+      const ctx = F.ctx, m = muzzle(T);
+      const tg = nearest(m, F.air, 3);
+      if (!tg.length) return;
+      for (let i = 0; i < 6; i++) {
+        const st = i / 6;
+        let q = p - st, cc = c;
+        if (q < 0) { q += 1; cc -= 1; }
+        if (q > .55) continue;
+        const e = tg[i % tg.length];
+        const pt = { x: e.x + (hash(cc * 17 + i) - .5) * 50 * sc, y: e.y + (hash(cc * 29 + i) - .5) * 26 * sc };
+        const gun = { x: m.x + ((i % 3) - 1) * 9 * sc, y: m.y };
+        if (q < .12) {
+          const head = lerp(gun, pt, q / .12), tail = lerp(gun, pt, Math.max(0, q / .12 - .25));
+          beam(ctx, [tail, head], '#ffd27a', 1 * sc, .9, '#fff2cc');
+        } else {
+          const b = (q - .12) / .43;
+          ctx.save();
+          ctx.globalAlpha = (1 - b) * .75; ctx.fillStyle = '#3b3a35';
+          ctx.beginPath(); ctx.arc(pt.x, pt.y, (4 + b * 13) * sc, 0, TAU); ctx.fill();
+          ctx.restore();
+          if (b < .35) flash(ctx, pt.x, pt.y, (8 + b * 22) * sc, '#ff8a3d', 1 - b / .35);
+        }
+      }
+    } },
+    inferno: { P: 3, still: 0, draw(F, T) {
+      const ctx = F.ctx, g = T.g, R = T.range * k, t = F.t;
+      const cx = g.cx, cy = g.cy - g.h * .05;
+      ctx.save();
+      ctx.globalCompositeOperation = 'lighter';
+      for (let jet = 0; jet < 3; jet++) {
+        const base = t * .9 + jet * TAU / 3;
+        for (let i = 0; i < 22; i++) {
+          const q = (t * 1.3 + i / 22 + jet * .17) % 1;
+          const ang = base + (hash(i * 7 + jet * 31) - .5) * .55;
+          const d = (.18 + q * .82) * R;
+          const x = cx + Math.cos(ang) * d, y = cy + Math.sin(ang) * d * .5 - Math.sin(q * Math.PI) * 8 * sc;
+          ctx.globalAlpha = (1 - q) * .75;
+          ctx.fillStyle = q < .25 ? '#fff0a0' : q < .55 ? '#ff9a2e' : '#d8401f';
+          ctx.beginPath(); ctx.arc(x, y, (2 + q * 7) * sc, 0, TAU); ctx.fill();
+        }
+      }
+      for (let i = 0; i < 7; i++) {
+        const ang = i / 7 * TAU + .4, d = R * (.55 + hash(i) * .35);
+        const fl = .45 + .35 * Math.sin(t * 9 + i * 2.1);
+        ctx.globalAlpha = fl * .6; ctx.fillStyle = '#ff7a22';
+        ell(ctx, cx + Math.cos(ang) * d, cy + Math.sin(ang) * d * .5, 5 * sc, 2.4 * sc); ctx.fill();
+      }
+      ctx.restore();
+    } },
+    tengu: { P: 2.4, still: .32, draw(F, T, p) {
+      salvo(F, muzzle(T), nearest(muzzle(T), F.air, 2), p, 4, .07, .5, '#3fe0c5', 80);
+    } },
+    wave: { P: 3.2, still: .66, draw(F, T, p) {
+      const ctx = F.ctx, g = T.g, col = '#3fe0c5', m = muzzle(T);
+      const [tg] = nearest({ x: g.cx, y: g.cy }, F.ground, 1);
+      if (!tg) return;
+      const rx = T.range * k, ry = rx / 2;
+      const ang = Math.atan2((tg.y - g.cy) * 2, tg.x - g.cx);
+      const end = { x: g.cx + Math.cos(ang) * rx, y: g.cy + Math.sin(ang) * ry };
+      if (p < .55) {
+        const q = p / .55;
+        flash(ctx, m.x, m.y, (4 + q * 16) * sc, col, .4 + q * .6);
+        ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = col;
+        for (let i = 0; i < 12; i++) {
+          const a = i / 12 * TAU + F.t * 2, r = (1 - ((q * 3 + i / 12) % 1)) * 42 * sc;
+          ctx.globalAlpha = .7; ctx.beginPath(); ctx.arc(m.x + Math.cos(a) * r, m.y + Math.sin(a) * r * .6, 1.6 * sc, 0, TAU); ctx.fill();
+        }
+        ctx.restore();
+      } else if (p < .9) {
+        const q = (p - .55) / .35, reach = Math.min(1, q * 1.5), a = q < .66 ? 1 : 1 - (q - .66) / .34;
+        const head = lerp(m, end, reach);
+        beam(ctx, [m, head], col, 5 * sc * (1 - q * .4), a, '#e8fffb');
+        const dir = Math.atan2(end.y - m.y, end.x - m.x);
+        ctx.save(); ctx.strokeStyle = col; ctx.lineWidth = 2 * sc;
+        for (let i = 0; i < 4; i++) {
+          const f = reach - i * .07;
+          if (f < 0) continue;
+          const pt = lerp(m, end, f);
+          ctx.save(); ctx.translate(pt.x, pt.y); ctx.rotate(dir);
+          ctx.globalAlpha = a * (1 - i * .22);
+          ell(ctx, 0, 0, 4 * sc, (17 - i * 3) * sc); ctx.stroke();
+          ctx.restore();
+        }
+        ctx.restore();
+        const dx = end.x - m.x, dy = end.y - m.y, L2 = dx * dx + dy * dy || 1;
+        F.ground.forEach(e => {
+          const tt = ((e.x - m.x) * dx + (e.y - m.y) * dy) / L2;
+          const px = m.x + dx * tt, py = m.y + dy * tt;
+          if (tt > 0 && tt < reach && Math.hypot(e.x - px, e.y - py) < 20 * sc) flash(ctx, e.x, e.y, 18 * sc, col, a);
+        });
+      }
+    } },
+    kitsune: { P: 2.6, still: .2, draw(F, T, p) {
+      const ctx = F.ctx, g = T.g, R = T.range * k;
+      ctx.save();
+      for (let i = 0; i < 3; i++) {
+        const q = (p + i / 3) % 1;
+        ctx.globalAlpha = (1 - q) * .8;
+        ctx.strokeStyle = i % 2 ? '#3fe0c5' : '#d48cff';
+        ctx.lineWidth = (2.6 - q * 1.6) * sc;
+        ell(ctx, g.cx, g.cy, q * R, q * R / 2); ctx.stroke();
+      }
+      ctx.restore();
+      flash(ctx, g.mx, g.my, (11 + Math.sin(F.t * 3) * 3) * sc, '#d48cff', .7);
+    } }
+  };
+
+  function salvo(F, m, tg, p, n, gap, dur, col, bend) {
+    const ctx = F.ctx;
+    if (!tg.length) return;
+    for (let i = 0; i < n; i++) {
+      const e = tg[i % tg.length];
+      const q = (p - i * gap) / dur;
+      const side = (i % 2 ? 1 : -1) * (1 + (i >> 1) * .6);
+      const c = { x: m.x + side * bend * sc, y: m.y - 80 * sc };
+      if (q >= 0 && q <= 1) {
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.fillStyle = col;
+        for (let j = 12; j >= 1; j--) {
+          const qq = q - j * .03;
+          if (qq < 0) continue;
+          const pt = bez(m, c, e, qq);
+          ctx.globalAlpha = (1 - j / 12) * .5;
+          ctx.beginPath(); ctx.arc(pt.x, pt.y, (.8 + (12 - j) * .12) * sc, 0, TAU); ctx.fill();
+        }
+        ctx.restore();
+        const h = bez(m, c, e, q);
+        flash(ctx, h.x, h.y, 6 * sc, col, 1);
+      } else if (q > 1 && q < 1.6) {
+        const a = 1 - (q - 1) / .6;
+        flash(ctx, e.x, e.y, (8 + (q - 1) * 30) * sc, '#ffb36b', a);
+      }
+    }
+  }
+
+  function drawRange(ctx, T, t) {
+    const g = T.g, col = COLOR[T.f][1];
+    const rx = T.range * k, ry = rx / 2;
+    ctx.save();
+    const grd = ctx.createRadialGradient(g.cx, g.cy, 0, g.cx, g.cy, rx);
+    grd.addColorStop(0, 'rgba(0,0,0,0)'); grd.addColorStop(.75, 'rgba(0,0,0,0)'); grd.addColorStop(1, col);
+    ctx.translate(g.cx, g.cy); ctx.scale(1, .5); ctx.translate(-g.cx, -g.cy);
+    ctx.globalAlpha = .16; ctx.fillStyle = grd;
+    ctx.beginPath(); ctx.arc(g.cx, g.cy, rx, 0, TAU); ctx.fill();
+    ctx.restore();
+    ctx.save();
+    ctx.strokeStyle = col; ctx.lineWidth = 1.6; ctx.globalAlpha = .85;
+    ctx.setLineDash([10, 6]); ctx.lineDashOffset = -t * 18;
+    ell(ctx, g.cx, g.cy, rx, ry); ctx.stroke();
+    ctx.setLineDash([]);
+    const extra = T.fx === 'aegis' ? [200, 'щит −35%'] : T.fx === 'kitsune' ? [350, 'виявлення 350'] : null;
+    if (extra) {
+      ctx.globalAlpha = .6; ctx.setLineDash([3, 5]);
+      ell(ctx, g.cx, g.cy, extra[0] * k, extra[0] * k / 2); ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    ctx.globalAlpha = 1;
+    ctx.font = '600 ' + Math.round(11 * Math.min(1.2, sc)) + 'px "JetBrains Mono", ui-monospace, monospace';
+    ctx.fillStyle = col;
+    const label = 'R ' + T.range;
+    const lw = ctx.measureText(label).width;
+    let lx = g.cx + rx * .72, ly = g.cy + ry * .72 + 14;
+    lx = Math.min(W - lw - 8, Math.max(8, lx));
+    ly = Math.min(H - 26, ly);
+    ctx.fillText(label, lx, ly);
+    if (extra) {
+      const ex = Math.min(W - 110, g.cx + extra[0] * k * .72 + 4), ey = Math.min(H - 40, g.cy + extra[0] * k * .36 + 12);
+      ctx.globalAlpha = .75; ctx.fillText(extra[1], Math.max(8, ex), ey);
+    }
+    ctx.restore();
+  }
+
+  function drawSelect(ctx, T) {
+    const g = T.g, col = COLOR[T.f][1];
+    const x0 = g.left + g.tw * .1, x1 = g.left + g.tw * .9, y0 = g.top + g.h * .03, y1 = g.top + g.h * .97, L = 10 * sc;
+    ctx.save();
+    ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.globalAlpha = .9;
+    ctx.beginPath();
+    ctx.moveTo(x0, y0 + L); ctx.lineTo(x0, y0); ctx.lineTo(x0 + L, y0);
+    ctx.moveTo(x1 - L, y0); ctx.lineTo(x1, y0); ctx.lineTo(x1, y0 + L);
+    ctx.moveTo(x0, y1 - L); ctx.lineTo(x0, y1); ctx.lineTo(x0 + L, y1);
+    ctx.moveTo(x1 - L, y1); ctx.lineTo(x1, y1); ctx.lineTo(x1, y1 - L);
+    ctx.stroke();
+    const bw = (x1 - x0) * .72, bx = (x0 + x1) / 2 - bw / 2, by = y0 - 9 * sc, seg = 10, sw = bw / seg;
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = 'rgba(0,0,0,.7)'; ctx.fillRect(bx - 2, by - 2, bw + 3, 4 * sc + 4);
+    ctx.fillStyle = COLOR.ok;
+    for (let i = 0; i < seg; i++) ctx.fillRect(bx + i * sw, by, sw - 1, 4 * sc);
+    ctx.restore();
+  }
+
+  function draw(now) {
+    if (!W || !terrain) return;
+    const t = reduced ? 3.2 : now / 1000;
+    const F = { t, reduced, ground: groundAt(t), air: airAt(t), ctx: null };
+    const vis = visible().filter(T => T.g);
+    const S = sel();
+
+    gx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    gx.clearRect(0, 0, W, H);
+    gx.drawImage(terrain, 0, 0, W, H);
+    if (S.g) drawRange(gx, S, t);
+    F.ground.forEach(e => drawTank(gx, e));
+
+    const c = fxc;
+    c.setTransform(dpr, 0, 0, dpr, 0, 0);
+    c.clearRect(0, 0, W, H);
+    F.ctx = c;
+    if (vis.some(T => T.fx === 'kitsune')) {
+      STEALTH.forEach(([sx, sy], i) => {
+        const x = sx * W, y = (sy + (state.faction === 'all' ? -.09 : 0)) * H;
+        c.save();
+        c.globalAlpha = .35 + .3 * (.5 + .5 * Math.sin(t * 2.4 + i * 2));
+        c.strokeStyle = '#d48cff'; c.setLineDash([3, 3]); c.lineWidth = 1.4;
+        ell(c, x, y, 11 * sc, 5.5 * sc); c.stroke();
+        c.setLineDash([]); c.fillStyle = '#d48cff';
+        c.font = '600 ' + Math.round(10 * Math.min(1.2, sc)) + 'px "JetBrains Mono", monospace';
+        c.textAlign = 'center'; c.fillText('?', x, y + 3.5 * sc);
+        c.restore();
+      });
+    }
+    vis.forEach(T => {
+      const def = FX[T.fx];
+      const ph = (t + T.idx * .37) / def.P;
+      const cyc = Math.floor(ph);
+      def.draw(F, T, reduced ? def.still : ph - cyc, cyc);
+    });
+    F.air.forEach(e => drawAir(c, e));
+    if (S.g) drawSelect(c, S);
+
+    for (let i = events.length - 1; i >= 0; i--) {
+      const ev = events[i], a = (now - ev.start) / 1200;
+      if (a >= 1 || !ev.T.g) { events.splice(i, 1); continue; }
+      const g = ev.T.g;
+      c.save();
+      c.strokeStyle = COLOR.ok; c.lineWidth = 2; c.globalAlpha = 1 - a;
+      ell(c, g.cx, g.cy, g.tw * (.3 + a * .6), g.tw * (.15 + a * .3)); c.stroke();
+      c.restore();
+      flash(c, g.cx, g.cy - g.h * .3, g.tw * .45 * (1 - a), COLOR.ok, (1 - a) * .6);
+    }
+  }
+
+  /* ---- loop control ---- */
+  let raf = 0, sceneOnScreen = true;
+  function tick(now) { raf = 0; draw(now); ensureLoop(); }
+  function ensureLoop() {
+    if (raf) return;
+    if (reduced) { if (events.length) events.length = 0; return; }
+    if (!sceneOnScreen || document.hidden) return;
+    raf = requestAnimationFrame(tick);
+  }
+  function drawStatic() { if (reduced) draw(performance.now()); else ensureLoop(); }
+
+  function layout() {
+    const w = scene.clientWidth, h = scene.clientHeight;
+    if (!w || !h) return;
+    W = w; H = h;
+    mobile = W < 560;
+    dpr = Math.min(2, window.devicePixelRatio || 1);
+    [cvG, cvF].forEach(cv => { cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); });
+    k = W * (mobile ? .5 : .4) / 600;
+    sc = Math.max(.62, W / 820);
+    terrain = buildTerrain();
+    placeUnits();
+    draw(performance.now());
+    ensureLoop();
+  }
+
+  new ResizeObserver(layout).observe(scene);
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(entries => {
+      sceneOnScreen = entries[0].isIntersecting;
+      ensureLoop();
+    }).observe(scene);
+  }
+  document.addEventListener('visibilitychange', ensureLoop);
+  const onMotion = () => { reduced = reduceMQ.matches; drawStatic(); };
+  if (reduceMQ.addEventListener) reduceMQ.addEventListener('change', onMotion);
+
+  /* ================= Init ================= */
+  if (!visible().includes(sel())) state.sel = visible()[0].id;
+  renderCredits();
+  renderFaction();
+  sortTable();
+  renderSelection();
+  layout();
+})();
+</script>

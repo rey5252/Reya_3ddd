@@ -89,3 +89,17 @@ END
 
 - `preview/art/<TowerId>.svg`: `viewBox="0 0 240 280"`, прозорий фон, вигляд 3/4 згори (ізометрія, як камера RA3), вежа стоїть на ромбоподібній плиті-фундаменті, низ плити ≈ y=262, центр по x=120. Без зовнішніх ресурсів, шрифтів, `<script>`, `<image>`. Унікальні `id` всередині SVG мають префікс `<TowerId>-` (щоб не конфліктували при вбудовуванні кількох SVG на одну сторінку).
 - Палітри: Allies — сталево-синій `#2f6fd6`, білий `#eef3fb`, хром `#9fb3c8`, акцент призми `#7fe3ff`; Soviet — червоний `#c62b1f`, оливкова сталь `#5b5f4a`, іржа `#8a4b2a`, акцент тесли `#6ad0ff`; Empire — білий `#f4f1ec`, багряний `#c8102e`, чорний `#1d1d22`, акцент `#3fe0c5`.
+
+## 3D-моделі (`models/`)
+
+Кожна вежа має власну 3D-модель (не лише перефарбовану ванільну). Джерело — процедурний генератор на Python, результат — glTF 2.0 (`.glb`), який далі конвертується в W3X для гри (Blender + плагін W3D/W3X, див. `scripts/blender_export_w3x.py`).
+
+- Бібліотека: `models/meshkit.py` (лише numpy). Примітиви: `box`, `cylinder`, `cone`, `disc`, `sphere`, `torus`, `lathe`, `extrude`, `ngon`, `crystal`, `tube_between`, `radial`, `merge`, `foundation_plate`; `Model.material(...)`, `Model.node(...)`, `Node.node(...)`, `Node.add(mesh, material)`, `rgb('#hex', k)`.
+- Генератор: `models/towers/<TowerId>.py`, запуск `python3 -I models/towers/<TowerId>.py` → пише `models/glb/<TowerId>.glb` (шлях рахувати від розташування скрипта; `sys.path` доповнювати теж від нього).
+- Для Імперії додатково `<TowerId>Nanocore.glb` (компактне наноядро-транспорт, ≤ 2500 трикутників) у тому ж скрипті.
+- Осі: Y — вгору, 1 одиниця ≈ 1 м. Фундамент — `foundation_plate()` 6×6, верх на `PLATE_TOP`; вся вежа в межах |x|,|z| ≤ 3.
+- Орієнтовна висота: Prism 9, Cryo 5, Aegis 7, Tesla 10, Flak 4.5, Inferno 3.5, Tengu 8, Citadel 9, Kitsune 6.
+- Бюджет: 3 000–12 000 трикутників на вежу.
+- Імена вузлів (стануть кістками W3X): корінь `Base`; те, що обертається по горизонталі, — `Turret`; нахил — `Barrel`/`Emitter`; точки пострілу/FX — `FX_Muzzle01`, `FX_Muzzle02`…, `FX_Glow`. Вузол `FX_*` містить крихітний меш-маркер (куб 0.05) у точці кістки.
+- Матеріали: PBR (metallic/roughness), кольори з палітр фракцій вище; світні частини через `emissive=rgb(hex, k)`, k ≤ 2.5.
+- Ім'я моделі в грі (W3X-контейнер): `FT` + назва без префікса фракції, напр. `FTPrismSpire`, `FTTenguSpire`, `FTTenguSpireNanocore`.
