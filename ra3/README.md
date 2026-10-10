@@ -92,19 +92,23 @@ ra3/
    ```
    Уважно читайте вивід: помилки `BinaryAssetBuilder` вказують файл і рядок XML.
 5. **Де лежить результат.** Проміжні файли — у `RA3ModSDK\BuiltMods\`. Готовий мод (`FortressTowers.big`
-   + `FortressTowers_1.0.skudef`) SDK за замовчуванням, наскільки нам відомо, кладе у
-   **`%USERPROFILE%\Documents\Red Alert 3\Other\Mods\FortressTowers\`**.
+   + `FortressTowers_1.0.skudef`) має лежати у власній підтеці теки модів гри:
+   **`%USERPROFILE%\Documents\Red Alert 3\Mods\FortressTowers\`**.
    В окремих інсталяціях/версіях SDK це може бути `%APPDATA%\Red Alert 3\Mods\FortressTowers\`,
    а «Документи» можуть бути перенаправлені (наприклад, в OneDrive) — **перевірте в кінці виводу
    `BuildMod.bat`, куди саме скопійовано `.big` і `.skudef`.**
 
 ## Запуск
 
-- **RA3 Control Center** (лаунчер гри) → **Game Browser** → вкладка **Mods** → виберіть
+- **Steam:** бібліотека → ПКМ по Red Alert 3 → **Властивості** → **Параметри запуску** → впишіть `-ui`.
+  Тоді замість гри відкриється RA3 Control Center → **Game Browser** → вкладка **Mods** →
+  виберіть `FortressTowers` → **Launch Game**. Якщо мода немає у списку — перевірте, що він
+  лежить саме у `Documents\Red Alert 3\Mods\FortressTowers\` (або `%APPDATA%\Red Alert 3\Mods\`).
+- **RA3 Control Center** (EA app / диск) → **Game Browser** → вкладка **Mods** → виберіть
   `FortressTowers` → **Launch Game**.
 - **Командний рядок:**
   ```bat
-  RA3.exe -modConfig "%USERPROFILE%\Documents\Red Alert 3\Other\Mods\FortressTowers\FortressTowers_1.0.skudef"
+  RA3.exe -modConfig "%USERPROFILE%\Documents\Red Alert 3\Mods\FortressTowers\FortressTowers_1.0.skudef"
   ```
 - **Скриптом:** `ra3\scripts\launch_mod.bat` (шукає RA3.exe у реєстрі та стандартних теках;
   інший `.skudef` — першим аргументом, свій RA3.exe — змінною `set RA3_EXE=...`).

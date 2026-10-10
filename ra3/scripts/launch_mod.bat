@@ -9,7 +9,7 @@ rem ==========================================================
 
 set "MOD_NAME=FortressTowers"
 set "SKUDEF=%~1"
-if "%SKUDEF%"=="" set "SKUDEF=%USERPROFILE%\Documents\Red Alert 3\Other\Mods\%MOD_NAME%\%MOD_NAME%_1.0.skudef"
+if "%SKUDEF%"=="" set "SKUDEF=%USERPROFILE%\Documents\Red Alert 3\Mods\%MOD_NAME%\%MOD_NAME%_1.0.skudef"
 if not exist "%SKUDEF%" (
     if "%~1"=="" if exist "%APPDATA%\Red Alert 3\Mods\%MOD_NAME%\%MOD_NAME%_1.0.skudef" (
         set "SKUDEF=%APPDATA%\Red Alert 3\Mods\%MOD_NAME%\%MOD_NAME%_1.0.skudef"

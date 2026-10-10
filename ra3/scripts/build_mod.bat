@@ -85,7 +85,7 @@ if not "%BUILD_RC%"=="0" (
 
 echo.
 echo === Готово.
-set "OUT_DIR=%USERPROFILE%\Documents\Red Alert 3\Other\Mods\%MOD_NAME%"
+set "OUT_DIR=%USERPROFILE%\Documents\Red Alert 3\Mods\%MOD_NAME%"
 if exist "%OUT_DIR%\%MOD_NAME%_1.0.skudef" (
     echo     Зібраний мод: "%OUT_DIR%"
 ) else (
