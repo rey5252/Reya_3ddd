@@ -29,7 +29,7 @@ OUT = HERE.parent / "glb"
 GATE_YAW = 45.0          # local +X (beam axis) -> world (1,0,-1)/sqrt2, front +Z -> camera diagonal
 STEP1_TOP = PLATE_TOP + 0.28
 STEP2_TOP = STEP1_TOP + 0.28
-ORB_Y = 2.6
+ORB_Y = 2.45
 
 
 def G(m: Mesh) -> Mesh:
@@ -85,12 +85,12 @@ def materials(m: Model):
     m.material("rope", rgb("#d9c79a"), roughness=0.95)
     m.material("rope_dark", rgb("#a8935f"), roughness=0.95)
     m.material("paper", rgb("#ffffff"), roughness=0.7, emissive=rgb("#ffffff", 0.15))
-    m.material("teal", rgb("#3fe0c5"), roughness=0.25, emissive=rgb("#3fe0c5", 1.25))
+    m.material("teal", rgb("#12a58e"), roughness=0.65, emissive=rgb("#3fe0c5", 1.0))
     m.material("teal_core", rgb("#e8fffb"), roughness=0.2, emissive=rgb("#b8fff2", 2.5))
-    m.material("teal_floor", rgb("#7fe9d6"), roughness=0.5, emissive=rgb("#3fe0c5", 0.55))
-    m.material("teal_orb", rgb("#5ff0d6"), roughness=0.15, emissive=rgb("#3fe0c5", 1.6))
-    m.material("teal_veil", rgb("#3fe0c5"), roughness=0.2, emissive=rgb("#3fe0c5", 0.9), alpha=0.32)
-    m.material("teal_ripple", rgb("#3fe0c5"), roughness=0.3, emissive=rgb("#3fe0c5", 1.1), alpha=0.8)
+    m.material("teal_floor", rgb("#5fcfbd"), roughness=0.8, emissive=rgb("#3fe0c5", 0.35))
+    m.material("teal_orb", rgb("#1fbfa5"), roughness=0.6, emissive=rgb("#3fe0c5", 1.3))
+    m.material("teal_veil", rgb("#12a58e"), roughness=0.7, emissive=rgb("#3fe0c5", 0.8), alpha=0.25)
+    m.material("teal_ripple", rgb("#12a58e"), roughness=0.7, emissive=rgb("#3fe0c5", 1.0), alpha=0.85)
 
 
 # =========================================================================== tower
@@ -101,9 +101,9 @@ def build_tower():
     base = m.node("Base")
 
     # ---------------------------------------------------------------- plate & steps
-    base.add(foundation_plate(), "stone")
-    base.add(box(6.02, 0.06, 6.02, bevel=0.36).translate(0, 0.22, 0), "crimson")
-    base.add(box(6.02, 0.035, 6.02, bevel=0.36).translate(0, 0.07, 0), "black")
+    base.add(foundation_plate(size=5.97), "stone")
+    base.add(box(6.0, 0.06, 6.0, bevel=0.36).translate(0, 0.22, 0), "crimson")
+    base.add(box(6.0, 0.035, 6.0, bevel=0.36).translate(0, 0.07, 0), "black")
     # engraved border lines on the plate top
     for s in (2.62, 2.42):
         L = 2 * s
@@ -191,7 +191,7 @@ def build_tower():
         base.add(G(cylinder(0.245, 0.12, 16).translate(x, 3.35, 0)), "white")
         base.add(G(cylinder(0.255, 0.1, 16).translate(x, 2.3, 0)), "black")
         # rope collar where the shimenawa is tied
-        base.add(G(torus(0.255, 0.05, 16, 6).translate(x, 3.78, 0)), "rope")
+        base.add(G(torus(0.255, 0.05, 16, 6).translate(x, 3.95, 0)), "rope")
 
     # shimenawa: sagging rope in front of the pillars
     RZ = 0.28
@@ -200,7 +200,7 @@ def build_tower():
     for i in range(n + 1):
         t = i / n
         x = -PX + 2 * PX * t
-        y = 3.78 - 0.3 * (1 - (2 * t - 1) ** 2)
+        y = 3.95 - 0.22 * (1 - (2 * t - 1) ** 2)
         z = RZ * (1 - (2 * t - 1) ** 2) ** 0.5 + 0.0
         pts.append((x, y, z))
     for i in range(n):
@@ -208,7 +208,7 @@ def build_tower():
     # shide (zig-zag paper streamers)
     for xs in (-0.62, 0.62):
         t = (xs + PX) / (2 * PX)
-        y0 = 3.78 - 0.3 * (1 - (2 * t - 1) ** 2) - 0.06
+        y0 = 3.95 - 0.22 * (1 - (2 * t - 1) ** 2) - 0.06
         z0 = RZ * (1 - (2 * t - 1) ** 2) ** 0.5 + 0.02
         for k in range(4):
             off = 0.05 if k % 2 == 0 else -0.05
@@ -247,9 +247,9 @@ def build_tower():
                     (0.06, 0.98), (0.0, 1.08)], 16)
     tp = tongue.pos
     tp[:, 0] += 0.14 * (np.clip(tp[:, 1], 0, None) / 1.08) ** 2
-    em.add(tongue.copy().translate(0, ORB_Y - 0.05, 0), "teal_veil")
-    inner = tongue.copy().scale(0.62, 0.78, 0.62)
-    em.add(inner.translate(0, ORB_Y + 0.05, 0), "teal")
+    em.add(tongue.copy().scale(1, 0.95, 1).translate(0, ORB_Y - 0.05, 0), "teal_orb")
+    inner = tongue.copy().scale(0.55, 0.72, 0.55)
+    em.add(inner.translate(0.02, ORB_Y + 0.12, 0.06), "teal_core")
     # two tilted rings
     for roll, yaw in ((25, 0), (-25, 0)):
         em.add(G(torus(1.12, 0.035, 48, 6).rotate(0, 0, roll).rotate(12, 0, 0).translate(0, ORB_Y, 0)), "teal")
