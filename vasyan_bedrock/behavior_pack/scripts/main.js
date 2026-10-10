@@ -1000,39 +1000,83 @@ function argueFromMenu(player, who) {
 // Commands the player types (menu "Дати команду"): Ukrainian or Russian words -> what to do.
 // Klod does it properly, Bobik does it his way.
 
-// [intent, word beginnings, phrases]; the first match wins, so the order matters
-/** @type {[string, string[], string[]][]} */
-const INTENTS = [
-  ["bye", [], ["йди геть", "іди геть", "піди геть", "пішов геть", "уходи", "зникни", "исчезни", "пошел вон", "вали звідси", "вали отсюда"]],
-  ["give_back", ["поверн", "верни", "віддай", "отдай"], []],
-  ["quiet", ["мовч", "помовч", "замовк", "молч", "помолч", "замолч", "тихо", "заткн"], []],
-  ["follow", ["слідуй", "следуй"], ["за мною", "за мной", "йди сюди", "іди сюди", "иди сюда", "ко мне", "до мене"]],
-  ["stay", ["сиди", "стій", "стой", "чекай", "жди", "залишайся", "оставайся", "охороняй", "охраняй"], []],
-  ["argue", ["свар", "посвар", "спор", "поспор", "сперечай", "посперечай", "руга", "поруга", "срач"], []],
-  ["joke", ["анекдот", "жарт", "пожартуй", "шутк", "пошути", "смішн", "смешн", "розсміши", "рассмеши"], []],
-  ["dance", ["танц", "потанц", "станц"], []],
-  ["kill", ["вбий", "вбивай", "убей", "убивай", "атак", "бий", "бей", "монстр", "зомб", "скелет", "павук", "паук", "крипер", "кріпер", "захист", "защит"], []],
-  ["tunnel", ["тунел", "туннел", "шахт", "копа", "покопа", "прокопа", "викопа", "выкопа", "рий", "рой", "вирий", "вырой"], []],
-  ["chop", ["дерев", "руби", "рубай", "зрубай", "сруби", "наруби", "сокир", "топор", "колод", "дров", "бревн"], []],
-  ["bridge", ["міст", "мост"], []],
-  ["build", ["будин", "будуй", "збудуй", "побудуй", "дім", "хат", "дом", "строй", "построй", "укрит", "сховищ", "убежищ", "халуп"], []],
-  ["torches", ["факел", "світл", "свет", "освіт", "освет", "темн", "темряв"], []],
-  ["food", ["їж", "їст", "поїст", "голод", "жрат", "пожрат", "жерт", "хліб", "хлеб", "еда", "еды", "еду", "поесть", "поешь", "кушат", "покуш"], []],
-  ["collect", ["збер", "позбир", "собер", "подбер", "підбер", "лут", "предмет", "підніми", "подними"], []],
-  ["find", ["алмаз", "руд", "знайди", "найди", "шукай", "пошукай", "ищи", "поищи", "залізо", "железо", "золото", "смарагд", "изумруд"], []],
-  ["heal", ["лік", "полікуй", "вилікуй", "леч", "вылечи", "хіл", "хил", "здоров"], []],
-  ["time", ["день", "днем", "вдень", "ніч", "ночь", "сонц", "солнц", "ранок", "утро", "вечір", "вечер"], []],
-];
-
+// Text is compared in a simplified spelling (see canon), so Ukrainian, Russian, surzhyk and the usual
+// typos (й/и/і, е/є/ё) all look the same.
 /** @param {string} text */
+const canon = (text) =>
+  text
+    .toLowerCase()
+    .replace(/[’ʼ`']/g, "")
+    .replace(/ё/g, "е")
+    .replace(/є/g, "е")
+    .replace(/[їі]/g, "и")
+    .replace(/[йы]/g, "и")
+    .replace(/ґ/g, "г");
+
+// [intent, word beginnings, whole words, phrases]; the first match wins, so the order matters
+/** @type {[string, string[], string[], string[]][]} */
+const RAW_INTENTS = [
+  ["bye", [], [], ["йди геть", "іди геть", "піди геть", "пішов геть", "уходи", "зникни", "исчезни", "пошел вон", "вали звідси", "вали отсюда", "до побачення", "до свидания", "бувай", "прощай", "go away"]],
+  ["give_back", ["поверн", "верни", "віддай", "отдай", "вертай"], [], ["give back"]],
+  ["quiet", ["мовч", "помовч", "замовк", "молч", "помолч", "замолч", "тихо", "тихіше", "тише", "тиш", "заткн", "цить", "quiet", "shut"], [], []],
+  ["follow", ["слідуй", "следуй", "ходім", "пішли", "пошли", "йдемо", "follow"], ["идем"], ["за мною", "за мной", "йди сюди", "іди сюди", "иди сюда", "ко мне", "до мене", "давай сюди", "come here"]],
+  ["stay", ["сиди", "стій", "стой", "стоп", "чекай", "почекай", "жди", "подожди", "замри", "залишайся", "оставайся", "охороняй", "охраняй", "stay", "wait", "stop"], ["sit"], []],
+  ["argue", ["свар", "посвар", "спор", "поспор", "сперечай", "посперечай", "руга", "поруга", "срач", "argue"], [], []],
+  ["joke", ["анекдот", "жарт", "пожартуй", "шутк", "пошути", "смішн", "смешн", "розсміши", "рассмеши", "прикол", "розвесел", "развесел", "розваж", "joke", "funny"], [], []],
+  ["dance", ["танц", "потанц", "станц", "денс", "dance"], [], []],
+  ["kill", ["вби", "уби", "убей", "атак", "бий", "бей", "напад", "монстр", "зомб", "скелет", "павук", "паук", "крипер", "кріпер", "ворог", "враг", "мобів", "мобов", "захист", "защит", "kill", "attack", "zombie"], ["моби", "мобы", "мобов"], []],
+  ["tunnel", ["тунел", "туннел", "шахт", "копа", "копни", "покопа", "прокопа", "викопа", "выкопа", "розкопа", "раскопа", "прорий", "пророй", "вирий", "вырой", "dig", "mine", "tunnel"], ["рий", "рой", "рии", "рои"], []],
+  ["chop", ["дерев", "древес", "руби", "рубай", "зрубай", "сруби", "наруби", "зруб", "сокир", "топор", "колод", "дров", "бревн", "дуб", "берез", "ялин", "сосн", "chop", "tree", "wood"], [], []],
+  ["bridge", ["міст", "мост", "bridge"], [], []],
+  ["build", ["будин", "будуй", "збудуй", "побудуй", "збуд", "побуд", "будуват", "дім", "хат", "дом", "строй", "построй", "постро", "строит", "укрит", "сховищ", "убежищ", "халуп", "build", "house", "shelter"], [], []],
+  ["torches", ["факел", "світл", "свет", "освіт", "освет", "темн", "темряв", "ліхтар", "фонар", "torch", "light", "dark"], [], []],
+  ["food", ["їж", "їст", "поїст", "голод", "жрат", "пожрат", "жерт", "хліб", "хлеб", "еда", "еды", "поесть", "поешь", "кушат", "покуш", "хав", "харч", "мяс", "мясо", "яблук", "яблок", "food", "eat", "hungry"], ["еду", "їсти"], []],
+  ["collect", ["збер", "позбир", "собер", "подбер", "підбер", "забер", "лут", "предмет", "підніми", "подними", "collect", "loot", "pick"], [], []],
+  ["find", ["алмаз", "руд", "знайди", "найди", "шукай", "пошукай", "шука", "ищи", "поищи", "иска", "поиск", "пошук", "залізо", "железо", "золото", "смарагд", "изумруд", "скарб", "сокровищ", "find", "diamond", "ore"], [], []],
+  ["heal", ["лік", "полікуй", "вилікуй", "вилік", "леч", "вылечи", "полеч", "хіл", "хил", "здоров", "heal"], ["хп"], []],
+  ["time", ["сонц", "солнц", "сонеч", "світан", "рассвет"], ["день", "днем", "вдень", "ніч", "ночь", "ночью", "вночі", "ранок", "утро", "вечір", "вечер", "day", "night"], []],
+];
+/** @type {[string, string[], string[], string[]][]} */
+const INTENTS = RAW_INTENTS.map(([intent, stems, words, phrases]) => [intent, stems.map(canon), words.map(canon), phrases.map(canon)]);
+
+/** One order: which intent and who it is for ("bobik", "klod", "both" or undefined: whoever was asked). */
+/** @typedef {{intent: string, to?: "bobik" | "klod" | "both"}} Order */
+
+/** @param {string} text @returns {string} */
 function parseIntent(text) {
-  const t = text.toLowerCase().replace(/ё/g, "е").replace(/[’ʼ`]/g, "'");
-  const words = t.split(/[^a-zа-яіїєґ']+/).filter(Boolean);
-  for (const [intent, stems, phrases] of INTENTS) {
+  const t = canon(text);
+  const words = t.split(/[^a-zа-яь]+/).filter(Boolean);
+  for (const [intent, stems, whole, phrases] of INTENTS) {
     if (phrases.some((ph) => t.includes(ph))) return intent;
-    if (words.some((w) => stems.some((st) => w.startsWith(st)))) return intent;
+    if (words.some((w) => whole.includes(w) || stems.some((st) => w.startsWith(st)))) return intent;
   }
   return "unknown";
+}
+
+/** @param {string} text @returns {"bobik" | "klod" | "both" | undefined} */
+function addressee(text) {
+  const words = canon(text).split(/[^a-zа-яь]+/);
+  if (words.some((w) => ["оба", "обидва", "обое", "обоє", "обоe", "двоє", "двое", "both"].includes(w))) return "both";
+  const k = words.some((w) => w.startsWith("клод") || w === "klod" || w === "claude");
+  const b = words.some((w) => w.startsWith("бобик") || w.startsWith("васян") || w === "bobik");
+  return k && b ? "both" : k ? "klod" : b ? "bobik" : undefined;
+}
+
+/** Splits "зрубай дерево і збудуй дім" into orders (at most three); a name carries over to the next ones. @param {string} text @returns {Order[]} */
+function parseCommands(text) {
+  const parts = canon(text)
+    .split(/[,.;!?]+|\s(?:и|та|а|потим|потом|затем|then|and)\s/)
+    .map((x) => x.trim())
+    .filter(Boolean);
+  /** @type {Order[]} */
+  const orders = [];
+  let to;
+  for (const part of parts) {
+    to = addressee(part) ?? to;
+    const intent = parseIntent(part);
+    if (intent !== "unknown" && !orders.some((o) => o.intent === intent && o.to === to)) orders.push({ intent, to });
+  }
+  return orders.length ? orders.slice(0, 3) : [{ intent: "unknown", to: addressee(text) }];
 }
 
 /** @typedef {{key: string, run?: () => void, undo?: () => void} | false} Job */
@@ -1410,12 +1454,24 @@ function giveBack(player, bobik) {
 }
 
 /**
- * Carries out a typed command.
+ * Carries out a typed command: every order in it, by whoever it is addressed to.
  * @param {Player} player @param {Entity} who @param {string} text
  */
 function command(player, who, text) {
-  const intent = parseIntent(text);
   const { bobik, klod } = near(player);
+  for (const { intent, to } of parseCommands(text)) {
+    const targets = (to === "both" ? [bobik, klod] : to === "klod" ? [klod] : to === "bobik" ? [bobik] : [who]).filter(Boolean);
+    // asked for the one who is not here: the one who is says he can't
+    if (!targets.length) say(player, who, "cmd_cant", { important: true });
+    for (const target of targets) order(player, target, intent, bobik, klod);
+  }
+}
+
+/**
+ * One order for one companion.
+ * @param {Player} player @param {Entity} who @param {string} intent @param {Entity} [bobik] @param {Entity} [klod]
+ */
+function order(player, who, intent, bobik, klod) {
   const isBobik = who.typeId === BOBIK;
   // the things both do the same way
   switch (intent) {
