@@ -1,0 +1,108 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 280" width="240" height="280">
+<title>Хвильова цитадель</title>
+<defs>
+<linearGradient id="JapanWaveCitadel-wh" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff"/><stop offset=".35" stop-color="#f4f1ec"/><stop offset=".75" stop-color="#c4bfb7"/><stop offset="1" stop-color="#8a857e"/></linearGradient>
+<linearGradient id="JapanWaveCitadel-whv" x1="0" y1="0" x2=".6" y2="1"><stop offset="0" stop-color="#fff"/><stop offset=".5" stop-color="#f4f1ec"/><stop offset="1" stop-color="#b9b3aa"/></linearGradient>
+<linearGradient id="JapanWaveCitadel-cr" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#f04a63"/><stop offset=".4" stop-color="#c8102e"/><stop offset="1" stop-color="#6a0818"/></linearGradient>
+<linearGradient id="JapanWaveCitadel-bk" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#4a4a54"/><stop offset=".45" stop-color="#1d1d22"/><stop offset="1" stop-color="#0a0a0d"/></linearGradient>
+<linearGradient id="JapanWaveCitadel-pt" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f2efe9"/><stop offset="1" stop-color="#a9a49c"/></linearGradient>
+<linearGradient id="JapanWaveCitadel-pl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d9d4cc"/><stop offset="1" stop-color="#a39e96"/></linearGradient>
+<linearGradient id="JapanWaveCitadel-pr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8b867f"/><stop offset="1" stop-color="#5e5a55"/></linearGradient>
+<radialGradient id="JapanWaveCitadel-sh" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#000" stop-opacity=".45"/><stop offset=".6" stop-color="#000" stop-opacity=".22"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
+<radialGradient id="JapanWaveCitadel-tg" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#eafffb"/><stop offset=".35" stop-color="#3fe0c5" stop-opacity=".9"/><stop offset="1" stop-color="#3fe0c5" stop-opacity="0"/></radialGradient>
+<radialGradient id="JapanWaveCitadel-orb" cx=".38" cy=".35" r=".65"><stop offset="0" stop-color="#fff"/><stop offset=".3" stop-color="#b8fff2"/><stop offset=".7" stop-color="#3fe0c5"/><stop offset="1" stop-color="#0e7d6d"/></radialGradient>
+<filter id="JapanWaveCitadel-glow" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="2.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+<filter id="JapanWaveCitadel-soft" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="3"/></filter>
+</defs>
+<ellipse cx="130" cy="244" rx="116" ry="40" fill="url(#JapanWaveCitadel-sh)"/>
+<path d="M30 207 L120 252 L120 262 L30 217Z" fill="url(#JapanWaveCitadel-pl)"/>
+<path d="M120 252 L210 207 L210 217 L120 262Z" fill="url(#JapanWaveCitadel-pr)"/>
+<path d="M30 211 L120 256 L210 211" fill="none" stroke="#c8102e" stroke-width="2"/>
+<path d="M30 216.5 L120 261.5 L210 216.5" fill="none" stroke="#1d1d22" stroke-width="1.2"/>
+<path d="M120 162 L210 207 L120 252 L30 207Z" fill="url(#JapanWaveCitadel-pt)" stroke="#1d1d22" stroke-width="1.4" stroke-linejoin="round"/>
+<path d="M120 170 L194 207 L120 244 L46 207Z" fill="none" stroke="#8d887f" stroke-width=".8"/>
+<path d="M120 176 L182 207 L120 238 L58 207Z" fill="#000" fill-opacity=".05" stroke="#fff" stroke-opacity=".6" stroke-width=".6"/>
+<path d="M75 184.5 L83 188.5 M157 225.5 L165 229.5 M165 184.5 L157 188.5 M83 225.5 L75 229.5" stroke="#7d786f" stroke-width=".8"/>
+<path d="M38 207 L48 202 L48 212Z" fill="#c8102e"/>
+<path d="M202 207 L192 202 L192 212Z" fill="#c8102e"/>
+<path d="M120 246 L128 242 L112 242Z" fill="#c8102e"/>
+<ellipse cx="54" cy="207" rx="3" ry="1.6" fill="#3fe0c5" filter="url(#JapanWaveCitadel-glow)"/>
+<ellipse cx="186" cy="207" rx="3" ry="1.6" fill="#3fe0c5" filter="url(#JapanWaveCitadel-glow)"/>
+<ellipse cx="120" cy="168" rx="3" ry="1.6" fill="#3fe0c5" filter="url(#JapanWaveCitadel-glow)"/>
+<path d="M62 186 L42 214 L46 222 L66 210Z" fill="url(#JapanWaveCitadel-wh)" stroke="#1d1d22" stroke-width="1"/>
+<path d="M48 207 L44 213" stroke="#c8102e" stroke-width="2.5"/>
+<path d="M178 186 L198 214 L194 222 L174 210Z" fill="url(#JapanWaveCitadel-pr)" stroke="#1d1d22" stroke-width="1"/>
+<path d="M192 207 L196 213" stroke="#c8102e" stroke-width="2.5"/>
+<path d="M64 182 L56 214 A64 26 0 0 0 184 214 L176 182 A56 23 0 0 1 64 182Z" fill="url(#JapanWaveCitadel-wh)" stroke="#1d1d22" stroke-width="1.3"/>
+<path d="M56 207 A64 26 0 0 0 184 207 L184 214 A64 26 0 0 1 56 214Z" fill="url(#JapanWaveCitadel-bk)"/>
+<path d="M63.5 186 A56.5 23 0 0 0 176.5 186 L176.5 190 A56.5 23 0 0 1 63.5 190Z" fill="url(#JapanWaveCitadel-cr)"/>
+<path d="M169.4 201.5 L174.6 220" stroke="#8d887f" stroke-width=".8"/>
+<path d="M156.6 207.6 L160.5 226.9" stroke="#8d887f" stroke-width=".8"/>
+<path d="M139.5 211.6 L141.5 231.4" stroke="#8d887f" stroke-width=".8"/>
+<path d="M120 213 L120 233" stroke="#8d887f" stroke-width=".8"/>
+<path d="M100.5 211.6 L98.5 231.4" stroke="#8d887f" stroke-width=".8"/>
+<path d="M83.4 207.6 L79.5 226.9" stroke="#8d887f" stroke-width=".8"/>
+<path d="M70.6 201.5 L65.4 220" stroke="#8d887f" stroke-width=".8"/>
+<rect x="162.5" y="212.7" width="7" height="2.2" rx="1" fill="#3fe0c5" filter="url(#JapanWaveCitadel-glow)"/>
+<rect x="146.5" y="218.2" width="7" height="2.2" rx="1" fill="#3fe0c5" filter="url(#JapanWaveCitadel-glow)"/>
+<rect x="86.5" y="218.2" width="7" height="2.2" rx="1" fill="#3fe0c5" filter="url(#JapanWaveCitadel-glow)"/>
+<rect x="70.5" y="212.7" width="7" height="2.2" rx="1" fill="#3fe0c5" filter="url(#JapanWaveCitadel-glow)"/>
+<ellipse cx="120" cy="182" rx="56" ry="23" fill="url(#JapanWaveCitadel-whv)" stroke="#1d1d22" stroke-width="1.2"/>
+<ellipse cx="120" cy="182" rx="48" ry="19.5" fill="none" stroke="#9a948b" stroke-width=".8"/>
+<path d="M56 166 A64 24 0 0 1 184 166" fill="none" stroke="#3fe0c5" stroke-width="2" stroke-opacity=".55" filter="url(#JapanWaveCitadel-glow)"/>
+<path d="M64 140 A56 21 0 0 1 176 140" fill="none" stroke="#3fe0c5" stroke-width="2" stroke-opacity=".55" filter="url(#JapanWaveCitadel-glow)"/>
+<path d="M82 136 L72 182 A48 19.5 0 0 0 168 182 L158 136 A38 15 0 0 1 82 136Z" fill="url(#JapanWaveCitadel-wh)" stroke="#1d1d22" stroke-width="1.2"/>
+<path d="M82 136 A38 15 0 0 0 158 136 L158 142 A38 15 0 0 1 82 142Z" fill="url(#JapanWaveCitadel-bk)"/>
+<path d="M151.9 150.6 L159.3 193.2" stroke="#8d887f" stroke-width=".8"/>
+<path d="M139.5 155 L144 198.9" stroke="#8d887f" stroke-width=".8"/>
+<path d="M100.5 155 L96 198.9" stroke="#8d887f" stroke-width=".8"/>
+<path d="M88.1 150.6 L80.7 193.2" stroke="#8d887f" stroke-width=".8"/>
+<g transform="translate(120 176) scale(1 1.0)"><circle r="14.2" fill="#f4f1ec"/><path d="M13.1 -1.3L13.1 1.3L0 0ZM12.3 4.5L11.2 6.9L0 0ZM9.2 9.4L7.1 11L0 0ZM4.2 12.4L1.6 13L0 0ZM-1.6 13L-4.2 12.4L0 0ZM-7.1 11L-9.2 9.4L0 0ZM-11.2 6.9L-12.3 4.5L0 0ZM-13.1 1.3L-13.1 -1.3L0 0ZM-12.3 -4.5L-11.2 -6.9L0 0ZM-9.2 -9.4L-7.1 -11L0 0ZM-4.2 -12.4L-1.6 -13L0 0ZM1.6 -13L4.2 -12.4L0 0ZM7.1 -11L9.2 -9.4L0 0ZM11.2 -6.9L12.3 -4.5L0 0Z" fill="#c8102e"/><circle r="7.5" fill="#c8102e"/></g>
+<path d="M98 150 L98 168 M142 150 L142 168" stroke="#c8102e" stroke-width="3" stroke-linecap="round"/>
+<path d="M56 166 A64 24 0 0 0 184 166" fill="none" stroke="#3fe0c5" stroke-width="6" stroke-opacity=".25" filter="url(#JapanWaveCitadel-soft)"/>
+<path d="M56 166 A64 24 0 0 0 184 166" fill="none" stroke="#c8fff5" stroke-width="2" filter="url(#JapanWaveCitadel-glow)"/>
+<path d="M64 140 A56 21 0 0 0 176 140" fill="none" stroke="#3fe0c5" stroke-width="6" stroke-opacity=".25" filter="url(#JapanWaveCitadel-soft)"/>
+<path d="M64 140 A56 21 0 0 0 176 140" fill="none" stroke="#c8fff5" stroke-width="2" filter="url(#JapanWaveCitadel-glow)"/>
+<circle cx="64" cy="170" r="1.4" fill="#dffff9" filter="url(#JapanWaveCitadel-glow)"/>
+<circle cx="171" cy="182" r="1.4" fill="#dffff9" filter="url(#JapanWaveCitadel-glow)"/>
+<circle cx="88" cy="158" r="1.4" fill="#dffff9" filter="url(#JapanWaveCitadel-glow)"/>
+<circle cx="150" cy="160" r="1.4" fill="#dffff9" filter="url(#JapanWaveCitadel-glow)"/>
+<circle cx="176" cy="143" r="1.4" fill="#dffff9" filter="url(#JapanWaveCitadel-glow)"/>
+<path d="M80 126 L80 138 A40 16 0 0 0 160 138 L160 126 A40 16 0 0 1 80 126Z" fill="url(#JapanWaveCitadel-bk)" stroke="#1d1d22" stroke-width="1"/>
+<ellipse cx="120" cy="126" rx="40" ry="16" fill="#3a3a42" stroke="#1d1d22" stroke-width="1"/>
+<circle cx="145.7" cy="144.3" r="1.5" fill="#3fe0c5" filter="url(#JapanWaveCitadel-glow)"/>
+<circle cx="130.4" cy="147.5" r="1.5" fill="#3fe0c5" filter="url(#JapanWaveCitadel-glow)"/>
+<circle cx="109.6" cy="147.5" r="1.5" fill="#3fe0c5" filter="url(#JapanWaveCitadel-glow)"/>
+<circle cx="94.3" cy="144.3" r="1.5" fill="#3fe0c5" filter="url(#JapanWaveCitadel-glow)"/>
+<path d="M86 128 L74 98 L86 92 L100 124Z" fill="url(#JapanWaveCitadel-wh)" stroke="#1d1d22" stroke-width="1"/>
+<path d="M154 128 L160 92 L172 98 L140 124Z" fill="url(#JapanWaveCitadel-pr)" stroke="#1d1d22" stroke-width="1"/>
+<path d="M80 112 L90 108" stroke="#c8102e" stroke-width="3"/><path d="M158 108 L166 112" stroke="#c8102e" stroke-width="3"/>
+<g transform="translate(120 92) rotate(-14)">
+<path d="M-60 0 A60 44 0 0 0 60 0Z" fill="url(#JapanWaveCitadel-wh)" stroke="#1d1d22" stroke-width="1.2"/>
+<path d="M-42 22 Q0 34 42 22" fill="none" stroke="#8d887f" stroke-width=".9"/><path d="M-24 10 L-18 40 M24 10 L18 40" stroke="#8d887f" stroke-width=".8"/>
+<path d="M-14 42 Q0 46 14 42 L10 50 Q0 53 -10 50Z" fill="#c8102e" stroke="#1d1d22" stroke-width=".8"/>
+<ellipse cx="0" cy="0" rx="60" ry="28" fill="url(#JapanWaveCitadel-cr)" stroke="#1d1d22" stroke-width="1.4"/>
+<ellipse cx="0" cy="0" rx="54" ry="25" fill="#1d1d22" />
+<ellipse cx="0" cy="1" rx="50" ry="22.5" fill="url(#JapanWaveCitadel-tg)" opacity=".55"/>
+<ellipse cx="0" cy="1" rx="44" ry="19.5" fill="none" stroke="#3fe0c5" stroke-width="1.6" stroke-opacity="0.9" filter="url(#JapanWaveCitadel-glow)"/>
+<ellipse cx="0" cy="1" rx="33" ry="14.5" fill="none" stroke="#3fe0c5" stroke-width="1.6" stroke-opacity="0.8" filter="url(#JapanWaveCitadel-glow)"/>
+<ellipse cx="0" cy="1" rx="21" ry="9.5" fill="none" stroke="#3fe0c5" stroke-width="1.6" stroke-opacity="0.9" filter="url(#JapanWaveCitadel-glow)"/>
+<circle cx="54" cy="0" r="1.3" fill="#f4f1ec"/>
+<circle cx="38.2" cy="17.7" r="1.3" fill="#f4f1ec"/>
+<circle cx="0" cy="25" r="1.3" fill="#f4f1ec"/>
+<circle cx="-38.2" cy="17.7" r="1.3" fill="#f4f1ec"/>
+<circle cx="-54" cy="0" r="1.3" fill="#f4f1ec"/>
+<circle cx="-38.2" cy="-17.7" r="1.3" fill="#f4f1ec"/>
+<circle cx="0" cy="-25" r="1.3" fill="#f4f1ec"/>
+<circle cx="38.2" cy="-17.7" r="1.3" fill="#f4f1ec"/>
+<path d="M-7 4 L-2 -44 L2 -44 L7 4 Q0 8 -7 4Z" fill="url(#JapanWaveCitadel-wh)" stroke="#1d1d22" stroke-width="1"/>
+<path d="M-4.4 -18 L4.4 -18 L3.8 -24 L-3.8 -24Z" fill="#c8102e"/>
+<ellipse cx="0" cy="-30" rx="30" ry="9" fill="none" stroke="#3fe0c5" stroke-width="2" stroke-opacity="0.75" filter="url(#JapanWaveCitadel-glow)"/>
+<ellipse cx="0" cy="-46" rx="22" ry="6.5" fill="none" stroke="#3fe0c5" stroke-width="2" stroke-opacity="0.9" filter="url(#JapanWaveCitadel-glow)"/>
+<ellipse cx="0" cy="-60" rx="14" ry="4" fill="none" stroke="#3fe0c5" stroke-width="2" stroke-opacity="1" filter="url(#JapanWaveCitadel-glow)"/>
+<circle cx="0" cy="-48" r="13" fill="url(#JapanWaveCitadel-tg)"/>
+<circle cx="0" cy="-47" r="4" fill="#efffff" filter="url(#JapanWaveCitadel-glow)"/>
+</g>
+<circle cx="78" cy="98" r="6" fill="url(#JapanWaveCitadel-bk)" stroke="#000" stroke-width=".8"/><circle cx="78" cy="98" r="2" fill="#3fe0c5" filter="url(#JapanWaveCitadel-glow)"/>
+<circle cx="166" cy="88" r="6" fill="url(#JapanWaveCitadel-bk)" stroke="#000" stroke-width=".8"/><circle cx="166" cy="88" r="2" fill="#3fe0c5" filter="url(#JapanWaveCitadel-glow)"/>
+</svg>

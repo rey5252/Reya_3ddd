@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 280" width="240" height="280">
+<title>Святилище Кіцуне</title>
+<defs>
+<linearGradient id="JapanKitsuneShrine-wh" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff"/><stop offset=".35" stop-color="#f4f1ec"/><stop offset=".75" stop-color="#c4bfb7"/><stop offset="1" stop-color="#8a857e"/></linearGradient>
+<linearGradient id="JapanKitsuneShrine-whv" x1="0" y1="0" x2=".6" y2="1"><stop offset="0" stop-color="#fff"/><stop offset=".5" stop-color="#f4f1ec"/><stop offset="1" stop-color="#b9b3aa"/></linearGradient>
+<linearGradient id="JapanKitsuneShrine-cr" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#f04a63"/><stop offset=".4" stop-color="#c8102e"/><stop offset="1" stop-color="#6a0818"/></linearGradient>
+<linearGradient id="JapanKitsuneShrine-bk" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#4a4a54"/><stop offset=".45" stop-color="#1d1d22"/><stop offset="1" stop-color="#0a0a0d"/></linearGradient>
+<linearGradient id="JapanKitsuneShrine-pt" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f2efe9"/><stop offset="1" stop-color="#a9a49c"/></linearGradient>
+<linearGradient id="JapanKitsuneShrine-pl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d9d4cc"/><stop offset="1" stop-color="#a39e96"/></linearGradient>
+<linearGradient id="JapanKitsuneShrine-pr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8b867f"/><stop offset="1" stop-color="#5e5a55"/></linearGradient>
+<radialGradient id="JapanKitsuneShrine-sh" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#000" stop-opacity=".45"/><stop offset=".6" stop-color="#000" stop-opacity=".22"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
+<radialGradient id="JapanKitsuneShrine-tg" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#eafffb"/><stop offset=".35" stop-color="#3fe0c5" stop-opacity=".9"/><stop offset="1" stop-color="#3fe0c5" stop-opacity="0"/></radialGradient>
+<radialGradient id="JapanKitsuneShrine-orb" cx=".38" cy=".35" r=".65"><stop offset="0" stop-color="#fff"/><stop offset=".3" stop-color="#b8fff2"/><stop offset=".7" stop-color="#3fe0c5"/><stop offset="1" stop-color="#0e7d6d"/></radialGradient>
+<filter id="JapanKitsuneShrine-glow" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="2.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+<filter id="JapanKitsuneShrine-soft" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="3"/></filter>
+</defs>
+<ellipse cx="128" cy="246" rx="112" ry="36" fill="url(#JapanKitsuneShrine-sh)"/>
+<path d="M30 207 L120 252 L120 262 L30 217Z" fill="url(#JapanKitsuneShrine-pl)"/>
+<path d="M120 252 L210 207 L210 217 L120 262Z" fill="url(#JapanKitsuneShrine-pr)"/>
+<path d="M30 211 L120 256 L210 211" fill="none" stroke="#c8102e" stroke-width="2"/>
+<path d="M30 216.5 L120 261.5 L210 216.5" fill="none" stroke="#1d1d22" stroke-width="1.2"/>
+<path d="M120 162 L210 207 L120 252 L30 207Z" fill="url(#JapanKitsuneShrine-pt)" stroke="#1d1d22" stroke-width="1.4" stroke-linejoin="round"/>
+<path d="M120 170 L194 207 L120 244 L46 207Z" fill="none" stroke="#8d887f" stroke-width=".8"/>
+<path d="M120 176 L182 207 L120 238 L58 207Z" fill="#000" fill-opacity=".05" stroke="#fff" stroke-opacity=".6" stroke-width=".6"/>
+<path d="M75 184.5 L83 188.5 M157 225.5 L165 229.5 M165 184.5 L157 188.5 M83 225.5 L75 229.5" stroke="#7d786f" stroke-width=".8"/>
+<path d="M38 207 L48 202 L48 212Z" fill="#c8102e"/>
+<path d="M202 207 L192 202 L192 212Z" fill="#c8102e"/>
+<path d="M120 246 L128 242 L112 242Z" fill="#c8102e"/>
+<ellipse cx="54" cy="207" rx="3" ry="1.6" fill="#3fe0c5" filter="url(#JapanKitsuneShrine-glow)"/>
+<ellipse cx="186" cy="207" rx="3" ry="1.6" fill="#3fe0c5" filter="url(#JapanKitsuneShrine-glow)"/>
+<ellipse cx="120" cy="168" rx="3" ry="1.6" fill="#3fe0c5" filter="url(#JapanKitsuneShrine-glow)"/>
+<ellipse cx="120" cy="207" rx="92" ry="46" fill="none" stroke="#3fe0c5" stroke-width="1.4" stroke-opacity="0.35" stroke-dasharray="6 5" filter="url(#JapanKitsuneShrine-glow)"/>
+<ellipse cx="120" cy="207" rx="78" ry="39" fill="none" stroke="#3fe0c5" stroke-width="1.4" stroke-opacity="0.5" filter="url(#JapanKitsuneShrine-glow)"/>
+<path d="M54 204 L120 237 L120 244 L54 211Z" fill="url(#JapanKitsuneShrine-pl)" stroke="#1d1d22" stroke-width=".9" stroke-linejoin="round"/>
+<path d="M120 237 L186 204 L186 211 L120 244Z" fill="url(#JapanKitsuneShrine-pr)" stroke="#1d1d22" stroke-width=".9" stroke-linejoin="round"/>
+<path d="M120 171 L186 204 L120 237 L54 204Z" fill="url(#JapanKitsuneShrine-pt)" stroke="#1d1d22" stroke-width="1" stroke-linejoin="round"/>
+<path d="M54 207.5 L120 240.5 L186 207.5" fill="none" stroke="#c8102e" stroke-width="1.6"/>
+<path d="M72 196 L120 220 L120 227 L72 203Z" fill="url(#JapanKitsuneShrine-pl)" stroke="#1d1d22" stroke-width=".9" stroke-linejoin="round"/>
+<path d="M120 220 L168 196 L168 203 L120 227Z" fill="url(#JapanKitsuneShrine-pr)" stroke="#1d1d22" stroke-width=".9" stroke-linejoin="round"/>
+<path d="M120 172 L168 196 L120 220 L72 196Z" fill="url(#JapanKitsuneShrine-whv)" stroke="#1d1d22" stroke-width="1" stroke-linejoin="round"/>
+<path d="M120 178 L156 196 L120 214 L84 196Z" fill="none" stroke="#9a948b" stroke-width=".7"/>
+<ellipse cx="120" cy="196" rx="34" ry="14" fill="url(#JapanKitsuneShrine-tg)" opacity=".55"/>
+<ellipse cx="120" cy="196" rx="44" ry="22" fill="none" stroke="#3fe0c5" stroke-width="1.3" stroke-opacity="0.6" filter="url(#JapanKitsuneShrine-glow)"/>
+<ellipse cx="120" cy="196" rx="26" ry="13" fill="none" stroke="#3fe0c5" stroke-width="1.3" stroke-opacity="0.85" filter="url(#JapanKitsuneShrine-glow)"/>
+<g transform="translate(120 196) scale(1 0.5)"><path d="M7 -0.8L7 0.8L0 0ZM6.4 2.8L5.6 4.2L0 0ZM4.2 5.6L2.8 6.4L0 0ZM0.8 7L-0.8 7L0 0ZM-2.8 6.4L-4.2 5.6L0 0ZM-5.6 4.2L-6.4 2.8L0 0ZM-7 0.8L-7 -0.8L0 0ZM-6.4 -2.8L-5.6 -4.2L0 0ZM-4.2 -5.6L-2.8 -6.4L0 0ZM-0.8 -7L0.8 -7L0 0ZM2.8 -6.4L4.2 -5.6L0 0ZM5.6 -4.2L6.4 -2.8L0 0Z" fill="#c8102e"/><circle r="4" fill="#c8102e"/></g>
+<ellipse cx="52" cy="214" rx="7" ry="3.2" fill="#1d1d22" />
+<path d="M49.4 200 L49.4 214 A2.6 1.2 0 0 0 54.6 214 L54.6 200 A2.6 1.2 0 0 1 49.4 200Z" fill="url(#JapanKitsuneShrine-wh)" stroke="#1d1d22" stroke-width="0.7"/>
+<rect x="46" y="190" width="12" height="10" fill="url(#JapanKitsuneShrine-wh)" stroke="#1d1d22" stroke-width=".8"/>
+<rect x="49" y="192" width="6" height="6" fill="#3fe0c5" filter="url(#JapanKitsuneShrine-glow)"/>
+<path d="M42 191 Q48 188 52 183 Q56 188 62 191 Q52 193 42 191Z" fill="#c8102e" stroke="#1d1d22" stroke-width=".8"/>
+<circle cx="52" cy="182" r="1.4" fill="#1d1d22"/>
+<ellipse cx="188" cy="214" rx="7" ry="3.2" fill="#1d1d22" />
+<path d="M185.4 200 L185.4 214 A2.6 1.2 0 0 0 190.6 214 L190.6 200 A2.6 1.2 0 0 1 185.4 200Z" fill="url(#JapanKitsuneShrine-wh)" stroke="#1d1d22" stroke-width="0.7"/>
+<rect x="182" y="190" width="12" height="10" fill="url(#JapanKitsuneShrine-pr)" stroke="#1d1d22" stroke-width=".8"/>
+<rect x="185" y="192" width="6" height="6" fill="#3fe0c5" filter="url(#JapanKitsuneShrine-glow)"/>
+<path d="M178 191 Q184 188 188 183 Q192 188 198 191 Q188 193 178 191Z" fill="#c8102e" stroke="#1d1d22" stroke-width=".8"/>
+<circle cx="188" cy="182" r="1.4" fill="#1d1d22"/>
+<path d="M81 96 L79.5 194 A6.5 2.8 0 0 0 92.5 194 L91 96Z" fill="url(#JapanKitsuneShrine-cr)" stroke="#1d1d22" stroke-width="1"/>
+<path d="M77.5 186 L77.5 197 A8.5 3.4 0 0 0 94.5 197 L94.5 186 A8.5 3.4 0 0 1 77.5 186Z" fill="url(#JapanKitsuneShrine-bk)" stroke="#1d1d22" stroke-width="1"/>
+<ellipse cx="86" cy="186" rx="8.5" ry="3.4" fill="#3a3a42" />
+<path d="M80.2 132 A5.8 2.2 0 0 0 91.8 132 L91.8 136 A5.8 2.2 0 0 1 80.2 136Z" fill="url(#JapanKitsuneShrine-wh)"/>
+<path d="M79.9 160 A6.1 2.4 0 0 0 92.1 160 L92.1 163 A6.1 2.4 0 0 1 79.9 163Z" fill="url(#JapanKitsuneShrine-bk)"/>
+<path d="M149 96 L147.5 194 A6.5 2.8 0 0 0 160.5 194 L159 96Z" fill="url(#JapanKitsuneShrine-cr)" stroke="#1d1d22" stroke-width="1"/>
+<path d="M145.5 186 L145.5 197 A8.5 3.4 0 0 0 162.5 197 L162.5 186 A8.5 3.4 0 0 1 145.5 186Z" fill="url(#JapanKitsuneShrine-bk)" stroke="#1d1d22" stroke-width="1"/>
+<ellipse cx="154" cy="186" rx="8.5" ry="3.4" fill="#3a3a42" />
+<path d="M148.2 132 A5.8 2.2 0 0 0 159.8 132 L159.8 136 A5.8 2.2 0 0 1 148.2 136Z" fill="url(#JapanKitsuneShrine-wh)"/>
+<path d="M147.9 160 A6.1 2.4 0 0 0 160.1 160 L160.1 163 A6.1 2.4 0 0 1 147.9 163Z" fill="url(#JapanKitsuneShrine-bk)"/>
+<path d="M64 112 L176 112 L176 121 L64 121Z" fill="url(#JapanKitsuneShrine-cr)" stroke="#1d1d22" stroke-width="1"/>
+<path d="M64 112 L176 112 L178 109 L66 109Z" fill="#f04a63" stroke="#1d1d22" stroke-width=".8"/>
+<rect x="60" y="110" width="6" height="11" fill="#1d1d22"/><rect x="174" y="110" width="6" height="11" fill="#1d1d22"/>
+<path d="M56 86 Q120 98 184 86 L184 93 Q120 104 56 93Z" fill="url(#JapanKitsuneShrine-cr)" stroke="#1d1d22" stroke-width="1"/>
+<path d="M40 70 Q120 92 200 70 L202 66 Q120 86 38 66Z" fill="#4a4a54" stroke="#1d1d22" stroke-width=".9"/>
+<path d="M40 70 Q120 92 200 70 L196 79 Q120 99 44 79Z" fill="url(#JapanKitsuneShrine-bk)" stroke="#000" stroke-width="1"/>
+<path d="M46 76 Q120 96 194 76" fill="none" stroke="#f4f1ec" stroke-width=".8" stroke-opacity=".5"/>
+<rect x="110" y="95" width="20" height="15" fill="url(#JapanKitsuneShrine-wh)" stroke="#1d1d22" stroke-width="1"/>
+<g transform="translate(120 102.5) scale(1 1.0)"><path d="M5.2 -0.7L5.2 0.7L0 0ZM4.6 2.5L3.8 3.7L0 0ZM2.3 4.7L0.9 5.2L0 0ZM-0.9 5.2L-2.3 4.7L0 0ZM-3.8 3.7L-4.6 2.5L0 0ZM-5.2 0.7L-5.2 -0.7L0 0ZM-4.6 -2.5L-3.8 -3.7L0 0ZM-2.3 -4.7L-0.9 -5.2L0 0ZM0.9 -5.2L2.3 -4.7L0 0ZM3.8 -3.7L4.6 -2.5L0 0Z" fill="#c8102e"/><circle r="3" fill="#c8102e"/></g>
+<circle cx="39" cy="67" r="1.8" fill="#3fe0c5" filter="url(#JapanKitsuneShrine-glow)"/>
+<circle cx="201" cy="67" r="1.8" fill="#3fe0c5" filter="url(#JapanKitsuneShrine-glow)"/>
+<path d="M91 127 Q120 140 149 127" fill="none" stroke="#d9c79a" stroke-width="3.2"/>
+<path d="M91 127 Q120 140 149 127" fill="none" stroke="#8a7a52" stroke-width="1" stroke-dasharray="2 2"/>
+<path d="M104 133 l3 0 l-3 4 l3 0 l-3 4 l3 0 l-3 4" fill="none" stroke="#fff" stroke-width="1.6" stroke-linejoin="bevel"/>
+<path d="M136 133 l3 0 l-3 4 l3 0 l-3 4 l3 0 l-3 4" fill="none" stroke="#fff" stroke-width="1.6" stroke-linejoin="bevel"/>
+<circle cx="120" cy="152" r="38" fill="url(#JapanKitsuneShrine-tg)" opacity=".55"/>
+<ellipse cx="120" cy="152" rx="30" ry="9" fill="none" stroke="#3fe0c5" stroke-width="1.3" stroke-opacity=".8" transform="rotate(-24 120 152)" filter="url(#JapanKitsuneShrine-glow)"/>
+<ellipse cx="120" cy="152" rx="30" ry="9" fill="none" stroke="#3fe0c5" stroke-width="1.3" stroke-opacity=".8" transform="rotate(24 120 152)" filter="url(#JapanKitsuneShrine-glow)"/>
+<path transform="translate(120 146) rotate(0) scale(1.9)" d="M0 6 C-5 6 -6 0 -3 -4 C-2 -6 -1 -9 0 -14 C2 -9 6 -5 5 0 C4.5 4 3 6 0 6Z" fill="#3fe0c5" opacity="0.85"/>
+<path transform="translate(120 146) rotate(0) scale(1.2)" d="M0 6 C-5 6 -6 0 -3 -4 C-2 -6 -1 -9 0 -14 C2 -9 6 -5 5 0 C4.5 4 3 6 0 6Z" fill="#dffff9" opacity="0.9"/>
+<circle cx="120" cy="152" r="14" fill="url(#JapanKitsuneShrine-orb)" filter="url(#JapanKitsuneShrine-glow)"/>
+<circle cx="116" cy="147" r="3.5" fill="#fff" opacity=".85"/>
+<path transform="translate(96 140) rotate(-25) scale(0.8)" d="M0 6 C-5 6 -6 0 -3 -4 C-2 -6 -1 -9 0 -14 C2 -9 6 -5 5 0 C4.5 4 3 6 0 6Z" fill="#3fe0c5" opacity="0.9"/>
+<circle cx="96" cy="140" r="2" fill="#efffff" filter="url(#JapanKitsuneShrine-glow)"/>
+<path transform="translate(146 136) rotate(20) scale(0.7)" d="M0 6 C-5 6 -6 0 -3 -4 C-2 -6 -1 -9 0 -14 C2 -9 6 -5 5 0 C4.5 4 3 6 0 6Z" fill="#3fe0c5" opacity="0.9"/>
+<circle cx="146" cy="136" r="2" fill="#efffff" filter="url(#JapanKitsuneShrine-glow)"/>
+<path transform="translate(104 172) rotate(-10) scale(0.6)" d="M0 6 C-5 6 -6 0 -3 -4 C-2 -6 -1 -9 0 -14 C2 -9 6 -5 5 0 C4.5 4 3 6 0 6Z" fill="#3fe0c5" opacity="0.9"/>
+<circle cx="104" cy="172" r="2" fill="#efffff" filter="url(#JapanKitsuneShrine-glow)"/>
+<path transform="translate(140 168) rotate(15) scale(0.65)" d="M0 6 C-5 6 -6 0 -3 -4 C-2 -6 -1 -9 0 -14 C2 -9 6 -5 5 0 C4.5 4 3 6 0 6Z" fill="#3fe0c5" opacity="0.9"/>
+<circle cx="140" cy="168" r="2" fill="#efffff" filter="url(#JapanKitsuneShrine-glow)"/>
+<circle cx="70" cy="150" r="1.2" fill="#dffff9" filter="url(#JapanKitsuneShrine-glow)"/>
+<circle cx="172" cy="150" r="1.2" fill="#dffff9" filter="url(#JapanKitsuneShrine-glow)"/>
+<circle cx="120" cy="120" r="1.2" fill="#dffff9" filter="url(#JapanKitsuneShrine-glow)"/>
+<circle cx="62" cy="188" r="1.2" fill="#dffff9" filter="url(#JapanKitsuneShrine-glow)"/>
+<circle cx="180" cy="186" r="1.2" fill="#dffff9" filter="url(#JapanKitsuneShrine-glow)"/>
+</svg>

@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 280" width="240" height="280">
+<title>Шпиль Тенгу</title>
+<defs>
+<linearGradient id="JapanTenguSpire-wh" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff"/><stop offset=".35" stop-color="#f4f1ec"/><stop offset=".75" stop-color="#c4bfb7"/><stop offset="1" stop-color="#8a857e"/></linearGradient>
+<linearGradient id="JapanTenguSpire-whv" x1="0" y1="0" x2=".6" y2="1"><stop offset="0" stop-color="#fff"/><stop offset=".5" stop-color="#f4f1ec"/><stop offset="1" stop-color="#b9b3aa"/></linearGradient>
+<linearGradient id="JapanTenguSpire-cr" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#f04a63"/><stop offset=".4" stop-color="#c8102e"/><stop offset="1" stop-color="#6a0818"/></linearGradient>
+<linearGradient id="JapanTenguSpire-bk" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#4a4a54"/><stop offset=".45" stop-color="#1d1d22"/><stop offset="1" stop-color="#0a0a0d"/></linearGradient>
+<linearGradient id="JapanTenguSpire-pt" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f2efe9"/><stop offset="1" stop-color="#a9a49c"/></linearGradient>
+<linearGradient id="JapanTenguSpire-pl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d9d4cc"/><stop offset="1" stop-color="#a39e96"/></linearGradient>
+<linearGradient id="JapanTenguSpire-pr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8b867f"/><stop offset="1" stop-color="#5e5a55"/></linearGradient>
+<radialGradient id="JapanTenguSpire-sh" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#000" stop-opacity=".45"/><stop offset=".6" stop-color="#000" stop-opacity=".22"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
+<radialGradient id="JapanTenguSpire-tg" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#eafffb"/><stop offset=".35" stop-color="#3fe0c5" stop-opacity=".9"/><stop offset="1" stop-color="#3fe0c5" stop-opacity="0"/></radialGradient>
+<radialGradient id="JapanTenguSpire-orb" cx=".38" cy=".35" r=".65"><stop offset="0" stop-color="#fff"/><stop offset=".3" stop-color="#b8fff2"/><stop offset=".7" stop-color="#3fe0c5"/><stop offset="1" stop-color="#0e7d6d"/></radialGradient>
+<filter id="JapanTenguSpire-glow" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="2.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+<filter id="JapanTenguSpire-soft" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="3"/></filter>
+</defs>
+<ellipse cx="128" cy="246" rx="112" ry="36" fill="url(#JapanTenguSpire-sh)"/>
+<path d="M30 207 L120 252 L120 262 L30 217Z" fill="url(#JapanTenguSpire-pl)"/>
+<path d="M120 252 L210 207 L210 217 L120 262Z" fill="url(#JapanTenguSpire-pr)"/>
+<path d="M30 211 L120 256 L210 211" fill="none" stroke="#c8102e" stroke-width="2"/>
+<path d="M30 216.5 L120 261.5 L210 216.5" fill="none" stroke="#1d1d22" stroke-width="1.2"/>
+<path d="M120 162 L210 207 L120 252 L30 207Z" fill="url(#JapanTenguSpire-pt)" stroke="#1d1d22" stroke-width="1.4" stroke-linejoin="round"/>
+<path d="M120 170 L194 207 L120 244 L46 207Z" fill="none" stroke="#8d887f" stroke-width=".8"/>
+<path d="M120 176 L182 207 L120 238 L58 207Z" fill="#000" fill-opacity=".05" stroke="#fff" stroke-opacity=".6" stroke-width=".6"/>
+<path d="M75 184.5 L83 188.5 M157 225.5 L165 229.5 M165 184.5 L157 188.5 M83 225.5 L75 229.5" stroke="#7d786f" stroke-width=".8"/>
+<path d="M38 207 L48 202 L48 212Z" fill="#c8102e"/>
+<path d="M202 207 L192 202 L192 212Z" fill="#c8102e"/>
+<path d="M120 246 L128 242 L112 242Z" fill="#c8102e"/>
+<ellipse cx="54" cy="207" rx="3" ry="1.6" fill="#3fe0c5" filter="url(#JapanTenguSpire-glow)"/>
+<ellipse cx="186" cy="207" rx="3" ry="1.6" fill="#3fe0c5" filter="url(#JapanTenguSpire-glow)"/>
+<ellipse cx="120" cy="168" rx="3" ry="1.6" fill="#3fe0c5" filter="url(#JapanTenguSpire-glow)"/>
+<path d="M74 192 L74 212 A46 19 0 0 0 166 212 L166 192 A46 19 0 0 1 74 192Z" fill="url(#JapanTenguSpire-wh)" stroke="#1d1d22" stroke-width="1.2"/>
+<path d="M74 205 A46 19 0 0 0 166 205 L166 212 A46 19 0 0 1 74 212Z" fill="url(#JapanTenguSpire-bk)"/>
+<path d="M74 196 A46 19 0 0 0 166 196 L166 199 A46 19 0 0 1 74 199Z" fill="url(#JapanTenguSpire-cr)"/>
+<ellipse cx="120" cy="192" rx="46" ry="19" fill="url(#JapanTenguSpire-whv)" stroke="#1d1d22" stroke-width="1.2"/>
+<ellipse cx="120" cy="192" rx="36" ry="14.5" fill="none" stroke="#9a948b" stroke-width=".8"/>
+<path d="M157.7 209.9 L157.7 215.9" stroke="#7d786f" stroke-width=".8"/>
+<path d="M141.6 215.8 L141.6 221.8" stroke="#7d786f" stroke-width=".8"/>
+<path d="M98.4 215.8 L98.4 221.8" stroke="#7d786f" stroke-width=".8"/>
+<path d="M82.3 209.9 L82.3 215.9" stroke="#7d786f" stroke-width=".8"/>
+<rect x="147.8" y="215.1" width="6" height="2" rx="1" fill="#3fe0c5" filter="url(#JapanTenguSpire-glow)"/>
+<rect x="86.2" y="215.1" width="6" height="2" rx="1" fill="#3fe0c5" filter="url(#JapanTenguSpire-glow)"/>
+<g transform="translate(120 214) scale(1 1.0)"><circle r="8" fill="#f4f1ec"/><path d="M7.3 -0.9L7.3 0.9L0 0ZM6.8 2.9L5.9 4.4L0 0ZM4.4 5.9L2.9 6.8L0 0ZM0.9 7.3L-0.9 7.3L0 0ZM-2.9 6.8L-4.4 5.9L0 0ZM-5.9 4.4L-6.8 2.9L0 0ZM-7.3 0.9L-7.3 -0.9L0 0ZM-6.8 -2.9L-5.9 -4.4L0 0ZM-4.4 -5.9L-2.9 -6.8L0 0ZM-0.9 -7.3L0.9 -7.3L0 0ZM2.9 -6.8L4.4 -5.9L0 0ZM5.9 -4.4L6.8 -2.9L0 0Z" fill="#c8102e"/><circle r="4.2" fill="#c8102e"/></g>
+<g transform="translate(70 176) rotate(-14)">
+<path d="M6 6 L24 2 L24 10 L6 12Z" fill="url(#JapanTenguSpire-bk)"/>
+<rect x="-13" y="-14" width="26" height="26" rx="4" fill="url(#JapanTenguSpire-wh)" stroke="#1d1d22" stroke-width="1.1"/>
+<rect x="-13" y="2" width="26" height="4" fill="#c8102e"/>
+<path d="M-13 -6 L13 -6" stroke="#7d786f" stroke-width=".7"/>
+<path d="M-10.6 -13 L-10.6 -20 Q-8 -27 -5.4 -20 L-5.4 -13Z" fill="#f4f1ec" stroke="#1d1d22" stroke-width=".7"/>
+<path d="M-10.2 -21 Q-8 -27 -5.8 -21Z" fill="#c8102e"/>
+<path d="M-2.6 -13 L-2.6 -20 Q0 -27 2.6 -20 L2.6 -13Z" fill="#f4f1ec" stroke="#1d1d22" stroke-width=".7"/>
+<path d="M-2.2 -21 Q0 -27 2.2 -21Z" fill="#c8102e"/>
+<path d="M5.4 -13 L5.4 -20 Q8 -27 10.6 -20 L10.6 -13Z" fill="#f4f1ec" stroke="#1d1d22" stroke-width=".7"/>
+<path d="M5.8 -21 Q8 -27 10.2 -21Z" fill="#c8102e"/>
+<circle cx="7" cy="8.5" r="1.6" fill="#3fe0c5" filter="url(#JapanTenguSpire-glow)"/>
+</g>
+<g transform="translate(170 176) rotate(14)">
+<path d="M-6 6 L-24 2 L-24 10 L-6 12Z" fill="url(#JapanTenguSpire-bk)"/>
+<rect x="-13" y="-14" width="26" height="26" rx="4" fill="url(#JapanTenguSpire-pr)" stroke="#1d1d22" stroke-width="1.1"/>
+<rect x="-13" y="2" width="26" height="4" fill="#c8102e"/>
+<path d="M-13 -6 L13 -6" stroke="#7d786f" stroke-width=".7"/>
+<path d="M-10.6 -13 L-10.6 -20 Q-8 -27 -5.4 -20 L-5.4 -13Z" fill="#f4f1ec" stroke="#1d1d22" stroke-width=".7"/>
+<path d="M-10.2 -21 Q-8 -27 -5.8 -21Z" fill="#c8102e"/>
+<path d="M-2.6 -13 L-2.6 -20 Q0 -27 2.6 -20 L2.6 -13Z" fill="#f4f1ec" stroke="#1d1d22" stroke-width=".7"/>
+<path d="M-2.2 -21 Q0 -27 2.2 -21Z" fill="#c8102e"/>
+<path d="M5.4 -13 L5.4 -20 Q8 -27 10.6 -20 L10.6 -13Z" fill="#f4f1ec" stroke="#1d1d22" stroke-width=".7"/>
+<path d="M5.8 -21 Q8 -27 10.2 -21Z" fill="#c8102e"/>
+<circle cx="-7" cy="8.5" r="1.6" fill="#3fe0c5" filter="url(#JapanTenguSpire-glow)"/>
+</g>
+<path d="M98 150 L98 192 A22 9 0 0 0 142 192 L142 150 A22 9 0 0 1 98 150Z" fill="url(#JapanTenguSpire-wh)" stroke="#1d1d22" stroke-width="1"/>
+<path d="M98 184 A22 9 0 0 0 142 184 L142 188 A22 9 0 0 1 98 188Z" fill="url(#JapanTenguSpire-bk)"/>
+<path d="M108 158 L108 190 M132 158 L132 190" stroke="#8d887f" stroke-width=".8"/>
+<rect x="117.5" y="160" width="5" height="22" rx="2.5" fill="#3fe0c5" filter="url(#JapanTenguSpire-glow)"/>
+<ellipse cx="120" cy="154" rx="37.7" ry="13.8" fill="#1d1d22" opacity=".85"/>
+<path d="M74 143 Q94.7 147 111 128 L129 128 Q145.3 147 166 143 C143 169.3 97 169.3 74 143Z" fill="url(#JapanTenguSpire-whv)" stroke="#1d1d22" stroke-width="1" stroke-linejoin="round"/>
+<path d="M111.6 129 Q100 142.8 84.3 153.6 M116 129 Q110.3 145.7 102.8 159.4 M120 129 Q120 147.5 120 163 M124 129 Q129.7 145.7 137.2 159.4 M128.4 129 Q140 142.8 155.7 153.6" fill="none" stroke="#9a948b" stroke-width=".7"/>
+<path d="M74 143 C97 169.3 143 169.3 166 143" fill="none" stroke="#c8102e" stroke-width="3.2" stroke-linecap="round"/>
+<path d="M74 143 C97 169.3 143 169.3 166 143" fill="none" stroke="#ff7d8f" stroke-width=".8" stroke-opacity=".7" transform="translate(-.5 -1.3)"/>
+<circle cx="74" cy="142" r="1.8" fill="#3fe0c5" filter="url(#JapanTenguSpire-glow)"/>
+<circle cx="166" cy="142" r="1.8" fill="#3fe0c5" filter="url(#JapanTenguSpire-glow)"/>
+<path d="M106 106 L106 132 A14 6 0 0 0 134 132 L134 106 A14 6 0 0 1 106 106Z" fill="url(#JapanTenguSpire-wh)" stroke="#1d1d22" stroke-width="1"/>
+<path d="M106 124 A14 6 0 0 0 134 124 L134 127 A14 6 0 0 1 106 127Z" fill="url(#JapanTenguSpire-cr)"/>
+<rect x="118" y="111" width="4" height="11" rx="2" fill="#3fe0c5" filter="url(#JapanTenguSpire-glow)"/>
+<ellipse cx="120" cy="110" rx="27.9" ry="10.2" fill="#1d1d22" opacity=".85"/>
+<path d="M86 99 Q101.3 103 113.5 88 L126.5 88 Q138.7 103 154 99 C137 120.3 103 120.3 86 99Z" fill="url(#JapanTenguSpire-whv)" stroke="#1d1d22" stroke-width="1" stroke-linejoin="round"/>
+<path d="M114 89 Q105.2 99.9 93.7 107.7 M117.1 89 Q112.9 102.3 107.2 112.6 M120 89 Q120 103.6 120 115.2 M122.9 89 Q127.1 102.3 132.8 112.6 M126 89 Q134.8 99.9 146.3 107.7" fill="none" stroke="#9a948b" stroke-width=".7"/>
+<path d="M86 99 C103 120.3 137 120.3 154 99" fill="none" stroke="#c8102e" stroke-width="3.2" stroke-linecap="round"/>
+<path d="M86 99 C103 120.3 137 120.3 154 99" fill="none" stroke="#ff7d8f" stroke-width=".8" stroke-opacity=".7" transform="translate(-.5 -1.3)"/>
+<circle cx="86" cy="98" r="1.8" fill="#3fe0c5" filter="url(#JapanTenguSpire-glow)"/>
+<circle cx="154" cy="98" r="1.8" fill="#3fe0c5" filter="url(#JapanTenguSpire-glow)"/>
+<path d="M111 72 L111 92 A9 4 0 0 0 129 92 L129 72 A9 4 0 0 1 111 72Z" fill="url(#JapanTenguSpire-wh)" stroke="#1d1d22" stroke-width="1"/>
+<circle cx="120" cy="84" r="2" fill="#3fe0c5" filter="url(#JapanTenguSpire-glow)"/>
+<ellipse cx="120" cy="76" rx="19.7" ry="7.2" fill="#1d1d22" opacity=".85"/>
+<path d="M96 65 Q106.8 69 115.5 59 L124.5 59 Q133.2 69 144 65 C132 82.1 108 82.1 96 65Z" fill="url(#JapanTenguSpire-whv)" stroke="#1d1d22" stroke-width="1" stroke-linejoin="round"/>
+<path d="M115.8 60 Q109.6 67.6 101.4 72.2 M118 60 Q115 69.6 111 76.2 M120 60 Q120 70.5 120 78.1 M122 60 Q125 69.6 129 76.2 M124.2 60 Q130.4 67.6 138.6 72.2" fill="none" stroke="#9a948b" stroke-width=".7"/>
+<path d="M96 65 C108 82.1 132 82.1 144 65" fill="none" stroke="#c8102e" stroke-width="3.2" stroke-linecap="round"/>
+<path d="M96 65 C108 82.1 132 82.1 144 65" fill="none" stroke="#ff7d8f" stroke-width=".8" stroke-opacity=".7" transform="translate(-.5 -1.3)"/>
+<circle cx="96" cy="64" r="1.8" fill="#3fe0c5" filter="url(#JapanTenguSpire-glow)"/>
+<circle cx="144" cy="64" r="1.8" fill="#3fe0c5" filter="url(#JapanTenguSpire-glow)"/>
+<path d="M116 62 L118.6 22 L121.4 22 L124 62Z" fill="url(#JapanTenguSpire-wh)" stroke="#1d1d22" stroke-width=".9"/>
+<path d="M116.7 50 A3.3 1.4 0 0 0 123.3 50 L123.3 53 A3.3 1.4 0 0 1 116.7 53Z" fill="#1d1d22"/>
+<path d="M117.4 38 A2.6 1.1 0 0 0 122.6 38 L122.6 40.5 A2.6 1.1 0 0 1 117.4 40.5Z" fill="#c8102e"/>
+<path d="M120 22 L120 9" stroke="#1d1d22" stroke-width="1.2"/>
+<circle cx="120" cy="25" r="6" fill="url(#JapanTenguSpire-tg)"/>
+<circle cx="120" cy="25" r="2.6" fill="#dffff9" filter="url(#JapanTenguSpire-glow)"/>
+<circle cx="120" cy="9" r="1.5" fill="#c8102e"/>
+</svg>
