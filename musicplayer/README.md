@@ -27,6 +27,11 @@ MP3, M4A/AAC, FLAC, OGG/Opus, WAV — що саме відтвориться, з
 
 ## Як встановити на телефон
 
+**Android:** найпростіше — встанови готовий [`apk/Hvylia.apk`](../apk/Hvylia.apk): музика грає у фоні, є сповіщення з кнопками. Деталі — у [`android/README.md`](../android/README.md).
+
+**Або як веб-застосунок:**
+
+
 1. Розмісти папку `musicplayer/` на будь-якому статичному хостингу з **HTTPS**.
    Наприклад, GitHub Pages: **Settings → Pages → Deploy from a branch**, обери гілку й папку `/ (root)`.
    Плеєр буде за адресою `https://<логін>.github.io/<репозиторій>/musicplayer/`.

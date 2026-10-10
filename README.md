@@ -21,3 +21,5 @@
 ## Хвиля — музичний плеєр
 
 У папці [`musicplayer/`](musicplayer/) — плеєр для телефона в стилі Spotify (PWA): улюблені, плейлисти, черга, таймер сну, своя музика з пристрою. Деталі — у [`musicplayer/README.md`](musicplayer/README.md).
+
+Готовий застосунок для Android: [`apk/Hvylia.apk`](apk/Hvylia.apk) (код оболонки — у [`android/`](android/)).

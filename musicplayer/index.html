@@ -1265,7 +1265,7 @@ document.body.appendChild(audio);
 const P = { ctx: null, order: [], pos: 0, queue: [], fromQueue: false, current: null, srcId: null, srcUrl: '', pendingSeek: 0, switching: false, counted: false, blobTest: false };
 let loadToken = 0, errStreak = 0, unlocked = false, fileUrl = { id: null, url: '' };
 const demoUrls = new Map(), demoJobs = new Map();
-const setPlayingUI = v => document.body.classList.toggle('is-playing', v);
+const setPlayingUI = v => { document.body.classList.toggle('is-playing', v); androidSync(); };
 const setLoading = v => document.body.classList.toggle('is-loading', v);
 const curDuration = () => { const d = audio.duration; if (P.srcId === P.current && isFinite(d) && d > 0) return d; const t = lib.get(P.current); return t ? t.duration || 0 : 0; };
 const curTime = () => P.srcId === P.current ? audio.currentTime || 0 : P.pendingSeek || 0;
@@ -1431,9 +1431,31 @@ const kickTick = () => { if (!raf) raf = requestAnimationFrame(tick); };
 
 // media session
 const MS = 'mediaSession' in navigator ? navigator.mediaSession : null;
-function msMeta() { if (!MS) return; const t = lib.get(P.current); if (!t) return; try { const art = { src: coverOf(t, true), sizes: '640x640' }; if (!t.artUrl) art.type = 'image/jpeg'; MS.metadata = new MediaMetadata({ title: t.title, artist: t.artist, album: t.album || (P.ctx ? P.ctx.name : 'Хвиля'), artwork: [art] }); } catch (e) {} }
-function msState() { if (MS) try { MS.playbackState = audio.paused ? 'paused' : 'playing'; } catch (e) {} }
-function msPos() { if (!MS || !MS.setPositionState) return; const d = curDuration(); if (!d || !isFinite(d)) return; try { MS.setPositionState({ duration: d, playbackRate: audio.playbackRate || 1, position: clamp(curTime(), 0, d) }); } catch (e) {} }
+// Android app shell (see android/): mirrors the player into a native media notification / lock screen and takes its buttons.
+const AND = window.HvyliaAndroid || null;
+let andArtId = '';
+function androidSync() {
+  if (!AND) return;
+  const t = lib.get(P.current);
+  try {
+    if (!t) { andArtId = ''; AND.clear(); return; }
+    AND.update(t.id, t.title, t.artist, t.album || (P.ctx ? P.ctx.name : 'Хвиля'), document.body.classList.contains('is-playing'), Math.round(curDuration() * 1000), Math.round(curTime() * 1000), audio.playbackRate || 1);
+    if (andArtId !== t.id) { andArtId = t.id; androidArt(t); }
+  } catch (e) {}
+}
+function androidArt(t) {
+  const src = coverOf(t, true);
+  if (src.startsWith('data:')) { try { AND.art(t.id, src); } catch (e) {} return; }
+  const img = new Image();
+  img.onload = () => { try { const c = document.createElement('canvas'); c.width = c.height = 512; const s = Math.min(img.naturalWidth, img.naturalHeight); c.getContext('2d').drawImage(img, (img.naturalWidth - s) / 2, (img.naturalHeight - s) / 2, s, s, 0, 0, 512, 512); AND.art(t.id, c.toDataURL('image/jpeg', .88)); } catch (e) {} };
+  img.src = src;
+}
+if (AND) window.__hvylia = { play: () => togglePlay(true), pause: () => pauseNow(), toggle: () => togglePlay(), next: () => next(), prev: () => prev(), seek: ms => seekTo(ms / 1000) };
+const barCx = document.createElement('canvas').getContext('2d');
+function setBar(css) { if (themeMeta) themeMeta.content = css; if (AND) try { barCx.fillStyle = css; AND.bar(barCx.fillStyle); } catch (e) {} }
+function msMeta() { androidSync(); if (!MS) return; const t = lib.get(P.current); if (!t) return; try { const art = { src: coverOf(t, true), sizes: '640x640' }; if (!t.artUrl) art.type = 'image/jpeg'; MS.metadata = new MediaMetadata({ title: t.title, artist: t.artist, album: t.album || (P.ctx ? P.ctx.name : 'Хвиля'), artwork: [art] }); } catch (e) {} }
+function msState() { androidSync(); if (MS) try { MS.playbackState = audio.paused ? 'paused' : 'playing'; } catch (e) {} }
+function msPos() { androidSync(); if (!MS || !MS.setPositionState) return; const d = curDuration(); if (!d || !isFinite(d)) return; try { MS.setPositionState({ duration: d, playbackRate: audio.playbackRate || 1, position: clamp(curTime(), 0, d) }); } catch (e) {} }
 if (MS) [['play', () => togglePlay(true)], ['pause', () => pauseNow()], ['previoustrack', () => prev()], ['nexttrack', () => next()], ['seekto', d => seekTo(d.seekTime)], ['stop', () => pauseNow()]].forEach(([a, f]) => { try { MS.setActionHandler(a, f); } catch (e) {} });
 
 // sleep timer
@@ -1485,7 +1507,7 @@ function renderNP(dir = 0) {
     if (npOpen && dir && !reduceMotion) npCover.animate([{ transform: `translateX(${dir * 70}%) rotate(${dir * 6}deg) scale(.9)`, opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 460, easing: 'cubic-bezier(.22,1,.36,1)' });
   }
   npEl.style.setProperty('--npc', hsl(t.color, 34, 62));
-  if (npOpen && themeMeta) themeMeta.content = hsl(t.color, 34, 62);
+  if (npOpen) setBar(hsl(t.color, 34, 62));
   if (npTitle.textContent !== t.title) setMarquee(npTitle, t.title);
   npArtist.textContent = t.artist;
   $('#npCtx').textContent = P.fromQueue ? 'Черги' : P.ctx ? P.ctx.name : 'Бібліотеки';
@@ -1499,13 +1521,13 @@ function openNP() {
   npOpen = true; renderNP(); setMarquee(npTitle, lib.get(P.current).title);
   npEl.removeAttribute('inert'); npEl.style.transform = '';
   npEl.classList.add('open', 'entering'); setTimeout(() => npEl.classList.remove('entering'), 900);
-  document.body.classList.add('np-open'); if (themeMeta) themeMeta.content = hsl(lib.get(P.current).color, 34, 62);
+  document.body.classList.add('np-open'); setBar(hsl(lib.get(P.current).color, 34, 62));
   histPush();
 }
 function closeNP(fromPop) {
   if (!npOpen) return;
   npOpen = false; npEl.classList.remove('open', 'dragging', 'entering'); npEl.style.transform = ''; npEl.setAttribute('inert', '');
-  document.body.classList.remove('np-open'); if (themeMeta) themeMeta.content = '#101211';
+  document.body.classList.remove('np-open'); setBar('#101211');
   if (!fromPop) histBack();
   const t = topEntry(); if (t.dirty) refreshEntry(t);
 }
@@ -1978,7 +2000,7 @@ async function boot() {
   if (location.hash === '#player' && P.current) openNP();
   // warm up the restored demo track in the background so the first tap on play starts instantly
   setTimeout(() => { const t = lib.get(P.current); if (t && t.demo && P.srcId !== t.id) sourceFor(t).catch(() => {}); }, 900);
-  if ('serviceWorker' in navigator && !inFrame && /^https?:$/.test(location.protocol)) navigator.serviceWorker.register('sw.js').catch(() => {});
+  if ('serviceWorker' in navigator && !inFrame && !AND && /^https?:$/.test(location.protocol)) navigator.serviceWorker.register('sw.js').catch(() => {});
 }
 boot();
 })();

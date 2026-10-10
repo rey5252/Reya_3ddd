@@ -11,3 +11,6 @@ classes/
 logs/
 *.zip
 __pycache__/
+
+# Android build output
+android/build/
