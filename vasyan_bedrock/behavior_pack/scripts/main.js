@@ -3,7 +3,7 @@
 // happens around them and argue with each other. Bobik "helps" in the worst possible way, Klod actually helps
 // and cleans up after Bobik.
 // Stable Script API only (@minecraft/server 2.0.0, @minecraft/server-ui 2.0.0), Bedrock 1.21.90+.
-import { world, system, GameMode, Player, ItemStack, EntityDamageCause } from "@minecraft/server";
+import { world, system, GameMode, Player, ItemStack, EntityDamageCause, BlockVolume } from "@minecraft/server";
 import { ActionFormData, ModalFormData } from "@minecraft/server-ui";
 import { VOICE, DIALOGS } from "./voice.js";
 
@@ -179,7 +179,10 @@ function pump(player) {
   const item = q.items.shift();
   if (!item) return;
   const who = item.who;
-  if (!player.isValid || !who.isValid) return pump(player);
+  if (!player.isValid || !who.isValid) {
+    if (item.line) q.items = q.items.filter((i) => !i.line); // one of them is gone: the argument is over
+    return pump(player);
+  }
   const ch = VOICE_OF[who.typeId];
   const l = lang(player);
   const v = VOICE[ch][l];
@@ -285,7 +288,7 @@ function canBreak(block) {
 /** @typedef {{key: string, undo?: () => void} | false} Prank */
 
 // natural terrain Bobik may dig out (nothing built, nothing valuable to break)
-const DIGGABLE = /^minecraft:(dirt|grass_block|coarse_dirt|rooted_dirt|podzol|mycelium|stone|cobblestone|deepslate|cobbled_deepslate|tuff|andesite|diorite|granite|calcite|sand|red_sand|sandstone|gravel|clay|mud|netherrack|soul_sand|soul_soil|blackstone|basalt|end_stone|snow|snow_block|moss_block|dripstone_block)$/;
+const DIGGABLE = /^minecraft:(dirt|grass_block|coarse_dirt|rooted_dirt|podzol|mycelium|stone|deepslate|tuff|andesite|diorite|granite|calcite|sand|red_sand|gravel|clay|mud|netherrack|soul_sand|soul_soil|blackstone|basalt|end_stone|snow|dripstone_block)$/;
 
 const lastHurt = new Map();
 /** Fighting, low on health or a monster close by: no pranks that could get the player killed. @param {Player} player */
@@ -695,8 +698,11 @@ function klodUseful(player, klod, bobik, tips = true) {
     particle(player, "minecraft:heart_particle");
     return "heal";
   }
-  const loot = itemsAround(player, 8).filter((i) => dist(i.location, player.location) > 2.5);
-  if (loot.length >= 3 && chance(0.5)) {
+  const inv = container(player);
+  const loot = itemsAround(player, 8).filter(
+    (i) => dist(i.location, player.location) > 2.5 && !i.dimension.getBlock(floorLoc(i.location))?.isLiquid,
+  );
+  if (loot.length >= 3 && inv && inv.emptySlotsCount > 0 && player.isOnGround && chance(0.5)) {
     for (const i of loot) i.teleport(player.location);
     return "collect_auto";
   }
@@ -847,7 +853,7 @@ function tickPlayer(player, all, now, enabled, nightfall) {
     }
   }
 
-  if (bobik && klod && !busy(player) && !quiet(bobik) && !quiet(klod)) {
+  if (bobik && klod && !busy(player) && !quiet(bobik) && !quiet(klod) && !inDanger(player)) {
     const next = nextArgue.get(player.id);
     if (next === undefined || next > now + ARGUE_DELAY[1]) nextArgue.set(player.id, now + between(ARGUE_DELAY));
     else if (now >= next) {
@@ -981,8 +987,10 @@ function argue(player, bobik, klod) {
     say(player, bobik, "reply_klod", { important: true });
     return;
   }
-  const d = rand(list.length);
   const q = queueOf(player);
+  if (q.items.some((i) => i.line)) return; // already arguing
+  nextArgue.set(player.id, system.currentTick + between(ARGUE_DELAY));
+  const d = rand(list.length);
   list[d].forEach(([speaker, text, ticks], i) => {
     q.items.push({ who: speaker === "vasyan" ? bobik : klod, line: { sid: `dialog.${l}.${set}.${d + 1}.${i + 1}`, text, ticks } });
   });
@@ -1016,8 +1024,9 @@ const canon = (text) =>
 // [intent, word beginnings, whole words, phrases]; the first match wins, so the order matters
 /** @type {[string, string[], string[], string[]][]} */
 const RAW_INTENTS = [
-  ["bye", [], [], ["йди геть", "іди геть", "піди геть", "пішов геть", "уходи", "зникни", "исчезни", "пошел вон", "вали звідси", "вали отсюда", "до побачення", "до свидания", "бувай", "прощай", "go away"]],
-  ["give_back", ["поверн", "верни", "віддай", "отдай", "вертай"], [], ["give back"]],
+  ["bye", [], ["уходи", "зникни", "исчезни", "бувай", "прощай"], ["йди геть", "іди геть", "піди геть", "пішов геть", "пошел вон", "вали звідси", "вали отсюда", "до побачення", "до свидания", "go away"]],
+  ["follow", [], ["вернись", "вернися", "повернись", "повернися", "вертайся"], []],
+  ["give_back", ["поверн", "верни", "віддай", "отдай"], [], ["give back"]],
   ["quiet", ["мовч", "помовч", "замовк", "молч", "помолч", "замолч", "тихо", "тихіше", "тише", "тиш", "заткн", "цить", "quiet", "shut"], [], []],
   ["follow", ["слідуй", "следуй", "ходім", "пішли", "пошли", "йдемо", "follow"], ["идем"], ["за мною", "за мной", "йди сюди", "іди сюди", "иди сюда", "ко мне", "до мене", "давай сюди", "come here"]],
   ["stay", ["сиди", "стій", "стой", "стоп", "чекай", "почекай", "жди", "подожди", "замри", "залишайся", "оставайся", "охороняй", "охраняй", "stay", "wait", "stop"], ["sit"], []],
@@ -1042,15 +1051,40 @@ const INTENTS = RAW_INTENTS.map(([intent, stems, words, phrases]) => [intent, st
 /** One order: which intent and who it is for ("bobik", "klod", "both" or undefined: whoever was asked). */
 /** @typedef {{intent: string, to?: "bobik" | "klod" | "both"}} Order */
 
-/** @param {string} text @returns {string} */
+// "не уходи", "не руби": a negated order is no order
+const NEGATION = ["не", "ни", "нельзя", "незя", "dont", "don't", "not"].map(canon);
+
+/**
+ * The intent whose word comes first ("построй защиту от зомби" is about building, "постав факели, щоб монстри
+ * не спавнились" about torches). "не" right before that word cancels the order ("не уходи", "клод не копай").
+ * @param {string} text @returns {string}
+ */
 function parseIntent(text) {
   const t = canon(text);
-  const words = t.split(/[^a-zа-яь]+/).filter(Boolean);
+  /** @type {{w: string, at: number}[]} */
+  const words = [];
+  for (const m of t.matchAll(/[a-zа-яь]+/g)) words.push({ w: m[0], at: m.index ?? 0 });
+  let best = "unknown";
+  let bestAt = Infinity;
+  const matched = new Set();
   for (const [intent, stems, whole, phrases] of INTENTS) {
-    if (phrases.some((ph) => t.includes(ph))) return intent;
-    if (words.some((w) => whole.includes(w) || stems.some((st) => w.startsWith(st)))) return intent;
+    for (const ph of phrases) {
+      const at = t.indexOf(ph);
+      if (at < 0) continue;
+      matched.add(intent);
+      if (at < bestAt) [best, bestAt] = [intent, at];
+    }
+    for (const { w, at } of words) {
+      if (!whole.includes(w) && !stems.some((st) => w.startsWith(st))) continue;
+      matched.add(intent);
+      if (at < bestAt) [best, bestAt] = [intent, at];
+    }
   }
-  return "unknown";
+  const i = words.findIndex((x) => x.at >= bestAt);
+  if (i > 0 && NEGATION.includes(words[i - 1].w)) return "unknown";
+  // "построй мост": the bridge is what is being built
+  if (best === "build" && matched.has("bridge")) return "bridge";
+  return best;
 }
 
 /** @param {string} text @returns {"bobik" | "klod" | "both" | undefined} */
@@ -1070,11 +1104,21 @@ function parseCommands(text) {
     .filter(Boolean);
   /** @type {Order[]} */
   const orders = [];
+  /** @type {Order["to"]} */
   let to;
+  /** @type {Order["to"]} */
+  let named;
   for (const part of parts) {
-    to = addressee(part) ?? to;
+    const who = addressee(part);
     const intent = parseIntent(part);
-    if (intent !== "unknown" && !orders.some((o) => o.intent === intent && o.to === to)) orders.push({ intent, to });
+    if (intent === "unknown") {
+      // just a name: remember it for the order that follows
+      if (who) named = named && named !== who ? "both" : who;
+      continue;
+    }
+    if (named || who) to = named && who && named !== who ? "both" : (who ?? named);
+    named = undefined;
+    if (!orders.some((o) => o.intent === intent && o.to === to)) orders.push({ intent, to });
   }
   return orders.length ? orders.slice(0, 3) : [{ intent: "unknown", to: addressee(text) }];
 }
@@ -1097,12 +1141,48 @@ const inWorld = (dim, l) => l.y > dim.heightRange.min && l.y < dim.heightRange.m
 /** @param {Player} player */
 const itemsAround = (player, r = 16) => player.dimension.getEntities({ type: "minecraft:item", location: player.location, maxDistance: r });
 
-/** @param {Player} player */
-function monstersAround(player, range = 12) {
+const BOSSES = /wither$|ender_dragon|warden|elder_guardian/;
+/** Monsters to deal with. A typed order also covers the usually neutral ones (the player asked), never bosses. @param {Player} player */
+function monstersAround(player, range = 12, ordered = false) {
   return player.dimension
     .getEntities({ families: ["monster"], location: player.location, maxDistance: range })
-    .filter((m) => m.isValid && m.typeId !== BOBIK && m.typeId !== KLOD && !NEUTRAL.test(m.typeId) && !m.nameTag && !m.getComponent("minecraft:leashable")?.isLeashed);
+    .filter(
+      (m) =>
+        m.isValid &&
+        m.typeId !== BOBIK &&
+        m.typeId !== KLOD &&
+        !BOSSES.test(m.typeId) &&
+        (ordered || !NEUTRAL.test(m.typeId)) &&
+        !m.nameTag &&
+        !m.getComponent("minecraft:leashable")?.isLeashed,
+    );
 }
+
+/**
+ * Locations of the given block types in a box around the player, read in one query.
+ * @param {Player} player @param {number} r @param {number} down @param {number} up @param {string[]} types
+ * @returns {Vector3[]}
+ */
+function blocksAround(player, r, down, up, types) {
+  const dim = player.dimension;
+  const p = floorLoc(player.location);
+  const lo = Math.max(p.y - down, dim.heightRange.min);
+  const hi = Math.min(p.y + up, dim.heightRange.max - 1);
+  if (lo > hi) return [];
+  try {
+    const found = dim.getBlocks(new BlockVolume({ x: p.x - r, y: lo, z: p.z - r }, { x: p.x + r, y: hi, z: p.z + r }), { includeTypes: types }, false);
+    return [...found.getBlockLocationIterator()];
+  } catch {
+    return []; // part of the box is not loaded
+  }
+}
+
+const LOG_TYPES = ["oak", "spruce", "birch", "jungle", "acacia", "dark_oak", "mangrove", "cherry", "pale_oak"]
+  .map((t) => `minecraft:${t}_log`)
+  .concat(["minecraft:crimson_stem", "minecraft:warped_stem"]);
+const ORE_TYPES = ["diamond", "emerald", "gold", "iron", "lapis", "redstone"]
+  .flatMap((o) => [`minecraft:${o}_ore`, `minecraft:deepslate_${o}_ore`])
+  .concat(["minecraft:ancient_debris", "minecraft:nether_gold_ore", "minecraft:lit_redstone_ore", "minecraft:lit_deepslate_redstone_ore"]);
 
 /** A 1x2 tunnel up to 8 blocks forward, through natural ground only, stopping before water or lava. @param {Player} player */
 function planTunnel(player) {
@@ -1119,6 +1199,10 @@ function planTunnel(player) {
       for (const [nx, ny, nz] of [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, 0, 1], [0, 0, -1]]) {
         if (dim.getBlock({ x: l.x + nx, y: l.y + ny, z: l.z + nz })?.isLiquid) return out;
       }
+      if (dy === 0) {
+        const floor = dim.getBlock({ x: l.x, y: l.y - 1, z: l.z });
+        if (!floor || floor.isAir || floor.isLiquid) return out;
+      }
       if (b.isAir) continue;
       if (!minable(b)) return out;
       out.push(l);
@@ -1134,17 +1218,10 @@ function planTree(player) {
   const dim = player.dimension;
   let start;
   let best = Infinity;
-  for (let x = -8; x <= 8; x++)
-    for (let z = -8; z <= 8; z++)
-      for (let y = -2; y <= 6; y++) {
-        const l = { x: p.x + x, y: p.y + y, z: p.z + z };
-        if (!inWorld(dim, l)) continue;
-        const id = dim.getBlock(l)?.typeId ?? "";
-        if (LOG.test(id) && !id.includes("stripped") && x * x + y * y + z * z < best) {
-          best = x * x + y * y + z * z;
-          start = l;
-        }
-      }
+  for (const l of blocksAround(player, 8, 2, 6, LOG_TYPES)) {
+    const d = (l.x - p.x) ** 2 + (l.y - p.y) ** 2 + (l.z - p.z) ** 2;
+    if (d < best) [best, start] = [d, l];
+  }
   if (!start) return [];
   const key = (l) => `${l.x},${l.y},${l.z}`;
   const seen = new Set([key(start)]);
@@ -1155,15 +1232,17 @@ function planTree(player) {
       for (let dy = -1; dy <= 1; dy++)
         for (let dz = -1; dz <= 1; dz++) {
           const l = { x: logs[i].x + dx, y: logs[i].y + dy, z: logs[i].z + dz };
-          if (seen.has(key(l)) || !inWorld(dim, l)) continue;
+          // a tree is narrow; a log wall running sideways is a building
+          if (seen.has(key(l)) || !inWorld(dim, l) || Math.abs(l.x - start.x) > 3 || Math.abs(l.z - start.z) > 3) continue;
           seen.add(key(l));
-          const id = dim.getBlock(l)?.typeId ?? "";
+          const b = dim.getBlock(l);
+          const id = b?.typeId ?? "";
           if (LOG.test(id) && !id.includes("stripped")) logs.push(l);
-          else if (id.includes("leaves")) leaves++;
+          else if (id.includes("leaves") && b?.permutation.getState("persistent_bit") !== true) leaves++;
         }
   }
-  // a log cabin has no leaves on it: leave the player's buildings alone
-  if (leaves < 4) return [];
+  // a log cabin has no natural leaves on it (placed leaves are "persistent"): leave buildings alone
+  if (leaves < Math.max(4, logs.length)) return [];
   return logs.sort((a, b) => b.y - a.y);
 }
 
@@ -1199,7 +1278,9 @@ function planBridge(player) {
     const l = { x: p.x + f.x * i, y: p.y - 1, z: p.z + f.z * i };
     if (!inWorld(dim, l)) break;
     const b = dim.getBlock(l);
-    if (b && (b.isAir || b.isLiquid)) out.push(l);
+    if (!b) break;
+    if (b.isAir || b.isLiquid) out.push(l);
+    else if (out.length || i > 2) break; // the other bank
   }
   return out;
 }
@@ -1234,21 +1315,12 @@ function findOre(player) {
   let found;
   let rank = ORES.length;
   let best = Infinity;
-  for (let x = -8; x <= 8; x++)
-    for (let y = -8; y <= 8; y++)
-      for (let z = -8; z <= 8; z++) {
-        const l = { x: p.x + x, y: p.y + y, z: p.z + z };
-        if (!inWorld(dim, l)) continue;
-        const id = dim.getBlock(l)?.typeId ?? "";
-        if (!id.includes("ore") && !id.includes("debris")) continue;
-        const r = ORES.findIndex((re) => re.test(id));
-        const d = x * x + y * y + z * z;
-        if (r >= 0 && (r < rank || (r === rank && d < best))) {
-          rank = r;
-          best = d;
-          found = l;
-        }
-      }
+  for (const l of blocksAround(player, 8, 8, 8, ORE_TYPES)) {
+    const id = dim.getBlock(l)?.typeId ?? "";
+    const r = ORES.findIndex((re) => re.test(id));
+    const d = (l.x - p.x) ** 2 + (l.y - p.y) ** 2 + (l.z - p.z) ** 2;
+    if (r >= 0 && (r < rank || (r === rank && d < best))) [rank, best, found] = [r, d, l];
+  }
   return found;
 }
 
@@ -1288,7 +1360,7 @@ function klodJob(player, klod, intent) {
   const dim = player.dimension;
   switch (intent) {
     case "kill": {
-      const mobs = monstersAround(player).slice(0, 6);
+      const mobs = monstersAround(player, 12, true).slice(0, 6);
       if (!mobs.length) return false;
       return {
         key: "cmd_kill",
@@ -1303,12 +1375,12 @@ function klodJob(player, klod, intent) {
     case "tunnel": {
       if (player.getGameMode() === GameMode.Adventure) return false;
       const plan = planTunnel(player);
-      return plan.length ? { key: "cmd_tunnel", run: () => slowly(plan, (l) => breakBlock(dim, l), 4) } : false;
+      return plan.length ? { key: "cmd_tunnel", run: () => slowly(plan, (l) => minable(dim.getBlock(l)) && breakBlock(dim, l), 4) } : false;
     }
     case "chop": {
       if (player.getGameMode() === GameMode.Adventure) return false;
       const logs = planTree(player);
-      return logs.length ? { key: "cmd_chop", run: () => slowly(logs, (l) => breakBlock(dim, l), 3) } : false;
+      return logs.length ? { key: "cmd_chop", run: () => slowly(logs, (l) => LOG.test(dim.getBlock(l)?.typeId ?? "") && breakBlock(dim, l), 3) } : false;
     }
     case "build": {
       if (player.getGameMode() === GameMode.Adventure) return false;
@@ -1329,12 +1401,20 @@ function klodJob(player, klod, intent) {
     case "bridge": {
       if (player.getGameMode() === GameMode.Adventure) return false;
       const plan = planBridge(player);
-      return plan.length ? { key: "cmd_bridge", run: () => slowly(plan, (l) => dim.getBlock(l)?.setType("minecraft:cobblestone"), 3) } : false;
+      const lay = (l) => {
+        const b = dim.getBlock(l);
+        if (b && (b.isAir || b.isLiquid)) b.setType("minecraft:cobblestone");
+      };
+      return plan.length ? { key: "cmd_bridge", run: () => slowly(plan, lay, 3) } : false;
     }
     case "torches": {
       if (player.getGameMode() === GameMode.Adventure) return false;
       const spots = planTorches(player);
-      return spots.length ? { key: "cmd_torches", run: () => slowly(spots, (l) => dim.getBlock(l)?.setType("minecraft:torch"), 4) } : false;
+      const place = (l) => {
+        const b = dim.getBlock(l);
+        if (b?.isAir) b.setType("minecraft:torch");
+      };
+      return spots.length ? { key: "cmd_torches", run: () => slowly(spots, place, 4) } : false;
     }
     case "food":
       return { key: "cmd_food", run: () => giveOrDrop(player, new ItemStack("minecraft:bread", 3)) };
@@ -1389,8 +1469,9 @@ function bobikJob(player, bobik, intent) {
         run: () =>
           slowly([0, 1, 2], () => {
             if (!player.isValid) return;
-            const feet = dim.getBlock(floorLoc(player.location));
-            if (!feet?.isAir) return;
+            const at = floorLoc(player.location);
+            const feet = dim.getBlock(at);
+            if (!feet?.isAir || !player.isOnGround || !dim.getBlock({ x: at.x, y: at.y + 2, z: at.z })?.isAir) return;
             player.teleport({ x: player.location.x, y: player.location.y + 1.05, z: player.location.z });
             feet.setType("minecraft:dirt");
           }, 8),
@@ -1416,7 +1497,13 @@ function bobikJob(player, bobik, intent) {
         run: () => {
           for (const i of items) {
             const stack = i.isValid ? i.getComponent("minecraft:item")?.itemStack : undefined;
-            if (stack && !bag.addItem(stack)) i.remove();
+            if (!stack) continue;
+            const at = i.location;
+            const dimension = i.dimension;
+            const left = bag.addItem(stack);
+            if (left && left.amount >= stack.amount) continue; // nothing fitted
+            i.remove();
+            if (left) dimension.spawnItem(left, at);
           }
         },
       };
@@ -1459,6 +1546,9 @@ function giveBack(player, bobik) {
  */
 function command(player, who, text) {
   const { bobik, klod } = near(player);
+  // an order interrupts an argument
+  const q = queueOf(player);
+  q.items = q.items.filter((i) => !i.line);
   for (const { intent, to } of parseCommands(text)) {
     const targets = (to === "both" ? [bobik, klod] : to === "klod" ? [klod] : to === "bobik" ? [bobik] : [who]).filter(Boolean);
     // asked for the one who is not here: the one who is says he can't
@@ -1497,10 +1587,13 @@ function order(player, who, intent, bobik, klod) {
       return dance(player, who);
   }
   if (isBobik) {
+    // with pranks switched off or in a fight he does nothing silly, he just can't
+    const careful = world.getDynamicProperty(ENABLED) === false || inDanger(player);
+    if (careful && !["chop", "find", "torches", "collect", "kill"].includes(intent)) return say(player, who, "cmd_cant", { important: true });
     // he gets the order wrong on purpose every so often, and always when he has no idea
     const job = intent === "unknown" || chance(0.2) ? false : bobikJob(player, who, intent);
     if (!job) {
-      if (intent !== "unknown" && chance(0.5)) return say(player, who, "cmd_cant", { important: true });
+      if (careful || (intent !== "unknown" && chance(0.5))) return say(player, who, "cmd_cant", { important: true });
       return say(player, who, "cmd_misunderstood", { important: true, then: () => system.runTimeout(() => who.isValid && bobikHelp(player, who, klod), 20) });
     }
     say(player, who, job.key, { important: true, then: job.run });
