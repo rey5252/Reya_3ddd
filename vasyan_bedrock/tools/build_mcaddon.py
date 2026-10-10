@@ -4,7 +4,7 @@ Run from anywhere:  python3 vasyan_bedrock/tools/build_mcaddon.py
 Checks: every .json parses, manifest uuids are unique and the BP depends on the RP, every .lang file has
 the names, every line in tools/lines is voiced and every line key the script uses exists.
 """
-import json, os, re, sys, zipfile
+import json, os, re, sys, time, zipfile
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 PACKS = {"behavior_pack": "Bobik_Klod_BP", "resource_pack": "Bobik_Klod_RP"}
@@ -95,15 +95,40 @@ def check_voice():
     print(f"voice ok: {len(defs)} voiced lines, {len(used)} line keys used by the script")
 
 
+def stamped_manifests():
+    """Every build gets a new, higher patch version (minutes since 2026), so Minecraft always takes it as an
+    update. With two different packs under the same uuid and version, the import fails as a duplicate."""
+    build = int((time.time() - 1767225600) // 60)
+    out = {}
+    for pack in PACKS:
+        m = json.load(open(os.path.join(ROOT, pack, "manifest.json"), encoding="utf-8"))
+        version = m["header"]["version"][:2] + [build]
+        m["header"]["version"] = version
+        for mod in m["modules"]:
+            mod["version"] = version
+        out[pack] = m
+    rp_uuid = out["resource_pack"]["header"]["uuid"]
+    for dep in out["behavior_pack"].get("dependencies", []):
+        if dep.get("uuid") == rp_uuid:
+            dep["version"] = out["resource_pack"]["header"]["version"]
+    print("version", ".".join(map(str, out["behavior_pack"]["header"]["version"])))
+    return out
+
+
 def pack():
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
+    manifests = stamped_manifests()
     with zipfile.ZipFile(OUT, "w", zipfile.ZIP_DEFLATED) as z:
         for pack, name in PACKS.items():
             base = os.path.join(ROOT, pack)
             for dirpath, _, files in os.walk(base):
                 for f in sorted(files):
                     path = os.path.join(dirpath, f)
-                    z.write(path, name + "/" + os.path.relpath(path, base).replace(os.sep, "/"))
+                    rel = os.path.relpath(path, base).replace(os.sep, "/")
+                    if rel == "manifest.json":
+                        z.writestr(name + "/" + rel, json.dumps(manifests[pack], ensure_ascii=False, indent=2))
+                    else:
+                        z.write(path, name + "/" + rel)
     print("wrote", os.path.relpath(OUT, os.getcwd()))
 
 
