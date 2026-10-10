@@ -1,0 +1,435 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    FortressTowers 1.0 - Tower #8: JapanWaveCitadel ("Хвильова цитадель"), Empire of the Rising Sun (Side="Japan").
+
+    BASE: modified copy of the vanilla Empire Wave-Force Tower from SageXml
+          (vanilla GameObject id believed to be "JapanWaveForceTower" - VERIFY) and of a vanilla
+          Empire defensive nanocore (the packed, mobile core that unpacks into the structure).
+
+    CHANGED vs vanilla:
+      - New IDs: JapanWaveCitadel (tower), JapanWaveCitadelNanocore (core), JapanWaveCitadelWeapon.
+      - Stats per SPEC: cost 2200 / build time 30 s (applied to the nanocore build), HP 3400,
+        attack range 600, minimum range 150.
+      - Weapon: artillery-style charged wave-force line strike. 6 s charge (PreAttackDelay 6000 ms),
+        then a straight beam that pierces and damages EVERY ground unit along the line
+        (LinearDamageNugget), plus a small splash at the end point. Cannot hit aircraft.
+      - Model/animations/FX are reused from the Wave-Force Tower; the model is scaled x1.4
+        (Scale="1.4" in the Draw module); house colour tinted to Empire white/crimson/teal.
+      - Prerequisite: Nanotech Mainframe.
+
+    AUTHOR MUST CHECK IN SageXml (all marked with VERIFY comments below):
+      - exact W3X model / skeleton / animation names of the Wave-Force Tower (JUWaveForceTower_*),
+      - FX list names (charge / beam / impact), audio event names,
+      - nanocore unpack module name and its vanilla parent template,
+      - Nanotech Mainframe object id, Empire defensive structure EnergyProduction value,
+      - LinearDamageNugget attribute names (copy from the vanilla Wave-Force Artillery weapon).
+-->
+<AssetDeclaration xmlns="uri:ea.com:eala:asset" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Tags></Tags>
+    <Includes>
+        <Include type="reference" source="DATA:static.xml" />
+        <Include type="reference" source="DATA:global.xml" />
+        <Include type="reference" source="DATA:audio.xml" />
+    </Includes>
+
+    <!-- ===================================================================== -->
+    <!-- WEAPON: charged wave-force line strike                                -->
+    <!-- ===================================================================== -->
+    <WeaponTemplate
+        id="JapanWaveCitadelWeapon"
+        Name="JapanWaveCitadelWeapon"
+        AttackRange="600.0"
+        MinimumAttackRange="150.0"
+        WeaponSpeed="999999.0"
+        RadiusDamageAffects="ENEMIES NEUTRALS NOT_SIMILAR"
+        PreAttackDelay="6000"
+        PreAttackType="PER_SHOT"
+        FiringDuration="1000"
+        ClipSize="1"
+        AutoReloadsClip="AUTO"
+        AcceptableAimDelta="5d"
+        AntiMask="ANTI_GROUND"
+        CanFireWhileMoving="false"
+        RequireFollowThru="true"
+        ShouldPlayUnderAttackEvaEvent="true"
+        FireFX="FX_JapanWaveCitadelFire"
+        PreAttackFX="FX_JapanWaveCitadelCharge"
+        FireSound="JapanWaveForceTower_WeaponFire"
+        PreAttackSound="JapanWaveForceTower_WeaponCharge">
+        <!-- VERIFY: FireFX / PreAttackFX are cloned from the vanilla Wave-Force Tower FX
+             (e.g. FX_JapanWaveForceTowerFire / FX_JapanWaveForceTowerCharge) recoloured white/teal;
+             audio events JapanWaveForceTower_WeaponFire / _WeaponCharge must exist in audio.xml. -->
+        <ClipReloadTime
+            MinSeconds="2.0s"
+            MaxSeconds="2.0s" />
+        <Nuggets>
+            <!-- Piercing line: every ground unit between the tower and the end point is hit.
+                 VERIFY: copy attribute names from the vanilla JapanWaveForceArtillery weapon. -->
+            <LinearDamageNugget
+                Damage="900.0"
+                DamageTaperOff="0.0"
+                DamageType="SNIPER"
+                DamageFXType="JAPAN_WAVEFORCE"
+                DeathType="LASERED"
+                SweepFXType="FX_JapanWaveCitadelBeamSweep"
+                SegmentWidth="18.0"
+                AcceptDamageAdd="true"
+                OverShootDistance="120.0"
+                DelayTime="0s"
+                AffectHordeMembers="true"
+                ForbiddenTargetObjectStatus="AIRBORNE_TARGET">
+                <SpecialObjectFilter
+                    Rule="ANY"
+                    Relationship="ENEMIES NEUTRAL"
+                    Include="INFANTRY VEHICLE STRUCTURE HUGE_VEHICLE"
+                    Exclude="AIRCRAFT" />
+            </LinearDamageNugget>
+            <!-- Small burst at the aim point (finishes the primary target). -->
+            <DamageNugget
+                Damage="300.0"
+                Radius="40.0"
+                DelayTime="0s"
+                DamageType="SNIPER"
+                DamageFXType="JAPAN_WAVEFORCE"
+                DeathType="LASERED" />
+            <!-- VERIFY: DamageType / DamageFXType / DeathType values used by vanilla Wave-Force weapons. -->
+        </Nuggets>
+        <ScatterRadiusVsType
+            Radius="0.0">
+            <Filter
+                Rule="ANY"
+                Include="INFANTRY VEHICLE" />
+        </ScatterRadiusVsType>
+    </WeaponTemplate>
+
+    <!-- ===================================================================== -->
+    <!-- TOWER: JapanWaveCitadel                                               -->
+    <!-- ===================================================================== -->
+    <GameObject
+        id="JapanWaveCitadel"
+        inheritFrom="BaseStructure"
+        Side="Japan"
+        EditorSorting="STRUCTURE"
+        KindOf="PRELOAD STRUCTURE SELECTABLE IMMOBILE SCORE FS_BASE_DEFENSE CAN_CAST_REFLECTIONS MP_COUNT_FOR_VICTORY IGNORE_DOCKING_BONES"
+        BuildCost="2200"
+        BuildTime="30"
+        CommandSet="JapanWaveCitadelCommandSet"
+        EnergyProduction="-10"
+        ThreatLevel="2.0"
+        VisionRange="650"
+        ShroudClearingRange="650"
+        RadarPriority="STRUCTURE"
+        ProductionQueueType="BASE_DEFENSE"
+        SelectPortrait="Portrait_JapanWaveForceTower"
+        ButtonImage="Button_JapanWaveForceTower"
+        UnitCategory="STRUCTURE">
+        <!-- VERIFY: vanilla Empire base defenses' EnergyProduction (Wave-Force Tower is believed to consume power;
+             keep this in sync with the vanilla value / SPEC "як у ванільних"). -->
+        <!-- VERIFY: Portrait_/Button_ image names of the vanilla Wave-Force Tower. -->
+        <DisplayName>NAME:JapanWaveCitadel</DisplayName>
+        <Description>DESC:JapanWaveCitadel</Description>
+        <TypeDescription>TYPE:JapanWaveCitadel</TypeDescription>
+
+        <ArmorSet
+            Armor="StructureArmor"
+            DamageFX="StructureDamageFXNoShake" />
+        <!-- VERIFY: vanilla Wave-Force Tower armor id (may be "BaseDefenseArmor"). -->
+
+        <WeaponSetUpdate
+            id="ModuleTag_WeaponSetUpdate">
+            <WeaponSlotTurret
+                ID="1"
+                AllowInterleavedFiring="false">
+                <Weapon
+                    Ordering="PRIMARY_WEAPON"
+                    Template="JapanWaveCitadelWeapon" />
+                <TurretSettings
+                    TurretTurnRate="60"
+                    TurretPitchRate="60"
+                    AllowsPitch="true"
+                    MinimumPitch="-10d"
+                    FiresWhileTurning="false"
+                    MinIdleScanTime="2.0s"
+                    MaxIdleScanTime="5.0s"
+                    MinIdleScanAngle="0.0"
+                    MaxIdleScanAngle="45.0">
+                    <TurretAITargetChooserData
+                        CanAcquireDynamicIfAssignedOutOfRange="true" />
+                </TurretSettings>
+            </WeaponSlotTurret>
+        </WeaponSetUpdate>
+
+        <Draws>
+            <ScriptedModelDraw
+                id="ModuleTag_Draw"
+                OkToChangeModelColor="true"
+                Scale="1.4"
+                ExtraPublicBone="TURRET MUZZLEFX01"
+                StaticModelLODMode="true">
+                <!-- VERIFY: model / skeleton / animation names of the vanilla Wave-Force Tower
+                     (believed JUWaveForceTower_SKN / JUWaveForceTower_SKL / JUWaveForceTower_* anims). -->
+                <ModelConditionState
+                    ParseCondState="DEFAULT">
+                    <Model Name="JUWaveForceTower_SKN" />
+                    <WeaponFireFXBone WeaponSlotID="1" WeaponSlotType="PRIMARY_WEAPON" BoneName="MUZZLEFX01" />
+                    <WeaponLaunchBone WeaponSlotID="1" WeaponSlotType="PRIMARY_WEAPON" BoneName="MUZZLEFX01" />
+                    <Turret TurretNameKey="TURRET" TurretPitch="TURRET_PITCH" TurretID="1" />
+                </ModelConditionState>
+                <ModelConditionState
+                    ParseCondState="REALLYDAMAGED">
+                    <Model Name="JUWaveForceTower_D1" />
+                    <WeaponFireFXBone WeaponSlotID="1" WeaponSlotType="PRIMARY_WEAPON" BoneName="MUZZLEFX01" />
+                    <WeaponLaunchBone WeaponSlotID="1" WeaponSlotType="PRIMARY_WEAPON" BoneName="MUZZLEFX01" />
+                    <Turret TurretNameKey="TURRET" TurretPitch="TURRET_PITCH" TurretID="1" />
+                </ModelConditionState>
+                <ModelConditionState
+                    ParseCondState="RUBBLE">
+                    <Model Name="JUWaveForceTower_RBL" />
+                </ModelConditionState>
+                <AnimationState
+                    ParseCondStateType="PARSE_DEFAULT"
+                    StateName="Idle">
+                    <Animation
+                        AnimationName="JUWaveForceTower_IDLA"
+                        AnimationMode="LOOP" />
+                </AnimationState>
+                <AnimationState
+                    ParseCondStateType="PARSE_NORMAL"
+                    ConditionsYes="PREATTACK_A"
+                    StateName="Charging">
+                    <Animation
+                        AnimationName="JUWaveForceTower_CHGA"
+                        AnimationMode="ONCE" />
+                    <!-- Teal/white charge glow, ~6 s (matches PreAttackDelay). -->
+                    <FXEvent
+                        Frame="0"
+                        Effect="FX_JapanWaveCitadelChargeGlow" />
+                </AnimationState>
+                <AnimationState
+                    ParseCondStateType="PARSE_NORMAL"
+                    ConditionsYes="FIRING_A"
+                    StateName="Firing">
+                    <Animation
+                        AnimationName="JUWaveForceTower_ATKA"
+                        AnimationMode="ONCE" />
+                </AnimationState>
+                <AnimationState
+                    ParseCondStateType="PARSE_NORMAL"
+                    ConditionsYes="AWAITING_CONSTRUCTION"
+                    StateName="Unpacking">
+                    <Animation
+                        AnimationName="JUWaveForceTower_BLDA"
+                        AnimationMode="MANUAL" />
+                </AnimationState>
+            </ScriptedModelDraw>
+        </Draws>
+
+        <Behaviors>
+            <AIUpdate
+                id="ModuleTag_AI"
+                AutoAcquireEnemiesWhenIdle="YES">
+                <UnitAITargetChooserData
+                    SympathyRange="600.0" />
+            </AIUpdate>
+            <PowerPlantUpdate
+                id="ModuleTag_PowerConsumer" />
+            <!-- VERIFY: vanilla module that disables Empire defenses on low power (may be inherited from BaseStructure). -->
+            <StructureCollapseUpdate
+                id="ModuleTag_Collapse"
+                MinCollapseDelay="0"
+                MaxCollapseDelay="0"
+                CollapseDamping=".5"
+                BigBurstFrequency="4"
+                MaxShudder="1.0">
+                <OCL
+                    Type="FINAL">
+                    <OCL>OCL_JapanStructureDeathMedium</OCL>
+                </OCL>
+                <!-- VERIFY: OCL name of the vanilla Wave-Force Tower death. -->
+            </StructureCollapseUpdate>
+            <SellUpdate
+                id="ModuleTag_SellUpdate"
+                RefundRatio="0.5" />
+            <!-- VERIFY: vanilla Empire structures may sell via a pack-up/"SellAsNanocore" behaviour instead. -->
+        </Behaviors>
+
+        <Body>
+            <ActiveBody
+                id="ModuleTag_Body"
+                MaxHealth="3400.0" />
+        </Body>
+
+        <AI>
+            <AIUpdate
+                id="ModuleTag_AIUpdate_Tower"
+                AutoAcquireEnemiesWhenIdle="YES" />
+        </AI>
+
+        <ObjectPrerequisites>
+            <ObjectPrerequisite>
+                <Object>JapanNanotechMainframe</Object>
+                <!-- VERIFY: vanilla Nanotech Mainframe id (believed "JapanNanotechMainframe"/"JapanNanoTechMainframe"). -->
+            </ObjectPrerequisite>
+        </ObjectPrerequisites>
+
+        <Sounds>
+            <VoiceSelect>JapanWaveForceTower_Select</VoiceSelect>
+            <SoundDie>JapanStructureDieMedium</SoundDie>
+            <SoundOnDamaged>JapanStructureDamagedMedium</SoundOnDamaged>
+            <!-- VERIFY: audio event names of the vanilla Wave-Force Tower / Empire structures. -->
+        </Sounds>
+
+        <Geometry
+            IsSmall="false">
+            <Shape
+                Type="BOX"
+                MajorRadius="28.0"
+                MinorRadius="28.0"
+                Height="90.0" />
+            <!-- Vanilla footprint x1.4 (VERIFY against vanilla Wave-Force Tower geometry). -->
+        </Geometry>
+        <GeometryContactPoint>
+            <Point Pos="0 0 0" />
+        </GeometryContactPoint>
+    </GameObject>
+
+    <!-- ===================================================================== -->
+    <!-- NANOCORE: JapanWaveCitadelNanocore (mobile, unpacks into the tower)   -->
+    <!-- ===================================================================== -->
+    <GameObject
+        id="JapanWaveCitadelNanocore"
+        inheritFrom="BaseJapanNanocore"
+        Side="Japan"
+        EditorSorting="UNIT"
+        KindOf="PRELOAD SELECTABLE CAN_CAST_REFLECTIONS SCORE VEHICLE CAN_ATTACK_TROOPS_NONE NANOCORE STRUCTURE_PACKED"
+        BuildCost="2200"
+        BuildTime="30"
+        CommandSet="JapanNanocoreCommandSet"
+        ThreatLevel="0.5"
+        VisionRange="200"
+        ShroudClearingRange="200"
+        RadarPriority="UNIT"
+        ProductionQueueType="BASE_DEFENSE"
+        SelectPortrait="Portrait_JapanWaveForceTower"
+        ButtonImage="Button_JapanWaveForceTower"
+        UnitCategory="VEHICLE">
+        <!-- VERIFY: vanilla parent template of Empire nanocores (e.g. "BaseJapanNanocore" / "BaseNanoCore"),
+             the KindOf flags used by vanilla cores (NANOCORE / STRUCTURE_PACKED may be named differently),
+             and the vanilla core CommandSet (deploy/stop/move). -->
+        <DisplayName>NAME:JapanWaveCitadelNanocore</DisplayName>
+        <Description>DESC:JapanWaveCitadelNanocore</Description>
+        <TypeDescription>TYPE:JapanWaveCitadelNanocore</TypeDescription>
+
+        <ArmorSet
+            Armor="JapanNanocoreArmor"
+            DamageFX="VehicleDamageFX" />
+        <!-- VERIFY: vanilla nanocore armor id. -->
+
+        <Draws>
+            <ScriptedModelDraw
+                id="ModuleTag_Draw"
+                OkToChangeModelColor="true"
+                Scale="1.4">
+                <!-- VERIFY: vanilla Empire nanocore model / anim names (believed JUNanoCore_SKN / JUNanoCore_* ). -->
+                <ModelConditionState
+                    ParseCondState="DEFAULT">
+                    <Model Name="JUNanoCore_SKN" />
+                </ModelConditionState>
+                <AnimationState
+                    ParseCondStateType="PARSE_DEFAULT"
+                    StateName="Idle">
+                    <Animation
+                        AnimationName="JUNanoCore_IDLA"
+                        AnimationMode="LOOP" />
+                </AnimationState>
+                <AnimationState
+                    ParseCondStateType="PARSE_NORMAL"
+                    ConditionsYes="MOVING"
+                    StateName="Moving">
+                    <Animation
+                        AnimationName="JUNanoCore_MOVA"
+                        AnimationMode="LOOP" />
+                </AnimationState>
+                <AnimationState
+                    ParseCondStateType="PARSE_NORMAL"
+                    ConditionsYes="UNPACKING"
+                    StateName="Unpacking">
+                    <Animation
+                        AnimationName="JUNanoCore_UNPA"
+                        AnimationMode="ONCE" />
+                    <FXEvent
+                        Frame="0"
+                        Effect="FX_JapanNanocoreUnpack" />
+                    <!-- VERIFY: vanilla nanocore unpack FX name. -->
+                </AnimationState>
+            </ScriptedModelDraw>
+        </Draws>
+
+        <Behaviors>
+            <AIUpdate
+                id="ModuleTag_AI"
+                AutoAcquireEnemiesWhenIdle="NO" />
+            <PhysicsBehavior
+                id="ModuleTag_Physics"
+                GravityMult="1.0" />
+            <!-- Unpacks into the tower at the chosen spot (core is consumed, tower placed with build-up anim).
+                 VERIFY: exact vanilla module name/attributes for Empire nanocore unpacking
+                 (copy from e.g. the vanilla Wave-Force Tower core in SageXml). -->
+            <UnpackIntoStructureUpdate
+                id="ModuleTag_Unpack"
+                StructureToUnpackInto="JapanWaveCitadel"
+                UnpackTime="5.0s"
+                RequiresClearFootprint="true" />
+            <SlowDeathBehavior
+                id="ModuleTag_Death"
+                DestructionDelay="0">
+                <OCL
+                    Type="FINAL">
+                    <OCL>OCL_JapanNanocoreDeath</OCL>
+                </OCL>
+                <!-- VERIFY: vanilla nanocore death OCL. -->
+            </SlowDeathBehavior>
+        </Behaviors>
+
+        <Body>
+            <ActiveBody
+                id="ModuleTag_Body"
+                MaxHealth="1000.0" />
+            <!-- VERIFY: vanilla nanocore HP (cores are fragile compared to the deployed tower). -->
+        </Body>
+
+        <LocomotorSet
+            Locomotor="JapanNanocoreLocomotor"
+            Condition="NORMAL"
+            Speed="40.0" />
+        <!-- VERIFY: vanilla nanocore locomotor id. -->
+
+        <AI>
+            <AIUpdate
+                id="ModuleTag_AIUpdate_Core"
+                AutoAcquireEnemiesWhenIdle="NO" />
+        </AI>
+
+        <ObjectPrerequisites>
+            <ObjectPrerequisite>
+                <Object>JapanNanotechMainframe</Object>
+                <!-- VERIFY: vanilla Nanotech Mainframe id. -->
+            </ObjectPrerequisite>
+        </ObjectPrerequisites>
+
+        <Sounds>
+            <VoiceSelect>JapanNanocore_Select</VoiceSelect>
+            <VoiceMove>JapanNanocore_Move</VoiceMove>
+            <SoundDie>JapanNanocore_Die</SoundDie>
+            <!-- VERIFY: vanilla nanocore audio event names. -->
+        </Sounds>
+
+        <Geometry
+            IsSmall="true">
+            <Shape
+                Type="CYLINDER"
+                MajorRadius="14.0"
+                Height="20.0" />
+        </Geometry>
+    </GameObject>
+</AssetDeclaration>
