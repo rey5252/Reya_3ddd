@@ -242,7 +242,8 @@ body.is-playing .eq i{animation-play-state:running}
 .coll-bar > *{position:relative}
 .coll-bar .back{background:rgba(0,0,0,.28)}
 .coll-bar-t{flex:1;min-width:0;font-weight:800;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:var(--bar,0);transform:translateY(calc((1 - var(--bar,0)) * 10px))}
-.coll-bar .sm-play{background:var(--accent);color:var(--accent-ink);opacity:var(--bar,0);transform:scale(calc(.6 + var(--bar,0) * .4))}
+.coll-bar .sm-play{pointer-events:none;background:var(--accent);color:var(--accent-ink);opacity:var(--bar,0);transform:scale(calc(.6 + var(--bar,0) * .4))}
+.bar-on .coll-bar .sm-play{pointer-events:auto}
 .coll-bar .sm-play .pp,.coll-bar .sm-play .pp .ic{width:20px;height:20px}
 .coll-hero{position:relative;padding:calc(var(--safe-t) + 62px) 16px 20px;display:flex;justify-content:center}
 .coll-cover{width:min(62vw,236px);height:auto;aspect-ratio:1;border-radius:10px;box-shadow:0 18px 50px rgba(0,0,0,.55);transform:scale(calc(1 - var(--sp,0) * .16));opacity:calc(1 - var(--sp,0) * .85);transform-origin:center bottom;will-change:transform}
@@ -579,6 +580,7 @@ function fmtTotal(sec) { const m = Math.round(sec / 60); if (m < 1) return `${Ma
 const hsl = (c, l, sMax = 68) => `hsl(${Math.round(c[0])}, ${Math.round(clamp(c[1], 16, sMax))}%, ${l}%)`;
 const uniqBy = (arr, f) => { const s = new Set(); return arr.filter(x => { const k = f(x); if (s.has(k)) return false; s.add(k); return true; }); };
 const byName = (a, b) => a.localeCompare(b, 'uk', { sensitivity: 'base' });
+const pressFlash = el => { el.classList.add('lp'); setTimeout(() => el.classList.remove('lp'), 220); };
 function restartAnim(el, cls) { el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
 function anim(el, cls, done) {
   el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls);
@@ -1025,6 +1027,7 @@ function refreshSearch(e) {
   if (!q) {
     const tiles = [getColl('liked'), getColl('all'), getColl('recent'), getColl('top'), ...S.playlists.map(p => getColl('playlist', p.id)), ...artistColls()].filter(c => c && c.ids.length);
     const hues = [274, 148, 210, 20, 330, 190, 45, 260, 0, 100, 300, 230];
+    if (!tiles.length) { box.innerHTML = emptyHTML('Тут поки порожньо', 'Додай музику з телефона або увімкни демо-треки в налаштуваннях.', 'import', 'Обрати файли'); e.results = []; return; }
     box.innerHTML = `<h2 class="res-h">Переглянути все</h2><div class="browse">${tiles.map((c, i) => `<div class="bt" role="button" tabindex="0" data-action="open" data-kind="${c.kind}" data-id="${esc(c.id)}" style="--h:${c.hue != null ? c.hue : hues[i % hues.length]}"><b>${esc(c.name).replace(/(\S+-\S+)/g, '<span style="white-space:nowrap">$1</span>')}</b>${covHTML(c)}</div>`).join('')}</div>`;
     e.results = [];
     return;
@@ -1112,7 +1115,7 @@ function renderColl(e) {
       const hero = q('.coll-hero'), barEl = q('.coll-bar'), title = q('.coll-title'), bp = q('.big-play');
       const h = hero ? hero.offsetHeight : 300, bb = barEl ? barEl.offsetHeight : 58, tt = title ? title.getBoundingClientRect().top - r0 : h - st;
       e.el.style.setProperty('--sp', clamp(st / h, 0, 1).toFixed(3));
-      e.el.style.setProperty('--bar', clamp((bb + 40 - tt) / 40, 0, 1).toFixed(3));
+      const barV = clamp((bb + 40 - tt) / 40, 0, 1); e.el.style.setProperty('--bar', barV.toFixed(3)); e.el.classList.toggle('bar-on', barV > .6);
       e.el.style.setProperty('--bp', bp ? clamp((bb + 16 - (bp.getBoundingClientRect().top - r0)) / 28, 0, 1).toFixed(3) : 0);
     }); }, { passive: true });
   }
@@ -1135,22 +1138,38 @@ function refreshEntry(e) {
   if (!e.el) return;
   const st = e.el.scrollTop; (VIEWS[e.view].refresh || VIEWS[e.view].render)(e); e.el.scrollTop = st; e.dirty = false; syncMarks();
 }
+function syncCtx() {
+  if (!P.ctx) return;
+  const live = ['playlist', 'liked', 'artist', 'all'].includes(P.ctx.kind) ? getColl(P.ctx.kind, P.ctx.id) : null;
+  const ids = live ? live.ids : P.ctx.ids.filter(isVisible);
+  if (live) P.ctx.name = live.name;
+  if (ids.join('|') === P.ctx.ids.join('|') && P.order.every(isVisible)) return;
+  const set = new Set(ids), old = P.order, oldPos = P.pos;
+  P.ctx.ids = ids.slice();
+  let order;
+  if (S.shuffle) { const kept = old.filter(id => set.has(id)), keptSet = new Set(kept); order = kept.concat(shuffleArr(ids.filter(id => !keptSet.has(id)))); }
+  else order = ids.slice();
+  let pos = order.indexOf(P.current);
+  if (pos < 0) { const nid = old.slice(oldPos + 1).find(id => set.has(id)); pos = nid ? order.indexOf(nid) - 1 : order.length - 1; }
+  P.order = order; P.pos = pos;
+}
 function refreshAll() {
+  syncCtx();
   const top = topEntry();
   for (const tab of TABS) for (const e of nav.stacks[tab]) { if (!e.el) continue; if (e === top) refreshEntry(e); else e.dirty = true; }
-  updateMini();
+  updateMini(); if (P.current) renderNP(); refreshQueueSheet();
 }
 function revealTop() { const t = topEntry(); if (!t.el) renderEntry(t); else if (t.dirty) refreshEntry(t); t.el.hidden = false; updateScrim(); }
 function updateScrim() { app.classList.toggle('on-coll', topEntry().view === 'coll'); }
 function showTab(tab, initial) {
   if (!initial && tab === nav.tab) {
     const s = stack();
-    if (s.length > 1) { const n = s.length - 1; while (s.length > 2) { const x = s.splice(1, 1)[0]; x.el && x.el.remove(); } pop(true); histBack(n); }
+    if (s.length > 1) { const n = s.length - 1; while (s.length > 2) { const x = s.splice(1, 1)[0]; x.el && x.el.remove(); } pop(true); histBack(); }
     else if (s[0].el) s[0].el.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
     return;
   }
   if (!initial) for (const e of stack()) if (e.el) e.el.hidden = true;
-  nav.tab = tab;
+  nav.tab = tab; syncHistory();
   revealTop();
   if (!initial) anim(topEntry().el, 'tab-in');
   $$('.tab').forEach(b => { const on = b.dataset.tab === tab; b.classList.toggle('on', on); b.setAttribute('aria-current', on ? 'page' : 'false'); });
@@ -1171,11 +1190,27 @@ function pop(fromPop) {
 function openColl(kind, id = '') { if (npOpen) closeNP(); if (sheet.open) sheet.hide(); const t = topEntry(); if (t.view === 'coll' && t.kind === kind && t.id === id) return; push({ view: 'coll', kind, id }); }
 
 // back button / history (standalone app only)
+// A single "guard" history entry exists while anything is open (page, player, sheet, dialog, non-home tab),
+// so the phone's Back button closes the top layer instead of leaving the app. Syncing is deferred, so a layer
+// closing and another opening in the same tap (e.g. sheet → dialog) never races an async history.back().
 const useHistory = !inFrame;
-let histDepth = 0, histIgnore = 0;
-function histPush() { if (!useHistory) return; try { history.pushState({ h: ++histDepth }, ''); } catch (e) {} }
-function histBack(n = 1) { if (!useHistory || histDepth <= 0) return; n = Math.min(n, histDepth); histDepth -= n; histIgnore++; try { history.go(-n); } catch (e) {} }
-addEventListener('popstate', () => { if (histIgnore) { histIgnore--; return; } histDepth = Math.max(0, histDepth - 1); closeTop(true); });
+let guard = false, awaitingPop = 0, syncT = 0;
+const layerCount = () => (dlgState ? 1 : 0) + (sheet.open ? 1 : 0) + (npOpen ? 1 : 0) + stack().length - 1 + (nav.tab !== 'home' ? 1 : 0);
+function syncHistory() {
+  if (!useHistory) return;
+  clearTimeout(syncT);
+  syncT = setTimeout(() => {
+    if (awaitingPop) return;
+    const want = layerCount() > 0;
+    if (want && !guard) { try { history.pushState({ hv: 1 }, ''); guard = true; } catch (e) {} }
+    else if (!want && guard) { guard = false; awaitingPop++; try { history.back(); } catch (e) { awaitingPop--; } }
+  }, 0);
+}
+const histPush = syncHistory, histBack = syncHistory;
+addEventListener('popstate', () => {
+  if (awaitingPop) { awaitingPop--; syncHistory(); return; }
+  guard = false; closeTop(true); syncHistory();
+});
 function closeTop(fromPop) {
   if (dlgState) return dlgState.cancel(fromPop), true;
   if (sheet.open) return sheet.hide(fromPop), true;
@@ -1222,10 +1257,11 @@ async function sourceFor(t) {
 async function loadTrack(id, { autoplay = true, startAt = 0 } = {}) {
   const t = lib.get(id); if (!t) return;
   const token = ++loadToken;
+  P.loadingId = autoplay ? id : null;
   if (autoplay) { P.switching = true; setPlayingUI(true); if (!audio.paused) audio.pause(); }
   setLoading(true);
   let url;
-  try { url = await sourceFor(t); } catch (err) { if (token === loadToken) { P.switching = false; setLoading(false); setPlayingUI(false); toast(`Не вдалося відкрити «${t.title}»`); } return; }
+  try { url = await sourceFor(t); } catch (err) { if (token === loadToken) { P.loadingId = null; P.switching = false; setLoading(false); setPlayingUI(false); toast(`Не вдалося відкрити «${t.title}»`); } return; }
   if (token !== loadToken) return;
   P.srcId = id; P.srcUrl = url; P.counted = false;
   audio.src = url;
@@ -1233,10 +1269,11 @@ async function loadTrack(id, { autoplay = true, startAt = 0 } = {}) {
   if (startAt > 0) audio.addEventListener('loadedmetadata', () => { try { audio.currentTime = startAt; } catch (e) {} }, { once: true });
   if (autoplay) {
     try { await audio.play(); } catch (err) { if (token === loadToken && err && err.name !== 'AbortError') { setPlayingUI(false); setLoading(false); } }
-    if (token === loadToken) P.switching = false;
+    if (token === loadToken) { P.switching = false; P.loadingId = null; }
   } else setLoading(false);
 }
-function startTrack(id, dir = 0) { P.current = id; P.pendingSeek = 0; onTrackChange(dir); loadTrack(id, { autoplay: true }); }
+function cancelLoad() { loadToken++; P.loadingId = null; P.switching = false; setLoading(false); setPlayingUI(false); if (!audio.paused) audio.pause(); }
+function startTrack(id, dir = 0) { if (!id || !lib.has(id)) return; P.current = id; P.pendingSeek = 0; onTrackChange(dir); loadTrack(id, { autoplay: true }); }
 function playContext(ctx, startId) {
   if (!ctx || !ctx.ids.length) { toast('Тут ще немає треків'); return; }
   P.ctx = ctx; P.fromQueue = false;
@@ -1248,15 +1285,18 @@ function playContext(ctx, startId) {
   startTrack(P.order[P.pos], 0);
 }
 function togglePlay(forcePlay) {
-  if (!P.current) { const all = getColl('all'); if (all.ids.length) playContext(ctxFor(all)); return; }
+  if (P.loadingId && forcePlay !== true) { cancelLoad(); return; }
+  if (!P.current || !lib.has(P.current)) { const all = getColl('all'); if (all.ids.length) playContext(ctxFor(all)); return; }
   if (P.srcId !== P.current) { const at = P.pendingSeek; P.pendingSeek = 0; loadTrack(P.current, { autoplay: true, startAt: at }); return; }
   if (audio.paused || forcePlay === true) { const p = audio.play(); p && p.catch(() => setPlayingUI(false)); } else audio.pause();
 }
 function next(auto) {
   if (!P.current) return;
   if (auto && S.repeat === 'one') { audio.currentTime = 0; audio.play().catch(() => {}); return; }
+  while (P.queue.length && !lib.has(P.queue[0])) P.queue.shift();
   if (P.queue.length) { P.fromQueue = true; startTrack(P.queue.shift(), 1); refreshQueueSheet(); return; }
   P.fromQueue = false;
+  if (!P.order.length) { cancelLoad(); return; }
   if (P.pos < P.order.length - 1) P.pos++;
   else if (auto && S.repeat === 'off') { P.pos = 0; P.current = P.order[0]; P.pendingSeek = 0; onTrackChange(1); loadTrack(P.current, { autoplay: false }); setPlayingUI(false); return; }
   else { P.pos = 0; if (S.shuffle && P.ctx) P.order = shuffleArr(P.order.slice()); }
@@ -1266,6 +1306,7 @@ function prev() {
   if (!P.current) return;
   if (curTime() > 3) { seekTo(0); return; }
   if (P.fromQueue && P.order[P.pos]) { P.fromQueue = false; startTrack(P.order[P.pos], -1); return; }
+  if (!P.order.length) { seekTo(0); return; }
   if (P.pos > 0) P.pos--; else if (S.repeat === 'all') P.pos = P.order.length - 1; else { seekTo(0); return; }
   startTrack(P.order[P.pos], -1);
 }
@@ -1355,9 +1396,10 @@ function msPos() { if (!MS || !MS.setPositionState) return; const d = curDuratio
 if (MS) [['play', () => togglePlay(true)], ['pause', () => audio.pause()], ['previoustrack', () => prev()], ['nexttrack', () => next()], ['seekto', d => seekTo(d.seekTime)], ['stop', () => audio.pause()]].forEach(([a, f]) => { try { MS.setActionHandler(a, f); } catch (e) {} });
 
 // sleep timer
-const sleep = { end: 0, timer: 0, eot: false, iv: 0 };
+const sleep = { end: 0, timer: 0, eot: false, iv: 0, min: 0 };
 function setSleep(v) {
   clearTimeout(sleep.timer); clearInterval(sleep.iv); sleep.end = 0; sleep.eot = false;
+  sleep.min = v === 'eot' ? 0 : v;
   if (v === 'eot') sleep.eot = true; else if (v > 0) { sleep.end = Date.now() + v * 60000; sleep.timer = setTimeout(sleepFire, v * 60000); }
   if (sleep.end) sleep.iv = setInterval(syncSleep, 1000);
   syncSleep();
@@ -1545,7 +1587,7 @@ function openSleep() {
   const cur = sleep.eot ? 'eot' : sleep.end ? 'on' : 'off';
   const opts = [[5, '5 хвилин'], [15, '15 хвилин'], [30, '30 хвилин'], [45, '45 хвилин'], [60, '1 година'], ['eot', 'До кінця треку']];
   sheet.show(`<h2 class="sh-title">Таймер сну</h2><p class="sh-sub">${cur === 'off' ? 'Музика зупиниться сама, коли ти заснеш.' : cur === 'eot' ? 'Зупиню після цього треку.' : `Зупиню через ${fmtTime((sleep.end - Date.now()) / 1000)}.`}</p>`
-    + opts.map(([v, l], i) => sheetItem('set-sleep', v === 'eot' ? 'note' : 'moon', l, i, `data-v="${v}"`, (v === 'eot' && cur === 'eot') ? 'sel' : '')).join('')
+    + opts.map(([v, l], i) => sheetItem('set-sleep', v === 'eot' ? 'note' : 'moon', l, i, `data-v="${v}"`, (v === 'eot' ? cur === 'eot' : cur === 'on' && sleep.min === v) ? 'sel' : '')).join('')
     + (cur !== 'off' ? sheetItem('set-sleep', 'close', 'Вимкнути таймер', opts.length, 'data-v="0"', 'danger') : ''), { kind: 'sleep' });
 }
 function speedHTML() { return `<h2 class="sh-title">Швидкість відтворення</h2><p class="sh-sub">Зручно для подкастів і аудіокниг.</p><div class="speeds">${[.5, .75, 1, 1.25, 1.5, 2].map(v => `<button class="chip ${S.speed === v ? 'on' : ''}" data-action="set-speed" data-v="${v}">${String(v).replace('.', ',')}×</button>`).join('')}</div>`; }
@@ -1610,7 +1652,7 @@ function toggleAddTrack(el) {
   const id = el.dataset.id, on = !p.ids.includes(id);
   if (on) p.ids.push(id); else p.ids = p.ids.filter(x => x !== id);
   p.updated = Date.now(); save(); vibrate(10);
-  const chk = el.querySelector('.chk'); chk.classList.toggle('on', on); chk.innerHTML = ic(on ? 'check' : 'plus'); restartAnim(el, 'lp');
+  const chk = el.querySelector('.chk'); chk.classList.toggle('on', on); chk.innerHTML = ic(on ? 'check' : 'plus'); pressFlash(el);
   refreshAll();
 }
 function removeFromPlaylist(plId, id) {
@@ -1754,7 +1796,7 @@ document.addEventListener('keydown', e => {
     const row = e.target.closest('.pages .track, .sheet .track[data-action="play-track"]');
     if (!row || e.button > 0 || e.target.closest('button')) return;
     g = { row, x: e.clientX, y: e.clientY, id: e.pointerId, mode: null, dx: 0, lp: false };
-    g.timer = setTimeout(() => { if (!g || g.mode) return; g.lp = true; lastLP = performance.now(); vibrate(12); restartAnim(row, 'lp'); openTrackMenu(row.dataset.trackId, plIdOf(row)); }, 480);
+    g.timer = setTimeout(() => { if (!g || g.mode) return; g.lp = true; lastLP = performance.now(); vibrate(12); pressFlash(row); openTrackMenu(row.dataset.trackId, plIdOf(row)); }, 480);
   });
   root.addEventListener('pointermove', e => {
     if (!g || e.pointerId !== g.id || g.lp) return;
@@ -1881,6 +1923,7 @@ async function boot() {
     if (!c || !c.ids.includes(L.id)) c = getColl('all');
     P.ctx = ctxFor(c); P.current = L.id; P.pendingSeek = L.time || 0;
     if (S.shuffle) { P.order = [L.id, ...shuffleArr(c.ids.filter(x => x !== L.id))]; P.pos = 0; } else { P.order = c.ids.slice(); P.pos = Math.max(0, P.order.indexOf(L.id)); }
+    if (!P.order.includes(L.id)) { P.order = [L.id]; P.pos = 0; P.ctx.ids = [L.id]; }
   }
   $$('[data-action="shuffle"]').forEach(b => b.classList.toggle('on', S.shuffle));
   syncRepeat(); syncSpeed(); syncSleep();
