@@ -1,0 +1,475 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    FortressTowers 1.0 — вежа #7 JapanTenguSpire («Шпиль Тенгу»), Empire of the Rising Sun (Side="Japan").
+
+    ОСНОВА (копія з SageXml):
+      * Вежа: оборонна споруда Імперії Wave-Force Tower (SageXml: Japan/Structures/JapanWaveForceTower.xml,
+        id JapanWaveForceTower) — повторно використано її модель/анімації, Draw-модуль, руйнування.
+        Верхівку додатково підсвічено бірюзовим FX ядра Nanoswarm Hive (JapanNanoSwarmHive).
+      * Наноядро: ядро Wave-Force Tower (JapanWaveForceTowerNanocore) — рухомий юніт-«ядро»,
+        що їде до місця й розгортається у вежу (поведінка розпакування як у ванільних наноядер Імперії).
+
+    ЩО ЗМІНЕНО:
+      * Нові ID, рядки (NAME/DESC/TYPE), статистика за SPEC: $1100, 16 с (ціна/час — на наноядрі),
+        HP 2000, дальність 480 (лише повітря).
+      * Зброя замінена: замість хвильової гармати — ППО-пускова: залп 4 самонавідних мікроракет
+        (ClipSize=4, перезаряджання 3 с), лише по повітряних цілях.
+      * Scale Draw-модуля 0.85 (тонший, «шпилеподібний» силует), FX у кольорах Імперії
+        (білий/червоний/бірюзовий).
+
+    ЩО ПЕРЕВІРИТИ В SageXml (позначено VERIFY нижче):
+      * точні id базових споруди/ядра, імена моделей W3X (*_SKN / *_SKL / анімацій);
+      * імена FX (FXList), звуків (AudioEvent), ArmorTemplate, ProjectileTemplate ракети;
+      * точні назви модулів розпакування наноядра (у ванільних ядрах) та їхні атрибути;
+      * чи мають ванільні оборонні споруди Японії EnergyProduction (SPEC: «—»).
+-->
+<AssetDeclaration xmlns="uri:ea.com:eala:asset" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Tags></Tags>
+    <Includes>
+        <Include type="reference" source="DATA:static.xml" />
+        <Include type="reference" source="DATA:global.xml" />
+        <Include type="reference" source="DATA:audio.xml" />
+    </Includes>
+
+    <!-- ===================================================================== -->
+    <!-- ЗБРОЯ: залп 4 самонавідних мікроракет кожні 3 с, лише повітря, 480    -->
+    <!-- ===================================================================== -->
+    <WeaponTemplate
+        id="JapanTenguSpireWeapon"
+        Name="JapanTenguSpireWeapon"
+        AttackRange="480.0"
+        MinimumAttackRange="0.0"
+        WeaponSpeed="600.0"
+        MinWeaponSpeed="450.0"
+        MaxWeaponSpeed="750.0"
+        ScaleWeaponSpeed="true"
+        AcceptableAimDelta="15d"
+        ClipSize="4"
+        AutoReloadsClip="AUTO"
+        RadiusDamageAffects="ENEMIES NEUTRALS"
+        AntiMask="ANTI_AIRBORNE_VEHICLE ANTI_AIRBORNE_INFANTRY"
+        ProjectileStreamName=""
+        FireFX="FX_JapanTenguSpireMissileLaunch"
+        FireSound="JapanTenguSpire_WeaponFire">
+        <!-- VERIFY: FireFX — немає ванільного FX з такою назвою; замінити на FX пуску ракет Striker-VX
+             (напр. FX_JapanStrikerVXMissileLaunch) або оголосити власний FXList. -->
+        <!-- VERIFY: FireSound — замінити на AudioEvent пуску ракет Striker-VX (напр. JapanStrikerVX_WeaponFireMissile). -->
+        <PreAttackDelay MinSeconds="0.3s" MaxSeconds="0.3s" />
+        <!-- 4 ракети одна за одною з інтервалом 0.15 с, потім 3 с перезаряджання -->
+        <FiringDuration MinSeconds="0.15s" MaxSeconds="0.15s" />
+        <ClipReloadTime MinSeconds="3.0s" MaxSeconds="3.0s" />
+        <Nuggets>
+            <!-- VERIFY: ProjectileTemplate — ванільна самонавідна ракета Імперії (Striker-VX у режимі меха). -->
+            <ProjectileNugget
+                WarheadTemplate="JapanTenguSpireWeaponWarhead"
+                ProjectileTemplate="JapanStrikerVXMissile">
+                <Filter Rule="ANY" Include="AIRCRAFT" Relationship="ENEMIES" />
+            </ProjectileNugget>
+        </Nuggets>
+        <!-- Ракети розходяться віялом від чотирьох напрямних на верхівці шпиля -->
+        <ScatterRadiusVsType>
+            <Filter Rule="ANY" Include="AIRCRAFT" />
+        </ScatterRadiusVsType>
+    </WeaponTemplate>
+
+    <WeaponTemplate
+        id="JapanTenguSpireWeaponWarhead"
+        Name="JapanTenguSpireWeaponWarhead"
+        AttackRange="480.0"
+        RadiusDamageAffects="ENEMIES NEUTRALS"
+        AntiMask="ANTI_AIRBORNE_VEHICLE ANTI_AIRBORNE_INFANTRY">
+        <Nuggets>
+            <!-- 4 × 45 = 180 урону за залп; невеликий радіус, щоб зачіпати щільні групи авіації -->
+            <DamageNugget
+                Damage="45.0"
+                Radius="15.0"
+                DelayTimeSeconds="0s"
+                DamageType="ROCKET"
+                DamageFXType="JAPAN_TENGU_MISSILE"
+                DeathType="EXPLODED">
+                <!-- VERIFY: DamageFXType — немає певності щодо ванільного значення; можливо використати DamageFXType від ракет Striker-VX. -->
+                <Filter Rule="ANY" Include="AIRCRAFT" Relationship="ENEMIES NEUTRALS" />
+            </DamageNugget>
+            <!-- Вибух у кольорах Імперії (білий/червоний/бірюзовий) -->
+            <!-- VERIFY: FX — замінити на ванільний FX влучання ракет Striker-VX. -->
+            <FireFXNugget FX="FX_JapanTenguSpireMissileImpact" />
+        </Nuggets>
+    </WeaponTemplate>
+
+    <!-- ===================================================================== -->
+    <!-- (a) ВЕЖА: JapanTenguSpire                                             -->
+    <!-- ===================================================================== -->
+    <GameObject
+        id="JapanTenguSpire"
+        inheritFrom="BaseStructure"
+        Side="Japan"
+        EditorSorting="STRUCTURE"
+        KindOf="PRELOAD STRUCTURE SELECTABLE IMMOBILE SCORE FS_BASE_DEFENSE AIRCRAFT_PATH_AROUND IMMUNE_TO_CAPTURE CAN_ATTACK DEFENSIVE_STRUCTURE"
+        BuildCost="1100"
+        BuildTime="16"
+        CommandSet="JapanTenguSpireCommandSet"
+        EnergyProduction="-4"
+        ThreatLevel="3.0"
+        VisionRange="500"
+        ShroudClearingRange="500"
+        ShroudRevealToAllRange="0"
+        RadarPriority="STRUCTURE"
+        UnitCategory="STRUCTURE"
+        WeaponCategory="MISSILE"
+        BuildFadeInOnCreateTimeSeconds="0.0s"
+        SelectPortrait="Portrait_JapanWaveForceTower"
+        ButtonImage="Button_JapanWaveForceTower">
+        <!-- VERIFY: EnergyProduction — перевірити, чи ванільні оборонні споруди Японії (JapanWaveForceTower)
+             споживають енергію; якщо ні — прибрати атрибут. SPEC: «як у ванільних». -->
+        <!-- VERIFY: KindOf FS_BASE_DEFENSE / DEFENSIVE_STRUCTURE — звірити з ванільною JapanWaveForceTower. -->
+        <!-- VERIFY: SelectPortrait / ButtonImage — тимчасово зображення Wave-Force Tower. -->
+        <!-- Ціна/час будування застосовуються до наноядра (JapanTenguSpireNanocore); тут дублюються
+             для коректного відображення вартості продажу/ремонту. -->
+        <DisplayName>NAME:JapanTenguSpire</DisplayName>
+        <Description>DESC:JapanTenguSpire</Description>
+        <TypeDescription>TYPE:JapanTenguSpire</TypeDescription>
+
+        <ArmorSet
+            Armor="JapanTenguSpireArmor"
+            DamageFX="StructureDamageFXNoShake" />
+        <!-- VERIFY: ArmorTemplate — оголошення власного шаблону не входить у цей файл; за замовчуванням
+             використати ванільний ArmorTemplate оборонних споруд Імперії (напр. BaseDefenseStructureArmor
+             / JapanWaveForceTowerArmor), замінивши Armor="..." вище. -->
+
+        <WeaponSetUpdate
+            id="ModuleTag_WeaponSetUpdate">
+            <WeaponSlotTurret
+                ID="1">
+                <Weapon
+                    Ordering="PRIMARY_WEAPON"
+                    Template="JapanTenguSpireWeapon" />
+                <TurretSettings
+                    TurretTurnRate="240"
+                    TurretPitchRate="120"
+                    AllowsPitch="true"
+                    MinimumPitch="-10d"
+                    MaxDeflectionAntiClockwise="180d"
+                    MaxDeflectionClockwise="180d"
+                    PitchHeight="20">
+                    <TurretAITargetChooserData
+                        CanPickTargetsOutOfTurretAngle="true"
+                        SympathyRange="100" />
+                </TurretSettings>
+            </WeaponSlotTurret>
+        </WeaponSetUpdate>
+
+        <Draws>
+            <ScriptedModelDraw
+                id="ModuleTag_Draw"
+                OkToChangeModelColor="true"
+                ExtraPublicBone="FIREPOINT01 FIREPOINT02 FIREPOINT03 FIREPOINT04">
+                <!-- VERIFY: модель/скелет/анімації Wave-Force Tower — JBWaveFTwr_SKN / JBWaveFTwr_SKL;
+                     кістки FIREPOINT01..04 можуть мати інші імена (у ванілі одна точка WEAPON01). -->
+                <ModelConditionState
+                    ParseCondStateType="PARSE_DEFAULT">
+                    <Model
+                        Name="JBWaveFTwr_SKN" />
+                    <Texture Original="JBWaveFTwr" New="JBWaveFTwr" />
+                    <ParticleSysBone
+                        BoneName="TOPCORE"
+                        FXParticleSystemTemplate="JapanTenguSpireCoreGlow"
+                        FollowBone="true" />
+                    <!-- VERIFY: BoneName TOPCORE та система частинок бірюзового світіння (на основі
+                         FX ядра JapanNanoSwarmHive, напр. NanoSwarmHiveCoreGlow). -->
+                </ModelConditionState>
+                <ModelConditionState
+                    ParseCondStateType="PARSE_NORMAL"
+                    ConditionsYes="REALLYDAMAGED">
+                    <Model
+                        Name="JBWaveFTwr_D1_SKN" />
+                    <!-- VERIFY: модель сильно пошкодженого стану. -->
+                </ModelConditionState>
+                <ModelConditionState
+                    ParseCondStateType="PARSE_NORMAL"
+                    ConditionsYes="RUBBLE">
+                    <Model
+                        Name="JBWaveFTwr_D2_SKN" />
+                    <!-- VERIFY: модель руїн. -->
+                </ModelConditionState>
+                <AnimationState
+                    ParseCondStateType="PARSE_DEFAULT">
+                    <Animation
+                        AnimationName="JBWaveFTwr_IDLA"
+                        AnimationMode="LOOP" />
+                </AnimationState>
+                <AnimationState
+                    ParseCondStateType="PARSE_NORMAL"
+                    ConditionsYes="AWAITING_CONSTRUCTION">
+                    <Animation
+                        AnimationName="JBWaveFTwr_BLDA"
+                        AnimationMode="MANUAL" />
+                    <!-- VERIFY: анімація розгортання з наноядра (у ванілі *_BLDA / *_UNPK). -->
+                </AnimationState>
+                <AnimationState
+                    ParseCondStateType="PARSE_NORMAL"
+                    ConditionsYes="ATTACKING">
+                    <Animation
+                        AnimationName="JBWaveFTwr_ATKA"
+                        AnimationMode="ONCE" />
+                </AnimationState>
+            </ScriptedModelDraw>
+            <!-- Тонший «шпиль»: масштаб 0.85 від Wave-Force Tower -->
+            <DrawScaleSetting Scale="0.85" />
+            <!-- VERIFY: у RA3 масштаб задається атрибутом Scale на <GameObject> або на Draw-модулі;
+                 перенести Scale="0.85" туди, якщо елемент DrawScaleSetting не існує в схемі SDK. -->
+        </Draws>
+
+        <Behaviors>
+            <!-- Розгортання з наноядра: споруда «будується» анімацією розпакування -->
+            <StructureUnpackUpdate
+                id="ModuleTag_StructureUnpack"
+                UnpackTime="0s" />
+            <!-- VERIFY: модуль, що відповідає за анімацію розпаковки споруди Імперії після ядра
+                 (у ванільних спорудах Japan — подивитися JapanWaveForceTower). -->
+
+            <AIUpdate
+                id="ModuleTag_AI"
+                AutoAcquireEnemiesWhenIdle="YES">
+                <UnitAITargetChooserData
+                    SympathyRange="100.0"
+                    CanPickDynamicTargets="true" />
+            </AIUpdate>
+
+            <!-- Власне вогневе FX пуску: бірюзові спалахи на чотирьох напрямних -->
+            <FireWeaponWhenDamaged
+                id="ModuleTag_Dummy"
+                ReactionWeaponPristine=""
+                ContinuousWeaponPristine="" />
+            <!-- VERIFY: заглушку можна прибрати; лишена для сумісності з наслідуванням BaseStructure. -->
+
+            <PowerPlantUpgrade
+                id="ModuleTag_PowerDraw" />
+            <!-- VERIFY: у RA3 споживання енергії працює через EnergyProduction + KindOf POWERED; якщо так —
+                 цей модуль зайвий. -->
+
+            <StructureCollapseUpdate
+                id="ModuleTag_Collapse"
+                MinCollapseDelay="0.0s"
+                MaxCollapseDelay="0.0s"
+                CollapseDamping="0.5"
+                MaxShudder="0.5"
+                MinBurstDelay="0.25s"
+                MaxBurstDelay="0.8s"
+                BigBurstFrequency="4"
+                DestroyObjectWhenDone="true">
+                <DieMuxData DeathTypes="ALL" />
+                <OCL Type="FINAL" OCL="OCL_JapanSmallStructureDebris" />
+                <FXList Type="INITIAL" FX="FX_JapanStructureDeathSmall" />
+                <!-- VERIFY: OCL/FX руйнування — скопіювати з JapanWaveForceTower. -->
+            </StructureCollapseUpdate>
+
+            <ArmorUpgrade
+                id="ModuleTag_FortressPlating"
+                ArmorSetFlag="PLAYER_UPGRADE"
+                TriggeredBy="Upgrade_FortressReinforcedPlating" />
+            <MaxHealthUpgrade
+                id="ModuleTag_FortressPlatingHP"
+                TriggeredBy="Upgrade_FortressReinforcedPlating"
+                AddMaxHealth="500.0"
+                ChangeType="ADD_CURRENT_HEALTH_TOO" />
+            <!-- Upgrade_FortressReinforcedPlating: +25% HP (2000 × 0.25 = 500). Оголошення апгрейду — у data/Logic/. -->
+
+            <SpecialPowerModule
+                id="ModuleTag_SellPower"
+                SpecialPowerTemplate="SpecialPower_SellStructure" />
+            <!-- VERIFY: продаж споруд Імперії у ванілі може реалізовуватися інакше (перевірити JapanWaveForceTower). -->
+        </Behaviors>
+
+        <Body>
+            <ActiveBody
+                id="ModuleTag_Body"
+                MaxHealth="2000.0"
+                InitialHealth="2000.0" />
+        </Body>
+
+        <Geometry
+            IsSmall="false">
+            <Shape
+                Type="CYLINDER"
+                MajorRadius="18.0"
+                Height="95.0"
+                ContactPointGeneration="STRUCTURE" />
+        </Geometry>
+
+        <AI>
+            <AIUpdate
+                id="ModuleTag_AIGeneric"
+                AutoAcquireEnemiesWhenIdle="YES" />
+            <!-- VERIFY: у деяких версіях SDK AIUpdate розміщується лише в <Behaviors>; тоді цей блок
+                 залишити порожнім або видалити дублікат. -->
+        </AI>
+
+        <!-- Вимоги для вежі як для споруди не задаються: вона з'являється з наноядра,
+             вимоги збудування — на JapanTenguSpireNanocore. -->
+
+        <Sounds>
+            <VoiceSelect>JapanWaveForceTower_Select</VoiceSelect>
+            <SoundOnDamaged>Japan_StructureDamaged</SoundOnDamaged>
+            <SoundOnReallyDamaged>Japan_StructureReallyDamaged</SoundOnReallyDamaged>
+            <SoundDie>Japan_StructureDieSmall</SoundDie>
+            <SoundAmbient>JapanTenguSpire_Ambient</SoundAmbient>
+            <!-- VERIFY: усі AudioEvent вище — взяти з ванільної JapanWaveForceTower; SoundAmbient —
+                 замінити на ванільний гул ядра Nanoswarm Hive або прибрати. -->
+        </Sounds>
+    </GameObject>
+
+    <!-- ===================================================================== -->
+    <!-- (b) НАНОЯДРО: JapanTenguSpireNanocore                                 -->
+    <!--     Рухомий юніт, що виїжджає з будівельного майданчика й            -->
+    <!--     розгортається (unpack) у JapanTenguSpire.                         -->
+    <!-- ===================================================================== -->
+    <GameObject
+        id="JapanTenguSpireNanocore"
+        inheritFrom="BaseJapanNanocore"
+        Side="Japan"
+        EditorSorting="UNIT"
+        KindOf="PRELOAD SELECTABLE CAN_CAST_REFLECTIONS SCORE VEHICLE NANOCORE BUILDING_CORE CAN_BE_REPULSED"
+        BuildCost="1100"
+        BuildTime="16"
+        CommandSet="JapanNanocoreCommandSet"
+        ThreatLevel="0.5"
+        VisionRange="150"
+        ShroudClearingRange="150"
+        RadarPriority="UNIT"
+        UnitCategory="VEHICLE"
+        SelectPortrait="Portrait_JapanWaveForceTowerNanocore"
+        ButtonImage="Button_JapanWaveForceTowerNanocore">
+        <!-- VERIFY: inheritFrom — базовий шаблон ванільних наноядер Імперії (BaseJapanNanocore /
+             BaseNanoCoreVehicle); якщо такого немає — inheritFrom="BaseVehicle". -->
+        <!-- VERIFY: KindOf NANOCORE / BUILDING_CORE — звірити з JapanWaveForceTowerNanocore. -->
+        <!-- VERIFY: CommandSet — ванільний набір ядра (кнопка «Розгорнути» + стоп/рух). Інтеграція
+             може замінити на власний JapanTenguSpireNanocoreCommandSet. -->
+        <DisplayName>NAME:JapanTenguSpireNanocore</DisplayName>
+        <Description>DESC:JapanTenguSpireNanocore</Description>
+        <TypeDescription>TYPE:JapanTenguSpireNanocore</TypeDescription>
+
+        <ArmorSet
+            Armor="JapanNanocoreArmor"
+            DamageFX="VehicleDamageFX" />
+        <!-- VERIFY: ArmorTemplate ванільних наноядер Імперії. -->
+
+        <!-- Ядро беззбройне -->
+        <WeaponSetUpdate
+            id="ModuleTag_WeaponSetUpdate" />
+
+        <Draws>
+            <ScriptedModelDraw
+                id="ModuleTag_Draw"
+                OkToChangeModelColor="true">
+                <!-- VERIFY: модель ядра оборонних споруд Імперії — JUNanocoreDef_SKN / JUNanocoreDef_SKL;
+                     анімації руху *_MOVA та розгортання *_UNPA. -->
+                <ModelConditionState
+                    ParseCondStateType="PARSE_DEFAULT">
+                    <Model
+                        Name="JUNanocoreDef_SKN" />
+                </ModelConditionState>
+                <AnimationState
+                    ParseCondStateType="PARSE_DEFAULT">
+                    <Animation
+                        AnimationName="JUNanocoreDef_IDLA"
+                        AnimationMode="LOOP" />
+                </AnimationState>
+                <AnimationState
+                    ParseCondStateType="PARSE_NORMAL"
+                    ConditionsYes="MOVING">
+                    <Animation
+                        AnimationName="JUNanocoreDef_MOVA"
+                        AnimationMode="LOOP" />
+                </AnimationState>
+                <AnimationState
+                    ParseCondStateType="PARSE_NORMAL"
+                    ConditionsYes="UNPACKING">
+                    <Animation
+                        AnimationName="JUNanocoreDef_UNPA"
+                        AnimationMode="ONCE" />
+                    <!-- VERIFY: умова моделі під час розгортання (UNPACKING / DEPLOYING). -->
+                </AnimationState>
+            </ScriptedModelDraw>
+        </Draws>
+
+        <Behaviors>
+            <!-- Рух ядра (повільний гусеничний/ховер-хід, як у ванільних ядер) -->
+            <AIUpdate
+                id="ModuleTag_AI"
+                AutoAcquireEnemiesWhenIdle="NO" />
+            <PhysicsBehavior
+                id="ModuleTag_Physics"
+                GravityMult="1.0" />
+            <LocomotorSet
+                Locomotor="JapanNanocoreLocomotor"
+                Condition="NORMAL"
+                Speed="30" />
+            <!-- VERIFY: Locomotor ванільних наноядер Імперії. -->
+
+            <!-- Розгортання: ядро на місці перетворюється на JapanTenguSpire.
+                 У ванілі це спецздібність «Unpack» + модуль заміни об'єкта будівлею. -->
+            <SpecialPowerModule
+                id="ModuleTag_UnpackPower"
+                SpecialPowerTemplate="SpecialPower_JapanNanocoreUnpack"
+                UpdateModuleStartsAttack="true" />
+            <NanocoreUnpackUpdate
+                id="ModuleTag_UnpackUpdate"
+                SpecialPowerTemplate="SpecialPower_JapanNanocoreUnpack"
+                StructureToCreate="JapanTenguSpire"
+                UnpackTime="3.0s"
+                FootprintCheck="true"
+                RequiresBuildRadius="true"
+                UnpackFX="FX_JapanNanocoreUnpack"
+                UnpackSound="Japan_NanocoreUnpack" />
+            <!-- VERIFY: точні імена модулів/спецздібності розпакування з ванільних наноядер
+                 (SpecialPower_JapanNanocoreUnpack, NanocoreUnpackUpdate, атрибути StructureToCreate тощо).
+                 Скопіювати блок із JapanWaveForceTowerNanocore, змінивши лише цільовий об'єкт
+                 на JapanTenguSpire. -->
+
+            <SlowDeathBehavior
+                id="ModuleTag_Death"
+                DestructionDelay="0.1s">
+                <DieMuxData DeathTypes="ALL" />
+                <FX Type="INITIAL" FX="FX_JapanNanocoreDeath" />
+                <!-- VERIFY: FX знищення ядра. -->
+            </SlowDeathBehavior>
+        </Behaviors>
+
+        <Body>
+            <ActiveBody
+                id="ModuleTag_Body"
+                MaxHealth="1000.0"
+                InitialHealth="1000.0" />
+            <!-- VERIFY: HP ванільного ядра оборонної споруди (SPEC фіксує лише HP вежі: 2000). -->
+        </Body>
+
+        <Geometry
+            IsSmall="true">
+            <Shape
+                Type="CYLINDER"
+                MajorRadius="12.0"
+                Height="20.0" />
+        </Geometry>
+
+        <AI>
+            <AIUpdate
+                id="ModuleTag_AIGeneric"
+                AutoAcquireEnemiesWhenIdle="NO" />
+        </AI>
+
+        <!-- Вимоги до будування: лише будівельний майданчик Імперії -->
+        <ObjectPrerequisites>
+            <ObjectPrerequisite>
+                <Object>JapanConstructionYard</Object>
+                <!-- VERIFY: id будівельного майданчика Імперії (JapanConstructionYard). -->
+            </ObjectPrerequisite>
+        </ObjectPrerequisites>
+
+        <Sounds>
+            <VoiceSelect>Japan_NanocoreSelect</VoiceSelect>
+            <VoiceMove>Japan_NanocoreMove</VoiceMove>
+            <SoundDie>Japan_NanocoreDie</SoundDie>
+            <!-- VERIFY: AudioEvent ванільних наноядер Імперії. -->
+        </Sounds>
+    </GameObject>
+</AssetDeclaration>

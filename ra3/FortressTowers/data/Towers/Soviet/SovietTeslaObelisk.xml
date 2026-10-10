@@ -1,0 +1,351 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    FortressTowers 1.0 - tower #4: SovietTeslaObelisk ("Тесла-обеліск")
+
+    BASE: modified copy of the vanilla Soviet Tesla Coil (SageXml: GameObject "SovietTeslaCoil",
+          weapon "SovietTeslaCoilWeapon"). The vanilla model, animations, FX and sounds are reused;
+          no new art is required.
+
+    CHANGED vs. vanilla Tesla Coil:
+      - id / strings / CommandSet / prerequisites (Battle Lab instead of Barracks-tier).
+      - Scale 1.35 on the ScriptedModelDraw (taller, bulkier obelisk silhouette).
+      - Stats per SPEC: BuildCost 2000, BuildTime 28 s, MaxHealth 3600, AttackRange 450, EnergyProduction -10.
+      - Weapon: long-range tesla bolt (ground only) that arcs from the primary target to up to
+        3 more nearby enemies (4 targets total). Strong vs vehicles and infantry.
+      - Tesla Trooper overcharge (same mechanic as vanilla coil): while charged the tower switches to
+        the "Charged" weapon (+50% damage) and ignores low power (keeps firing when DISABLED_UNDERPOWERED).
+
+    AUTHOR MUST VERIFY IN SageXml (all marked with VERIFY below):
+      - W3X model / animation names of the Tesla Coil (SBTeslaCoil_*).
+      - FX list names (FX_TeslaCoil*), sound event names (TeslaCoil_*), armor template, damage type.
+      - The exact object status / attribute modifier the Tesla Trooper applies when charging a coil,
+        and how the vanilla coil keeps working while underpowered.
+      - Prerequisite object id of the Soviet Battle Lab.
+-->
+<AssetDeclaration xmlns="uri:ea.com:eala:asset" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Tags></Tags>
+    <Includes>
+        <Include type="reference" source="DATA:static.xml" />
+        <Include type="reference" source="DATA:global.xml" />
+        <Include type="reference" source="DATA:audio.xml" />
+    </Includes>
+
+    <!-- ================================================================== -->
+    <!--  GameObject                                                        -->
+    <!-- ================================================================== -->
+    <GameObject
+        id="SovietTeslaObelisk"
+        inheritFrom="BaseStructure"
+        Side="Soviet"
+        EditorSorting="STRUCTURE"
+        KindOf="PRELOAD STRUCTURE SELECTABLE IMMOBILE SCORE CAN_ATTACK FS_BASE_DEFENSE IMMUNE_TO_CAPTURE CAN_BE_REPULSED"
+        BuildCost="2000"
+        BuildTime="28"
+        CommandSet="SovietTeslaObeliskCommandSet"
+        EnergyProduction="-10"
+        ThreatLevel="3.0"
+        VisionRange="500"
+        ShroudClearingRange="500"
+        CommandPoints="0"
+        RadarPriority="STRUCTURE"
+        BuildFadeInOnCreateTime="0.5s"
+        SelectPortrait="Portrait_SovietTeslaCoil"
+        ButtonImage="Button_SovietTeslaCoil">
+        <!-- VERIFY: portrait/button image names copied from vanilla SovietTeslaCoil -->
+
+        <DisplayName>NAME:SovietTeslaObelisk</DisplayName>
+        <Description>DESC:SovietTeslaObelisk</Description>
+        <TypeDescription>TYPE:SovietTeslaObelisk</TypeDescription>
+
+        <ObjectPrerequisites>
+            <ObjectFilter Rule="ANY">
+                <!-- VERIFY: Soviet Battle Lab object id in SageXml -->
+                <IncludeThing>SovietBattleLab</IncludeThing>
+            </ObjectFilter>
+        </ObjectPrerequisites>
+
+        <ArmorSet
+            Armor="SovietTeslaCoilArmor"
+            DamageFX="StructureDamageFXNoShake" />
+        <!-- VERIFY: armor template and DamageFX names used by vanilla SovietTeslaCoil (fallback: "BaseDefenseArmor") -->
+
+        <Draws>
+            <ScriptedModelDraw
+                id="ModuleTag_Draw"
+                OkToChangeModelColor="true"
+                ExtraPublicBone="FX_TOP FX_ARC01 FX_ARC02"
+                Scale="1.35">
+                <!-- VERIFY: model and animation names of the vanilla Tesla Coil (SBTeslaCoil_SKN / _IDLA / _ATKA / _BLDA / _DIEA / _CHGA) -->
+                <ModelConditionState
+                    ParseCondStateType="PARSE_DEFAULT">
+                    <Model
+                        Name="SBTeslaCoil_SKN" />
+                </ModelConditionState>
+                <ModelConditionState
+                    ParseCondStateType="PARSE_NORMAL"
+                    ConditionsYes="REALLYDAMAGED">
+                    <Model
+                        Name="SBTeslaCoil_D1" />
+                    <!-- VERIFY: damaged model name -->
+                </ModelConditionState>
+
+                <AnimationState
+                    ParseCondStateType="PARSE_DEFAULT">
+                    <Animation
+                        AnimationName="SBTeslaCoil_IDLA"
+                        AnimationMode="LOOP" />
+                </AnimationState>
+                <AnimationState
+                    ConditionsYes="AWAITING_CONSTRUCTION">
+                    <Animation
+                        AnimationName="SBTeslaCoil_BLDA"
+                        AnimationMode="MANUAL" />
+                </AnimationState>
+                <AnimationState
+                    ConditionsYes="ACTIVELY_CONSTRUCTING">
+                    <Animation
+                        AnimationName="SBTeslaCoil_BLDA"
+                        AnimationMode="ONCE" />
+                </AnimationState>
+                <AnimationState
+                    ConditionsYes="FIRING_OR_PREATTACK_A">
+                    <Animation
+                        AnimationName="SBTeslaCoil_ATKA"
+                        AnimationMode="ONCE" />
+                    <!-- VERIFY: FX list for the charge-up glow (red-orange tint for Soviets) -->
+                    <FXEvent
+                        Frame="0"
+                        Name="FX_TeslaCoilChargeUp" />
+                </AnimationState>
+                <AnimationState
+                    ConditionsYes="USER_1">
+                    <!-- USER_1 = overcharged by a Tesla Trooper (set by the status/upgrade below) -->
+                    <Animation
+                        AnimationName="SBTeslaCoil_CHGA"
+                        AnimationMode="LOOP" />
+                    <!-- VERIFY: overcharge animation and FX names -->
+                    <FXEvent
+                        Frame="0"
+                        Name="FX_TeslaCoilOvercharged"
+                        FireWhenSkipped="true" />
+                </AnimationState>
+                <AnimationState
+                    ConditionsYes="DYING">
+                    <Animation
+                        AnimationName="SBTeslaCoil_DIEA"
+                        AnimationMode="ONCE" />
+                </AnimationState>
+            </ScriptedModelDraw>
+        </Draws>
+
+        <Behaviors>
+            <!-- Fixed-mount weapon: no turret, fires from the top electrode. -->
+            <WeaponSetUpdate
+                id="ModuleTag_WeaponSetUpdate">
+                <WeaponSlotHardpoint
+                    ID="1"
+                    AllowInterleavedFiring="false">
+                    <Weapon
+                        Ordering="PRIMARY_WEAPON"
+                        Template="SovietTeslaObeliskWeapon" />
+                    <!-- VERIFY: ObjectStatus name applied by Tesla Trooper charging (vanilla coil: likely "CHARGED"/"OVERCHARGED") -->
+                    <Weapon
+                        Ordering="PRIMARY_WEAPON"
+                        Template="SovietTeslaObeliskWeaponCharged"
+                        ObjectStatus="OVERCHARGED" />
+                </WeaponSlotHardpoint>
+            </WeaponSetUpdate>
+
+            <!-- Overcharge: +50% damage comes from SovietTeslaObeliskWeaponCharged (selected via ObjectStatus above); USER_1 drives the overcharge FX. -->
+            <!-- VERIFY: vanilla SovietTeslaCoil overcharge implementation; mirror it exactly if it differs. -->
+            <ModelConditionUpgrade
+                id="ModuleTag_OverchargeVisual"
+                TriggeredBy="Upgrade_TeslaCoilOvercharge"
+                AddConditionFlags="USER_1" />
+            <!-- While overcharged the tower ignores low power (stays active when DISABLED_UNDERPOWERED). -->
+            <StatusBitsUpgrade
+                id="ModuleTag_OverchargePowerless"
+                TriggeredBy="Upgrade_TeslaCoilOvercharge"
+                StatusToSet="POWERED_BY_TESLA_CHARGE" />
+            <!-- VERIFY: upgrade id "Upgrade_TeslaCoilOvercharge" and status "POWERED_BY_TESLA_CHARGE" — use the names
+                 the vanilla coil uses so the base-game Tesla Trooper charge behaviour drives this tower too. -->
+
+            <!-- Allow Tesla Troopers to dock and charge (same as vanilla coil). -->
+            <!-- VERIFY: vanilla charge receiver behaviour name / parameters -->
+            <PowerPlantUpdate
+                id="ModuleTag_TeslaChargeReceiver"
+                RodsExtendTime="0.5s" />
+
+            <StructureCollapseUpdate
+                id="ModuleTag_Collapse"
+                MinCollapseDelay="0s"
+                MaxCollapseDelay="0s"
+                CollapseDamping="0.5"
+                BigBurstFrequency="4"
+                MaxShudder="1.4">
+                <!-- VERIFY: vanilla Tesla Coil death OCL/FX names -->
+                <OCL
+                    Type="FINAL"
+                    OCL="OCL_SovietSmallStructureDebris" />
+                <FXList
+                    Type="FINAL"
+                    FX="FX_SovietStructureDeathMedium" />
+            </StructureCollapseUpdate>
+            <DestroyDie
+                id="ModuleTag_DestroyDie" />
+
+            <SellBehavior
+                id="ModuleTag_Sell" />
+            <BaseBuildingRepairUpdate
+                id="ModuleTag_Repair" />
+        </Behaviors>
+
+        <Body>
+            <ActiveBody
+                id="ModuleTag_Body"
+                MaxHealth="3600" />
+        </Body>
+
+        <AI>
+            <AIUpdate
+                id="ModuleTag_AIStates"
+                AutoAcquireEnemiesWhenIdle="YES" />
+        </AI>
+
+        <Geometry
+            IsSmall="false">
+            <Shape
+                Type="CYLINDER"
+                MajorRadius="22"
+                Height="95" />
+        </Geometry>
+        <!-- Footprint scaled ~1.35 vs vanilla coil -->
+
+        <Sounds>
+            <!-- VERIFY: sound event names from vanilla SovietTeslaCoil (audio.xml) -->
+            <SoundSelect>TeslaCoil_Select</SoundSelect>
+            <SoundOnDamaged>BuildingDamagedStateLight</SoundOnDamaged>
+            <SoundOnReallyDamaged>BuildingDamagedStateHeavy</SoundOnReallyDamaged>
+            <SoundAmbient>TeslaCoil_AmbientLoop</SoundAmbient>
+        </Sounds>
+    </GameObject>
+
+    <!-- ================================================================== -->
+    <!--  Weapons                                                           -->
+    <!-- ================================================================== -->
+
+    <!-- Primary: long-range tesla bolt, ground targets only, arcs to up to 3 more enemies (4 total). -->
+    <WeaponTemplate
+        id="SovietTeslaObeliskWeapon"
+        Name="SovietTeslaObeliskWeapon"
+        AttackRange="450"
+        MinimumAttackRange="0"
+        WeaponSpeed="999999"
+        FiringDuration="0.4s"
+        ClipSize="1"
+        AcceptableAimDelta="180"
+        AntiMask="ANTI_GROUND"
+        CanFireWhileMoving="false"
+        RadiusDamageAffects="ENEMIES NOT_SIMILAR">
+        <!-- VERIFY: FX names for bolt / impact (copy vanilla FX_TeslaCoilBolt, recolour red-orange) -->
+        <FireFX>FX_TeslaCoilBolt</FireFX>
+        <FireSound>TeslaCoil_Fire</FireSound>
+        <!-- VERIFY: fire sound -->
+        <PreAttackDelay>0.5s</PreAttackDelay>
+        <PreAttackType>PER_ATTACK</PreAttackType>
+        <ClipReloadTime
+            MinSeconds="2.5s"
+            MaxSeconds="2.5s" />
+        <Nuggets>
+            <!-- VERIFY: damage type for tesla weapons in RA3 (ELECTRIC / TESLA) -->
+            <DamageNugget
+                Damage="400"
+                Radius="0"
+                DamageType="ELECTRIC"
+                DeathType="ELECTROCUTED"
+                DamageTaperOff="0" />
+            <!-- Chain: arc to up to 3 nearby enemies, 60% of primary damage each. -->
+            <!-- VERIFY: RA3 chain/multi-target nugget; fallback: WeaponOCLNugget spawning a chain helper -->
+            <FireWeaponNugget
+                FireWeaponTemplate="SovietTeslaObeliskWeaponArc"
+                OneShot="false" />
+        </Nuggets>
+    </WeaponTemplate>
+
+    <!-- Overcharged primary: +50% damage (600), same range/arcs. Used while a Tesla Trooper charges the tower. -->
+    <WeaponTemplate
+        id="SovietTeslaObeliskWeaponCharged"
+        Name="SovietTeslaObeliskWeaponCharged"
+        AttackRange="450"
+        MinimumAttackRange="0"
+        WeaponSpeed="999999"
+        FiringDuration="0.4s"
+        ClipSize="1"
+        AcceptableAimDelta="180"
+        AntiMask="ANTI_GROUND"
+        CanFireWhileMoving="false"
+        RadiusDamageAffects="ENEMIES NOT_SIMILAR">
+        <FireFX>FX_TeslaCoilBoltOvercharged</FireFX>
+        <!-- VERIFY: overcharged bolt FX name -->
+        <FireSound>TeslaCoil_FireOvercharged</FireSound>
+        <!-- VERIFY: overcharged fire sound -->
+        <PreAttackDelay>0.5s</PreAttackDelay>
+        <PreAttackType>PER_ATTACK</PreAttackType>
+        <ClipReloadTime
+            MinSeconds="2.5s"
+            MaxSeconds="2.5s" />
+        <Nuggets>
+            <DamageNugget
+                Damage="600"
+                Radius="0"
+                DamageType="ELECTRIC"
+                DeathType="ELECTROCUTED"
+                DamageTaperOff="0" />
+            <FireWeaponNugget
+                FireWeaponTemplate="SovietTeslaObeliskWeaponArcCharged"
+                OneShot="false" />
+        </Nuggets>
+    </WeaponTemplate>
+
+    <!-- Arc: jumps from the primary target to up to 3 additional enemies within 120. -->
+    <WeaponTemplate
+        id="SovietTeslaObeliskWeaponArc"
+        Name="SovietTeslaObeliskWeaponArc"
+        AttackRange="120"
+        WeaponSpeed="999999"
+        AntiMask="ANTI_GROUND"
+        RadiusDamageAffects="ENEMIES NOT_SIMILAR"
+        MaxTargets="3">
+        <!-- VERIFY: "MaxTargets" attribute name for multi-target arcs; FX name for secondary arcs -->
+        <FireFX>FX_TeslaCoilArc</FireFX>
+        <Nuggets>
+            <DamageNugget
+                Damage="240"
+                Radius="120"
+                DamageType="ELECTRIC"
+                DeathType="ELECTROCUTED"
+                DamageTaperOff="0" />
+        </Nuggets>
+    </WeaponTemplate>
+
+    <!-- Arc while overcharged: +50% (360). -->
+    <WeaponTemplate
+        id="SovietTeslaObeliskWeaponArcCharged"
+        Name="SovietTeslaObeliskWeaponArcCharged"
+        AttackRange="120"
+        WeaponSpeed="999999"
+        AntiMask="ANTI_GROUND"
+        RadiusDamageAffects="ENEMIES NOT_SIMILAR"
+        MaxTargets="3">
+        <FireFX>FX_TeslaCoilArcOvercharged</FireFX>
+        <!-- VERIFY: overcharged arc FX name -->
+        <Nuggets>
+            <DamageNugget
+                Damage="360"
+                Radius="120"
+                DamageType="ELECTRIC"
+                DeathType="ELECTROCUTED"
+                DamageTaperOff="0" />
+        </Nuggets>
+    </WeaponTemplate>
+</AssetDeclaration>

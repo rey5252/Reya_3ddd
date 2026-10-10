@@ -1,0 +1,317 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    FortressTowers 1.0 - вежа #6: SovietInfernoBunker ("Бункер «Пекло»")
+
+    ОСНОВА: модифікована копія оригінальної споруди Soviet Sentry Gun
+            (SageXml/Soviet/Structures/SovietSentryGun.xml, GameObject id="SovietSentryGun").
+            Модель, анімації, кістки турелі й руйнування використовуються повторно - нових W3X немає.
+
+    ЩО ЗМІНЕНО ВІДНОСНО ОРИГІНАЛУ:
+      - id/рядки: SovietInfernoBunker, NAME/DESC/TYPE:SovietInfernoBunker;
+      - статистика за SPEC: BuildCost 1100, BuildTime 16 с, MaxHealth 3000, AttackRange 220, EnergyProduction -4;
+      - кулемет замінено вогнеметним струменем (SovietInfernoBunkerWeapon, DamageType FLAME),
+        турель без кутових обмежень (покриття 360°);
+      - кожен постріл через OCL залишає на землі палаючу пляму (SovietInfernoBunkerFirePatch),
+        яка 5 с завдає періодичної шкоди зброєю SovietInfernoBunkerWeaponSecondary;
+      - додано гарнізон (GarrisonContain): до 3 піхотинців, які стріляють назовні;
+      - модель збільшена (Scale 1.35) і отримала червоно-помаранчеві вогняні FX (колір Soviet);
+      - умови будівництва: Construction Yard + Barracks.
+
+    ЩО ПЕРЕВІРИТИ В SageXml (позначено <!- - VERIFY - -> нижче):
+      - точні імена W3X-моделі/анімацій Sentry Gun (SUSentryGun_*?), кісток турелі й дула;
+      - імена FX вогню/полум'я та звуків вогнемета (у ванільному RA3 немає вогнеметної піхоти Рад,
+        тому FX взяті з наземних пожеж/запальних боєприпасів);
+      - ArmorTemplate / DamageFX оригінальної Sentry Gun;
+      - ID споруд-передумов (SovietConstructionYard, SovietBarracks);
+      - чи підтримує ScriptedModelDraw атрибут Scale у цій версії схеми (інакше - InstanceScale на GameObject).
+-->
+<AssetDeclaration xmlns="uri:ea.com:eala:asset" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Tags></Tags>
+    <Includes>
+        <Include type="reference" source="DATA:static.xml" />
+        <Include type="reference" source="DATA:global.xml" />
+        <Include type="reference" source="DATA:audio.xml" />
+    </Includes>
+
+    <!-- ================================================================== -->
+    <!-- Основна зброя: вогнеметний струмінь                                  -->
+    <!-- ================================================================== -->
+    <WeaponTemplate
+        id="SovietInfernoBunkerWeapon"
+        Name="SovietInfernoBunkerWeapon"
+        AttackRange="220.0"
+        MinimumAttackRange="0.0"
+        WeaponSpeed="999999.0"
+        RadiusDamageAffects="ENEMIES NEUTRALS NOT_SIMILAR"
+        AcceptableAimDelta="15d"
+        ClipSize="0"
+        AntiMask="ANTI_GROUND"
+        CanFireWhileMoving="false"
+        FireFX="FX_SovietInfernoBunkerFlameStream"
+        FireSound="SovietInfernoBunker_FlameLoop"
+        FireSoundLoopTime="0.5s">
+        <!-- VERIFY: FireFX "FX_SovietInfernoBunkerFlameStream" - новий FX-список не входить у файл;
+             підставити ванільний вогняний струмінь (напр. FX з Kirov/Twinblade-запальних нагетів) або
+             зробити копію FXList з SageXml/FXLists. Звук "SovietInfernoBunker_FlameLoop" - теж VERIFY
+             (кандидат: звук вогню з audio.xml, напр. "Gen_Fire_Loop"). -->
+        <PreAttackDelay MinSeconds="0.1s" MaxSeconds="0.1s" />
+        <FiringDuration MinSeconds="1.5s" MaxSeconds="1.5s" />
+        <ClipReloadTime MinSeconds="0.5s" MaxSeconds="0.5s" />
+        <Nuggets>
+            <!-- Пряма шкода струменя: ефективна проти піхоти (FLAME), конус по лінії вогню -->
+            <DamageNugget
+                Damage="40.0"
+                Radius="30.0"
+                DelayTimeSeconds="0.0s"
+                DamageType="FLAME"
+                DamageFXType="FLAME"
+                DeathType="BURNED" />
+            <!-- Палаюча пляма на землі (5 с DoT) -->
+            <OCLNugget
+                ObjectCreationList="OCL_SovietInfernoBunkerFirePatch"
+                OnlyUseVeterancyOfSpawnedObject="false" />
+        </Nuggets>
+    </WeaponTemplate>
+
+    <!-- ================================================================== -->
+    <!-- Вторинна зброя: шкода від палаючої плями (б'є кожні 0,5 с, 5 с)       -->
+    <!-- ================================================================== -->
+    <WeaponTemplate
+        id="SovietInfernoBunkerWeaponSecondary"
+        Name="SovietInfernoBunkerWeaponSecondary"
+        AttackRange="1.0"
+        WeaponSpeed="999999.0"
+        RadiusDamageAffects="ENEMIES NEUTRALS NOT_SIMILAR"
+        ClipSize="0"
+        AntiMask="ANTI_GROUND">
+        <PreAttackDelay MinSeconds="0s" MaxSeconds="0s" />
+        <FiringDuration MinSeconds="0s" MaxSeconds="0s" />
+        <ClipReloadTime MinSeconds="0.5s" MaxSeconds="0.5s" />
+        <Nuggets>
+            <DamageNugget
+                Damage="8.0"
+                Radius="35.0"
+                DamageType="FLAME"
+                DamageFXType="FLAME"
+                DeathType="BURNED" />
+        </Nuggets>
+    </WeaponTemplate>
+
+    <!-- ================================================================== -->
+    <!-- OCL: створює палаючу пляму в точці влучання                         -->
+    <!-- ================================================================== -->
+    <!-- VERIFY: синтаксис CreateObject у RA3 ObjectCreationList (порівняти з будь-яким OCL у SageXml) -->
+    <ObjectCreationList id="OCL_SovietInfernoBunkerFirePatch">
+        <CreateObject
+            Options="IGNORE_ALL_OBJECTS"
+            Disposition="ON_GROUND_ALIGNED"
+            Count="1">
+            <CreateObject>SovietInfernoBunkerFirePatch</CreateObject>
+        </CreateObject>
+    </ObjectCreationList>
+
+    <!-- ================================================================== -->
+    <!-- Невидимий логічний об'єкт палаючої плями (живе 5 с)                  -->
+    <!-- ================================================================== -->
+    <GameObject
+        id="SovietInfernoBunkerFirePatch"
+        Side="Soviet"
+        EditorSorting="SYSTEM"
+        KindOf="NO_COLLIDE IMMOBILE UNATTACKABLE INERT CLICK_THROUGH"
+        RadarPriority="NOT_ON_RADAR">
+        <Draws>
+            <ScriptedModelDraw id="ModuleTag_Draw" OkToChangeModelColor="false">
+                <ModelConditionState ParseCondStateType="PARSE_DEFAULT">
+                    <!-- VERIFY: "FXFireGroundDecal" - підставити ванільну модель/декаль наземного вогню або залишити порожньою (FX дає ParticleSystem нижче) -->
+                    <Model Name="" />
+                </ModelConditionState>
+            </ScriptedModelDraw>
+        </Draws>
+        <Behaviors>
+            <!-- Шкода по площі кожні 0,5 с -->
+            <FireWeaponUpdate id="ModuleTag_FireWeaponUpdate">
+                <FireWeaponNugget WeaponName="SovietInfernoBunkerWeaponSecondary" FireDelay="0.5s" />
+            </FireWeaponUpdate>
+            <!-- Візуал вогню на землі, червоно-помаранчевий -->
+            <FXListBehavior id="ModuleTag_FXList">
+                <!-- VERIFY: "FX_GroundFireMedium" - ім'я ванільного FXList наземної пожежі (SageXml/FXLists) -->
+                <Event Index="onCreation" FX="FX_GroundFireMedium" />
+            </FXListBehavior>
+            <LifetimeUpdate id="ModuleTag_Lifetime" MinLifetime="5000" MaxLifetime="5000" />
+            <SlowDeath id="ModuleTag_Death" DestructionDelay="0" />
+        </Behaviors>
+        <Body>
+            <ImmortalBody id="ModuleTag_Body" MaxHealth="1.0" />
+        </Body>
+        <Geometry IsSmall="true">
+            <Shape Type="CYLINDER" MajorRadius="35.0" Height="1.0" />
+        </Geometry>
+    </GameObject>
+
+    <!-- ================================================================== -->
+    <!-- Сама вежа                                                          -->
+    <!-- ================================================================== -->
+    <GameObject
+        id="SovietInfernoBunker"
+        inheritFrom="BaseStructure"
+        Side="Soviet"
+        EditorSorting="STRUCTURE"
+        KindOf="PRELOAD STRUCTURE SELECTABLE IMMOBILE SCORE CAN_ATTACK FS_BASE_DEFENSE GARRISONABLE_UNTIL_DESTROYED IMMUNE_TO_CAPTURE"
+        BuildCost="1100"
+        BuildTime="16"
+        CommandSet="SovietInfernoBunkerCommandSet"
+        EnergyProduction="-4"
+        ThreatLevel="2.0"
+        VisionRange="300.0"
+        ShroudClearingRange="300.0"
+        RadarPriority="STRUCTURE"
+        SelectPortrait="Portrait_SovietSentryGun"
+        ButtonImage="Button_SovietSentryGun"
+        BuildFadeInOnCreateTimeSeconds="0.5s"
+        CrushableLevel="255">
+        <!-- VERIFY: Portrait_/Button_SovietSentryGun - імена іконок ванільної Sentry Gun у SageXml/Images. -->
+        <!-- VERIFY: KindOf FS_BASE_DEFENSE / GARRISONABLE_UNTIL_DESTROYED - перевірити наявність у схемі RA3 1.12. -->
+
+        <DisplayName>NAME:SovietInfernoBunker</DisplayName>
+        <Description>DESC:SovietInfernoBunker</Description>
+        <TypeDescription>TYPE:SovietInfernoBunker</TypeDescription>
+
+        <ObjectPrerequisites>
+            <!-- VERIFY: ID ванільних споруд Рад - SovietConstructionYard, SovietBarracks -->
+            <ObjectPrerequisite>
+                <Object>SovietConstructionYard</Object>
+            </ObjectPrerequisite>
+            <ObjectPrerequisite>
+                <Object>SovietBarracks</Object>
+            </ObjectPrerequisite>
+        </ObjectPrerequisites>
+
+        <!-- VERIFY: "SovietSentryGunArmor" і "StructureDamageFXNoShake" - точні імена з SovietSentryGun.xml / ArmorTemplates -->
+        <ArmorSet Armor="SovietSentryGunArmor" DamageFX="StructureDamageFXNoShake" />
+
+        <Draws>
+            <ScriptedModelDraw
+                id="ModuleTag_Draw"
+                OkToChangeModelColor="true"
+                Scale="1.35"
+                ExtraPublicBone="FX_FLAME01 FX_FLAME02">
+                <!-- VERIFY: модель "SUSentryGun_SKN", скелет "SUSentryGun_SKL", анімації "SUSentryGun_IDLA"/"SUSentryGun_ATKA",
+                     кістки "Turret"/"Muzzle01" - узяти точні імена з SovietSentryGun.xml. Кістки FX_FLAME* - VERIFY
+                     (якщо їх немає, прив'язати вогняні ParticleSysBone до Muzzle01). -->
+                <ModelConditionState ParseCondStateType="PARSE_DEFAULT">
+                    <Model Name="SUSentryGun_SKN" />
+                    <Turret TurretNameKey="Turret" TurretPitch="TurretEL" />
+                    <WeaponFireFXBone WeaponSlotType="PRIMARY_WEAPON" BoneName="Muzzle01" />
+                    <WeaponLaunchBone WeaponSlotType="PRIMARY_WEAPON" BoneName="Muzzle01" />
+                    <!-- Постійний "запальник" біля дула - червоно-помаранчевий -->
+                    <!-- VERIFY: "FireSmallPilotLight" - ім'я ванільної системи частинок малого вогню -->
+                    <ParticleSysBone BoneName="Muzzle01" FXParticleSystemTemplate="FireSmallPilotLight" FollowBone="true" />
+                </ModelConditionState>
+                <ModelConditionState ParseCondStateType="PARSE_NORMAL" ConditionsYes="REALLYDAMAGED">
+                    <Model Name="SUSentryGun_SKN" />
+                    <Turret TurretNameKey="Turret" TurretPitch="TurretEL" />
+                    <WeaponFireFXBone WeaponSlotType="PRIMARY_WEAPON" BoneName="Muzzle01" />
+                    <WeaponLaunchBone WeaponSlotType="PRIMARY_WEAPON" BoneName="Muzzle01" />
+                    <!-- VERIFY: "FireMediumBuilding" - ванільний вогонь сильно пошкодженої споруди -->
+                    <ParticleSysBone BoneName="Muzzle01" FXParticleSystemTemplate="FireSmallPilotLight" FollowBone="true" />
+                    <ParticleSysBone BoneName="ROOT" FXParticleSystemTemplate="FireMediumBuilding" FollowBone="true" />
+                </ModelConditionState>
+                <AnimationState ParseCondStateType="PARSE_DEFAULT">
+                    <Animation AnimationName="SUSentryGun_IDLA" AnimationMode="LOOP" />
+                </AnimationState>
+                <AnimationState ParseCondStateType="PARSE_NORMAL" ConditionsYes="FIRING_A">
+                    <Animation AnimationName="SUSentryGun_ATKA" AnimationMode="LOOP" />
+                </AnimationState>
+                <AnimationState ParseCondStateType="PARSE_NORMAL" ConditionsYes="DYING">
+                    <!-- VERIFY: "SUSentryGun_DIEA" - анімація руйнування -->
+                    <Animation AnimationName="SUSentryGun_DIEA" AnimationMode="ONCE" />
+                </AnimationState>
+            </ScriptedModelDraw>
+        </Draws>
+
+        <Behaviors>
+            <!-- Вогнеметна турель, 360° без обмежень по куту -->
+            <WeaponSetUpdate id="ModuleTag_WeaponSetUpdate">
+                <WeaponSlotTurret ID="1">
+                    <Weapon Ordering="PRIMARY_WEAPON" Template="SovietInfernoBunkerWeapon" />
+                    <TurretSettings
+                        TurretTurnRate="240"
+                        TurretPitchRate="90"
+                        AllowsPitch="true"
+                        MinIdleScanTime="2.0s"
+                        MaxIdleScanTime="6.0s"
+                        MinIdleScanAngle="0"
+                        MaxIdleScanAngle="360">
+                        <TurretAITargetChooserData
+                            CanAcquireDynamicIfAssignedOutOfRange="true"
+                            RecomputeTargetSeconds="1.0s" />
+                    </TurretSettings>
+                </WeaponSlotTurret>
+            </WeaponSetUpdate>
+
+            <!-- Гарнізон: до 3 піхотинців, стріляють назовні -->
+            <!-- VERIFY: модуль GarrisonContain (як у цивільних будівель) - перевірити атрибути в SageXml;
+                 альтернатива - TransportContain з PassengersAllowedToFire="true", як у Multigunner IFV. -->
+            <GarrisonContain
+                id="ModuleTag_Contain"
+                ContainMax="3"
+                AllowInsideKindOf="INFANTRY"
+                ForbidInsideKindOf="AIRCRAFT VEHICLE HUGE_VEHICLE"
+                PassengersAllowedToFire="true"
+                AllowAlliesInside="false"
+                AllowNeutralInside="false"
+                AllowEnemiesInside="false"
+                ImmuneToClearBuildingAttacks="false"
+                EnterSound="Gen_Garrison_Enter"
+                ExitSound="Gen_Garrison_Exit"
+                ObjectStatusOfContained="UNSELECTABLE ENCLOSED">
+                <!-- VERIFY: звуки входу/виходу гарнізону - імена з audio.xml -->
+                <DamagePercentToUnits>100%</DamagePercentToUnits>
+            </GarrisonContain>
+
+            <!-- Підсвітка вогню (тепле червоно-помаранчеве світло) -->
+            <FXListBehavior id="ModuleTag_FXOnFire">
+                <!-- VERIFY: "FX_SovietInfernoBunkerMuzzleGlow" - нового FXList у файлі немає; замінити на ванільний або додати копію -->
+                <Event Index="onFire" FX="FX_SovietInfernoBunkerMuzzleGlow" />
+            </FXListBehavior>
+
+            <!-- Стандартні модулі споруди Рад (ремонт, продаж, руйнування) -->
+            <SlowDeath id="ModuleTag_Death" DestructionDelay="1000" SinkDelay="0" SinkRate="0">
+                <OCL Type="FINAL">
+                    <!-- VERIFY: "OCL_SovietSentryGunDebris" - OCL уламків оригінальної Sentry Gun -->
+                    <OCL>OCL_SovietSentryGunDebris</OCL>
+                </OCL>
+                <FX Type="INITIAL">
+                    <!-- VERIFY: "FX_StructureSmallDeath" - ванільний FX руйнування малої споруди -->
+                    <FX>FX_StructureSmallDeath</FX>
+                </FX>
+            </SlowDeath>
+            <StructureCollapseUpdate id="ModuleTag_Collapse" />
+            <PowerPlantDependancyUpdate id="ModuleTag_PowerDependancy" />
+        </Behaviors>
+
+        <AI>
+            <AIUpdate id="ModuleTag_AI" AutoAcquireEnemiesWhenIdle="YES" MoodAttackCheckRate="250">
+                <UnitAITargetChooserData />
+            </AIUpdate>
+        </AI>
+
+        <Body>
+            <ActiveBody id="ModuleTag_Body" MaxHealth="3000.0" />
+        </Body>
+
+        <Sounds>
+            <!-- VERIFY: імена звуків з audio.xml оригінальної Sentry Gun -->
+            <SoundSelect>SovietSentryGun_Select</SoundSelect>
+            <SoundOnDamaged>Gen_StructureDamaged</SoundOnDamaged>
+            <SoundOnReallyDamaged>Gen_StructureReallyDamaged</SoundOnReallyDamaged>
+            <SoundDie>Gen_StructureDie_Small</SoundDie>
+            <SoundAmbient>SovietInfernoBunker_FireAmbient</SoundAmbient>
+        </Sounds>
+
+        <!-- Геометрія збільшена приблизно на 35% відносно Sentry Gun -->
+        <Geometry IsSmall="false">
+            <Shape Type="BOX" MajorRadius="27.0" MinorRadius="27.0" Height="30.0" ContactPointGeneration="STRUCTURE" />
+        </Geometry>
+    </GameObject>
+</AssetDeclaration>
