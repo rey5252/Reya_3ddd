@@ -1,0 +1,333 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    FortressTowers 1.0 :: Tower #1 :: AlliedPrismSpire ("Призматичний шпиль")
+
+    BASE:     Allied Spectrum Tower from SageXml (Allied base defense, anti-ground beam tower).
+              VERIFY: exact GameObject id of the Spectrum Tower in SageXml
+              (expected around SageXml/Allied/Structures/AlliedAntiVehicleStructure.xml or
+              AlliedSpectrumTower.xml); copy its Draws / ModelConditionState / AnimationState
+              blocks over the ones below if the names differ.
+
+    CHANGED vs. Spectrum Tower:
+      * New id AlliedPrismSpire, own strings NAME/DESC/TYPE:AlliedPrismSpire, own CommandSet.
+      * Stats per SPEC: BuildCost 1800, BuildTime 25 s, MaxHealth 3200, AttackRange 400, EnergyProduction -8.
+      * Model reused, Scale 1.3 (larger), Geometry scaled x1.3, texture/FX tinted bluer (Allied blue-white).
+      * Weapon replaced: charged prism beam (PreAttackDelay 1500 ms charge), ANTI_GROUND only (cannot hit air).
+        On hit it chains to up to 3 more ground targets within 120 units, 70% damage falloff per jump:
+          hit 0 (primary) 420  ->  jump 1 294  ->  jump 2 206  ->  jump 3 144
+        Implemented as a chain of WeaponTemplates (Weapon -> WeaponChain1 -> WeaponChain2 -> WeaponChain3),
+        each jump fired from the struck target onto a NEW nearby enemy (see VERIFY at the chain nugget).
+      * Requires Defense Bureau + Command Hub (ObjectPrerequisites), goes offline on low power (KindOf POWERED).
+      * Reacts to Upgrade_FortressReinforcedPlating (+25% HP = +800), upgrade itself is defined in data/Logic/.
+
+    AUTHOR MUST CHECK IN SageXml: model W3X names (AUSpecTwr_*), animation names, FX list / particle
+    system names, sound event names, armor template, DamageFX, DamageType for the prism beam, prerequisite
+    object ids (Defense Bureau, Command Hub), portrait/button image names. All marked VERIFY below.
+-->
+<AssetDeclaration xmlns="uri:ea.com:eala:asset" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Includes>
+        <Include type="reference" source="DATA:static.xml" />
+        <Include type="reference" source="DATA:global.xml" />
+        <Include type="reference" source="DATA:audio.xml" />
+    </Includes>
+
+    <!-- ================================================================== -->
+    <!--  FX                                                                 -->
+    <!-- ================================================================== -->
+
+    <!-- Charge-up glow on the crystal while PreAttackDelay runs (1.5 s). -->
+    <FXList id="FX_AlliedPrismSpireCharge">
+        <NuggetList>
+            <!-- VERIFY: particle system name of the Spectrum Tower / Prism Tank charge glow -->
+            <ParticleSystem ParticleSysName="FX_AlliedSpectrumTowerCharge" AttachToObject="true" />
+            <!-- VERIFY: charge sound event name in audio.xml -->
+            <Sound Value="ALL_SpectrumTower_Charge" />
+        </NuggetList>
+    </FXList>
+
+    <!-- Muzzle flash of the main beam (blue-white). -->
+    <FXList id="FX_AlliedPrismSpireFire">
+        <NuggetList>
+            <!-- VERIFY: Spectrum Tower muzzle / beam-start particle system -->
+            <ParticleSystem ParticleSysName="FX_AlliedSpectrumTowerMuzzle" AttachToObject="true" />
+            <!-- VERIFY: fire sound event name -->
+            <Sound Value="ALL_SpectrumTower_Fire" />
+        </NuggetList>
+    </FXList>
+
+    <!-- Impact flash on every struck target (primary and each jump). -->
+    <FXList id="FX_AlliedPrismSpireImpact">
+        <NuggetList>
+            <!-- VERIFY: prism impact particle (Prism Tank uses a similar blue impact) -->
+            <ParticleSystem ParticleSysName="FX_AlliedPrismTankImpact" />
+            <!-- VERIFY: impact sound event name -->
+            <Sound Value="ALL_PrismTank_Impact" />
+        </NuggetList>
+    </FXList>
+
+    <!-- Refraction flash when the beam jumps to the next target. -->
+    <FXList id="FX_AlliedPrismSpireChainJump">
+        <NuggetList>
+            <!-- VERIFY: Prism Tank refraction/bounce beam particle system -->
+            <ParticleSystem ParticleSysName="FX_AlliedPrismTankBounce" />
+            <!-- VERIFY: bounce sound event name -->
+            <Sound Value="ALL_PrismTank_Bounce" />
+        </NuggetList>
+    </FXList>
+
+    <!-- ================================================================== -->
+    <!--  WEAPONS                                                            -->
+    <!-- ================================================================== -->
+
+    <!-- Primary: charged prism beam. 1.5 s charge, 2.0 s reload, ~3.5 s cycle. Ground only. -->
+    <WeaponTemplate
+        id="AlliedPrismSpireWeapon"
+        Name="AlliedPrismSpireWeapon"
+        AttackRange="400"
+        MinimumAttackRange="0"
+        WeaponSpeed="999999"
+        AntiMask="ANTI_GROUND"
+        RadiusDamageAffects="ENEMIES NEUTRALS"
+        AcceptableAimDelta="5d"
+        ClipSize="1"
+        PreAttackDelay="1500"
+        PreAttackType="PER_ATTACK"
+        PreAttackFX="FX_AlliedPrismSpireCharge"
+        FireFX="FX_AlliedPrismSpireFire"
+        CanFireWhileMoving="false"
+        RequireFollowThru="false">
+        <ClipReloadTime MinSeconds="2.0s" MaxSeconds="2.0s" />
+        <FiringDuration MinSeconds="0.3s" MaxSeconds="0.3s" />
+        <!-- VERIFY: beam visual. Spectrum Tower draws its beam through a laser object; copy the
+             LaserState / ProjectileStream block from the Spectrum Tower weapon in SageXml and keep
+             the blue tint. Expected laser object id: AlliedSpectrumTowerLaser. -->
+        <Nuggets>
+            <!-- VERIFY: DamageType used by Spectrum Tower / Prism Tank in SageXml (PRISM vs. LASER vs. CANNON) -->
+            <DamageNugget
+                Damage="420"
+                Radius="0"
+                DamageType="PRISM"
+                DamageFXType="PRISM"
+                DeathType="BURNED" />
+            <AttachParticleNugget ParticleSysName="FX_AlliedPrismTankImpact" OrientToObject="false" />
+            <!-- Jump 1: fire the next link FROM the struck target onto a different enemy within 120.
+                 VERIFY: FireWeaponNugget attributes in the RA3 schema (the Prism Tank refraction weapon
+                 in SageXml is the reference for how a hit re-fires from the victim's position and
+                 excludes the original victim). If unsupported, swap for the Prism Tank's own bounce nugget. -->
+            <FireWeaponNugget
+                FireWeaponTemplate="AlliedPrismSpireWeaponChain1"
+                FireFromVictim="true"
+                ExcludeVictim="true"
+                MaxTargets="1" />
+        </Nuggets>
+    </WeaponTemplate>
+
+    <!-- Jump 1: 70% of 420 = 294, range 120 from the previous victim. -->
+    <WeaponTemplate
+        id="AlliedPrismSpireWeaponChain1"
+        Name="AlliedPrismSpireWeaponChain1"
+        AttackRange="120"
+        WeaponSpeed="999999"
+        AntiMask="ANTI_GROUND"
+        RadiusDamageAffects="ENEMIES NEUTRALS"
+        ClipSize="1"
+        FireFX="FX_AlliedPrismSpireChainJump"
+        RequireFollowThru="false">
+        <Nuggets>
+            <DamageNugget Damage="294" Radius="0" DamageType="PRISM" DamageFXType="PRISM" DeathType="BURNED" />
+            <AttachParticleNugget ParticleSysName="FX_AlliedPrismTankImpact" OrientToObject="false" />
+            <!-- VERIFY: same chain mechanism as in AlliedPrismSpireWeapon -->
+            <FireWeaponNugget FireWeaponTemplate="AlliedPrismSpireWeaponChain2" FireFromVictim="true" ExcludeVictim="true" MaxTargets="1" />
+        </Nuggets>
+    </WeaponTemplate>
+
+    <!-- Jump 2: 70% of 294 = 206. -->
+    <WeaponTemplate
+        id="AlliedPrismSpireWeaponChain2"
+        Name="AlliedPrismSpireWeaponChain2"
+        AttackRange="120"
+        WeaponSpeed="999999"
+        AntiMask="ANTI_GROUND"
+        RadiusDamageAffects="ENEMIES NEUTRALS"
+        ClipSize="1"
+        FireFX="FX_AlliedPrismSpireChainJump"
+        RequireFollowThru="false">
+        <Nuggets>
+            <DamageNugget Damage="206" Radius="0" DamageType="PRISM" DamageFXType="PRISM" DeathType="BURNED" />
+            <AttachParticleNugget ParticleSysName="FX_AlliedPrismTankImpact" OrientToObject="false" />
+            <!-- VERIFY: same chain mechanism as in AlliedPrismSpireWeapon -->
+            <FireWeaponNugget FireWeaponTemplate="AlliedPrismSpireWeaponChain3" FireFromVictim="true" ExcludeVictim="true" MaxTargets="1" />
+        </Nuggets>
+    </WeaponTemplate>
+
+    <!-- Jump 3 (last): 70% of 206 = 144. No further jump. -->
+    <WeaponTemplate
+        id="AlliedPrismSpireWeaponChain3"
+        Name="AlliedPrismSpireWeaponChain3"
+        AttackRange="120"
+        WeaponSpeed="999999"
+        AntiMask="ANTI_GROUND"
+        RadiusDamageAffects="ENEMIES NEUTRALS"
+        ClipSize="1"
+        FireFX="FX_AlliedPrismSpireChainJump"
+        RequireFollowThru="false">
+        <Nuggets>
+            <DamageNugget Damage="144" Radius="0" DamageType="PRISM" DamageFXType="PRISM" DeathType="BURNED" />
+            <AttachParticleNugget ParticleSysName="FX_AlliedPrismTankImpact" OrientToObject="false" />
+        </Nuggets>
+    </WeaponTemplate>
+
+    <!-- ================================================================== -->
+    <!--  GAME OBJECT                                                        -->
+    <!-- ================================================================== -->
+
+    <!-- VERIFY: SelectPortrait / ButtonImage names (reusing Spectrum Tower art);
+         KindOf flags FS_BASE_DEFENSE / POWERED / CAN_ATTACK / AUTO_ACQUIRE_ENEMIES as used by Spectrum Tower -->
+    <GameObject
+        id="AlliedPrismSpire"
+        inheritFrom="BaseStructure"
+        Side="Allies"
+        EditorSorting="STRUCTURE"
+        KindOf="PRELOAD STRUCTURE SELECTABLE IMMOBILE SCORE FS_BASE_DEFENSE POWERED CAN_ATTACK AUTO_ACQUIRE_ENEMIES"
+        BuildCost="1800"
+        BuildTime="25"
+        CommandSet="AlliedPrismSpireCommandSet"
+        EnergyProduction="-8"
+        ThreatLevel="3.0"
+        VisionRange="450"
+        ShroudClearingRange="450"
+        RadarPriority="STRUCTURE"
+        SelectPortrait="Portrait_AlliedSpectrumTower"
+        ButtonImage="Button_AlliedSpectrumTower"
+        BuildFadeInOnCreateTimeSeconds="1.5s"
+        PlacementViewAngle="-45"
+        CommandPoints="0">
+
+        <DisplayName>NAME:AlliedPrismSpire</DisplayName>
+        <Description>DESC:AlliedPrismSpire</Description>
+        <TypeDescription>TYPE:AlliedPrismSpire</TypeDescription>
+
+        <!-- VERIFY: armor template and DamageFX used by the Spectrum Tower -->
+        <ArmorSet Conditions="None" Armor="AlliedSpectrumTowerArmor" DamageFX="StructureDamageFXNoShake" />
+
+        <Draws>
+            <!-- Reused Spectrum Tower model at Scale 1.3, crystal texture swapped/tinted bluer.
+                 VERIFY: model W3X names (AUSpecTwr_SKN, damaged/rubble variants), animation names,
+                 crystal texture name (AUSpecTwr_crystal.tga) and whether Scale lives on the Draw
+                 module or on the GameObject in the RA3 schema (move it if the build complains). -->
+            <ScriptedModelDraw
+                id="ModuleTag_Draw"
+                OkToChangeModelColor="true"
+                Scale="1.3"
+                ExtraPublicBone="FX_CRYSTAL FX_MUZZLE">
+                <ModelConditionState ParseCondStateType="PARSE_DEFAULT">
+                    <Model Name="AUSpecTwr_SKN" />
+                    <Texture Original="AUSpecTwr_crystal.tga" New="AUSpecTwr_crystal_blue.tga" />
+                    <WeaponFireFXBone WeaponSlotType="PRIMARY_WEAPON" BoneName="FX_MUZZLE" />
+                    <WeaponLaunchBone WeaponSlotType="PRIMARY_WEAPON" BoneName="FX_MUZZLE" />
+                </ModelConditionState>
+                <ModelConditionState ParseCondStateType="PARSE_NORMAL" ConditionsYes="REALLYDAMAGED">
+                    <Model Name="AUSpecTwr_D_SKN" />
+                    <Texture Original="AUSpecTwr_crystal.tga" New="AUSpecTwr_crystal_blue.tga" />
+                </ModelConditionState>
+                <ModelConditionState ParseCondStateType="PARSE_NORMAL" ConditionsYes="RUBBLE">
+                    <Model Name="AUSpecTwr_R_SKN" />
+                </ModelConditionState>
+
+                <AnimationState ParseCondStateType="PARSE_DEFAULT">
+                    <Animation AnimationName="AUSpecTwr_SKN.AUSpecTwr_IDLA" AnimationMode="LOOP" />
+                </AnimationState>
+                <AnimationState ConditionsYes="PREATTACK_A">
+                    <Animation AnimationName="AUSpecTwr_SKN.AUSpecTwr_CHGA" AnimationMode="ONCE" />
+                </AnimationState>
+                <AnimationState ConditionsYes="FIRING_A">
+                    <Animation AnimationName="AUSpecTwr_SKN.AUSpecTwr_ATKA" AnimationMode="ONCE" />
+                </AnimationState>
+                <AnimationState ConditionsYes="CONSTRUCTION_UNDERWAY">
+                    <Animation AnimationName="AUSpecTwr_SKN.AUSpecTwr_BLDA" AnimationMode="MANUAL" />
+                </AnimationState>
+                <AnimationState ConditionsYes="UNDERPOWERED">
+                    <Animation AnimationName="AUSpecTwr_SKN.AUSpecTwr_OFFA" AnimationMode="ONCE" />
+                </AnimationState>
+            </ScriptedModelDraw>
+        </Draws>
+
+        <Behaviors>
+            <!-- Turret holding the prism beam. VERIFY: turret bone name on the Spectrum Tower model -->
+            <WeaponSetUpdate id="ModuleTag_WeaponSetUpdate">
+                <WeaponSlotTurret ID="1">
+                    <Weapon Ordering="PRIMARY_WEAPON" Template="AlliedPrismSpireWeapon" />
+                    <TurretSettings
+                        TurretTurnRate="360"
+                        TurretPitchRate="0"
+                        AllowsPitch="false"
+                        MinIdleScanTime="1.0s"
+                        MaxIdleScanTime="4.0s"
+                        MinIdleScanAngle="0"
+                        MaxIdleScanAngle="0">
+                        <TurretAITargetChooserData
+                            CanAcquireDynamicIfAssignedOutOfRange="true"
+                            IdleScanDelay="0.5s"
+                            ExcludeKindOf="AIRCRAFT" />
+                    </TurretSettings>
+                </WeaponSlotTurret>
+            </WeaponSetUpdate>
+
+            <!-- Low power: tower goes offline (stops firing, plays UNDERPOWERED state).
+                 VERIFY: module name used by Allied base defenses for power-dependent disable
+                 (KindOf POWERED alone may already be enough in RA3). -->
+            <PoweredUpdate id="ModuleTag_PoweredUpdate" />
+
+            <!-- +25% HP from Upgrade_FortressReinforcedPlating (defined in data/Logic/). -->
+            <MaxHealthUpgrade
+                id="ModuleTag_FortressPlating"
+                TriggeredBy="Upgrade_FortressReinforcedPlating"
+                AddMaxHealth="800"
+                ChangeType="ADD_CURRENT_HEALTH_TOO" />
+
+            <!-- Standard structure behaviour copied from Spectrum Tower. VERIFY names in SageXml. -->
+            <StructureCollapseUpdate
+                id="ModuleTag_Collapse"
+                MinCollapseDelay="0.0s"
+                MaxCollapseDelay="0.0s"
+                CollapseDamping="0.5"
+                MaxShudder="1.5"
+                BigBurstFrequency="4"
+                DestroyObjectWhenDone="false" />
+            <TransitionDamageFX id="ModuleTag_TransitionDamage" DamagedFXList="FX_StructureDamaged" ReallyDamagedFXList="FX_StructureReallyDamaged" />
+            <RepairableStructure id="ModuleTag_Repairable" />
+            <StructureSellable id="ModuleTag_Sellable" />
+            <FireWeaponWhenDead id="ModuleTag_DeathExplosion" DeathWeapon="AlliedSmallStructureDeathWeapon" StartsActive="true" />
+        </Behaviors>
+
+        <Body>
+            <ActiveBody id="ModuleTag_Body" MaxHealth="3200" />
+        </Body>
+
+        <!-- Spectrum Tower footprint scaled by 1.3. VERIFY: base footprint values in SageXml -->
+        <Geometry IsSmall="false">
+            <Shape Type="BOX" MajorRadius="26" MinorRadius="26" Height="110" />
+        </Geometry>
+
+        <AI>
+            <AIUpdate id="ModuleTag_AI" AutoAcquireEnemiesWhenIdle="YES" />
+        </AI>
+
+        <!-- Requires Defense Bureau + Command Hub.
+             VERIFY: object ids of Defense Bureau and Command Hub in SageXml
+             (expected AlliedDefenseBureau / AlliedCommandHub), and the exact Req syntax. -->
+        <ObjectPrerequisites>
+            <Object>
+                <Req>AlliedDefenseBureau</Req>
+                <Req>AlliedCommandHub</Req>
+            </Object>
+        </ObjectPrerequisites>
+
+        <!-- SPEC "Sounds" section. VERIFY: Spectrum Tower sound event names in audio.xml -->
+        <UnitSpecificSounds
+            VoiceSelect="ALL_SpectrumTower_Select"
+            SoundOnDamaged="ALL_StructureDamaged"
+            SoundOnReallyDamaged="ALL_StructureReallyDamaged"
+            SoundDie="ALL_StructureDie_Small" />
+    </GameObject>
+</AssetDeclaration>

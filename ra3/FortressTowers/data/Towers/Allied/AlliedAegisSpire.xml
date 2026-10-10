@@ -1,0 +1,313 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    FortressTowers 1.0 :: Tower #3 :: AlliedAegisSpire ("Вежа «Егіда»")
+
+    BASE (copied from SageXml): Allied Multigunner Turret
+        SageXml/Allied/Structures/AlliedBaseDefense.xml  (GameObject id "AlliedBaseDefense")
+        (VERIFY: exact file/object id of the Multigunner Turret in SageXml - see VERIFY comment below the header)
+
+    WHAT WAS CHANGED vs. the original:
+        - New id / strings / CommandSet (AlliedAegisSpireCommandSet, defined by integration in data/Logic/).
+        - Stats per SPEC: BuildCost 1200, BuildTime 18 s, MaxHealth 2200, EnergyProduction -5.
+        - Weapons: the Multigunner's adaptive anti-infantry / anti-vehicle / anti-air weapon set is REMOVED.
+          Replaced by ONE anti-air-only turret slot: twin rapid-fire missile pods (alternating MUZZLE01/MUZZLE02),
+          AttackRange 450, cannot target ground or naval units (AntiMask = airborne only).
+        - New passive "shield projector": AttributeModifierAuraUpdate grants AttributeModifier_AlliedAegisSpireShield
+          to own/allied STRUCTUREs within 200 units -> they take 35% less damage (ARMOR modifier 65%).
+          Aura stops while the tower is disabled / underpowered.
+        - Soft blue dome FX (FXParticleSystemTemplate FXPS_AlliedAegisSpireDome) attached to the model while active,
+          plus a faint blue shimmer on every shielded structure (ModifierFX on the AttributeModifier).
+        - Model reused 1:1 from the Multigunner Turret, scaled up to 1.15.
+        - Prerequisite: Construction Yard only.
+
+    AUTHOR MUST VERIFY in SageXml (all marked with VERIFY comments below):
+        - W3X model / skeleton / animation names of the Multigunner Turret (ABMultigunner_*),
+          turret bone names and muzzle bone names.
+        - Armor template, DamageFX, death FX, missile projectile object, fire FX, sound event names.
+        - Exact semantics of Modifier Type="ARMOR" (multiplier on damage received) in RA3 1.12.
+        - Construction Yard object id and the ObjectPrerequisites schema.
+-->
+<AssetDeclaration xmlns="uri:ea.com:eala:asset" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <!-- VERIFY: base object = Multigunner Turret, assumed GameObject id "AlliedBaseDefense" in SageXml/Allied/Structures/AlliedBaseDefense.xml -->
+    <Tags></Tags>
+    <Includes>
+        <Include type="reference" source="DATA:static.xml" />
+        <Include type="reference" source="DATA:global.xml" />
+        <Include type="reference" source="DATA:audio.xml" />
+    </Includes>
+
+    <!-- ===================================================================== -->
+    <!--  Shield projector buff: -35% damage taken by friendly structures       -->
+    <!-- ===================================================================== -->
+    <!-- VERIFY: in RA3 1.12 Modifier Type="ARMOR" Value is a multiplier on incoming damage (65% = takes 35% less).
+         If SageXml shows ARMOR as "armor bonus" (higher = tougher), change Value to the equivalent (e.g. 154%). -->
+    <AttributeModifier
+        id="AttributeModifier_AlliedAegisSpireShield"
+        Category="BUFF"
+        Duration="2.5s"
+        StackingLimit="1"
+        StackingLimitScope="ALL_PLAYERS"
+        ModifierFX="FX_AlliedAegisSpireShieldShimmer">
+        <Modifier Type="ARMOR" Value="65%" />
+    </AttributeModifier>
+
+    <!-- ===================================================================== -->
+    <!--  FX: soft blue dome (Allies palette: steel blue / white)               -->
+    <!-- ===================================================================== -->
+    <!-- VERIFY: particle texture names (EXShieldBubble / EXGlow01) - reuse the textures of the base-game
+         Allied shield/bubble effect (e.g. Chrono or Cryo FX) if these do not exist. -->
+    <FXParticleSystemTemplate
+        id="FXPS_AlliedAegisSpireDome"
+        Priority="CRITICAL"
+        IsOneShot="false"
+        Shader="ADDITIVE"
+        Type="PARTICLE"
+        ParticleName="EXShieldBubble"
+        Lifetime="40 40"
+        SystemLifetime="0"
+        Size="400 400"
+        StartSizeRate="0 0"
+        BurstDelay="38 38"
+        BurstCount="1 1"
+        InitialDelay="0 0"
+        IsGroundAligned="false"
+        IsEmitAboveGroundOnly="false"
+        IsParticleUpTowardsEmitter="false">
+        <Colors>
+            <Color1 Frame="0"><Color R="0.00" G="0.00" B="0.00" /></Color1>
+            <Color2 Frame="10"><Color R="0.12" G="0.30" B="0.55" /></Color2>
+            <Color3 Frame="30"><Color R="0.12" G="0.30" B="0.55" /></Color3>
+            <Color4 Frame="40"><Color R="0.00" G="0.00" B="0.00" /></Color4>
+        </Colors>
+        <Alpha>
+            <Alpha1 Low="0.00" High="0.00" Frame="0" />
+            <Alpha2 Low="0.35" High="0.35" Frame="10" />
+            <Alpha3 Low="0.35" High="0.35" Frame="30" />
+            <Alpha4 Low="0.00" High="0.00" Frame="40" />
+        </Alpha>
+        <Update xsi:type="FXParticleUpdateDefault" />
+        <Physics xsi:type="FXParticleDefaultPhysics" Gravity="0" />
+        <Draw xsi:type="FXParticleDrawDefault" />
+        <EmissionVelocity xsi:type="FXParticleEmissionVelocityOrtho" />
+        <EmissionVolume xsi:type="FXParticleEmissionVolumePoint" />
+    </FXParticleSystemTemplate>
+
+    <FXParticleSystemTemplate
+        id="FXPS_AlliedAegisSpireShimmer"
+        Priority="AREA_EFFECT"
+        IsOneShot="true"
+        Shader="ADDITIVE"
+        Type="PARTICLE"
+        ParticleName="EXGlow01"
+        Lifetime="20 20"
+        SystemLifetime="1"
+        Size="60 60"
+        StartSizeRate="0 0"
+        BurstDelay="0 0"
+        BurstCount="1 1"
+        InitialDelay="0 0">
+        <Colors>
+            <Color1 Frame="0"><Color R="0.45" G="0.70" B="1.00" /></Color1>
+            <Color2 Frame="20"><Color R="0.00" G="0.00" B="0.00" /></Color2>
+        </Colors>
+        <Alpha>
+            <Alpha1 Low="0.25" High="0.25" Frame="0" />
+            <Alpha2 Low="0.00" High="0.00" Frame="20" />
+        </Alpha>
+        <Update xsi:type="FXParticleUpdateDefault" />
+        <Physics xsi:type="FXParticleDefaultPhysics" Gravity="0" />
+        <Draw xsi:type="FXParticleDrawDefault" />
+        <EmissionVelocity xsi:type="FXParticleEmissionVelocityOrtho" />
+        <EmissionVolume xsi:type="FXParticleEmissionVolumePoint" />
+    </FXParticleSystemTemplate>
+
+    <FXList id="FX_AlliedAegisSpireShieldShimmer">
+        <ParticleSystem Particle="FXPS_AlliedAegisSpireShimmer" />
+    </FXList>
+
+    <!-- ===================================================================== -->
+    <!--  Weapons                                                               -->
+    <!-- ===================================================================== -->
+    <!-- Main AA weapon: twin rapid-fire missile pods. 2 pods x 4 missiles per clip, alternating muzzles. -->
+    <WeaponTemplate
+        id="AlliedAegisSpireWeaponAA"
+        Name="AlliedAegisSpireWeaponAA"
+        AttackRange="450.0"
+        MinimumAttackRange="0.0"
+        WeaponSpeed="900.0"
+        ClipSize="8"
+        AutoReloadsClip="AUTO"
+        AcceptableAimDelta="20d"
+        AntiMask="ANTI_AIRBORNE_VEHICLE ANTI_AIRBORNE_INFANTRY"
+        RadiusDamageAffects="ENEMIES NEUTRALS"
+        ProjectileCollidesWith="ENEMIES STRUCTURES"
+        FireFX="FX_AlliedBaseDefenseAntiAirFire"
+        FireSound="ALL_MultigunnerTurret_AntiAirWeaponFire">
+        <!-- VERIFY: FireFX "FX_AlliedBaseDefenseAntiAirFire" and FireSound "ALL_MultigunnerTurret_AntiAirWeaponFire"
+             are guesses - take the names from the Multigunner's original anti-air WeaponTemplate. -->
+        <FiringDuration MinSeconds="0.15s" MaxSeconds="0.15s" />
+        <ClipReloadTime MinSeconds="1.6s" MaxSeconds="1.6s" />
+        <PreAttackDelay MinSeconds="0.1s" MaxSeconds="0.1s" />
+        <Nuggets>
+            <!-- VERIFY: projectile object id - reuse the base-game Multigunner / IFV anti-air missile object. -->
+            <ProjectileNugget
+                ProjectileTemplate="AlliedBaseDefenseAntiAirMissile"
+                WarheadTemplate="AlliedAegisSpireWarheadAA" />
+        </Nuggets>
+    </WeaponTemplate>
+
+    <WeaponTemplate id="AlliedAegisSpireWarheadAA" Name="AlliedAegisSpireWarheadAA" RadiusDamageAffects="ENEMIES NEUTRALS">
+        <Nuggets>
+            <!-- VERIFY: DamageType for AA missiles in RA3 (ROCKET vs. AIR_MISSILE) and DeathType. -->
+            <DamageNugget
+                Damage="40.0"
+                Radius="12.0"
+                DamageTaperOff="0.5"
+                DamageType="ROCKET"
+                DeathType="EXPLODED" />
+        </Nuggets>
+    </WeaponTemplate>
+
+    <!-- ===================================================================== -->
+    <!--  The tower                                                             -->
+    <!-- ===================================================================== -->
+    <GameObject
+        id="AlliedAegisSpire"
+        inheritFrom="BaseStructure"
+        Side="Allies"
+        EditorSorting="STRUCTURE"
+        KindOf="PRELOAD STRUCTURE SELECTABLE IMMOBILE SCORE CAN_ATTACK FS_BASE_DEFENSE"
+        BuildCost="1200"
+        BuildTime="18.0"
+        CommandSet="AlliedAegisSpireCommandSet"
+        EnergyProduction="-5"
+        ThreatLevel="3.0"
+        VisionRange="500.0"
+        ShroudClearingRange="500.0"
+        RadarPriority="STRUCTURE"
+        SelectPortrait="Portrait_AlliedBaseDefense"
+        ButtonImage="Button_AlliedBaseDefense"
+        BuildFadeInOnCreateTime="0.5s"
+        CrusherLevel="0"
+        CrushableLevel="255">
+        <!-- VERIFY: SelectPortrait / ButtonImage - copy from the Multigunner Turret (AlliedBaseDefense). -->
+
+        <DisplayName>NAME:AlliedAegisSpire</DisplayName>
+        <Description>DESC:AlliedAegisSpire</Description>
+        <TypeDescription>TYPE:AlliedAegisSpire</TypeDescription>
+
+        <!-- VERIFY: armor template / DamageFX names of the Multigunner Turret. -->
+        <ArmorSet Armor="AlliedBaseDefenseArmor" DamageFX="StructureDamageFXNoShake" />
+
+        <Draws>
+            <!-- VERIFY: model, skeleton and animation names (ABMultigunner_*), turret bones TURRET / TURRET_EL,
+                 muzzle bones MUZZLE01 / MUZZLE02, FX bone FX_DOME (fallback: ROOT). Scale attribute placement. -->
+            <ScriptedModelDraw
+                id="ModuleTag_Draw"
+                OkToChangeModelColor="true"
+                Scale="1.15"
+                ExtraPublicBone="FX_DOME MUZZLE01 MUZZLE02">
+                <ModelConditionState ParseCondStateType="PARSE_DEFAULT">
+                    <Model Name="ABMultigunner_SKN" />
+                    <Turret TurretNameKey="TURRET" TurretPitch="TURRET_EL" TurretID="1" />
+                    <WeaponFireFXBone WeaponSlotType="PRIMARY_WEAPON" BoneName="MUZZLE" />
+                    <WeaponLaunchBone WeaponSlotType="PRIMARY_WEAPON" BoneName="MUZZLE" />
+                    <WeaponMuzzleFlash WeaponSlotType="PRIMARY_WEAPON" BoneName="MUZZLEFX" />
+                    <ParticleSysBone BoneName="FX_DOME" FXParticleSystemTemplate="FXPS_AlliedAegisSpireDome" FollowBone="true" />
+                </ModelConditionState>
+                <ModelConditionState ParseCondStateType="PARSE_NORMAL" ConditionsYes="DISABLED">
+                    <!-- No dome while unpowered / disabled. -->
+                    <Model Name="ABMultigunner_SKN" />
+                    <Turret TurretNameKey="TURRET" TurretPitch="TURRET_EL" TurretID="1" />
+                </ModelConditionState>
+                <ModelConditionState ParseCondStateType="PARSE_NORMAL" ConditionsYes="REALLYDAMAGED">
+                    <Model Name="ABMultigunner_D_SKN" />
+                    <Turret TurretNameKey="TURRET" TurretPitch="TURRET_EL" TurretID="1" />
+                    <WeaponFireFXBone WeaponSlotType="PRIMARY_WEAPON" BoneName="MUZZLE" />
+                    <WeaponLaunchBone WeaponSlotType="PRIMARY_WEAPON" BoneName="MUZZLE" />
+                    <ParticleSysBone BoneName="FX_DOME" FXParticleSystemTemplate="FXPS_AlliedAegisSpireDome" FollowBone="true" />
+                </ModelConditionState>
+
+                <AnimationState ParseCondStateType="PARSE_DEFAULT">
+                    <Animation AnimationName="ABMultigunner_IDLA" AnimationMode="LOOP" />
+                </AnimationState>
+                <AnimationState ParseCondStateType="PARSE_NORMAL" ConditionsYes="AWAITING_CONSTRUCTION">
+                    <Animation AnimationName="ABMultigunner_BLDA" AnimationMode="MANUAL" />
+                </AnimationState>
+                <AnimationState ParseCondStateType="PARSE_NORMAL" ConditionsYes="ACTIVELY_CONSTRUCTING">
+                    <Animation AnimationName="ABMultigunner_BLDA" AnimationMode="ONCE" />
+                </AnimationState>
+                <AnimationState ParseCondStateType="PARSE_NORMAL" ConditionsYes="FIRING_OR_PREATTACK_A">
+                    <Animation AnimationName="ABMultigunner_ATKA" AnimationMode="ONCE" />
+                </AnimationState>
+            </ScriptedModelDraw>
+        </Draws>
+
+        <Behaviors>
+            <!-- AA-only turret: one slot, one weapon. No ground/naval weapons at all. -->
+            <WeaponSetUpdate id="ModuleTag_WeaponSetUpdate">
+                <WeaponSlotTurret ID="1" AllowInterleavedFiring="false">
+                    <Weapon Ordering="PRIMARY_WEAPON" Template="AlliedAegisSpireWeaponAA" />
+                    <TurretSettings
+                        TurretTurnRate="240"
+                        TurretPitchRate="180"
+                        AllowsPitch="true"
+                        MinimumPitch="0d"
+                        NaturalTurretAngle="0d"
+                        MinIdleScanTime="2.0s"
+                        MaxIdleScanTime="6.0s"
+                        MinIdleScanAngle="0d"
+                        MaxIdleScanAngle="120d">
+                        <TurretAITargetChooserData CanPickTargetsOutOfTurretAngle="false" />
+                    </TurretSettings>
+                </WeaponSlotTurret>
+            </WeaponSetUpdate>
+
+            <!-- Shield projector aura: own + allied structures within 200 -> AttributeModifier_AlliedAegisSpireShield. -->
+            <AttributeModifierAuraUpdate
+                id="ModuleTag_AegisShieldAura"
+                StartsActive="true"
+                BonusName="AttributeModifier_AlliedAegisSpireShield"
+                RefreshDelay="2.0s"
+                Range="200.0"
+                AllowPowerWhenAttacking="true"
+                RunWhileDead="false">
+                <ObjectFilter Rule="NONE" Relationship="SAME_PLAYER ALLIES" Include="STRUCTURE" />
+            </AttributeModifierAuraUpdate>
+
+            <!-- VERIFY: death FX / collapse names - copy from the Multigunner Turret's die modules. -->
+            <FXListDie id="ModuleTag_DeathFX" DeathFX="FX_AlliedBaseDefenseDeath" />
+            <DestroyDie id="ModuleTag_DestroyDie" />
+        </Behaviors>
+
+        <Body>
+            <ActiveBody id="ModuleTag_Body" MaxHealth="2200.0" />
+        </Body>
+
+        <AI>
+            <AIUpdate id="ModuleTag_AI" AutoAcquireEnemiesWhenIdle="YES">
+                <UnitAITargetChooserData CanPickDynamicTargets="true" SympathyRange="100.0" />
+            </AIUpdate>
+        </AI>
+
+        <!-- VERIFY: ObjectPrerequisites schema and Construction Yard id ("AlliedConstructionYard") in SageXml. -->
+        <ObjectPrerequisites>
+            <Object>
+                <Req>
+                    <Object>AlliedConstructionYard</Object>
+                </Req>
+            </Object>
+        </ObjectPrerequisites>
+
+        <Geometry IsSmall="false">
+            <Shape Type="CYLINDER" MajorRadius="20.0" Height="45.0" />
+        </Geometry>
+
+        <!-- Sounds. VERIFY: sound event names - copy from the Multigunner Turret (AlliedBaseDefense). -->
+        <VoiceSelect>ALL_MultigunnerTurret_Select</VoiceSelect>
+        <SoundOnDamaged>ALL_StructureDamaged</SoundOnDamaged>
+        <SoundOnReallyDamaged>ALL_StructureReallyDamaged</SoundOnReallyDamaged>
+        <SoundDie>ALL_StructureDieMedium</SoundDie>
+        <SoundAmbient>ALL_MultigunnerTurret_Ambient</SoundAmbient>
+    </GameObject>
+</AssetDeclaration>
