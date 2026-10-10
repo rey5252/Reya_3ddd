@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 280" width="240" height="280" role="img" aria-labelledby="AlliedPrismSpire-title">
+<title id="AlliedPrismSpire-title">Призматичний шпиль</title>
+<defs>
+<linearGradient id="AlliedPrismSpire-plateTop" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e9eff7"/><stop offset="0.55" stop-color="#b9c7d8"/><stop offset="1" stop-color="#8297b0"/></linearGradient>
+<linearGradient id="AlliedPrismSpire-plateIn" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d3dde9"/><stop offset="1" stop-color="#93a7bf"/></linearGradient>
+<linearGradient id="AlliedPrismSpire-plateL" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9fb3c8"/><stop offset="1" stop-color="#6c819b"/></linearGradient>
+<linearGradient id="AlliedPrismSpire-plateR" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5d708a"/><stop offset="1" stop-color="#3b4a60"/></linearGradient>
+<radialGradient id="AlliedPrismSpire-shadow" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#0a1424" stop-opacity="0.55"/><stop offset="0.6" stop-color="#0a1424" stop-opacity="0.25"/><stop offset="1" stop-color="#0a1424" stop-opacity="0"/></radialGradient>
+<linearGradient id="AlliedPrismSpire-faceL" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f6f9fd"/><stop offset="1" stop-color="#a9bccf"/></linearGradient>
+<linearGradient id="AlliedPrismSpire-faceR" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8a9fb6"/><stop offset="1" stop-color="#4f627b"/></linearGradient>
+<linearGradient id="AlliedPrismSpire-faceT" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#c9d6e6"/></linearGradient>
+<linearGradient id="AlliedPrismSpire-blueL" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5d9af2"/><stop offset="1" stop-color="#2f6fd6"/></linearGradient>
+<linearGradient id="AlliedPrismSpire-blueR" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a5fb8"/><stop offset="1" stop-color="#173f80"/></linearGradient>
+<linearGradient id="AlliedPrismSpire-blueT" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#9cc3ff"/><stop offset="1" stop-color="#4d8be8"/></linearGradient>
+<linearGradient id="AlliedPrismSpire-chromeH" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#c4d2e0"/><stop offset="0.25" stop-color="#ffffff"/><stop offset="0.55" stop-color="#9fb3c8"/><stop offset="1" stop-color="#4a5d76"/></linearGradient>
+<linearGradient id="AlliedPrismSpire-blueH" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#4d8be8"/><stop offset="0.3" stop-color="#7fb0ff"/><stop offset="0.6" stop-color="#2f6fd6"/><stop offset="1" stop-color="#163a78"/></linearGradient>
+<linearGradient id="AlliedPrismSpire-darkH" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#5b6f88"/><stop offset="0.3" stop-color="#8ea2b9"/><stop offset="1" stop-color="#26324a"/></linearGradient>
+<radialGradient id="AlliedPrismSpire-lamp" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#ffffff"/><stop offset="0.35" stop-color="#7fe3ff"/><stop offset="1" stop-color="#7fe3ff" stop-opacity="0"/></radialGradient>
+<filter id="AlliedPrismSpire-soft" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="3"/></filter>
+<filter id="AlliedPrismSpire-mist" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="6"/></filter>
+<filter id="AlliedPrismSpire-fine" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="1.2"/></filter>
+<linearGradient id="AlliedPrismSpire-finL" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="0.5" stop-color="#c9d6e6"/><stop offset="1" stop-color="#8397ae"/></linearGradient>
+<linearGradient id="AlliedPrismSpire-finR" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b4c4d6"/><stop offset="0.5" stop-color="#7f94ad"/><stop offset="1" stop-color="#45576f"/></linearGradient>
+<linearGradient id="AlliedPrismSpire-spireL" x1="0" y1="0" x2="0.3" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="0.5" stop-color="#dde6f1"/><stop offset="1" stop-color="#9fb3c8"/></linearGradient>
+<linearGradient id="AlliedPrismSpire-spireR" x1="1" y1="0" x2="0.7" y2="1"><stop offset="0" stop-color="#9fb3c8"/><stop offset="0.5" stop-color="#6f849d"/><stop offset="1" stop-color="#3e4f68"/></linearGradient>
+<linearGradient id="AlliedPrismSpire-cryL" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="0.4" stop-color="#c9f6ff"/><stop offset="1" stop-color="#7fe3ff"/></linearGradient>
+<linearGradient id="AlliedPrismSpire-cryM" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e8fcff"/><stop offset="1" stop-color="#4cc6f0"/></linearGradient>
+<linearGradient id="AlliedPrismSpire-cryR" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7fe3ff"/><stop offset="1" stop-color="#1f7fc4"/></linearGradient>
+<linearGradient id="AlliedPrismSpire-cryD" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5fd2f7"/><stop offset="1" stop-color="#16508f"/></linearGradient>
+<radialGradient id="AlliedPrismSpire-halo" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#ffffff" stop-opacity="0.95"/><stop offset="0.18" stop-color="#b8f2ff" stop-opacity="0.8"/><stop offset="0.45" stop-color="#7fe3ff" stop-opacity="0.35"/><stop offset="1" stop-color="#7fe3ff" stop-opacity="0"/></radialGradient>
+<linearGradient id="AlliedPrismSpire-beam" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7fe3ff" stop-opacity="0"/><stop offset="0.5" stop-color="#bff4ff" stop-opacity="0.9"/><stop offset="1" stop-color="#7fe3ff" stop-opacity="0"/></linearGradient>
+</defs>
+<ellipse cx="126" cy="236" rx="116" ry="40" fill="url(#AlliedPrismSpire-shadow)"/>
+<g id="AlliedPrismSpire-plate">
+<polygon points="26,205 120,252 120,262 26,215" fill="url(#AlliedPrismSpire-plateL)"/>
+<polygon points="120,252 214,205 214,215 120,262" fill="url(#AlliedPrismSpire-plateR)"/>
+<polygon points="26,208 120,255 120,258.5 26,211.5" fill="#2f6fd6"/>
+<polygon points="120,255 214,208 214,211.5 120,258.5" fill="#1d4f9f"/>
+<polygon points="120,158 214,205 120,252 26,205" fill="url(#AlliedPrismSpire-plateTop)"/>
+<polygon points="120,167.4 195.2,205 120,242.6 44.8,205" fill="url(#AlliedPrismSpire-plateIn)" stroke="#6c819b" stroke-width="0.8"/>
+<polygon points="120,175.9 178.3,205 120,234.1 61.7,205" fill="none" stroke="#f4f8fd" stroke-opacity="0.55" stroke-width="0.7"/>
+<line x1="120" y1="158" x2="120" y2="167.4" stroke="#6c819b" stroke-width="0.7"/>
+<line x1="214" y1="205" x2="195.2" y2="205" stroke="#6c819b" stroke-width="0.7"/>
+<line x1="120" y1="252" x2="120" y2="242.6" stroke="#6c819b" stroke-width="0.7"/>
+<line x1="26" y1="205" x2="44.8" y2="205" stroke="#6c819b" stroke-width="0.7"/>
+<line x1="49.5" y1="217.8" x2="49.5" y2="226.8" stroke="#4a5d76" stroke-width="0.6"/>
+<line x1="143.5" y1="241.2" x2="143.5" y2="250.2" stroke="#26324a" stroke-width="0.6"/>
+<line x1="73" y1="229.5" x2="73" y2="238.5" stroke="#4a5d76" stroke-width="0.6"/>
+<line x1="167" y1="229.5" x2="167" y2="238.5" stroke="#26324a" stroke-width="0.6"/>
+<line x1="96.5" y1="241.2" x2="96.5" y2="250.2" stroke="#4a5d76" stroke-width="0.6"/>
+<line x1="190.5" y1="217.8" x2="190.5" y2="226.8" stroke="#26324a" stroke-width="0.6"/>
+<polyline points="26,205 120,158 214,205" fill="none" stroke="#ffffff" stroke-opacity="0.7" stroke-width="1"/>
+<polyline points="26,205 120,252" fill="none" stroke="#ffffff" stroke-opacity="0.45" stroke-width="0.8"/>
+<polyline points="120,252 214,205" fill="none" stroke="#1d2a40" stroke-opacity="0.35" stroke-width="0.8"/>
+<circle cx="35" cy="205" r="5" fill="url(#AlliedPrismSpire-lamp)"/>
+<ellipse cx="35" cy="205" rx="1.8" ry="1" fill="#ffffff"/>
+<circle cx="205" cy="205" r="5" fill="url(#AlliedPrismSpire-lamp)"/>
+<ellipse cx="205" cy="205" rx="1.8" ry="1" fill="#ffffff"/>
+<circle cx="120" cy="247" r="5" fill="url(#AlliedPrismSpire-lamp)"/>
+<ellipse cx="120" cy="247" rx="1.8" ry="1" fill="#ffffff"/>
+</g>
+<path d="M76,205 L56,205 L58,196 Q60,119 96,53 Q102,81 107,101 L92,181 Z" fill="url(#AlliedPrismSpire-finL)" stroke="#3b4a60" stroke-width="0.7" stroke-linejoin="round"/>
+<path d="M64,193 Q67,121 94,65 L96,73 Q73,123 70,191 Z" fill="url(#AlliedPrismSpire-blueL)"/>
+<path d="M80,185 Q80,121 98,77" fill="none" stroke="#7fe3ff" stroke-width="3" stroke-opacity="0.5" filter="url(#AlliedPrismSpire-fine)"/>
+<path d="M80,185 Q80,121 98,77" fill="none" stroke="#e6fbff" stroke-width="0.9"/>
+<line x1="85" y1="165" x2="74.2" y2="165" stroke="#4a5d76" stroke-width="0.6"/>
+<line x1="83.5" y1="135" x2="76.6" y2="135" stroke="#4a5d76" stroke-width="0.6"/>
+<circle cx="95" cy="59" r="5" fill="url(#AlliedPrismSpire-lamp)"/>
+<path d="M164,205 L184,205 L182,196 Q180,119 144,53 Q138,81 133,101 L148,181 Z" fill="url(#AlliedPrismSpire-finR)" stroke="#3b4a60" stroke-width="0.7" stroke-linejoin="round"/>
+<path d="M176,193 Q173,121 146,65 L144,73 Q167,123 170,191 Z" fill="url(#AlliedPrismSpire-blueR)"/>
+<path d="M160,185 Q160,121 142,77" fill="none" stroke="#7fe3ff" stroke-width="3" stroke-opacity="0.5" filter="url(#AlliedPrismSpire-fine)"/>
+<path d="M160,185 Q160,121 142,77" fill="none" stroke="#e6fbff" stroke-width="0.9"/>
+<line x1="155" y1="165" x2="165.8" y2="165" stroke="#4a5d76" stroke-width="0.6"/>
+<line x1="156.5" y1="135" x2="163.4" y2="135" stroke="#4a5d76" stroke-width="0.6"/>
+<circle cx="145" cy="59" r="5" fill="url(#AlliedPrismSpire-lamp)"/>
+<polygon points="70,189 120,214 120,230 70,205" fill="url(#AlliedPrismSpire-faceL)" stroke="#3b4a60" stroke-width="0.6" stroke-linejoin="round"/>
+<polygon points="120,214 170,189 170,205 120,230" fill="url(#AlliedPrismSpire-faceR)" stroke="#3b4a60" stroke-width="0.6" stroke-linejoin="round"/>
+<polygon points="120,164 170,189 120,214 70,189" fill="url(#AlliedPrismSpire-faceT)" stroke="#3b4a60" stroke-width="0.6" stroke-linejoin="round"/>
+<polygon points="70,192 120,217 120,221 70,196" fill="#2f6fd6"/>
+<polygon points="170,192 120,217 120,221 170,196" fill="#1d4f9f"/>
+<polygon points="81,223.5 81,223.5 81,226.5 81,226.5" fill="#5b6f88"/>
+<polygon points="159,219.5 159,223.5 159,226.5 159,222.5" fill="#26324a"/>
+<polygon points="101,213.5 101,213.5 101,216.5 101,216.5" fill="#5b6f88"/>
+<polygon points="139,209.5 139,213.5 139,216.5 139,212.5" fill="#26324a"/>
+<polygon points="84,179 120,197 120,207 84,189" fill="url(#AlliedPrismSpire-blueL)" stroke="#163a78" stroke-width="0.6" stroke-linejoin="round"/>
+<polygon points="120,197 156,179 156,189 120,207" fill="url(#AlliedPrismSpire-blueR)" stroke="#163a78" stroke-width="0.6" stroke-linejoin="round"/>
+<polygon points="120,161 156,179 120,197 84,179" fill="url(#AlliedPrismSpire-blueT)" stroke="#163a78" stroke-width="0.6" stroke-linejoin="round"/>
+<polygon points="111,93 120,97.5 120,192 94,179" fill="url(#AlliedPrismSpire-spireL)" stroke="#3b4a60" stroke-width="0.6"/>
+<polygon points="120,97.5 129,93 146,179 120,192" fill="url(#AlliedPrismSpire-spireR)" stroke="#3b4a60" stroke-width="0.6"/>
+<polygon points="102.5,136 120,144.8 120,152.3 101.1,142.9" fill="#2f6fd6"/>
+<polygon points="120,144.8 137.5,136 138.9,142.9 120,152.3" fill="#1d4f9f"/>
+<polyline points="97.1,163.5 120,175 142.9,163.5" fill="none" stroke="#4a5d76" stroke-width="0.6"/>
+<polyline points="105.2,122.2 120,129.6 134.8,122.2" fill="none" stroke="#4a5d76" stroke-width="0.6"/>
+<polyline points="108.3,106.8 120,112.6 131.7,106.8" fill="none" stroke="#4a5d76" stroke-width="0.6"/>
+<polygon points="106.2,158.6 114.7,162.9 114.5,166.6 105.8,162.2" fill="#7fe3ff" fill-opacity="0.9"/>
+<polygon points="107.1,151.5 115,155.5 114.9,159.2 106.6,155.1" fill="#7fe3ff" fill-opacity="0.9"/>
+<polygon points="110,128.4 116.1,131.5 116,135.2 109.5,131.9" fill="#7fe3ff" fill-opacity="0.9"/>
+<path d="M120,238 L114,236 Q113,200 115.5,182 L117.5,100 L120,98 Z" fill="#e8eef6" stroke="#3b4a60" stroke-width="0.6"/>
+<path d="M120,238 L125,236 Q126,200 124,182 L122.5,100 L120,98 Z" fill="#6f849d" stroke="#3b4a60" stroke-width="0.6"/>
+<path d="M120,234 L120,102" stroke="#7fe3ff" stroke-width="3.2" stroke-opacity="0.6" filter="url(#AlliedPrismSpire-fine)"/>
+<path d="M120,234 L120,102" stroke="#e6fbff" stroke-width="1"/>
+<path d="M113,101 Q97,92 99,62 L103,61 Q104,86 117,95 Z" fill="url(#AlliedPrismSpire-finL)" stroke="#3b4a60" stroke-width="0.6"/>
+<path d="M127,101 Q143,92 141,62 L137,61 Q136,86 123,95 Z" fill="url(#AlliedPrismSpire-finR)" stroke="#3b4a60" stroke-width="0.6"/>
+<ellipse cx="120" cy="96" rx="11" ry="5" fill="#2f6fd6" stroke="#163a78" stroke-width="0.6"/>
+<circle cx="120" cy="58" r="62" fill="url(#AlliedPrismSpire-halo)"/>
+<polygon points="120,14 101,50 112,57" fill="url(#AlliedPrismSpire-cryL)" stroke="#ffffff" stroke-opacity="0.6" stroke-width="0.5" stroke-linejoin="round"/>
+<polygon points="120,14 112,57 128,57" fill="url(#AlliedPrismSpire-cryM)" stroke="#ffffff" stroke-opacity="0.6" stroke-width="0.5" stroke-linejoin="round"/>
+<polygon points="120,14 128,57 139,50" fill="url(#AlliedPrismSpire-cryR)" stroke="#ffffff" stroke-opacity="0.6" stroke-width="0.5" stroke-linejoin="round"/>
+<polygon points="101,50 112,57 120,96" fill="url(#AlliedPrismSpire-cryM)" stroke="#ffffff" stroke-opacity="0.6" stroke-width="0.5" stroke-linejoin="round"/>
+<polygon points="112,57 128,57 120,96" fill="url(#AlliedPrismSpire-cryR)" stroke="#ffffff" stroke-opacity="0.6" stroke-width="0.5" stroke-linejoin="round"/>
+<polygon points="128,57 139,50 120,96" fill="url(#AlliedPrismSpire-cryD)" stroke="#ffffff" stroke-opacity="0.6" stroke-width="0.5" stroke-linejoin="round"/>
+<polygon points="120,18 106,48 113,52" fill="#ffffff" fill-opacity="0.75"/>
+<line x1="114" y1="58" x2="119" y2="88" stroke="#ffffff" stroke-opacity="0.6" stroke-width="1"/>
+<ellipse cx="120" cy="54" rx="7" ry="14" fill="#ffffff" fill-opacity="0.55" filter="url(#AlliedPrismSpire-soft)"/>
+<ellipse cx="120" cy="88" rx="30" ry="8" fill="none" stroke="#7fe3ff" stroke-width="2.4" stroke-opacity="0.35" filter="url(#AlliedPrismSpire-fine)"/>
+<path d="M90,88 A30,8 0 0 0 150,88" fill="none" stroke="#dffaff" stroke-width="0.9"/>
+<ellipse cx="120" cy="36" rx="36" ry="9" fill="none" stroke="#bff4ff" stroke-width="0.7" stroke-opacity="0.7" stroke-dasharray="6 4"/>
+<path d="M120,4 L121.8,12.2 L130,14 L121.8,15.8 L120,24 L118.2,15.8 L110,14 L118.2,12.2 Z" fill="#ffffff" fill-opacity="0.9"/>
+<path d="M138,45 L138.9,49.1 L143,50 L138.9,50.9 L138,55 L137.1,50.9 L133,50 L137.1,49.1 Z" fill="#ffffff" fill-opacity="0.8"/>
+<path d="M101,46 L101.7,49.3 L105,50 L101.7,50.7 L101,54 L100.3,50.7 L97,50 L100.3,49.3 Z" fill="#ffffff" fill-opacity="0.7"/>
+<circle cx="96" cy="61" r="4" fill="url(#AlliedPrismSpire-lamp)"/>
+<circle cx="144" cy="61" r="4" fill="url(#AlliedPrismSpire-lamp)"/>
+</svg>
