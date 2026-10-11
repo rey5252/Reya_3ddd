@@ -52,115 +52,155 @@ function loadScript(src) {
   return new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = rej; document.head.append(s); });
 }
 const MODEL_FILES = ['vendor/tf.min.js', 'vendor/tf-backend-wasm.min.js', 'vendor/nsfw/model.min.js', 'vendor/nsfw/group1-shard1of1.min.js', 'vendor/nsfwjs.min.js'];
-async function pickBackend() {
-  for (const be of ['webgl', 'wasm', 'cpu']) {
-    try { if (await tf.setBackend(be)) { await tf.ready(); tf.tidy(() => tf.zeros([1, 8, 8, 3]).mean().dataSync()); return be; } } catch (e) {}
-  }
-}
+const BATCH = 8, SIZE = 224;
 
-// Preferred: the model runs in a background thread, so scrolling and animations never stutter.
-// The worker is built from a blob with every script inlined; it makes no network requests itself.
-function nsfwWorkerMain(wasm) {
-  let model;
+// Runs the network on a batch of 224×224 bitmaps; answers [Drawing, Hentai, Neutral, Porn, Sexy] per image.
+// Works both inside the worker and on the page (fallback).
+function nsfwEngine(wasm) {
+  let net;
   const ready = (async () => {
     try { tf.wasm.setWasmPaths(wasm); } catch (e) {}
     for (const be of ['webgl', 'wasm', 'cpu']) {
       try { if (await tf.setBackend(be)) { await tf.ready(); tf.tidy(() => tf.zeros([1, 8, 8, 3]).mean().dataSync()); break; } } catch (e) {}
     }
-    model = await nsfwjs.load();
+    net = (await nsfwjs.load()).model;
     return tf.getBackend();
   })();
-  self.onmessage = async e => {
-    const { id, bmp } = e.data;
-    try {
-      await ready;
-      const t = tf.browser.fromPixels(bmp); if (bmp.close) bmp.close();
-      const p = await model.classify(t, 5); t.dispose();
-      self.postMessage({ id, p });
-    } catch (err) { self.postMessage({ id, error: String((err && err.message) || err) }); }
+  const run = async bmps => {
+    await ready;
+    const out = tf.tidy(() => net.predict(tf.stack(bmps.map(b => tf.browser.fromPixels(b))).toFloat().div(255)));
+    const d = await out.data(); out.dispose();
+    bmps.forEach(b => b.close && b.close());
+    return bmps.map((_, i) => Array.from(d.slice(i * 5, i * 5 + 5)));
   };
-  ready.then(b => self.postMessage({ ready: b }), err => self.postMessage({ fail: String(err) }));
+  return { ready, run };
 }
-async function startWorker() {
+function nsfwWorkerMain(wasm) {
+  const eng = nsfwEngine(wasm);
+  self.onmessage = async e => {
+    try { self.postMessage({ id: e.data.id, res: await eng.run(e.data.bmps) }); }
+    catch (err) { self.postMessage({ id: e.data.id, error: String((err && err.message) || err) }); }
+  };
+  eng.ready.then(b => self.postMessage({ ready: b }), err => self.postMessage({ fail: String(err) }));
+}
+const withTimeout = (p, ms) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), ms))]);
+
+// Preferred: background threads, so scrolling never stutters. On the CPU engine several run in
+// parallel (one per spare core); on the GPU one is enough. Workers are built from a blob with every
+// script inlined and make no requests of their own.
+async function startWorkers() {
   const texts = await Promise.all(MODEL_FILES.map(f => fetch(f).then(r => { if (!r.ok) throw new Error(f); return r.text(); })));
   const wasm = {};
   for (const n of ['tfjs-backend-wasm.wasm', 'tfjs-backend-wasm-simd.wasm']) {
     wasm[n] = URL.createObjectURL(new Blob([await (await fetch('vendor/' + n)).arrayBuffer()], { type: 'application/wasm' }));
   }
   wasm['tfjs-backend-wasm-threaded-simd.wasm'] = wasm['tfjs-backend-wasm-simd.wasm'];
-  const w = new Worker(URL.createObjectURL(new Blob([texts.join('\n;\n') + `\n;(${nsfwWorkerMain})(${JSON.stringify(wasm)});`], { type: 'text/javascript' })));
-  await new Promise((res, rej) => {
-    const to = setTimeout(() => rej(new Error('timeout')), 60000);
-    w.onmessage = e => { clearTimeout(to); e.data.ready ? res() : rej(new Error(e.data.fail)); };
-    w.onerror = e => { clearTimeout(to); rej(e); };
-  });
-  const waiting = new Map(); let seq = 0;
-  w.onmessage = e => { const cb = waiting.get(e.data.id); if (cb) { waiting.delete(e.data.id); cb(e.data); } };
-  return async img => {
-    const bmp = await createImageBitmap(img, { resizeWidth: 224, resizeHeight: 224, resizeQuality: 'medium' });
-    const id = ++seq;
-    const r = await new Promise(res => { waiting.set(id, res); w.postMessage({ id, bmp }, [bmp]); });
-    if (r.error) throw new Error(r.error);
-    return r.p;
+  const src = URL.createObjectURL(new Blob(['self.console.warn = () => {};\n' + texts.join('\n;\n') + `\n;${nsfwEngine};\n(${nsfwWorkerMain})(${JSON.stringify(wasm)});`], { type: 'text/javascript' }));
+  const spawn = async () => {
+    const w = new Worker(src);
+    const backend = await withTimeout(new Promise((res, rej) => {
+      w.onmessage = e => (e.data.ready ? res(e.data.ready) : rej(new Error(e.data.fail)));
+      w.onerror = e => rej(e);
+    }), 60000);
+    const waiting = new Map(); let seq = 0;
+    w.onmessage = e => { const cb = waiting.get(e.data.id); if (cb) { waiting.delete(e.data.id); cb(e.data); } };
+    const run = async bmps => {
+      const id = ++seq;
+      const r = await withTimeout(new Promise(res => { waiting.set(id, res); w.postMessage({ id, bmps }, bmps); }), 45000);
+      if (r.error) throw new Error(r.error);
+      return r.res;
+    };
+    return { backend, run, busy: false, w };
+  };
+  const first = await spawn();
+  ADULT.backend = first.backend;
+  const extra = first.backend === 'webgl' ? 0 : Math.max(0, Math.min(3, (navigator.hardwareConcurrency || 2) - 1) - 1);
+  const pool = [first, ...(await Promise.all(Array.from({ length: extra }, () => spawn().catch(() => null)))).filter(Boolean)];
+  return {
+    size: pool.length,
+    classify: async bmps => {
+      const wk = pool.find(x => !x.busy) || pool[0];
+      wk.busy = true;
+      try { return await wk.run(bmps); } finally { wk.busy = false; }
+    },
   };
 }
-// Fallback: same model on the main thread.
 async function startInPage() {
   for (const s of MODEL_FILES) await loadScript(s);
-  try { tf.wasm.setWasmPaths(new URL('vendor/', location.href).href); } catch (e) {}
-  await pickBackend();
-  const model = await nsfwjs.load();
-  return async blob => {
-    const img = new Image(); const u = URL.createObjectURL(blob); img.src = u;
-    try { await img.decode(); return await model.classify(img, 5); } finally { URL.revokeObjectURL(u); }
-  };
+  const eng = nsfwEngine(new URL('vendor/', location.href).href);
+  ADULT.backend = await withTimeout(eng.ready, 60000);
+  return { size: 1, classify: bmps => withTimeout(eng.run(bmps), 45000) };
 }
 async function loadModel() {
   if (ADULT.model) return ADULT.model;
-  if (!ADULT.loading) ADULT.loading = startWorker().catch(() => startInPage());
+  if (!ADULT.loading) ADULT.loading = startWorkers().catch(() => startInPage());
   ADULT.model = await ADULT.loading;
   return ADULT.model;
 }
-const idle = () => new Promise(r => setTimeout(r, 15));
+// Small thumbnail → 224×224 bitmap, decoded off the main thread.
+async function prepBitmap(it) {
+  const u = it.src ? nativeThumbURL(it.src, it.mime, 256) : turl(it);
+  const blob = await (await fetch(u)).blob();
+  return createImageBitmap(blob, { resizeWidth: SIZE, resizeHeight: SIZE, resizeQuality: 'medium' });
+}
+// Next batch, newest photos first (what the library shows first).
+async function nextBatch() {
+  const its = [];
+  for (let k = S.items.length - 1; k >= 0 && its.length < BATCH; k--) {
+    const it = S.items[k];
+    if (needsCheck(it) && !it._checking) { it._checking = true; its.push(it); }
+  }
+  const bmps = await Promise.all(its.map(it => prepBitmap(it).catch(() => null)));
+  return { its, bmps };
+}
 
 function scheduleAdultScan() {
   if (ADULT.running || !S.items.some(needsCheck)) return;
   ADULT.running = true;
   setTimeout(runAdultScan, 600);
 }
-// Newest photos first: those are what the library shows first.
 async function runAdultScan() {
-  let found = 0, pending = [];
+  let found = 0;
   ADULT.done = 0; ADULT.total = S.items.filter(needsCheck).length;
   updateBlurProgress();
   try {
-    const model = await loadModel();
+    const pool = await loadModel();
+    const handle = async cur => {
+      const okIdx = cur.bmps.map((b, i) => (b ? i : -1)).filter(i => i >= 0);
+      const res = okIdx.length ? await pool.classify(okIdx.map(i => cur.bmps[i])) : [];
+      const score = new Map(okIdx.map((i, k) => [i, res[k]]));
+      cur.its.forEach((it, i) => {
+        const p = score.get(i);
+        it.nsfw = p ? Math.round(Math.max(p[1] + p[3], p[4] * 0.57) * 100) / 100 : -1;
+        it.nsfwV = NSFW_V; delete it._checking;
+        if (isAdult(it)) found++;
+        patchCells(it);
+      });
+      ADULT.done += cur.its.length;
+      updateBlurProgress();
+      saveItems(cur.its);
+    };
+    // keep every checker busy: while one batch is checked, the next ones are already being prepared
+    const inflight = new Set();
     for (;;) {
-      let it = null;
-      for (let k = S.items.length - 1; k >= 0; k--) if (needsCheck(S.items[k])) { it = S.items[k]; break; }
-      if (!it) break;
-      try {
-        const blob = await (await fetch(turl(it))).blob();
-        const p = {};
-        (await model(blob)).forEach(x => { p[x.className] = x.probability; });
-        it.nsfw = Math.round(Math.max((p.Porn || 0) + (p.Hentai || 0), (p.Sexy || 0) * 0.57) * 100) / 100;
-      } catch (e) { it.nsfw = -1; }
-      it.nsfwV = NSFW_V;
-      if (isAdult(it)) found++;
-      patchCells(it);
-      pending.push(it); ADULT.done++;
-      if (ADULT.done % 5 === 0) updateBlurProgress();
-      if (pending.length >= 25) { await saveItems(pending); pending = []; }
-      await idle();
+      while (inflight.size < pool.size + 1) {
+        const cur = await nextBatch();
+        if (!cur.its.length) break;
+        const pr = handle(cur).finally(() => inflight.delete(pr));
+        inflight.add(pr);
+      }
+      if (!inflight.size) break;
+      await Promise.race(inflight);
     }
   } catch (e) {
     ADULT.failed = true;
+    S.items.forEach(i => { delete i._checking; });
     toast('Автоперевірка 18+ не запустилась. Позначайте вручну: утримання фото → «Позначити 18+»', 'info');
   } finally {
-    await saveItems(pending);
     ADULT.running = false;
     updateBlurProgress();
     invalidate();
     if (found && blur18On()) toast(`Знайдено й розмито 18+: ${found}`, 'eyeOff');
+    if (!ADULT.failed && S.items.some(needsCheck)) scheduleAdultScan(); // photos added meanwhile
   }
 }

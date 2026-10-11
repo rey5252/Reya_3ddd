@@ -1,20 +1,25 @@
-/* Layout: "night glass" — indigo-to-lavender gradient, frosted panels with soft glow, round icon
-   bubbles and a floating light tab bar. One committed look for light and dark phones alike. */
+/* Layout: iPhone-style photo app — edge-to-edge grid, translucent bars, grouped lists for albums */
 :root{
-  --bg:#24264a; --bg2:#24264a; --bg3:rgba(255,255,255,.085);
-  --grad:radial-gradient(130% 55% at 50% -5%,rgba(122,140,255,.28),rgba(122,140,255,0) 60%),linear-gradient(180deg,#1e2042 0%,#282a52 38%,#3e3d6e 72%,#6a6699 100%);
-  --label:#f4f3ff; --label2:rgba(224,222,250,.66); --label3:rgba(224,222,250,.34);
-  --sep:rgba(255,255,255,.11); --fill:rgba(255,255,255,.17); --fill2:rgba(255,255,255,.09);
-  --accent:#9db9ff; --accent2:#c7b8ff; --on-accent:#1a1c3a; --red:#ff8396; --green:#7ce3b8;
-  --glow:0 0 18px rgba(140,170,255,.55);
-  --bar:rgba(30,32,62,.68); --menu:rgba(48,50,90,.9); --thumb:#33355f; --shade:rgba(8,8,28,.55);
-  --card:linear-gradient(165deg,#f1eefd 0%,#dcdcf7 55%,#c9d4f6 100%); --card-ink:#262955; --card-ink2:#6c6f9e;
-  --bubble:#2c2f5c;
-  --font:ui-rounded,"SF Pro Rounded",-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --bg:#ffffff; --bg2:#f2f2f7; --bg3:#ffffff;
+  --label:#000000; --label2:rgba(60,60,67,.6); --label3:rgba(60,60,67,.3);
+  --sep:rgba(60,60,67,.24); --fill:rgba(118,118,128,.2); --fill2:rgba(118,118,128,.12);
+  --accent:#007aff; --on-accent:#ffffff; --red:#ff3b30; --green:#34c759;
+  --bar:rgba(249,249,251,.97); --menu:rgba(244,244,246,.92); --thumb:#e9e9ee; --shade:rgba(0,0,0,.35);
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
   --ease:cubic-bezier(.32,.72,0,1); --spring:cubic-bezier(.34,1.4,.64,1);
   --top:env(safe-area-inset-top,0px); --bot:env(safe-area-inset-bottom,0px);
-  color-scheme:dark;
+  color-scheme:light;
 }
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#000000; --bg2:#000000; --bg3:#1c1c1e; --label:#ffffff; --label2:rgba(235,235,245,.6); --label3:rgba(235,235,245,.3);
+  --sep:rgba(84,84,88,.55); --fill:rgba(118,118,128,.36); --fill2:rgba(118,118,128,.22);
+  --accent:#0a84ff; --red:#ff453a; --green:#30d158; --bar:rgba(22,22,24,.97); --menu:rgba(40,40,42,.9); --thumb:#1c1c1e; --shade:rgba(0,0,0,.55);
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#000000; --bg2:#000000; --bg3:#1c1c1e; --label:#ffffff; --label2:rgba(235,235,245,.6); --label3:rgba(235,235,245,.3);
+  --sep:rgba(84,84,88,.55); --fill:rgba(118,118,128,.36); --fill2:rgba(118,118,128,.22);
+  --accent:#0a84ff; --red:#ff453a; --green:#30d158; --bar:rgba(22,22,24,.97); --menu:rgba(40,40,42,.9); --thumb:#1c1c1e; --shade:rgba(0,0,0,.55);
+  color-scheme:dark}
 
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 [hidden]{display:none!important}
@@ -388,119 +393,18 @@ body.selecting #tabbar{opacity:0;pointer-events:none;transform:translateY(30%)}
 }
 
 
-/* ================= night glass theme ================= */
-body,#app,#splash{background:var(--grad) fixed,var(--bg)}
-.page,.page.grouped{background:var(--grad),var(--bg)}
-.navbar{border-bottom:0}
-.page.scrolled .navbar,.page.small .navbar,.page.selecting .navbar{background:var(--bar);border-bottom:0;box-shadow:0 8px 24px rgba(8,8,30,.25)}
-.large-title{letter-spacing:-.2px;text-shadow:0 0 24px rgba(150,170,255,.25)}
-.nav-btn{color:var(--accent)}
-.nav-btn.pill,.nav-btn.circle{background:rgba(255,255,255,.1);box-shadow:inset 0 1px 0 rgba(255,255,255,.12);color:var(--label)}
-.nav-btn.circle{width:36px;height:36px}
-.nav-btn.b18btn{gap:4px;padding:0 12px}
-.nav-btn.b18btn.on{background:linear-gradient(135deg,#a9c3ff,#c9b9ff);color:var(--on-accent);box-shadow:var(--glow)}
-.nav-btn.b18btn.off{background:rgba(255,131,150,.16);color:var(--red);box-shadow:inset 0 0 0 1px rgba(255,131,150,.45)}
-.b18btn .pct{font-size:12px;font-weight:700;font-variant-numeric:tabular-nums}
-.pill{background:linear-gradient(135deg,#a9c3ff,#c9b9ff);color:var(--on-accent);box-shadow:var(--glow)}
-.pill.ghost{background:rgba(255,255,255,.1);color:var(--label);box-shadow:none}
-
-/* grid: soft rounded tiles on the gradient */
-.grid{gap:3px;padding:0 3px}
-.dense .grid{gap:2px;padding:0 2px}
-.cell{border-radius:7px;background:var(--thumb)}
-.dense .cell{border-radius:3px}
-.month-h{color:var(--label)}
-.cell .check{border-color:#fff}
-.cell.sel .check{background:var(--accent);color:var(--on-accent);box-shadow:var(--glow)}
-.cell.adult .a18 small{font-size:10px;font-weight:700;letter-spacing:0;opacity:.9}
-
-/* cards (years / months) */
-.ycard{border-radius:26px;box-shadow:0 14px 34px rgba(8,8,30,.45),inset 0 0 0 1px rgba(255,255,255,.08)}
-
-/* floating segmented control */
-.seg{bottom:calc(var(--bot) + 96px);background:rgba(36,38,72,.72);box-shadow:0 10px 30px rgba(8,8,30,.4),inset 0 1px 0 rgba(255,255,255,.1)}
-.seg button{color:var(--label2)}
-.seg button.on{color:var(--on-accent)}
-.seg .knob{background:linear-gradient(135deg,#eef0ff,#cfd6fb);box-shadow:var(--glow)}
-.hint{bottom:calc(var(--bot) + 146px);background:rgba(44,46,86,.86);border:1px solid rgba(255,255,255,.1);border-radius:24px}
-.lib .scroller{padding-bottom:calc(var(--bot) + 150px)}
-.lib.has-hint .scroller{padding-bottom:calc(var(--bot) + 270px)}
-.scroller{padding-bottom:calc(var(--bot) + 100px)}
-
-/* glass panels + round icon bubbles */
-.rows,.tiles-empty,.q-empty,.imp-big{background:var(--bg3);border:1px solid rgba(255,255,255,.08);border-radius:22px;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
-.row{min-height:56px}
-.rows .row>.ico:first-child{width:36px;height:36px;padding:8px;border-radius:50%;background:var(--bubble);color:#cfe0ff;box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 0 14px rgba(120,150,255,.28)}
-.row+.row::before{left:62px}
-.info-rows .row+.row::before,.opts .row+.row::before{left:16px}
-.row .chev{color:var(--label3)}
-.sec-h{color:var(--label)}
-.tile .cover{border-radius:24px;box-shadow:0 12px 28px rgba(8,8,30,.4),inset 0 0 0 1px rgba(255,255,255,.08)}
-.cover.folder{background:rgba(255,255,255,.12);border-radius:24px}
-.cover.folder>img,.cover.folder>span:not(.f-badge){border-radius:12px}
-.f-badge{border-radius:50%;background:var(--bubble);color:#cfe0ff;box-shadow:0 0 14px rgba(120,150,255,.5)}
-.imp-big .ico{width:44px;height:44px;padding:10px;border-radius:50%;background:var(--bubble);color:#cfe0ff;box-shadow:0 0 16px rgba(120,150,255,.35)}
-.chip{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.08)}
-.search-box{background:rgba(255,255,255,.1);border-radius:16px;height:44px}
-
-/* floating light tab bar, like the cards in the reference */
-#tabbar,#selbar{left:12px;right:12px;bottom:calc(var(--bot) + 10px);height:66px;padding-bottom:0;border-radius:28px;border-top:0;background:var(--card);box-shadow:0 14px 36px rgba(8,8,30,.5);-webkit-backdrop-filter:none;backdrop-filter:none}
-.tab{color:var(--card-ink2);font-weight:600}
-.tab .ico{width:40px;height:40px;padding:9px;border-radius:50%;transition:background .3s,color .3s,box-shadow .3s}
-.tab.active{color:var(--card-ink)}
-.tab.active .ico{background:var(--bubble);color:#d6e4ff;box-shadow:0 0 16px rgba(110,140,255,.6)}
-.tab span{margin-top:-2px}
-#selbar{color:var(--card-ink)}
-.sb-btn,.sb-text{color:var(--card-ink)}
-.sb-btn:disabled,.sb-text:disabled{color:rgba(38,41,85,.3)}
-.sb-text.danger{color:#d23a57}
-.sb-label{color:var(--card-ink)}
-
-/* sheets, menus, alerts, toast: frosted indigo */
-.sheet{background:linear-gradient(180deg,#34366a 0%,#2a2c55 60%,#252749 100%);border-radius:30px 30px 0 0;box-shadow:0 -10px 40px rgba(8,8,30,.5)}
-.sheet-grab span{background:rgba(255,255,255,.35)}
-.as-group,.as-cancel{background:rgba(52,54,96,.94);border-radius:22px}
-.ctx-menu,.alert,.toast{background:rgba(52,54,96,.92);border:1px solid rgba(255,255,255,.1)}
-.ctx-menu{border-radius:20px}
-.ctx-item.sep{border-top-color:rgba(0,0,0,.18)}
-.alert input,.opt-input input{background:rgba(255,255,255,.1);color:var(--label);border-color:rgba(255,255,255,.12)}
-.toast{border-radius:26px;bottom:calc(var(--bot) + 150px);box-shadow:0 10px 30px rgba(8,8,30,.45)}
-.btn-primary{background:linear-gradient(135deg,#a9c3ff,#c9b9ff);color:var(--on-accent);border-radius:20px;box-shadow:var(--glow)}
-.switch i{background:rgba(255,255,255,.14)}
-.switch input:checked+i{background:linear-gradient(135deg,#7f9cff,#a98bff);box-shadow:var(--glow)}
-.opt.on .radio{border-color:var(--accent)}
-.opt.on .radio::after{background:var(--accent);box-shadow:var(--glow)}
-.q-thumbs img{border-color:#2c2e57}
-
-/* viewer: deep night background with glass bars */
-.v-bg{background:#14152c}
-.v-bar{background:rgba(28,30,58,.7)}
-.v-top,.v-bottom{border-color:transparent}
-.v-btn,.v-tools button{color:var(--accent)}
-.v-tools button.on{color:var(--red)}
-.v-th.cur{box-shadow:0 0 0 2px var(--accent),var(--glow)}
-
-#splash .logo{box-shadow:0 0 40px rgba(150,170,255,.5)}
-
-
-/* ================= performance ================= */
+/* ================= performance (same look, lighter for phones) ================= */
 /* Off-screen months are skipped by the browser until you scroll to them. */
 .mg{content-visibility:auto}
-/* Blur behind moving content is expensive on phones: keep it only for short-lived overlays. */
-.navbar,.page.scrolled .navbar,.page.small .navbar,.page.selecting .navbar,.seg,.hint,.v-bar,.toast,.rows,.tiles-empty,.q-empty,.imp-big,.ctx-menu,.as-group,.alert,#drop{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
-.page.scrolled .navbar,.page.small .navbar,.page.selecting .navbar{background:rgba(30,32,62,.94)}
-.seg{background:rgba(36,38,72,.95)}
-.v-bar{background:rgba(28,30,58,.92)}
-.rows,.tiles-empty,.q-empty,.imp-big{background:rgba(255,255,255,.075)}
-body,#app,#splash{background:var(--grad),var(--bg)}
+/* Blur behind moving content is redrawn every frame: bars use near-opaque colours instead. */
+.navbar,.page.scrolled .navbar,.page.small .navbar,.page.selecting .navbar,#tabbar,#selbar,.seg,.hint,.v-bar,.toast,.ctx-menu,.as-group,.alert,#drop{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+.seg,.hint,.toast,.ctx-menu,.as-group,.alert{background:var(--menu)}
 .cell img{transition:transform .25s var(--ease)}
-.tabview{will-change:transform;contain:strict}
-/* 18+: a frosted placeholder instead of a blurred photo (no image is even loaded) */
-.cell.adult{background:radial-gradient(120% 90% at 30% 20%,#6d6aa6 0%,#3e3f78 55%,#2c2d58 100%)}
+.tabview{will-change:transform}
+.tab-ind{display:none}
+/* 18+: a plain placeholder instead of a blurred photo (the photo is not even loaded) */
+.cell.adult{background:linear-gradient(135deg,#8e8e99 0%,#5d5d6b 100%)}
 .cell.adult img{display:none}
-/* gliding tab indicator */
-.tab-ind{position:absolute;left:0;top:0;width:40px;height:40px;border-radius:50%;background:var(--bubble);box-shadow:0 0 18px rgba(110,140,255,.65);transition:transform .5s cubic-bezier(.3,1.35,.5,1);pointer-events:none;z-index:0}
-.tab{position:relative;z-index:1}
-.tab.active .ico{background:transparent;box-shadow:none;color:#d6e4ff}
-.tab .ico{transition:color .3s}
-#selbar .tab-ind{display:none}
+.cell.adult .a18 small{font-size:10px;font-weight:700;letter-spacing:0;opacity:.9}
+.nav-btn.b18btn{gap:3px}
+.b18btn .pct{font-size:12px;font-weight:700;font-variant-numeric:tabular-nums}

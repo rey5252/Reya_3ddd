@@ -91,7 +91,7 @@ public class MainActivity extends Activity {
         clearOutDir();
 
         web = new WebView(this);
-        web.setBackgroundColor(Color.rgb(0x1e, 0x20, 0x42));
+        web.setBackgroundColor(isNight() ? Color.BLACK : Color.WHITE);
         web.setOverScrollMode(View.OVER_SCROLL_NEVER);
         setContentView(web);
 
@@ -846,9 +846,16 @@ public class MainActivity extends Activity {
 
     @SuppressWarnings("deprecation")
     private void applySystemBars() {
-        getWindow().setStatusBarColor(Color.rgb(0x1e, 0x20, 0x42));
-        getWindow().setNavigationBarColor(Color.rgb(0x6a, 0x66, 0x99));
-        getWindow().getDecorView().setSystemUiVisibility(0);
+        boolean night = isNight();
+        int bg = night ? Color.BLACK : Color.WHITE;
+        getWindow().setStatusBarColor(bg);
+        getWindow().setNavigationBarColor(bg);
+        int flags = 0;
+        if (!night) {
+            flags |= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+            if (Build.VERSION.SDK_INT >= 26) flags |= View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+        }
+        getWindow().getDecorView().setSystemUiVisibility(flags);
     }
 
     private void clearOutDir() {

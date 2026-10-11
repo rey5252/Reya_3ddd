@@ -1,6 +1,6 @@
 # Галерея Reya для Android (APK)
 
-Готовий файл: [`apk/Reya-Gallery-1.5.apk`](../apk/Reya-Gallery-1.5.apk).
+Готовий файл: [`apk/Reya-Gallery-1.6.apk`](../apk/Reya-Gallery-1.6.apk).
 
 ## Як встановити
 
