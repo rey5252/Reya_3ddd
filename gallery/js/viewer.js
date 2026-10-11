@@ -59,7 +59,12 @@ const V = {
       m.addEventListener('ended', () => { slide.classList.remove('playing'); if (isCur()) this.setChrome(true); });
       m.addEventListener('timeupdate', () => { if (isCur()) this.syncSeek(); });
       m.addEventListener('loadedmetadata', () => { if (!it.w && m.videoWidth) { it.w = m.videoWidth; it.h = m.videoHeight; isCur() ? this.apply(false) : this.place(slide, it); } if (isCur()) this.syncSeek(); });
-      m.addEventListener('error', () => { if (slide._tok === token && !t) slide.classList.add('broken'); });
+      let retried = false;
+      m.addEventListener('error', async () => {
+        if (slide._tok !== token) return;
+        if (it.src && !retried) { retried = true; const b = await getBlob(it); if (b && slide._tok === token) { m.src = URL.createObjectURL(b); return; } }
+        if (!t) slide.classList.add('broken');
+      });
       fullURL(it).then(u => { if (u && slide._tok === token) m.src = u; });
       slide.append(h(`<div class="v-play">${I.play}</div>`));
     } else {
@@ -71,7 +76,7 @@ const V = {
         f.decode().then(() => {
           if (slide._tok !== token) return;
           m.src = u;
-          if (!it.w) { it.w = f.naturalWidth; it.h = f.naturalHeight; isCur() ? this.apply(false) : this.place(slide, it); }
+          if (!it.w) { it.w = f.naturalWidth; it.h = f.naturalHeight; isCur() ? this.apply(false) : this.place(slide, it); if (it.src) saveItems(it); }
         }, () => { if (slide._tok === token && !t) slide.classList.add('broken'); });
       });
     }
@@ -131,15 +136,22 @@ const V = {
     this.pauseVideo(); this.i = k; this.renderAll();
     if (!RM) this.cur().animate([{ opacity: .3 }, { opacity: 1 }], { duration: 220 });
   },
-  go(dir) {
+  go(dir, v = 0) {
     if (this.busy) return;
     const ni = this.i + dir;
     if (ni < 0 || ni >= this.ids.length) { this.snapTrack(); return; }
     this.pauseVideo(); this.busy = true;
-    const W = innerWidth;
-    this.track.style.transition = RM ? 'none' : `transform .42s ${EASE}`;
-    this.track.style.transform = `translateX(${-dir * (W + GAP)}px)`;
+    const W = innerWidth, target = -dir * (W + GAP);
+    const cur = new DOMMatrixReadOnly(getComputedStyle(this.track).transform).m41 || 0;
+    const left = Math.abs(target - cur), speed = Math.abs(v);
+    // follow the finger's speed, like iOS: a fast flick finishes quickly, a slow drag glides
+    const dur = RM ? 0 : Math.round(clamp(speed > .3 ? left / speed * 1.6 : 360 * left / (W + GAP) + 140, 170, 420));
+    this.track.style.transition = dur ? `transform ${dur}ms cubic-bezier(.25,.9,.3,1)` : 'none';
+    this.track.style.transform = `translateX(${target}px)`;
+    let finished = false;
     const finish = () => {
+      if (finished) return; finished = true;
+      this.track.removeEventListener('transitionend', finish);
       this.track.style.transition = 'none';
       const old = this.cur();
       this.i = ni;
@@ -148,10 +160,18 @@ const V = {
       const oit = S.byId.get(old._id); if (oit) this.place(old, oit);
       this.layout(); this.track.style.transform = 'translateX(0)';
       this.st = { s: 1, tx: 0, ty: 0 }; this.busy = false; this.afterChange();
+      this.preload(ni + 2 * dir);
     };
-    if (RM) finish(); else setTimeout(finish, 430);
+    if (!dur) finish();
+    else { this.track.addEventListener('transitionend', finish); setTimeout(finish, dur + 80); }
   },
-  snapTrack() { this.track.style.transition = `transform .38s ${EASE}`; this.track.style.transform = 'translateX(0)'; },
+  // decode the photo after next ahead of time so the next swipe never waits
+  preload(k) {
+    const it = S.byId.get(this.ids[k]);
+    if (!it || it.kind !== 'image') return;
+    fullURL(it).then(u => { if (!u) return; const im = new Image(); im.src = u; im.decode().catch(() => {}); });
+  },
+  snapTrack() { this.track.style.transition = `transform .45s ${SOFT_SPRING}`; this.track.style.transform = 'translateX(0)'; },
 
   // ----- gestures -----
   down(e) {
@@ -229,8 +249,8 @@ const V = {
       case null: if (performance.now() - g.t0 < 350) this.tap(e.clientX, e.clientY); break;
       case 'pan': this.st = this.clampSt({ s: this.st.s, tx: this.st.tx + g.vx * 160, ty: this.st.ty + g.vy * 160 }); this.apply(true); break;
       case 'page':
-        if ((dx < -innerWidth * .2 || g.vx < -.45) && this.i < this.ids.length - 1) this.go(1);
-        else if ((dx > innerWidth * .2 || g.vx > .45) && this.i > 0) this.go(-1);
+        if ((dx < -innerWidth * .2 || g.vx < -.35) && this.i < this.ids.length - 1) this.go(1, g.vx);
+        else if ((dx > innerWidth * .2 || g.vx > .35) && this.i > 0) this.go(-1, g.vx);
         else this.snapTrack();
         break;
       case 'dismiss':
@@ -368,7 +388,7 @@ const V = {
       popMenu(btn, [
         { label: 'Додати в альбом', icon: 'albumAdd', run: () => addToAlbumSheet([it.id]) },
         ...(rest.some(x => x.kind === 'image') ? [{ label: 'Слайд-шоу', icon: 'slides', run: () => slideshow(rest) }] : []),
-        ...(!IN_FRAME ? [{ label: 'Зберегти файл', icon: 'download', run: () => downloadItem(it) }] : []),
+        ...(!IN_FRAME && !it.src ? [{ label: 'Зберегти файл', icon: 'download', run: () => downloadItem(it) }] : []),
         { label: 'Інформація', icon: 'info', run: () => this.info() },
       ]);
     }
@@ -431,10 +451,11 @@ async function slideshow(items) {
     img.style.objectFit = Math.abs(Math.log(ar / sr)) < .45 ? 'cover' : 'contain';
     const L = layers[k % 2], O = layers[(k + 1) % 2]; k++;
     L.innerHTML = ''; L.append(img); L.style.zIndex = 2; O.style.zIndex = 1;
-    if (!RM) img.animate([{ transform: 'scale(1.02)' }, { transform: `scale(1.14) translate(${(Math.random() - .5) * 5}%,${(Math.random() - .5) * 5}%)` }], { duration: 6500, easing: 'linear', fill: 'forwards' });
-    L.animate([{ opacity: 0 }, { opacity: 1 }], { duration: RM ? 1 : 1200, easing: 'ease-in-out', fill: 'forwards' });
+    if (!RM) img.animate([{ transform: 'scale(1.03)' }, { transform: `scale(1.12) translate(${(Math.random() - .5) * 4}%,${(Math.random() - .5) * 4}%)` }], { duration: 7000, easing: 'cubic-bezier(.3,0,.7,1)', fill: 'forwards' });
+    L.animate([{ opacity: 0 }, { opacity: 1 }], { duration: RM ? 1 : 1600, easing: 'cubic-bezier(.45,0,.25,1)', fill: 'forwards' });
+    const nx = its[(i + 1) % its.length]; fullURL(nx).then(u => { if (u) { const p = new Image(); p.src = u; p.decode().catch(() => {}); } });
     cap.textContent = fmtDate(it.date);
-    i++; timer = setTimeout(show, 4200);
+    i++; timer = setTimeout(show, 4600);
   };
   show();
 }

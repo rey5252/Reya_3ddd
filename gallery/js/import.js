@@ -7,7 +7,7 @@ function mediaKind(f) {
   if (t.startsWith('video/')) return 'video';
   return MEDIA_EXT[ext(f.name).toLowerCase()] || null;
 }
-const fkey = f => `${f.name}|${f.size}|${f.lastModified}`;
+const fkey = f => f.ref ? 'ref|' + f.u : `${f.name}|${f.size}|${f.lastModified}`;
 
 function scaleToBlob(src, w, hh, short = 400) {
   if (!w || !hh) return Promise.resolve(null);
@@ -71,8 +71,13 @@ function parseTiff(v, t) {
   const d = new Date(+m[1], m[2] - 1, +m[3], +m[4], +m[5], +m[6]);
   return isNaN(d) ? null : d.getTime();
 }
+// A photo picked in the Android app: keep a reference, the app serves thumbnail and file.
+function refFile(f) {
+  return { ref: true, u: f.u, name: f.name, type: f.mime || '', size: f.size || 0, lastModified: f.mod || Date.now(), webkitRelativePath: f.rel || '', w: f.w || 0, h: f.h || 0, dur: f.dur || 0, taken: f.taken || 0 };
+}
 async function makeItem(file, path) {
   const kind = mediaKind(file);
+  if (file.ref) return { id: uid(), name: file.name, kind, mime: file.type, size: file.size, w: file.w, h: file.h, duration: file.dur / 1000, date: file.taken || file.lastModified, added: Date.now(), path: path || '', fav: false, deleted: null, sample: false, fkey: fkey(file), thumb: null, src: file.u };
   const it = { id: uid(), name: file.name, kind, mime: file.type || '', size: file.size, w: 0, h: 0, duration: 0, date: file.lastModified || Date.now(), added: Date.now(), path: path || '', fav: false, deleted: null, sample: false, fkey: fkey(file), thumb: null, _blob: file };
   try {
     if (kind === 'image') { Object.assign(it, await imageInfo(file)); const d = await exifDate(file); if (d) it.date = d; }
@@ -101,43 +106,29 @@ function openImport(target = {}) {
 const ensureImportOpen = () => { if (!IMP.sheet) openImport(); };
 function pickInput(id) {
   if (id === '#in-dir' && NATIVE) { NATIVE.pickFolder(); return; }
+  if (id === '#in-files' && NATIVE && NATIVE.pickFiles) { NATIVE.pickFiles(); return; }
   const i = $(id); i.value = ''; i.click();
 }
 
-// Android app: the system folder picker returns a file list; the bytes are fetched
-// from the app's own /saf endpoint and turned into File objects with folder paths.
+// Android app: the native pickers return file lists (no bytes), so adding even thousands
+// of photos takes a moment.
 window.__onNativeFolderStart = () => toast('Шукаю фото й відео…', 'folder');
-window.__onNativeFolder = async data => {
+window.__onNativeFolder = data => {
   if (!data) return;
   if (data.error) { toast(data.error === 'unsupported' ? 'На цьому телефоні не можна вибрати папку' : 'Не вдалося прочитати папку', 'info'); return; }
-  if (!data.files || !data.files.length) { toast(`У папці «${data.root}» немає фото чи відео`, 'info'); return; }
+  if (!data.files || !data.files.length) { toast(`У «${data.root}» немає фото чи відео`, 'info'); return; }
   ensureImportOpen();
-  const list = data.files, out = new Array(list.length);
-  let next = 0, done = 0;
-  const t = h(`<div class="toast" role="status">${I.folder}<span></span></div>`), span = $('span', t);
-  document.body.append(t);
-  const tick = () => { span.textContent = `Читаю «${data.root}»: ${done} з ${list.length}`; };
-  tick();
-  const worker = async () => {
-    while (next < list.length) {
-      const k = next++, f = list[k];
-      try {
-        const b = await (await fetch('/saf?u=' + encodeURIComponent(f.u))).blob();
-        const file = new File([b], f.name, { type: f.mime || b.type, lastModified: f.mod || Date.now() });
-        Object.defineProperty(file, 'webkitRelativePath', { value: f.rel });
-        out[k] = file;
-      } catch (e) {}
-      done++; if (done % 5 === 0 || done === list.length) tick();
-    }
-  };
-  await Promise.all([worker(), worker(), worker(), worker()]);
-  t.remove();
-  addDirSource(out.filter(Boolean));
+  addDirSource(data.files.map(refFile));
+};
+window.__onNativeFiles = data => {
+  if (!data || !data.files || !data.files.length) return;
+  ensureImportOpen();
+  addFilesSource(data.files.map(refFile));
 };
 
 function qRow(s) {
   const imgs = s.files.filter(f => mediaKind(f.file) === 'image');
-  const thumbs = imgs.slice(0, 3).map(f => { if (!f.url) { f.url = URL.createObjectURL(f.file); IMP.urls.push(f.url); } return `<img src="${f.url}" alt="">`; }).join('');
+  const thumbs = imgs.slice(0, 3).map(f => { if (!f.url) { f.url = f.file.ref ? nativeThumbURL(f.file.u, f.file.type, 96) : URL.createObjectURL(f.file); if (!f.file.ref) IMP.urls.push(f.url); } return `<img src="${f.url}" alt="">`; }).join('');
   const v = s.files.length - imgs.length, dirs = s.kind === 'folder' ? new Set(s.files.map(f => f.path)).size : 0;
   const detail = [imgs.length ? `${imgs.length} фото` : '', v ? `${v} відео` : '', dirs > 1 ? `${dirs} ${plural(dirs, 'папка', 'папки', 'папок')} з медіа` : ''].filter(Boolean).join(' · ');
   return `<div class="row q-row">${s.kind === 'folder' ? I.folder : I.photo}<span class="r-label"><b>${esc(s.name)}</b><small>${detail}</small></span><span class="q-thumbs">${thumbs}</span><button class="q-x" data-rm="${s.id}" aria-label="Прибрати ${esc(s.name)}">${I.x}</button></div>`;
@@ -154,6 +145,7 @@ function renderImport() {
       <button class="imp-big" data-imp="files">${I.photo}<b>Фото й відео</b><small>Окремі файли — скільки завгодно за раз</small></button>
       <button class="imp-big" data-imp="dir" ${DIR_OK ? '' : 'disabled'}>${I.folder}<b>Папку</b><small>${DIR_OK ? 'Разом з підпапками. Додавайте кілька по черзі' : 'Цей браузер не дає вибрати папку'}</small></button>
     </div>
+    ${NATIVE && NATIVE.pickAllMedia ? `<button class="imp-big wide" data-imp="all">${I.library}<span><b>Усі фото й відео з телефона</b><small>Камера, знімки екрана, Telegram і решта, з усіма папками. За кілька секунд</small></span></button>` : ''}
     ${NATIVE && NATIVE.pickDownloads ? `<button class="imp-big wide" data-imp="downloads">${I.download}<span><b>Папка Download</b><small>Усі фото й відео із «Завантажень», разом з підпапками (Telegram, браузер тощо)</small></span></button>` : ''}
     <div class="imp-drop">Або перетягніть сюди файли й папки — одразу кілька</div>
     <div class="group-h">Вибрано${total ? ` · ${nItems(total)}` : ''}</div>
@@ -169,7 +161,7 @@ function renderImport() {
     <div class="group-h"></div>
     <div class="rows"><label class="row"><span class="r-label">Пропускати дублікати</span><span class="switch"><input type="checkbox" id="imp-dedupe" ${IMP.dedupe ? 'checked' : ''}><i></i></span></label></div>
     <button class="btn-primary" data-imp="go" ${total ? '' : 'disabled'}>${total ? `Імпортувати ${nItems(total)}` : 'Імпортувати'}</button>
-    <p class="imp-note">Файли зберігаються лише на цьому пристрої, у пам’яті програми.</p>`;
+    <p class="imp-note">${NATIVE ? 'Фото з телефона не копіюються: галерея показує їх там, де вони лежать, тому імпорт швидкий і не займає місця.' : 'Файли зберігаються лише на цьому пристрої, у пам’яті програми.'}</p>`;
   $$('.q-thumbs img', sh.body).forEach(i => { i.onerror = () => i.remove(); });
 }
 function bounceLast() {
@@ -181,6 +173,7 @@ function onImpClick(e) {
   if (b.dataset.imp === 'files') pickInput('#in-files');
   else if (b.dataset.imp === 'dir') pickInput('#in-dir');
   else if (b.dataset.imp === 'downloads') NATIVE.pickDownloads();
+  else if (b.dataset.imp === 'all') NATIVE.pickAllMedia();
   else if (b.dataset.imp === 'go') runImport();
   else if (b.dataset.imp === 'done') IMP.sheet && IMP.sheet.close();
   else if (b.dataset.rm) { IMP.queue = IMP.queue.filter(s => s.id !== b.dataset.rm); renderImport(); }
@@ -286,6 +279,9 @@ async function runImport() {
   const fg = $('.ring-fg', sh.body), txt = $('.ring-txt', sh.body), sub = $('.prog-sub', sh.body), pile = $('.prog-thumbs', sh.body);
   let done = 0, added = 0, dup = 0, failed = 0;
   const revived = [], q = jobs.slice();
+  let batch = [];
+  const flush = async () => { if (!batch.length) return; const b = batch; batch = []; await DB.put('items', b); };
+  const paint = () => { const pct = Math.round(done / total * 100); fg.style.strokeDashoffset = 100 - pct; txt.textContent = pct + '%'; sub.textContent = `${done} з ${total}`; };
   const worker = async () => {
     while (q.length) {
       const job = q.shift();
@@ -295,8 +291,9 @@ async function runImport() {
         try { it = await makeItem(job.file, job.path); } catch (e) { it = null; }
         if (it) {
           S.items.push(it); S.byId.set(it.id, it); known.set(it.fkey, it); added++;
-          await Promise.all([DB.put('blobs', { id: it.id, blob: job.file }), DB.put('items', rec(it))]);
-          const u = turl(it);
+          if (!it.src) await DB.put('blobs', { id: it.id, blob: job.file });
+          batch.push(rec(it)); if (batch.length >= 250) await flush();
+          const u = (!it.src || added % 9 === 1) && turl(it);
           if (u) {
             const img = h(`<img src="${u}" alt="">`); pile.append(img);
             if (!RM) img.animate([{ opacity: 0, transform: `translateY(30px) scale(.6) rotate(${(Math.random() - .5) * 30}deg)` }, { opacity: 1, transform: `rotate(${(Math.random() - .5) * 16}deg)` }], { duration: 420, easing: SOFT_SPRING, fill: 'forwards' });
@@ -309,11 +306,12 @@ async function runImport() {
         if (a) { const st = setOf(a); if (!st.has(it.id)) { st.add(it.id); a.items.push(it.id); touched.add(a); } }
       }
       done++;
-      const pct = Math.round(done / total * 100);
-      fg.style.strokeDashoffset = 100 - pct; txt.textContent = pct + '%'; sub.textContent = `${done} з ${total}`;
+      if (done % 25 === 0 || done === total || !job.file.ref) paint();
+      if (done % 400 === 0) await sleep(0);
     }
   };
-  await Promise.all([worker(), worker(), worker()]);
+  await Promise.all([worker(), worker(), worker(), worker()]);
+  await flush();
   await Promise.all([saveItems(revived), saveAlbums([...touched])]);
   indexItems();
   IMP.running = false; IMP.queue = [];

@@ -89,6 +89,14 @@ const I = {
   select: svg('<circle cx="12" cy="12" r="9.5"/><path d="M7.5 12.5l3 3 6-6.5"/>', 1.9),
   import: svg('<path d="M12 3v12M7.5 10.5L12 15l4.5-4.5M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/>', 1.9),
   download: svg('<path d="M12 4v11M7.5 10.5L12 15l4.5-4.5M5 20h14"/>', 1.9),
+  screenshot: svg('<rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M9 7.5V6h1.5M15 7.5V6h-1.5M9 16.5V18h1.5M15 16.5V18h-1.5"/>', 1.9),
+  screenrec: svg('<rect x="6" y="2.5" width="12" height="19" rx="2.5"/><circle cx="12" cy="12" r="2.6" fill="currentColor"/>', 1.9),
+  pano: svg('<rect x="2" y="7" width="20" height="10" rx="2"/><path d="M2.5 15l5-4 4 3 3-2.5 7 4"/>', 1.9),
+  gif: svg('<rect x="2.5" y="5" width="19" height="14" rx="3"/><path d="M9.5 10H8a1.5 1.5 0 0 0-1.5 1.5v1A1.5 1.5 0 0 0 8 14h1.5v-1.7M12 10v4M15 14v-4h2.5M15 12h2"/>', 1.7),
+  camera: svg('<path d="M3 8.5a2 2 0 0 1 2-2h2.3l1.4-2h6.6l1.4 2H19a2 2 0 0 1 2 2V18a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><circle cx="12" cy="13" r="3.6"/>', 1.9),
+  send: svg('<path d="M21 3.5L3 10.8l6.8 2.6L12.4 20 21 3.5z"/><path d="M9.8 13.4L21 3.5"/>', 1.9),
+  chat: svg('<path d="M4 18.5l1.2-3.6A8 8 0 1 1 8.6 19z"/>', 1.9),
+  insta: svg('<rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17" cy="7" r=".9" fill="currentColor"/>', 1.9),
   eye: svg('<path d="M2.5 12S6 5 12 5s9.5 7 9.5 7-3.5 7-9.5 7-9.5-7-9.5-7z"/><circle cx="12" cy="12" r="3"/>', 1.9),
   eyeOff: svg('<path d="M3.5 3.5l17 17"/><path d="M10.6 5.1A10 10 0 0 1 12 5c6 0 9.5 7 9.5 7a17 17 0 0 1-3.2 4.1M6.6 6.6C3.9 8.4 2.5 12 2.5 12s3.5 7 9.5 7c1.8 0 3.4-.6 4.7-1.4"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>', 1.9),
 };
@@ -133,7 +141,7 @@ const DB = {
 
 // ---------- state ----------
 const S = { items: [], byId: new Map(), albums: [], folders: [], persist: true };
-const META_KEYS = ['id', 'name', 'kind', 'mime', 'size', 'w', 'h', 'duration', 'date', 'added', 'path', 'fav', 'deleted', 'sample', 'fkey', 'thumb'];
+const META_KEYS = ['id', 'name', 'kind', 'mime', 'size', 'w', 'h', 'duration', 'date', 'added', 'path', 'fav', 'deleted', 'sample', 'fkey', 'thumb', 'src'];
 const rec = it => { const o = {}; for (const k of META_KEYS) o[k] = it[k]; return o; };
 const saveItems = its => DB.put('items', [].concat(its).map(rec));
 const saveAlbums = as => DB.put('albums', [].concat(as));
@@ -153,8 +161,14 @@ function indexItems() {
   S.items.sort((a, b) => a.date - b.date || a.added - b.added);
   S.byId = new Map(S.items.map(i => [i.id, i]));
 }
+// Items with `src` live on the phone (Android app): the gallery keeps only a reference and
+// the app serves thumbnails and the file itself from /thumb and /saf.
+const nativeFileURL = u => '/saf?u=' + encodeURIComponent(u);
+const nativeThumbURL = (u, mime, s = 400) => `/thumb?s=${s}&m=${encodeURIComponent(mime || '')}&u=${encodeURIComponent(u)}`;
+const hasThumb = it => !!(it && (it.thumb || it.src));
 const THUMBS = new Map();
 function turl(it) {
+  if (it && !it.thumb && it.src) return nativeThumbURL(it.src, it.mime);
   if (!it || !it.thumb) return '';
   let u = THUMBS.get(it.id);
   if (!u) { u = URL.createObjectURL(it.thumb); THUMBS.set(it.id, u); }
@@ -163,11 +177,13 @@ function turl(it) {
 const FULL = new Map();
 async function getBlob(it) {
   if (it._blob) return it._blob;
+  if (it.src) { try { const r = await fetch(nativeFileURL(it.src)); return r.ok ? await r.blob() : null; } catch (e) { return null; } }
   const r = await DB.get('blobs', it.id);
   return r ? r.blob : null;
 }
 async function fullURL(it) {
   if (!it) return null;
+  if (it.src) return nativeFileURL(it.src);
   if (FULL.has(it.id)) { const u = FULL.get(it.id); FULL.delete(it.id); FULL.set(it.id, u); return u; }
   const b = await getBlob(it);
   if (!b) return null;
@@ -200,9 +216,27 @@ function folderCovers(fid) {
 function isInside(fid, ancestor) { let cur = fid; while (cur) { if (cur === ancestor) return true; cur = folderById(cur)?.parent ?? null; } return false; }
 function folderPath(fid) { const parts = []; let f = folderById(fid); while (f) { parts.unshift(f.name); f = folderById(f.parent); } return parts.join(' › '); }
 
+const hay = it => ((it.path || '') + '/' + it.name).toLowerCase();
+const RX = {
+  screenshots: /screenshot|screen_shot|скріншот|скриншот|знімок.екрана|снимок.экрана|captura/,
+  screenrec: /screen.?record|screenrecord|запис.екрана|запись.экрана|record_screen/,
+  camera: /(^|\/)(dcim|camera|камера)(\/|$)/,
+  telegram: /telegram/, whatsapp: /whatsapp|-wa\d{4}/, viber: /viber/, instagram: /instagram/,
+  downloads: /(^|\/)(download|downloads|завантаження)(\/|$)/,
+};
 const SMART = {
   favorites: { name: 'Улюблені', icon: 'heart', get: () => live().filter(i => i.fav) },
   videos: { name: 'Відео', icon: 'video', get: () => live().filter(i => i.kind === 'video') },
+  screenshots: { name: 'Знімки екрана', icon: 'screenshot', group: 'types', get: () => live().filter(i => i.kind === 'image' && RX.screenshots.test(hay(i))) },
+  screenrec: { name: 'Записи екрана', icon: 'screenrec', group: 'types', get: () => live().filter(i => i.kind === 'video' && RX.screenrec.test(hay(i))) },
+  panoramas: { name: 'Панорами', icon: 'pano', group: 'types', get: () => live().filter(i => i.kind === 'image' && i.w && i.h && i.w / i.h > 2.1) },
+  gifs: { name: 'Анімовані', icon: 'gif', group: 'types', get: () => live().filter(i => i.mime === 'image/gif' || /\.gif$/i.test(i.name)) },
+  camera: { name: 'Камера', icon: 'camera', group: 'sources', get: () => live().filter(i => { const s = hay(i); return !/whatsapp|-wa\d{4}|telegram|viber|instagram|screenshot|screen.?record|(^|\/)(download|downloads|завантаження)(\/|$)/.test(s) && (RX.camera.test(s) || /^(img|vid|pxl|dsc)[_-]?\d{8}/i.test(i.name)); }) },
+  telegram: { name: 'Telegram', icon: 'send', group: 'sources', get: () => live().filter(i => RX.telegram.test(hay(i))) },
+  whatsapp: { name: 'WhatsApp', icon: 'chat', group: 'sources', get: () => live().filter(i => RX.whatsapp.test(hay(i))) },
+  viber: { name: 'Viber', icon: 'chat', group: 'sources', get: () => live().filter(i => RX.viber.test(hay(i))) },
+  instagram: { name: 'Instagram', icon: 'insta', group: 'sources', get: () => live().filter(i => RX.instagram.test(hay(i))) },
+  downloads: { name: 'Завантаження', icon: 'download', group: 'sources', get: () => live().filter(i => RX.downloads.test(hay(i))) },
   recent: { name: 'Нещодавно додані', icon: 'clock', get: () => { const cut = Date.now() - 30 * 864e5; return live().filter(i => i.added >= cut); } },
   deleted: { name: 'Нещодавно видалені', icon: 'trash', get: () => S.items.filter(i => i.deleted) },
 };

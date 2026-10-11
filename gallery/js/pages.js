@@ -367,7 +367,7 @@ function photoMenu(page, cell) {
   ];
   else items = [
     { label: 'Поділитися', icon: 'share', run: () => shareItems([it.id]) },
-    ...(NATIVE ? [{ label: 'Зберегти в галерею телефона', icon: 'download', run: () => downloadItem(it) }] : []),
+    ...(NATIVE && !it.src ? [{ label: 'Зберегти в галерею телефона', icon: 'download', run: () => downloadItem(it) }] : []),
     { label: it.fav ? 'Прибрати з улюблених' : 'Додати до улюблених', icon: it.fav ? 'heart' : 'heartFill', run: () => { if (!it.fav) { const c = cellOf(page, it.id); if (c) { const r = c.getBoundingClientRect(); FX.hearts(r.left + r.width / 2, r.top + r.height / 2); } } setFav([it.id], !it.fav); } },
     { label: 'Додати в альбом', icon: 'albumAdd', run: () => addToAlbumSheet([it.id]) },
     { label: 'Вибрати', icon: 'select', run: () => { setSelecting(page, true); const c = cellOf(page, it.id); if (c) { toggleSel(page, c, true); selChanged(page); } } },
@@ -379,9 +379,10 @@ function photoMenu(page, cell) {
 
 // Android app: hand files to the native side in base64 chunks, then share or save them there.
 async function nativeExport(its, action) {
-  const ids = [], CH = 3 * 256 * 1024;
-  if (its.length > 1 || its.some(i => i.size > 8e6)) toast(action === 'share' ? 'Готуємо файли…' : 'Зберігаємо…', 'import');
-  for (const it of its) {
+  const ids = [], CH = 3 * 256 * 1024, refs = its.filter(i => i.src), copies = its.filter(i => !i.src);
+  if (action === 'save' && !copies.length) { toast('Це фото вже є в галереї телефона', 'check'); return; }
+  if (copies.length > 1 || copies.some(i => i.size > 8e6)) toast(action === 'share' ? 'Готуємо файли…' : 'Зберігаємо…', 'import');
+  for (const it of copies) {
     const b = await getBlob(it); if (!b) continue;
     const id = NATIVE.beginFile(it.name, it.mime || b.type || ''); if (!id) continue;
     for (let o = 0; o < b.size; o += CH) {
@@ -390,7 +391,10 @@ async function nativeExport(its, action) {
     }
     NATIVE.endFile(id); ids.push(id);
   }
-  if (ids.length) action === 'share' ? NATIVE.share(JSON.stringify(ids)) : NATIVE.save(JSON.stringify(ids));
+  if (action === 'save') { if (ids.length) NATIVE.save(JSON.stringify(ids)); return; }
+  const refList = refs.map(i => ({ u: i.src, name: i.name, mime: i.mime }));
+  if (NATIVE.shareAll) NATIVE.shareAll(JSON.stringify(ids), JSON.stringify(refList));
+  else if (ids.length) NATIVE.share(JSON.stringify(ids));
 }
 async function shareItems(ids) {
   if (NATIVE) { nativeExport(itemsOf(ids), 'share').catch(() => toast('Не вдалося поділитися', 'info')); return; }
@@ -562,7 +566,7 @@ class LibraryPage extends Page {
     if (this.mode === 'all') return gridHTML(items, { months: true, sel: this.sel });
     const groups = new Map();
     for (const it of items) { const k = this.mode === 'years' ? String(new Date(it.date).getFullYear()) : monthKey(it.date); if (!groups.has(k)) groups.set(k, []); groups.get(k).push(it); }
-    const key = its => its.find(i => i.fav && i.thumb) || its.filter(i => i.thumb)[Math.floor(its.filter(i => i.thumb).length / 2)];
+    const key = its => { const t = its.filter(hasThumb); return t.find(i => i.fav) || t[Math.floor(t.length / 2)]; };
     let out = '<div class="cards">', lastY = null;
     for (const [k, its] of groups) {
       if (this.mode === 'years') {
@@ -571,7 +575,7 @@ class LibraryPage extends Page {
       } else {
         const [y, m] = k.split('-').map(Number);
         if (y !== lastY) { out += `<div class="year-h" data-yh="${y}">${y}</div>`; lastY = y; }
-        const withT = its.filter(i => i.thumb), main = key(its), rest = withT.filter(i => i !== main).slice(0, 2);
+        const withT = its.filter(hasThumb), main = key(its), rest = withT.filter(i => i !== main).slice(0, 2);
         const pics = rest.length === 2 ? `<span class="mosaic">${[main, ...rest].map(i => `<img src="${turl(i)}" alt="" loading="lazy">`).join('')}</span>` : (turl(main) ? `<img src="${turl(main)}" alt="" loading="lazy">` : '');
         out += `<button class="ycard m" data-mon="${k}">${pics}<span class="cap"><b>${MONTHS[m]}</b><small>${y} · ${countText(its)}</small></span></button>`;
       }
@@ -714,7 +718,10 @@ class AlbumsPage extends Page {
     html += n ? `<div class="tiles">${fs.map(folderTile).join('')}${as.map(albumTile).join('')}</div>`
       : `<div class="tiles-empty">${this.folderId ? 'Папка порожня. Створіть тут альбом чи підпапку або імпортуйте папку з телефона.' : 'Альбомів ще немає. Створіть альбом або імпортуйте папку з телефона — підпапки стануть альбомами.'}<button class="pill" data-act="import">${I.folder}Імпортувати папку</button></div>`;
     if (!this.folderId) {
-      html += `<div class="sec-h">Типи медіа</div><div class="rows">${smartRow('videos')}${smartRow('favorites')}</div>`;
+      const types = ['videos', 'favorites', 'screenshots', ...['screenrec', 'panoramas', 'gifs'].filter(k => SMART[k].get().length)];
+      const sources = Object.keys(SMART).filter(k => SMART[k].group === 'sources' && SMART[k].get().length);
+      html += `<div class="sec-h">Типи медіа</div><div class="rows">${types.map(smartRow).join('')}</div>`;
+      if (sources.length) html += `<div class="sec-h">Джерела</div><div class="rows">${sources.map(smartRow).join('')}</div>`;
       html += `<div class="sec-h">Інше</div><div class="rows">${smartRow('recent')}<button class="row" data-act="import">${I.import}<span class="r-label">Імпорт фото й папок</span>${I.chev}</button>${smartRow('deleted')}<button class="row" data-hidden-list>${I.eyeOff}<span class="r-label">Приховані</span><span class="r-val">${S.folders.filter(f => f.hidden).length + S.albums.filter(a => a.hidden).length}</span>${I.chev}</button></div><div style="height:12px"></div>`;
     }
     this.content.innerHTML = html;
@@ -760,7 +767,7 @@ class SearchPage extends Page {
       const years = [...new Set(all.map(i => new Date(i.date).getFullYear()))].sort((a, b) => b - a);
       const months = [...new Set(all.map(i => monthKey(i.date)))].slice(-8).reverse();
       const albums = S.albums.filter(a => !albumHidden(a)).sort((a, b) => b.created - a.created).slice(0, 12);
-      this.content.innerHTML = `<div class="sec-h">Швидкий доступ</div><div class="chips">${['favorites', 'videos', 'recent'].map(k => `<button class="chip" data-smart="${k}">${I[SMART[k].icon]}${SMART[k].name} <small>${SMART[k].get().length}</small></button>`).join('')}</div>`
+      this.content.innerHTML = `<div class="sec-h">Швидкий доступ</div><div class="chips">${['favorites', 'videos', 'screenshots', 'recent', ...Object.keys(SMART).filter(k => SMART[k].group && k !== 'screenshots' && SMART[k].get().length)].map(k => `<button class="chip" data-smart="${k}">${I[SMART[k].icon]}${SMART[k].name} <small>${SMART[k].get().length}</small></button>`).join('')}</div>`
         + (years.length ? `<div class="sec-h">Роки</div><div class="chips">${years.map(y => `<button class="chip" data-chip="${y}">${y}</button>`).join('')}</div>` : '')
         + (months.length ? `<div class="sec-h">Місяці</div><div class="chips">${months.map(k => { const [y, m] = k.split('-').map(Number); return `<button class="chip" data-chip="${MONTHS[m].toLowerCase()} ${y}">${MONTHS[m]} ${y}</button>`; }).join('')}</div>` : '')
         + (albums.length ? `<div class="sec-h">Альбоми</div><div class="tiles row-scroll">${albums.map(albumTile).join('')}</div>` : '');
