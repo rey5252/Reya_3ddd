@@ -85,7 +85,7 @@ async function makeItem(file, path) {
 const IMP = { queue: [], mode: null, albumName: '', dedupe: true, target: {}, sheet: null, running: false, urls: [] };
 const impMode = () => IMP.target.album ? 'album' : (IMP.mode || (IMP.queue.some(s => s.kind === 'folder') ? 'structure' : 'library'));
 const defaultAlbumName = () => `Імпорт ${fmtDate(Date.now())}`;
-const DIR_OK = 'webkitdirectory' in document.createElement('input');
+const DIR_OK = !!NATIVE || 'webkitdirectory' in document.createElement('input');
 
 function openImport(target = {}) {
   if (IMP.sheet) return;
@@ -99,7 +99,41 @@ function openImport(target = {}) {
   renderImport();
 }
 const ensureImportOpen = () => { if (!IMP.sheet) openImport(); };
-function pickInput(id) { const i = $(id); i.value = ''; i.click(); }
+function pickInput(id) {
+  if (id === '#in-dir' && NATIVE) { NATIVE.pickFolder(); return; }
+  const i = $(id); i.value = ''; i.click();
+}
+
+// Android app: the system folder picker returns a file list; the bytes are fetched
+// from the app's own /saf endpoint and turned into File objects with folder paths.
+window.__onNativeFolderStart = () => toast('Читаю папку…', 'folder');
+window.__onNativeFolder = async data => {
+  if (!data) return;
+  if (data.error) { toast(data.error === 'unsupported' ? 'На цьому телефоні не можна вибрати папку' : 'Не вдалося прочитати папку', 'info'); return; }
+  if (!data.files || !data.files.length) { toast(`У папці «${data.root}» немає фото чи відео`, 'info'); return; }
+  ensureImportOpen();
+  const list = data.files, out = new Array(list.length);
+  let next = 0, done = 0;
+  const t = h(`<div class="toast" role="status">${I.folder}<span></span></div>`), span = $('span', t);
+  document.body.append(t);
+  const tick = () => { span.textContent = `Читаю «${data.root}»: ${done} з ${list.length}`; };
+  tick();
+  const worker = async () => {
+    while (next < list.length) {
+      const k = next++, f = list[k];
+      try {
+        const b = await (await fetch('/saf?u=' + encodeURIComponent(f.u))).blob();
+        const file = new File([b], f.name, { type: f.mime || b.type, lastModified: f.mod || Date.now() });
+        Object.defineProperty(file, 'webkitRelativePath', { value: f.rel });
+        out[k] = file;
+      } catch (e) {}
+      done++; if (done % 5 === 0 || done === list.length) tick();
+    }
+  };
+  await Promise.all([worker(), worker(), worker(), worker()]);
+  t.remove();
+  addDirSource(out.filter(Boolean));
+};
 
 function qRow(s) {
   const imgs = s.files.filter(f => mediaKind(f.file) === 'image');

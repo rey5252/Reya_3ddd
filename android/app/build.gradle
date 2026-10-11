@@ -1,0 +1,59 @@
+plugins {
+    id 'com.android.application'
+}
+
+// The web app in ../../gallery is copied into the APK's assets on every build,
+// so the phone app and the website always run the same code.
+def webAssets = layout.buildDirectory.dir('generated/webassets')
+
+android {
+    namespace 'ua.reya.gallery'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'ua.reya.gallery'
+        minSdk 24
+        targetSdk 34
+        versionCode 1
+        versionName '1.0'
+    }
+
+    signingConfigs {
+        release {
+            storeFile file('../keystore/reya-gallery.jks')
+            storePassword 'reyagallery'
+            keyAlias 'reya'
+            keyPassword 'reyagallery'
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.release
+        }
+    }
+
+    sourceSets {
+        main {
+            assets.srcDirs += webAssets.get().asFile
+        }
+    }
+
+    lint {
+        checkReleaseBuilds false
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+def copyWeb = tasks.register('copyWebAssets', Copy) {
+    from(rootProject.file('../gallery')) {
+        exclude 'README.md'
+    }
+    into webAssets.map { it.dir('web') }
+}
+preBuild.dependsOn copyWeb

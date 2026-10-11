@@ -51,6 +51,7 @@ async function boot() {
   if (!RM) $('.tabview[data-tab="library"]').animate([{ opacity: 0, transform: 'scale(.97)' }, { opacity: 1, transform: 'none' }], { duration: 420, easing: EASE });
   if (!ok) toast('Пам’ять браузера недоступна — фото не збережуться після закриття', 'info');
   else if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
-  if (!IN_FRAME && 'serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) navigator.serviceWorker.register('sw.js').catch(() => {});
+  window.__nativeToast = msg => toast(msg, 'check');
+  if (!IN_FRAME && !NATIVE && 'serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) navigator.serviceWorker.register('sw.js').catch(() => {});
 }
 boot().catch(err => { console.error(err); splashText('Не вдалося запустити галерею. Оновіть сторінку.'); });

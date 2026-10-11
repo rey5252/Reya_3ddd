@@ -12,6 +12,7 @@ const SPRING = 'cubic-bezier(.34,1.4,.64,1)';
 const SOFT_SPRING = 'cubic-bezier(.25,1.18,.45,1)';
 const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const IN_FRAME = (() => { try { return window.self !== window.top; } catch (e) { return true; } })();
+const NATIVE = window.AndroidGallery || null; // set by the Android app (see android/)
 const haptic = (ms = 8) => { try { navigator.vibrate && navigator.vibrate(ms); } catch (e) {} };
 const LS = {
   get(k, d) { try { const v = localStorage.getItem('rg:' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },

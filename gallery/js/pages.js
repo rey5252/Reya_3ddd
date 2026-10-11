@@ -366,6 +366,7 @@ function photoMenu(page, cell) {
   ];
   else items = [
     { label: 'Поділитися', icon: 'share', run: () => shareItems([it.id]) },
+    ...(NATIVE ? [{ label: 'Зберегти в галерею телефона', icon: 'download', run: () => downloadItem(it) }] : []),
     { label: it.fav ? 'Прибрати з улюблених' : 'Додати до улюблених', icon: it.fav ? 'heart' : 'heartFill', run: () => { if (!it.fav) { const c = cellOf(page, it.id); if (c) { const r = c.getBoundingClientRect(); FX.hearts(r.left + r.width / 2, r.top + r.height / 2); } } setFav([it.id], !it.fav); } },
     { label: 'Додати в альбом', icon: 'albumAdd', run: () => addToAlbumSheet([it.id]) },
     { label: 'Вибрати', icon: 'select', run: () => { setSelecting(page, true); const c = cellOf(page, it.id); if (c) { toggleSel(page, c, true); selChanged(page); } } },
@@ -375,7 +376,23 @@ function photoMenu(page, cell) {
   ctxMenu(cell, { previewItem: it, items });
 }
 
+// Android app: hand files to the native side in base64 chunks, then share or save them there.
+async function nativeExport(its, action) {
+  const ids = [], CH = 3 * 256 * 1024;
+  if (its.length > 1 || its.some(i => i.size > 8e6)) toast(action === 'share' ? 'Готуємо файли…' : 'Зберігаємо…', 'import');
+  for (const it of its) {
+    const b = await getBlob(it); if (!b) continue;
+    const id = NATIVE.beginFile(it.name, it.mime || b.type || ''); if (!id) continue;
+    for (let o = 0; o < b.size; o += CH) {
+      const b64 = await new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(',')[1] || ''); r.onerror = rej; r.readAsDataURL(b.slice(o, o + CH)); });
+      NATIVE.appendChunk(id, b64);
+    }
+    NATIVE.endFile(id); ids.push(id);
+  }
+  if (ids.length) action === 'share' ? NATIVE.share(JSON.stringify(ids)) : NATIVE.save(JSON.stringify(ids));
+}
 async function shareItems(ids) {
+  if (NATIVE) { nativeExport(itemsOf(ids), 'share').catch(() => toast('Не вдалося поділитися', 'info')); return; }
   try {
     const files = [];
     for (const it of itemsOf(ids)) { const b = await getBlob(it); if (b) files.push(new File([b], it.name, { type: it.mime || b.type })); }
@@ -384,6 +401,7 @@ async function shareItems(ids) {
   } catch (e) { if (e && e.name !== 'AbortError') toast('Не вдалося поділитися', 'info'); }
 }
 async function downloadItem(it) {
+  if (NATIVE) { nativeExport([it], 'save').catch(() => toast('Не вдалося зберегти', 'info')); return; }
   const u = await fullURL(it); if (!u) return;
   const a = document.createElement('a'); a.href = u; a.download = it.name; document.body.append(a); a.click(); a.remove();
 }
