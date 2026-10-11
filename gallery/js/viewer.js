@@ -82,7 +82,7 @@ const V = {
     }
     m.className = 'v-media';
     slide.prepend(m);
-    if (blurred(it)) { slide.classList.add('adult'); slide.append(h(`<div class="v-adult">${I.eyeOff}<b>Вміст 18+</b><span>Торкніться, щоб показати</span></div>`)); }
+    if (blurred(it)) { slide.classList.add('adult'); slide.append(h(`<div class="v-adult">${I.eyeOff}<b>${isAdult(it) ? 'Вміст 18+' : 'Ще не перевірено'}</b><span>Торкніться, щоб показати</span></div>`)); }
     slide.append(h(`<div class="v-broken">${I.photo}<span>Цей формат не відкривається в браузері</span><small>${esc(it.name)}</small></div>`));
     this.place(slide, it);
   },

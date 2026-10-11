@@ -143,7 +143,7 @@ function cellHTML(it, sel, opts = {}) {
     + (it.kind === 'video' ? `<span class="dur">${fmtDur(it.duration)}</span>` : '')
     + (it.fav && !it.deleted ? `<span class="fav">${I.heartFill}</span>` : '')
     + (it.deleted ? `<span class="days">${days} дн.</span>` : '')
-    + (blurred(it) ? `<span class="a18">${I.eyeOff}18+</span>` : '')
+    + (blurred(it) ? `<span class="a18">${a18Label(it)}</span>` : '')
     + `<span class="check">${I.check}</span></div>`;
 }
 function gridHTML(items, { months = false, sel } = {}) {

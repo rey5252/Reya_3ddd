@@ -141,7 +141,7 @@ const DB = {
 
 // ---------- state ----------
 const S = { items: [], byId: new Map(), albums: [], folders: [], persist: true };
-const META_KEYS = ['id', 'name', 'kind', 'mime', 'size', 'w', 'h', 'duration', 'date', 'added', 'path', 'fav', 'deleted', 'sample', 'fkey', 'thumb', 'src', 'nsfw', 'adult'];
+const META_KEYS = ['id', 'name', 'kind', 'mime', 'size', 'w', 'h', 'duration', 'date', 'added', 'path', 'fav', 'deleted', 'sample', 'fkey', 'thumb', 'src', 'nsfw', 'nsfwV', 'adult'];
 const rec = it => { const o = {}; for (const k of META_KEYS) o[k] = it[k]; return o; };
 const saveItems = its => DB.put('items', [].concat(its).map(rec));
 const saveAlbums = as => DB.put('albums', [].concat(as));
