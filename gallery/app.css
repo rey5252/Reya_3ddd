@@ -481,3 +481,26 @@ body,#app,#splash{background:var(--grad) fixed,var(--bg)}
 .v-th.cur{box-shadow:0 0 0 2px var(--accent),var(--glow)}
 
 #splash .logo{box-shadow:0 0 40px rgba(150,170,255,.5)}
+
+
+/* ================= performance ================= */
+/* Off-screen months are skipped by the browser until you scroll to them. */
+.mg{content-visibility:auto}
+/* Blur behind moving content is expensive on phones: keep it only for short-lived overlays. */
+.navbar,.page.scrolled .navbar,.page.small .navbar,.page.selecting .navbar,.seg,.hint,.v-bar,.toast,.rows,.tiles-empty,.q-empty,.imp-big,.ctx-menu,.as-group,.alert,#drop{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+.page.scrolled .navbar,.page.small .navbar,.page.selecting .navbar{background:rgba(30,32,62,.94)}
+.seg{background:rgba(36,38,72,.95)}
+.v-bar{background:rgba(28,30,58,.92)}
+.rows,.tiles-empty,.q-empty,.imp-big{background:rgba(255,255,255,.075)}
+body,#app,#splash{background:var(--grad),var(--bg)}
+.cell img{transition:transform .25s var(--ease)}
+.tabview{will-change:transform;contain:strict}
+/* 18+: a frosted placeholder instead of a blurred photo (no image is even loaded) */
+.cell.adult{background:radial-gradient(120% 90% at 30% 20%,#6d6aa6 0%,#3e3f78 55%,#2c2d58 100%)}
+.cell.adult img{display:none}
+/* gliding tab indicator */
+.tab-ind{position:absolute;left:0;top:0;width:40px;height:40px;border-radius:50%;background:var(--bubble);box-shadow:0 0 18px rgba(110,140,255,.65);transition:transform .5s cubic-bezier(.3,1.35,.5,1);pointer-events:none;z-index:0}
+.tab{position:relative;z-index:1}
+.tab.active .ico{background:transparent;box-shadow:none;color:#d6e4ff}
+.tab .ico{transition:color .3s}
+#selbar .tab-ind{display:none}

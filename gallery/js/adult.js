@@ -30,14 +30,13 @@ function updateBlurProgress() {
   const t = ADULT.running && ADULT.total ? ` ${Math.floor(ADULT.done / ADULT.total * 100)}%` : '';
   $$('.b18btn .pct').forEach(e => { e.textContent = t; });
 }
-// Re-style one photo's cells in place (cheaper than re-rendering the whole grid).
+// Re-draw one photo's cells in place (cheaper than re-rendering the whole grid).
 function patchCells(it) {
   $$(`.cell[data-id="${it.id}"]`).forEach(c => {
-    const b = blurred(it);
-    c.classList.toggle('adult', b);
-    let lab = $('.a18', c);
-    if (b) { if (!lab) { lab = h('<span class="a18"></span>'); c.insertBefore(lab, $('.check', c)); } lab.innerHTML = a18Label(it); }
-    else if (lab) lab.remove();
+    if (c.classList.contains('adult') === blurred(it)) return;
+    const n = h(cellHTML(it));
+    ['sel', 'hole', 'in'].forEach(k => c.classList.contains(k) && n.classList.add(k));
+    c.replaceWith(n);
   });
 }
 
@@ -52,22 +51,77 @@ async function markAdult(ids, val) {
 function loadScript(src) {
   return new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = rej; document.head.append(s); });
 }
+const MODEL_FILES = ['vendor/tf.min.js', 'vendor/tf-backend-wasm.min.js', 'vendor/nsfw/model.min.js', 'vendor/nsfw/group1-shard1of1.min.js', 'vendor/nsfwjs.min.js'];
+async function pickBackend() {
+  for (const be of ['webgl', 'wasm', 'cpu']) {
+    try { if (await tf.setBackend(be)) { await tf.ready(); tf.tidy(() => tf.zeros([1, 8, 8, 3]).mean().dataSync()); return be; } } catch (e) {}
+  }
+}
+
+// Preferred: the model runs in a background thread, so scrolling and animations never stutter.
+// The worker is built from a blob with every script inlined; it makes no network requests itself.
+function nsfwWorkerMain(wasm) {
+  let model;
+  const ready = (async () => {
+    try { tf.wasm.setWasmPaths(wasm); } catch (e) {}
+    for (const be of ['webgl', 'wasm', 'cpu']) {
+      try { if (await tf.setBackend(be)) { await tf.ready(); tf.tidy(() => tf.zeros([1, 8, 8, 3]).mean().dataSync()); break; } } catch (e) {}
+    }
+    model = await nsfwjs.load();
+    return tf.getBackend();
+  })();
+  self.onmessage = async e => {
+    const { id, bmp } = e.data;
+    try {
+      await ready;
+      const t = tf.browser.fromPixels(bmp); if (bmp.close) bmp.close();
+      const p = await model.classify(t, 5); t.dispose();
+      self.postMessage({ id, p });
+    } catch (err) { self.postMessage({ id, error: String((err && err.message) || err) }); }
+  };
+  ready.then(b => self.postMessage({ ready: b }), err => self.postMessage({ fail: String(err) }));
+}
+async function startWorker() {
+  const texts = await Promise.all(MODEL_FILES.map(f => fetch(f).then(r => { if (!r.ok) throw new Error(f); return r.text(); })));
+  const wasm = {};
+  for (const n of ['tfjs-backend-wasm.wasm', 'tfjs-backend-wasm-simd.wasm']) {
+    wasm[n] = URL.createObjectURL(new Blob([await (await fetch('vendor/' + n)).arrayBuffer()], { type: 'application/wasm' }));
+  }
+  wasm['tfjs-backend-wasm-threaded-simd.wasm'] = wasm['tfjs-backend-wasm-simd.wasm'];
+  const w = new Worker(URL.createObjectURL(new Blob([texts.join('\n;\n') + `\n;(${nsfwWorkerMain})(${JSON.stringify(wasm)});`], { type: 'text/javascript' })));
+  await new Promise((res, rej) => {
+    const to = setTimeout(() => rej(new Error('timeout')), 60000);
+    w.onmessage = e => { clearTimeout(to); e.data.ready ? res() : rej(new Error(e.data.fail)); };
+    w.onerror = e => { clearTimeout(to); rej(e); };
+  });
+  const waiting = new Map(); let seq = 0;
+  w.onmessage = e => { const cb = waiting.get(e.data.id); if (cb) { waiting.delete(e.data.id); cb(e.data); } };
+  return async img => {
+    const bmp = await createImageBitmap(img, { resizeWidth: 224, resizeHeight: 224, resizeQuality: 'medium' });
+    const id = ++seq;
+    const r = await new Promise(res => { waiting.set(id, res); w.postMessage({ id, bmp }, [bmp]); });
+    if (r.error) throw new Error(r.error);
+    return r.p;
+  };
+}
+// Fallback: same model on the main thread.
+async function startInPage() {
+  for (const s of MODEL_FILES) await loadScript(s);
+  try { tf.wasm.setWasmPaths(new URL('vendor/', location.href).href); } catch (e) {}
+  await pickBackend();
+  const model = await nsfwjs.load();
+  return async blob => {
+    const img = new Image(); const u = URL.createObjectURL(blob); img.src = u;
+    try { await img.decode(); return await model.classify(img, 5); } finally { URL.revokeObjectURL(u); }
+  };
+}
 async function loadModel() {
   if (ADULT.model) return ADULT.model;
-  if (!ADULT.loading) ADULT.loading = (async () => {
-    for (const s of ['vendor/tf.min.js', 'vendor/tf-backend-wasm.min.js', 'vendor/nsfw/model.min.js', 'vendor/nsfw/group1-shard1of1.min.js', 'vendor/nsfwjs.min.js']) await loadScript(s);
-    try { tf.wasm.setWasmPaths(new URL('vendor/', location.href).href); } catch (e) {}
-    // fastest engine that works on this phone: graphics chip, then WebAssembly, then plain JS
-    let ok = false;
-    for (const be of ['webgl', 'wasm', 'cpu']) {
-      try { ok = await tf.setBackend(be); if (ok) { await tf.ready(); tf.tidy(() => tf.zeros([1, 8, 8, 3]).mean().dataSync()); break; } } catch (e) { ok = false; }
-    }
-    return nsfwjs.load();
-  })();
+  if (!ADULT.loading) ADULT.loading = startWorker().catch(() => startInPage());
   ADULT.model = await ADULT.loading;
   return ADULT.model;
 }
-const idle = () => new Promise(r => (window.requestIdleCallback ? requestIdleCallback(() => r(), { timeout: 120 }) : setTimeout(r, 30)));
+const idle = () => new Promise(r => setTimeout(r, 15));
 
 function scheduleAdultScan() {
   if (ADULT.running || !S.items.some(needsCheck)) return;
@@ -86,9 +140,9 @@ async function runAdultScan() {
       for (let k = S.items.length - 1; k >= 0; k--) if (needsCheck(S.items[k])) { it = S.items[k]; break; }
       if (!it) break;
       try {
-        const img = new Image(); img.src = turl(it); await img.decode();
+        const blob = await (await fetch(turl(it))).blob();
         const p = {};
-        (await model.classify(img, 5)).forEach(x => { p[x.className] = x.probability; });
+        (await model(blob)).forEach(x => { p[x.className] = x.probability; });
         it.nsfw = Math.round(Math.max((p.Porn || 0) + (p.Hentai || 0), (p.Sexy || 0) * 0.57) * 100) / 100;
       } catch (e) { it.nsfw = -1; }
       it.nsfwV = NSFW_V;

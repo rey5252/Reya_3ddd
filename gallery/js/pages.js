@@ -51,12 +51,32 @@ function switchTab(t) {
     return;
   }
   exitSelecting(topPage());
-  Tabs.views[Tabs.cur].hidden = true;
-  const nu = Tabs.views[t]; nu.hidden = false; Tabs.cur = t;
+  const order = ['library', 'albums', 'search'], from = Tabs.cur, dir = order.indexOf(t) > order.indexOf(from) ? 1 : -1;
+  const old = Tabs.views[from], nu = Tabs.views[t];
+  Object.values(Tabs.views).forEach(v => v.getAnimations().forEach(a => a.cancel()));
+  Object.values(Tabs.views).forEach(v => { if (v !== old && v !== nu) v.hidden = true; });
+  nu.hidden = false; Tabs.cur = t;
   ensureFresh(topPage(t));
-  if (!RM) nu.animate([{ opacity: 0, transform: 'scale(.985)' }, { opacity: 1, transform: 'none' }], { duration: 220, easing: 'ease-out' });
+  moveTabIndicator(t);
   $$('#tabbar .tab').forEach(b => { const on = b.dataset.tab === t; b.classList.toggle('active', on); b.setAttribute('aria-selected', on); });
+  haptic(6);
+  if (RM) old.hidden = true;
+  else {
+    old.style.zIndex = 0; nu.style.zIndex = 1;
+    nu.animate([{ transform: `translateX(${dir * 100}%)`, boxShadow: '0 0 40px rgba(0,0,0,.35)' }, { transform: 'translateX(0)', boxShadow: '0 0 40px rgba(0,0,0,0)' }], { duration: 440, easing: EASE });
+    old.animate([{ transform: 'translateX(0)', opacity: 1 }, { transform: `translateX(${-dir * 30}%)`, opacity: .4 }], { duration: 440, easing: EASE })
+      .finished.then(() => { if (Tabs.cur !== from) old.hidden = true; }, () => {});
+  }
   topPage(t).onShow();
+}
+
+// Glowing bubble that glides to the active tab.
+function moveTabIndicator(t, animate = true) {
+  const bar = $('#tabbar'), ind = $('.tab-ind', bar), tab = $(`.tab[data-tab="${t}"] .ico`, bar);
+  if (!ind || !tab) return;
+  const br = bar.getBoundingClientRect(), r = tab.getBoundingClientRect();
+  ind.style.transition = animate && !RM ? '' : 'none';
+  ind.style.transform = `translate(${r.left - br.left}px,${r.top - br.top}px)`;
 }
 
 // Swipe from the left edge to go back, like iOS.
@@ -139,28 +159,27 @@ function cellHTML(it, sel, opts = {}) {
   const t = turl(it);
   const days = it.deleted ? Math.max(0, 30 - Math.floor((Date.now() - it.deleted) / 864e5)) : 0;
   return `<div class="cell${sel && sel.has(it.id) ? ' sel' : ''}${opts.in && opts.in.has(it.id) ? ' in' : ''}${blurred(it) ? ' adult' : ''}" data-id="${it.id}" role="button" tabindex="-1" aria-label="${esc(it.name)}">`
-    + (t ? `<img src="${t}" loading="lazy" decoding="async" alt="">` : `<span class="noprev">${esc(ext(it.name) || it.kind)}</span>`)
+    + (blurred(it) ? '' : t ? `<img src="${t}" loading="lazy" decoding="async" alt="">` : `<span class="noprev">${esc(ext(it.name) || it.kind)}</span>`)
     + (it.kind === 'video' ? `<span class="dur">${fmtDur(it.duration)}</span>` : '')
     + (it.fav && !it.deleted ? `<span class="fav">${I.heartFill}</span>` : '')
     + (it.deleted ? `<span class="days">${days} дн.</span>` : '')
     + (blurred(it) ? `<span class="a18">${a18Label(it)}</span>` : '')
     + `<span class="check">${I.check}</span></div>`;
 }
-function gridHTML(items, { months = false, sel } = {}) {
+function gridHTML(items, { months = false, sel, cols = 3 } = {}) {
   if (!items.length) return '';
   if (!months) return `<div class="grid">${items.map(i => cellHTML(i, sel)).join('')}</div>`;
-  let out = '', cur = null;
+  const cell = (innerWidth - 6 - (cols - 1) * 3) / cols + 3;
+  const groups = [];
   for (const it of items) {
     const k = monthKey(it.date);
-    if (k !== cur) {
-      if (cur !== null) out += '</div>';
-      const d = new Date(it.date);
-      out += `<div class="month-h" data-month="${k}">${MONTHS[d.getMonth()]} <span>${d.getFullYear()}</span></div><div class="grid">`;
-      cur = k;
-    }
-    out += cellHTML(it, sel);
+    if (!groups.length || groups[groups.length - 1].k !== k) groups.push({ k, its: [] });
+    groups[groups.length - 1].its.push(it);
   }
-  return out + '</div>';
+  return groups.map(({ k, its }) => {
+    const d = new Date(its[0].date), est = Math.round(52 + Math.ceil(its.length / cols) * cell);
+    return `<section class="mg" style="contain-intrinsic-size:auto ${est}px"><div class="month-h" data-month="${k}">${MONTHS[d.getMonth()]} <span>${d.getFullYear()}</span></div><div class="grid">${its.map(i => cellHTML(i, sel)).join('')}</div></section>`;
+  }).join('');
 }
 const emptyHTML = (icon, title, text, btn, act) => `<div class="empty">${icon}<b>${esc(title)}</b>${text ? `<p>${esc(text)}</p>` : ''}${btn ? `<button class="pill" data-act="${act}">${esc(btn)}</button>` : ''}</div>`;
 const cellOf = (page, id) => page.content.querySelector(`.cell[data-id="${id}"]`);
@@ -168,10 +187,11 @@ const cellOf = (page, id) => page.content.querySelector(`.cell[data-id="${id}"]`
 // Animate every visible cell from its old box to its new one (FLIP).
 function flipCells(page, mutate) {
   if (RM) return mutate();
+  const onScreen = () => $$('.grid', page.content).filter(g => { const r = g.getBoundingClientRect(); return r.bottom > -60 && r.top < innerHeight + 60; }).flatMap(g => $$('.cell', g));
   const before = new Map();
-  for (const c of $$('.cell', page.content)) { const r = c.getBoundingClientRect(); if (r.bottom > -60 && r.top < innerHeight + 60) before.set(c.dataset.id, r); }
+  for (const c of onScreen()) { const r = c.getBoundingClientRect(); if (r.bottom > -60 && r.top < innerHeight + 60) before.set(c.dataset.id, r); }
   mutate();
-  for (const c of $$('.cell', page.content)) {
+  for (const c of onScreen()) {
     const a = c.getBoundingClientRect();
     if (!a.width || a.bottom < -60 || a.top > innerHeight + 60) continue;
     const b = before.get(c.dataset.id);
@@ -567,7 +587,7 @@ class LibraryPage extends Page {
   }
   render(items) {
     if (!items.length) return emptyHTML(I.photo, 'Немає фото', 'Додайте фото, відео або цілі папки з телефона.', 'Додати фото', 'import');
-    if (this.mode === 'all') return gridHTML(items, { months: true, sel: this.sel });
+    if (this.mode === 'all') return gridHTML(items, { months: true, sel: this.sel, cols: this.cols });
     const groups = new Map();
     for (const it of items) { const k = this.mode === 'years' ? String(new Date(it.date).getFullYear()) : monthKey(it.date); if (!groups.has(k)) groups.set(k, []); groups.get(k).push(it); }
     const key = its => { const t = its.filter(hasThumb); return t.find(i => i.fav) || t[Math.floor(t.length / 2)]; };
@@ -598,7 +618,7 @@ class LibraryPage extends Page {
     this.content.innerHTML = this.render(live()); this.dirty = false;
     const navH = $('.navbar', this.el).offsetHeight;
     const target = year ? $(`[data-yh="${year}"]`, this.content) : month ? $(`.month-h[data-month="${month}"]`, this.content) : null;
-    if (target) sc.scrollTop = target.offsetTop - navH - 6; else this.toEnd();
+    if (target) sc.scrollTop += target.getBoundingClientRect().top - sc.getBoundingClientRect().top - navH - 6; else this.toEnd();
     this.moveKnob();
     if (!RM) { sc.animate([{ opacity: 0, transform: `scale(${deeper ? 1.06 : .94})` }, { opacity: 1, transform: 'scale(1)' }], { duration: 340, easing: EASE }); a1 && a1.cancel(); }
   }

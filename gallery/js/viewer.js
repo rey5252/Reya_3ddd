@@ -127,7 +127,7 @@ const V = {
     if (n < 2) { this.strip.innerHTML = ''; return; }
     const a = Math.max(0, this.i - 30), b = Math.min(n, this.i + 31);
     let html = '<span class="v-sp"></span>';
-    for (let k = a; k < b; k++) { const u = turl(S.byId.get(this.ids[k])); const sit = S.byId.get(this.ids[k]); html += `<button class="v-th${k === this.i ? ' cur' : ''}" data-i="${k}" aria-label="Фото ${k + 1}">${u ? `<img src="${u}"${b18(sit)} alt="">` : ''}</button>`; }
+    for (let k = a; k < b; k++) { const u = turl(S.byId.get(this.ids[k])); const sit = S.byId.get(this.ids[k]); html += `<button class="v-th${k === this.i ? ' cur' : ''}" data-i="${k}" aria-label="Фото ${k + 1}">${u && !blurred(sit) ? `<img src="${u}" alt="">` : ''}</button>`; }
     this.strip.innerHTML = html + '<span class="v-sp"></span>';
     const c = $('.v-th.cur', this.strip);
     if (c) this.strip.scrollLeft = c.offsetLeft - this.strip.clientWidth / 2 + 20;
