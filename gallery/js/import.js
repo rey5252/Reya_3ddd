@@ -106,7 +106,7 @@ function pickInput(id) {
 
 // Android app: the system folder picker returns a file list; the bytes are fetched
 // from the app's own /saf endpoint and turned into File objects with folder paths.
-window.__onNativeFolderStart = () => toast('Читаю папку…', 'folder');
+window.__onNativeFolderStart = () => toast('Шукаю фото й відео…', 'folder');
 window.__onNativeFolder = async data => {
   if (!data) return;
   if (data.error) { toast(data.error === 'unsupported' ? 'На цьому телефоні не можна вибрати папку' : 'Не вдалося прочитати папку', 'info'); return; }
@@ -154,6 +154,7 @@ function renderImport() {
       <button class="imp-big" data-imp="files">${I.photo}<b>Фото й відео</b><small>Окремі файли — скільки завгодно за раз</small></button>
       <button class="imp-big" data-imp="dir" ${DIR_OK ? '' : 'disabled'}>${I.folder}<b>Папку</b><small>${DIR_OK ? 'Разом з підпапками. Додавайте кілька по черзі' : 'Цей браузер не дає вибрати папку'}</small></button>
     </div>
+    ${NATIVE && NATIVE.pickDownloads ? `<button class="imp-big wide" data-imp="downloads">${I.download}<span><b>Папка Download</b><small>Усі фото й відео із «Завантажень», разом з підпапками (Telegram, браузер тощо)</small></span></button>` : ''}
     <div class="imp-drop">Або перетягніть сюди файли й папки — одразу кілька</div>
     <div class="group-h">Вибрано${total ? ` · ${nItems(total)}` : ''}</div>
     ${IMP.queue.length ? `<div class="rows q-list">${IMP.queue.map(qRow).join('')}</div>` : '<div class="q-empty">Ще нічого не вибрано. Додавайте папки й файли по черзі — усе збереться в цьому списку, а потім імпортується разом.</div>'}
@@ -179,6 +180,7 @@ function onImpClick(e) {
   const b = e.target.closest('button'); if (!b || b.disabled) return;
   if (b.dataset.imp === 'files') pickInput('#in-files');
   else if (b.dataset.imp === 'dir') pickInput('#in-dir');
+  else if (b.dataset.imp === 'downloads') NATIVE.pickDownloads();
   else if (b.dataset.imp === 'go') runImport();
   else if (b.dataset.imp === 'done') IMP.sheet && IMP.sheet.close();
   else if (b.dataset.rm) { IMP.queue = IMP.queue.filter(s => s.id !== b.dataset.rm); renderImport(); }

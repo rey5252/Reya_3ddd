@@ -3,6 +3,7 @@ package ua.reya.gallery;
 import android.Manifest;
 import android.app.Activity;
 import android.content.ClipData;
+import android.content.ContentUris;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Intent;
@@ -58,7 +59,7 @@ public class MainActivity extends Activity {
     static final String HOST = "appassets.androidplatform.net";
     static final String START = "https://" + HOST + "/web/index.html";
     static final String SAVE_DIR = "Галерея Reya";
-    private static final int REQ_FILES = 1, REQ_FOLDER = 2, REQ_WRITE = 3;
+    private static final int REQ_FILES = 1, REQ_FOLDER = 2, REQ_WRITE = 3, REQ_READ = 4;
     private static final int MAX_FOLDER_FILES = 20000;
 
     private WebView web;
@@ -180,6 +181,17 @@ public class MainActivity extends Activity {
                 } catch (Exception e) {
                     callJs("window.__onNativeFolder && __onNativeFolder({error:'unsupported'})");
                 }
+            });
+        }
+
+        @JavascriptInterface
+        public void pickDownloads() {
+            runOnUiThread(() -> {
+                String[] perms = readPerms();
+                boolean granted = false;
+                for (String p : perms) granted |= checkSelfPermission(p) == PackageManager.PERMISSION_GRANTED;
+                if (granted) startDownloadsScan();
+                else requestPermissions(perms, REQ_READ);
             });
         }
 
@@ -331,6 +343,70 @@ public class MainActivity extends Activity {
         while ((n = in.read(buf)) > 0) os.write(buf, 0, n);
     }
 
+    // ---------- Download folder (read through MediaStore: the folder picker refuses it on Android 11+) ----------
+    private static String[] readPerms() {
+        return Build.VERSION.SDK_INT >= 33
+                ? new String[]{Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO}
+                : new String[]{Manifest.permission.READ_EXTERNAL_STORAGE};
+    }
+
+    private void startDownloadsScan() {
+        callJs("window.__onNativeFolderStart && __onNativeFolderStart()");
+        io.execute(() -> {
+            try {
+                JSONArray files = new JSONArray();
+                scanMedia(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, files);
+                scanMedia(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, files);
+                JSONObject out = new JSONObject();
+                out.put("root", "Download");
+                out.put("files", files);
+                callJs("window.__onNativeFolder && __onNativeFolder(" + out + ")");
+            } catch (Exception e) {
+                callJs("window.__onNativeFolder && __onNativeFolder({error:" + JSONObject.quote(String.valueOf(e.getMessage())) + "})");
+            }
+        });
+    }
+
+    @SuppressWarnings("deprecation")
+    private void scanMedia(Uri collection, JSONArray out) throws JSONException {
+        boolean q = Build.VERSION.SDK_INT >= 29;
+        String pathCol = q ? MediaStore.MediaColumns.RELATIVE_PATH : MediaStore.MediaColumns.DATA;
+        String[] cols = {MediaStore.MediaColumns._ID, MediaStore.MediaColumns.DISPLAY_NAME, MediaStore.MediaColumns.MIME_TYPE,
+                MediaStore.MediaColumns.SIZE, MediaStore.MediaColumns.DATE_MODIFIED, pathCol};
+        String sel = pathCol + " LIKE ?";
+        String[] args = {q ? "Download/%" : "%/Download/%"};
+        try (Cursor c = getContentResolver().query(collection, cols, sel, args, MediaStore.MediaColumns.DATE_MODIFIED + " ASC")) {
+            if (c == null) return;
+            while (c.moveToNext() && out.length() < MAX_FOLDER_FILES) {
+                String name = c.getString(1), p = c.getString(5);
+                if (name == null || p == null || name.startsWith(".")) continue;
+                String dir;
+                if (q) dir = p.endsWith("/") ? p.substring(0, p.length() - 1) : p;
+                else {
+                    int i = p.indexOf("/Download/");
+                    if (i < 0) continue;
+                    dir = p.substring(i + 1, p.lastIndexOf('/'));
+                }
+                if (!dir.equals("Download") && !dir.startsWith("Download/")) {
+                    // MediaStore may report "download/" in another case; keep the folder name as "Download"
+                    int slash = dir.indexOf('/');
+                    dir = "Download" + (slash >= 0 ? dir.substring(slash) : "");
+                }
+                if (dir.contains("/.")) continue;
+                String mime = c.getString(2);
+                if (mime == null || mime.isEmpty()) mime = guessMime(name);
+                JSONObject f = new JSONObject();
+                f.put("u", ContentUris.withAppendedId(collection, c.getLong(0)).toString());
+                f.put("rel", dir + "/" + name);
+                f.put("name", name);
+                f.put("size", c.isNull(3) ? 0 : c.getLong(3));
+                f.put("mime", mime);
+                f.put("mod", c.isNull(4) ? 0 : c.getLong(4) * 1000);
+                out.put(f);
+            }
+        }
+    }
+
     // ---------- folder picking ----------
     private void scanTree(Uri tree) {
         try {
@@ -427,6 +503,13 @@ public class MainActivity extends Activity {
 
     @Override
     public void onRequestPermissionsResult(int req, String[] perms, int[] grants) {
+        if (req == REQ_READ) {
+            boolean any = false;
+            for (int g : grants) any |= g == PackageManager.PERMISSION_GRANTED;
+            if (any) startDownloadsScan();
+            else toastJs("Дозвольте доступ до фото й відео: Налаштування → Застосунки → Галерея → Дозволи");
+            return;
+        }
         if (req == REQ_WRITE && pendingSave != null) {
             List<OutFile> files = pendingSave;
             pendingSave = null;

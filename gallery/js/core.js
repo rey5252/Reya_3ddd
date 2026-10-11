@@ -89,6 +89,8 @@ const I = {
   select: svg('<circle cx="12" cy="12" r="9.5"/><path d="M7.5 12.5l3 3 6-6.5"/>', 1.9),
   import: svg('<path d="M12 3v12M7.5 10.5L12 15l4.5-4.5M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/>', 1.9),
   download: svg('<path d="M12 4v11M7.5 10.5L12 15l4.5-4.5M5 20h14"/>', 1.9),
+  eye: svg('<path d="M2.5 12S6 5 12 5s9.5 7 9.5 7-3.5 7-9.5 7-9.5-7-9.5-7z"/><circle cx="12" cy="12" r="3"/>', 1.9),
+  eyeOff: svg('<path d="M3.5 3.5l17 17"/><path d="M10.6 5.1A10 10 0 0 1 12 5c6 0 9.5 7 9.5 7a17 17 0 0 1-3.2 4.1M6.6 6.6C3.9 8.4 2.5 12 2.5 12s3.5 7 9.5 7c1.8 0 3.4-.6 4.7-1.4"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>', 1.9),
 };
 
 // ---------- storage (IndexedDB) ----------
@@ -136,8 +138,18 @@ const rec = it => { const o = {}; for (const k of META_KEYS) o[k] = it[k]; retur
 const saveItems = its => DB.put('items', [].concat(its).map(rec));
 const saveAlbums = as => DB.put('albums', [].concat(as));
 const saveFolders = fs => DB.put('folders', [].concat(fs));
-const live = () => S.items.filter(i => !i.deleted);
+// Photos that sit in a hidden album (or an album inside a hidden folder) stay out of the
+// library, search and smart albums. The set is rebuilt after every data change.
+let HIDDEN = null;
+function folderHidden(fid) { let f = folderById(fid); while (f) { if (f.hidden) return true; f = folderById(f.parent); } return false; }
+const albumHidden = a => !!a.hidden || folderHidden(a.parent);
+function hiddenIds() {
+  if (!HIDDEN) { HIDDEN = new Set(); for (const a of S.albums) if (albumHidden(a)) a.items.forEach(id => HIDDEN.add(id)); }
+  return HIDDEN;
+}
+const live = () => { const hid = hiddenIds(); return S.items.filter(i => !i.deleted && !hid.has(i.id)); };
 function indexItems() {
+  HIDDEN = null;
   S.items.sort((a, b) => a.date - b.date || a.added - b.added);
   S.byId = new Map(S.items.map(i => [i.id, i]));
 }

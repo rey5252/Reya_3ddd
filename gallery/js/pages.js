@@ -5,6 +5,7 @@ const topPage = (t = Tabs.cur) => { const s = Tabs.stacks[t]; return s[s.length 
 const ensureFresh = p => { if (p && p.dirty) p.refresh(); };
 
 function invalidate({ flip = false } = {}) {
+  HIDDEN = null;
   for (const t in Tabs.stacks) for (const p of Tabs.stacks[t]) p.dirty = true;
   const p = topPage();
   if (p) { if (flip && p.hasGrid) flipCells(p, () => p.refresh()); else p.refresh(); }
@@ -413,7 +414,7 @@ function addToAlbumSheet(ids, after) {
   const list = S.albums.slice().sort((a, b) => b.created - a.created);
   sh.body.innerHTML = `<div class="rows"><button class="row big" data-new><span class="r-cover">${I.plus}</span><span class="r-label"><b>Новий альбом…</b></span></button>${list.map(a => {
     const its = albumItems(a), u = turl(its[its.length - 1]), path = folderPath(a.parent);
-    return `<button class="row big" data-id="${a.id}"><span class="r-cover">${u ? `<img src="${u}" alt="">` : I.photo}</span><span class="r-label"><b>${esc(a.name)}</b><small>${path ? esc(path) + ' · ' : ''}${its.length}</small></span></button>`;
+    return `<button class="row big" data-id="${a.id}"><span class="r-cover">${u ? `<img src="${u}" alt="">` : I.photo}</span><span class="r-label"><b>${esc(a.name)}</b><small>${path ? esc(path) + ' · ' : ''}${its.length}${albumHidden(a) ? ' · приховано' : ''}</small></span></button>`;
   }).join('')}</div>`;
   sh.body.addEventListener('click', async e => {
     const b = e.target.closest('.row'); if (!b) return;
@@ -493,8 +494,21 @@ function tileMenu(tile) {
     ...(its.some(i => i.kind === 'image') ? [{ label: 'Слайд-шоу', icon: 'slides', run: () => slideshow(its) }] : []),
     { label: 'Перейменувати', icon: 'pencil', run: () => renameNode(kind, obj) },
     { label: 'Перемістити в папку', icon: 'move', run: () => moveNode(kind, obj) },
+    obj.hidden ? { label: 'Показати', icon: 'eye', run: () => setHidden(kind, obj, false) } : { label: 'Сховати', icon: 'eyeOff', run: () => setHidden(kind, obj, true, cover) },
     { sep: true, label: kind === 'album' ? 'Видалити альбом' : 'Видалити папку', icon: 'trash', destructive: true, run: () => kind === 'album' ? deleteAlbumFlow(obj) : deleteFolderFlow(obj) },
   ] });
+}
+
+async function setHidden(kind, obj, val, anchor) {
+  if (val && anchor && anchor.isConnected) {
+    FX.dissolve(anchor, anchor.querySelector('img'), { budget: 1600, cover: true });
+    anchor.style.opacity = '0';
+    await sleep(RM ? 0 : 180);
+  }
+  obj.hidden = val;
+  await (kind === 'album' ? saveAlbums(obj) : saveFolders(obj));
+  invalidate({ flip: true });
+  toast(val ? `«${obj.name}» сховано` : `«${obj.name}» знову видно`, val ? 'eyeOff' : 'eye');
 }
 
 function albumTile(a) {
@@ -516,6 +530,7 @@ function navClick(e) {
   if (t) { if (t.dataset.kind === 'album') push(new AlbumPage({ album: t.dataset.id })); else push(new AlbumsPage(t.dataset.id)); return true; }
   const s = e.target.closest('[data-smart]');
   if (s) { push(new AlbumPage({ smart: s.dataset.smart })); return true; }
+  if (e.target.closest('[data-hidden-list]')) { push(new HiddenPage()); return true; }
   return false;
 }
 
@@ -655,7 +670,7 @@ class AlbumPage extends Page {
     const a = this.album, its = this.items(), items = [];
     if (a) items.push({ label: 'Додати з медіатеки', icon: 'albumAdd', run: () => pickFromLibrary(a) }, { label: 'Імпортувати з пристрою', icon: 'import', run: () => openImport({ album: a.id }) });
     if (this.smart !== 'deleted' && its.some(i => i.kind === 'image')) items.push({ label: 'Слайд-шоу', icon: 'slides', run: () => slideshow(its) });
-    if (a) items.push({ sep: true, label: 'Перейменувати', icon: 'pencil', run: () => renameNode('album', a) }, { label: 'Перемістити в папку', icon: 'move', run: () => moveNode('album', a) }, { label: 'Видалити альбом', icon: 'trash', destructive: true, run: () => deleteAlbumFlow(a) });
+    if (a) items.push({ sep: true, label: 'Перейменувати', icon: 'pencil', run: () => renameNode('album', a) }, { label: 'Перемістити в папку', icon: 'move', run: () => moveNode('album', a) }, a.hidden ? { label: 'Показати альбом', icon: 'eye', run: () => setHidden('album', a, false) } : { label: 'Сховати альбом', icon: 'eyeOff', run: () => setHidden('album', a, true) }, { label: 'Видалити альбом', icon: 'trash', destructive: true, run: () => deleteAlbumFlow(a) });
     if (this.smart === 'deleted' && its.length) items.push(
       { label: 'Відновити все', icon: 'restore', run: async () => { const ids = its.map(i => i.id); dissolveCells(this, ids); await sleep(140); await restoreItems(ids); invalidate({ flip: true }); toast(`Відновлено: ${ids.length}`, 'restore'); } },
       { label: 'Видалити все', icon: 'trash', destructive: true, run: () => purgeFlow(this, its.map(i => i.id)) });
@@ -686,12 +701,13 @@ class AlbumsPage extends Page {
     popMenu(anchor, [
       { label: 'Перейменувати', icon: 'pencil', run: () => renameNode('folder', f) },
       { label: 'Перемістити в папку', icon: 'move', run: () => moveNode('folder', f) },
+      f.hidden ? { label: 'Показати папку', icon: 'eye', run: () => setHidden('folder', f, false) } : { label: 'Сховати папку', icon: 'eyeOff', run: () => setHidden('folder', f, true) },
       { sep: true, label: 'Видалити папку', icon: 'trash', destructive: true, run: () => deleteFolderFlow(f) },
     ]);
   }
   update() {
     if (this.folderId && !this.folder) { setTimeout(() => { if (topPage(this.tab) === this && Tabs.cur === this.tab) pop(); }, 60); return; }
-    const fs = S.folders.filter(f => f.parent === this.folderId).sort(byCreated), as = S.albums.filter(a => a.parent === this.folderId).sort(byCreated);
+    const fs = S.folders.filter(f => f.parent === this.folderId && !f.hidden).sort(byCreated), as = S.albums.filter(a => a.parent === this.folderId && !a.hidden).sort(byCreated);
     const n = fs.length + as.length;
     this.setTitle(this.folderId ? this.folder.name : 'Альбоми', this.folderId ? `${n} ${plural(n, 'елемент', 'елементи', 'елементів')}` : '');
     let html = this.folderId ? '' : `<div class="sec-h">Мої альбоми <small>${n || ''}</small></div>`;
@@ -699,10 +715,25 @@ class AlbumsPage extends Page {
       : `<div class="tiles-empty">${this.folderId ? 'Папка порожня. Створіть тут альбом чи підпапку або імпортуйте папку з телефона.' : 'Альбомів ще немає. Створіть альбом або імпортуйте папку з телефона — підпапки стануть альбомами.'}<button class="pill" data-act="import">${I.folder}Імпортувати папку</button></div>`;
     if (!this.folderId) {
       html += `<div class="sec-h">Типи медіа</div><div class="rows">${smartRow('videos')}${smartRow('favorites')}</div>`;
-      html += `<div class="sec-h">Інше</div><div class="rows">${smartRow('recent')}<button class="row" data-act="import">${I.import}<span class="r-label">Імпорт фото й папок</span>${I.chev}</button>${smartRow('deleted')}</div><div style="height:12px"></div>`;
+      html += `<div class="sec-h">Інше</div><div class="rows">${smartRow('recent')}<button class="row" data-act="import">${I.import}<span class="r-label">Імпорт фото й папок</span>${I.chev}</button>${smartRow('deleted')}<button class="row" data-hidden-list>${I.eyeOff}<span class="r-label">Приховані</span><span class="r-val">${S.folders.filter(f => f.hidden).length + S.albums.filter(a => a.hidden).length}</span>${I.chev}</button></div><div style="height:12px"></div>`;
     }
     this.content.innerHTML = html;
     if (!this.selecting) this.renderNav();
+  }
+}
+
+// ---------- Hidden folders & albums ----------
+class HiddenPage extends Page {
+  constructor() {
+    super({ title: 'Приховані', cls: 'grouped' });
+    this.content.addEventListener('click', e => navClick(e));
+    longPress(this.content, '.tile', tileMenu);
+  }
+  update() {
+    const fs = S.folders.filter(f => f.hidden).sort(byCreated), as = S.albums.filter(a => a.hidden).sort(byCreated), n = fs.length + as.length;
+    this.setTitle('Приховані', n ? 'Їх не видно в медіатеці, альбомах і пошуку. Утримуйте, щоб показати знову.' : '');
+    this.content.innerHTML = n ? `<div class="tiles">${fs.map(folderTile).join('')}${as.map(albumTile).join('')}</div>`
+      : emptyHTML(I.eyeOff, 'Нічого не сховано', 'Утримуйте папку чи альбом і виберіть «Сховати».');
   }
 }
 
@@ -728,7 +759,7 @@ class SearchPage extends Page {
     if (!q) {
       const years = [...new Set(all.map(i => new Date(i.date).getFullYear()))].sort((a, b) => b - a);
       const months = [...new Set(all.map(i => monthKey(i.date)))].slice(-8).reverse();
-      const albums = S.albums.slice().sort((a, b) => b.created - a.created).slice(0, 12);
+      const albums = S.albums.filter(a => !albumHidden(a)).sort((a, b) => b.created - a.created).slice(0, 12);
       this.content.innerHTML = `<div class="sec-h">Швидкий доступ</div><div class="chips">${['favorites', 'videos', 'recent'].map(k => `<button class="chip" data-smart="${k}">${I[SMART[k].icon]}${SMART[k].name} <small>${SMART[k].get().length}</small></button>`).join('')}</div>`
         + (years.length ? `<div class="sec-h">Роки</div><div class="chips">${years.map(y => `<button class="chip" data-chip="${y}">${y}</button>`).join('')}</div>` : '')
         + (months.length ? `<div class="sec-h">Місяці</div><div class="chips">${months.map(k => { const [y, m] = k.split('-').map(Number); return `<button class="chip" data-chip="${MONTHS[m].toLowerCase()} ${y}">${MONTHS[m]} ${y}</button>`; }).join('')}</div>` : '')
@@ -737,8 +768,8 @@ class SearchPage extends Page {
     }
     const words = q.split(/\s+/).filter(Boolean);
     const match = s => { s = s.toLowerCase(); return words.every(w => s.includes(w)); };
-    const albums = S.albums.filter(a => match(a.name + ' ' + folderPath(a.parent)));
-    const folders = S.folders.filter(f => match(f.name));
+    const albums = S.albums.filter(a => !albumHidden(a) && match(a.name + ' ' + folderPath(a.parent)));
+    const folders = S.folders.filter(f => !folderHidden(f.id) && match(f.name));
     const smart = Object.keys(SMART).filter(k => k !== 'deleted' && match(SMART[k].name));
     const items = all.filter(it => {
       const d = new Date(it.date), m = d.getMonth();
