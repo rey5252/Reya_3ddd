@@ -138,11 +138,12 @@ const defaultCols = () => { const w = innerWidth; return w < 500 ? 3 : w < 800 ?
 function cellHTML(it, sel, opts = {}) {
   const t = turl(it);
   const days = it.deleted ? Math.max(0, 30 - Math.floor((Date.now() - it.deleted) / 864e5)) : 0;
-  return `<div class="cell${sel && sel.has(it.id) ? ' sel' : ''}${opts.in && opts.in.has(it.id) ? ' in' : ''}" data-id="${it.id}" role="button" tabindex="-1" aria-label="${esc(it.name)}">`
+  return `<div class="cell${sel && sel.has(it.id) ? ' sel' : ''}${opts.in && opts.in.has(it.id) ? ' in' : ''}${blurred(it) ? ' adult' : ''}" data-id="${it.id}" role="button" tabindex="-1" aria-label="${esc(it.name)}">`
     + (t ? `<img src="${t}" loading="lazy" decoding="async" alt="">` : `<span class="noprev">${esc(ext(it.name) || it.kind)}</span>`)
     + (it.kind === 'video' ? `<span class="dur">${fmtDur(it.duration)}</span>` : '')
     + (it.fav && !it.deleted ? `<span class="fav">${I.heartFill}</span>` : '')
     + (it.deleted ? `<span class="days">${days} дн.</span>` : '')
+    + (blurred(it) ? `<span class="a18">${I.eyeOff}18+</span>` : '')
     + `<span class="check">${I.check}</span></div>`;
 }
 function gridHTML(items, { months = false, sel } = {}) {
@@ -306,7 +307,7 @@ function renderSelbar() {
     bar.innerHTML = `<button class="sb-text" data-a="restore">${n ? 'Відновити' : 'Відновити все'}</button><div class="sb-label">${n ? esc(label) : ''}</div><button class="sb-text danger" data-a="purge">${n ? 'Видалити' : 'Видалити все'}</button>`;
   } else {
     const allFav = n && ids.every(id => S.byId.get(id)?.fav), dis = n ? '' : 'disabled';
-    bar.innerHTML = `<button class="sb-btn" data-a="share" ${dis} aria-label="Поділитися">${I.share}</button><div class="sb-label">${esc(label)}</div><button class="sb-btn" data-a="fav" ${dis} aria-label="Улюблене">${allFav ? I.heartFill : I.heart}</button><button class="sb-btn" data-a="album" ${dis} aria-label="Додати в альбом">${I.albumAdd}</button><button class="sb-btn" data-a="del" ${dis} aria-label="Видалити">${I.trash}</button>`;
+    bar.innerHTML = `<button class="sb-btn" data-a="share" ${dis} aria-label="Поділитися">${I.share}</button><div class="sb-label">${esc(label)}</div><button class="sb-btn" data-a="fav" ${dis} aria-label="Улюблене">${allFav ? I.heartFill : I.heart}</button><button class="sb-btn" data-a="album" ${dis} aria-label="Додати в альбом">${I.albumAdd}</button><button class="sb-btn sb-18" data-a="adult" ${dis} aria-label="Позначити 18+">${n && ids.every(id => isAdult(S.byId.get(id))) ? I.eye : I.eyeOff}</button><button class="sb-btn" data-a="del" ${dis} aria-label="Видалити">${I.trash}</button>`;
   }
 }
 async function onSelbar(e) {
@@ -319,6 +320,7 @@ async function onSelbar(e) {
     setSelecting(p, false); await setFav(ids, val);
     toast(val ? 'Додано до улюблених' : 'Прибрано з улюблених', val ? 'heartFill' : 'heart');
   } else if (a === 'album') addToAlbumSheet(ids, () => setSelecting(p, false));
+  else if (a === 'adult') { const val = !ids.every(id => isAdult(S.byId.get(id))); setSelecting(p, false); markAdult(ids, val); }
   else if (a === 'del') deleteFlow(p, ids);
   else if (a === 'restore') {
     const list = ids.length ? ids : SMART.deleted.get().map(i => i.id); if (!list.length) return;
@@ -330,7 +332,7 @@ async function onSelbar(e) {
 function dissolveCells(page, ids) {
   const set = new Set(ids);
   const cells = $$('.cell', page.content).filter(c => set.has(c.dataset.id));
-  const vis = cells.filter(c => { const r = c.getBoundingClientRect(); return r.width && r.bottom > 0 && r.top < innerHeight; }).slice(0, 80);
+  const vis = cells.filter(c => { const r = c.getBoundingClientRect(); return !c.classList.contains('adult') && r.width && r.bottom > 0 && r.top < innerHeight; }).slice(0, 80);
   const budget = Math.max(60, Math.floor(2600 / Math.max(1, vis.length)));
   vis.forEach(c => FX.dissolve(c, c.querySelector('img'), { budget, cover: true }));
   cells.forEach(c => { c.style.opacity = '0'; });
@@ -370,6 +372,7 @@ function photoMenu(page, cell) {
     ...(NATIVE && !it.src ? [{ label: 'Зберегти в галерею телефона', icon: 'download', run: () => downloadItem(it) }] : []),
     { label: it.fav ? 'Прибрати з улюблених' : 'Додати до улюблених', icon: it.fav ? 'heart' : 'heartFill', run: () => { if (!it.fav) { const c = cellOf(page, it.id); if (c) { const r = c.getBoundingClientRect(); FX.hearts(r.left + r.width / 2, r.top + r.height / 2); } } setFav([it.id], !it.fav); } },
     { label: 'Додати в альбом', icon: 'albumAdd', run: () => addToAlbumSheet([it.id]) },
+    isAdult(it) ? { label: 'Це не 18+', icon: 'eye', run: () => markAdult([it.id], false) } : { label: 'Позначити 18+', icon: 'eyeOff', run: () => markAdult([it.id], true) },
     { label: 'Вибрати', icon: 'select', run: () => { setSelecting(page, true); const c = cellOf(page, it.id); if (c) { toggleSel(page, c, true); selChanged(page); } } },
     ...(page.album ? [{ sep: true, label: 'Прибрати з альбому', icon: 'x', run: async () => { dissolveCells(page, [it.id]); await sleep(140); await removeFromAlbum(page.album, [it.id]); invalidate({ flip: true }); } }] : []),
     { sep: !page.album, label: page.album ? 'Видалити з медіатеки' : 'Видалити', icon: 'trash', destructive: true, run: () => deleteFlow(page, [it.id], { fromLibrary: true }) },
@@ -418,7 +421,7 @@ function addToAlbumSheet(ids, after) {
   const list = S.albums.slice().sort((a, b) => b.created - a.created);
   sh.body.innerHTML = `<div class="rows"><button class="row big" data-new><span class="r-cover">${I.plus}</span><span class="r-label"><b>Новий альбом…</b></span></button>${list.map(a => {
     const its = albumItems(a), u = turl(its[its.length - 1]), path = folderPath(a.parent);
-    return `<button class="row big" data-id="${a.id}"><span class="r-cover">${u ? `<img src="${u}" alt="">` : I.photo}</span><span class="r-label"><b>${esc(a.name)}</b><small>${path ? esc(path) + ' · ' : ''}${its.length}${albumHidden(a) ? ' · приховано' : ''}</small></span></button>`;
+    return `<button class="row big" data-id="${a.id}"><span class="r-cover">${u ? `<img src="${u}"${b18(its[its.length - 1])} alt="">` : I.photo}</span><span class="r-label"><b>${esc(a.name)}</b><small>${path ? esc(path) + ' · ' : ''}${its.length}${albumHidden(a) ? ' · приховано' : ''}</small></span></button>`;
   }).join('')}</div>`;
   sh.body.addEventListener('click', async e => {
     const b = e.target.closest('.row'); if (!b) return;
@@ -517,12 +520,12 @@ async function setHidden(kind, obj, val, anchor) {
 
 function albumTile(a) {
   const its = albumItems(a), u = turl(its[its.length - 1]);
-  return `<button class="tile" data-kind="album" data-id="${a.id}"><span class="cover">${u ? `<img src="${u}" alt="" loading="lazy">` : `<span class="cover-empty">${I.photo}</span>`}</span><span class="t-name">${esc(a.name)}</span><span class="t-count">${its.length}${a.sample ? ' · приклад' : ''}</span></button>`;
+  return `<button class="tile" data-kind="album" data-id="${a.id}"><span class="cover">${u ? `<img src="${u}"${b18(its[its.length - 1])} alt="" loading="lazy">` : `<span class="cover-empty">${I.photo}</span>`}</span><span class="t-name">${esc(a.name)}</span><span class="t-count">${its.length}${a.sample ? ' · приклад' : ''}</span></button>`;
 }
 function folderTile(f) {
   const cov = folderCovers(f.id);
   const n = S.folders.filter(x => x.parent === f.id).length + S.albums.filter(x => x.parent === f.id).length;
-  return `<button class="tile" data-kind="folder" data-id="${f.id}"><span class="cover folder">${[0, 1, 2, 3].map(i => turl(cov[i]) ? `<img src="${turl(cov[i])}" alt="" loading="lazy">` : '<span></span>').join('')}<span class="f-badge">${I.folder}</span></span><span class="t-name">${esc(f.name)}</span><span class="t-count">${n} ${plural(n, 'елемент', 'елементи', 'елементів')}${f.sample ? ' · приклад' : ''}</span></button>`;
+  return `<button class="tile" data-kind="folder" data-id="${f.id}"><span class="cover folder">${[0, 1, 2, 3].map(i => turl(cov[i]) ? `<img src="${turl(cov[i])}"${b18(cov[i])} alt="" loading="lazy">` : '<span></span>').join('')}<span class="f-badge">${I.folder}</span></span><span class="t-name">${esc(f.name)}</span><span class="t-count">${n} ${plural(n, 'елемент', 'елементи', 'елементів')}${f.sample ? ' · приклад' : ''}</span></button>`;
 }
 function smartRow(k) {
   const s = SMART[k], n = s.get().length;
@@ -552,6 +555,7 @@ class LibraryPage extends Page {
       if (c.dataset.year) this.setMode('months', { year: c.dataset.year }); else this.setMode('all', { month: c.dataset.mon });
     });
   }
+  leftButtons() { return [blurButton()]; }
   rightButtons() { return [navBtn('Вибрати', () => { if (this.mode !== 'all') this.setMode('all'); setSelecting(this, true); }, 'pill'), navBtn(I.plus, () => openImport(), 'circle', 'Додати фото')]; }
   update() {
     const items = live(), sc = this.scroller;
@@ -571,12 +575,12 @@ class LibraryPage extends Page {
     for (const [k, its] of groups) {
       if (this.mode === 'years') {
         const u = turl(key(its));
-        out += `<button class="ycard" data-year="${k}">${u ? `<img src="${u}" alt="" loading="lazy">` : ''}<span class="cap"><b>${k}</b><small>${countText(its)}</small></span></button>`;
+        out += `<button class="ycard" data-year="${k}">${u ? `<img src="${u}"${b18(key(its))} alt="" loading="lazy">` : ''}<span class="cap"><b>${k}</b><small>${countText(its)}</small></span></button>`;
       } else {
         const [y, m] = k.split('-').map(Number);
         if (y !== lastY) { out += `<div class="year-h" data-yh="${y}">${y}</div>`; lastY = y; }
         const withT = its.filter(hasThumb), main = key(its), rest = withT.filter(i => i !== main).slice(0, 2);
-        const pics = rest.length === 2 ? `<span class="mosaic">${[main, ...rest].map(i => `<img src="${turl(i)}" alt="" loading="lazy">`).join('')}</span>` : (turl(main) ? `<img src="${turl(main)}" alt="" loading="lazy">` : '');
+        const pics = rest.length === 2 ? `<span class="mosaic">${[main, ...rest].map(i => `<img src="${turl(i)}"${b18(i)} alt="" loading="lazy">`).join('')}</span>` : (turl(main) ? `<img src="${turl(main)}"${b18(main)} alt="" loading="lazy">` : '');
         out += `<button class="ycard m" data-mon="${k}">${pics}<span class="cap"><b>${MONTHS[m]}</b><small>${y} · ${countText(its)}</small></span></button>`;
       }
     }
@@ -720,6 +724,7 @@ class AlbumsPage extends Page {
     if (!this.folderId) {
       const types = ['videos', 'favorites', 'screenshots', ...['screenrec', 'panoramas', 'gifs'].filter(k => SMART[k].get().length)];
       const sources = Object.keys(SMART).filter(k => SMART[k].group === 'sources' && SMART[k].get().length);
+      if (SMART.adult.get().length) types.push('adult');
       html += `<div class="sec-h">Типи медіа</div><div class="rows">${types.map(smartRow).join('')}</div>`;
       if (sources.length) html += `<div class="sec-h">Джерела</div><div class="rows">${sources.map(smartRow).join('')}</div>`;
       html += `<div class="sec-h">Інше</div><div class="rows">${smartRow('recent')}<button class="row" data-act="import">${I.import}<span class="r-label">Імпорт фото й папок</span>${I.chev}</button>${smartRow('deleted')}<button class="row" data-hidden-list>${I.eyeOff}<span class="r-label">Приховані</span><span class="r-val">${S.folders.filter(f => f.hidden).length + S.albums.filter(a => a.hidden).length}</span>${I.chev}</button></div><div style="height:12px"></div>`;

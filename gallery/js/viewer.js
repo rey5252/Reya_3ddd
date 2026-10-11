@@ -46,7 +46,7 @@ const V = {
     return { s: st.s, tx: x - b.x, ty: y - b.y };
   },
   fill(slide, idx) {
-    slide.innerHTML = ''; slide.classList.remove('playing', 'broken');
+    slide.innerHTML = ''; slide.classList.remove('playing', 'broken', 'adult');
     const token = slide._tok = (slide._tok || 0) + 1;
     const it = S.byId.get(this.ids[idx]); slide._id = it ? it.id : null;
     if (!it) return;
@@ -82,6 +82,7 @@ const V = {
     }
     m.className = 'v-media';
     slide.prepend(m);
+    if (blurred(it)) { slide.classList.add('adult'); slide.append(h(`<div class="v-adult">${I.eyeOff}<b>Вміст 18+</b><span>Торкніться, щоб показати</span></div>`)); }
     slide.append(h(`<div class="v-broken">${I.photo}<span>Цей формат не відкривається в браузері</span><small>${esc(it.name)}</small></div>`));
     this.place(slide, it);
   },
@@ -126,7 +127,7 @@ const V = {
     if (n < 2) { this.strip.innerHTML = ''; return; }
     const a = Math.max(0, this.i - 30), b = Math.min(n, this.i + 31);
     let html = '<span class="v-sp"></span>';
-    for (let k = a; k < b; k++) { const u = turl(S.byId.get(this.ids[k])); html += `<button class="v-th${k === this.i ? ' cur' : ''}" data-i="${k}" aria-label="Фото ${k + 1}">${u ? `<img src="${u}" alt="">` : ''}</button>`; }
+    for (let k = a; k < b; k++) { const u = turl(S.byId.get(this.ids[k])); const sit = S.byId.get(this.ids[k]); html += `<button class="v-th${k === this.i ? ' cur' : ''}" data-i="${k}" aria-label="Фото ${k + 1}">${u ? `<img src="${u}"${b18(sit)} alt="">` : ''}</button>`; }
     this.strip.innerHTML = html + '<span class="v-sp"></span>';
     const c = $('.v-th.cur', this.strip);
     if (c) this.strip.scrollLeft = c.offsetLeft - this.strip.clientWidth / 2 + 20;
@@ -270,6 +271,7 @@ const V = {
       if (this.item.kind !== 'video') this.zoomAt(x, y);
       return;
     }
+    if (this.cur().classList.contains('adult')) { this.cur().classList.remove('adult'); haptic(8); return; }
     this.lastTap = { t: now, x, y };
     this.tapTimer = setTimeout(() => { this.lastTap = null; if (this.item?.kind === 'video') this.togglePlay(); else this.setChrome(!this.chrome); }, 260);
   },
@@ -298,6 +300,7 @@ const V = {
   // ----- open / close with a shared-element flight from the thumbnail -----
   fly(src, it, A, aMode, B, bMode, dur) {
     const fl = h('<div class="flyer"><img alt=""></div>'), img = fl.firstChild; img.src = src;
+    if (blurred(it) && this.cur().classList.contains('adult')) img.className = 'b18';
     this.el.insertBefore(fl, this.track.nextSibling);
     const ar = it && it.w && it.h ? it.w / it.h : 1;
     const R = r => ({ left: r.left ?? r.x, top: r.top ?? r.y, width: r.width ?? r.w, height: r.height ?? r.h });
@@ -387,6 +390,7 @@ const V = {
       const rest = this.ids.slice(this.i).concat(this.ids.slice(0, this.i)).map(id => S.byId.get(id)).filter(Boolean);
       popMenu(btn, [
         { label: 'Додати в альбом', icon: 'albumAdd', run: () => addToAlbumSheet([it.id]) },
+        isAdult(it) ? { label: 'Це не 18+', icon: 'eye', run: async () => { await markAdult([it.id], false); this.renderAll(); } } : { label: 'Позначити 18+', icon: 'eyeOff', run: async () => { await markAdult([it.id], true); this.renderAll(); } },
         ...(rest.some(x => x.kind === 'image') ? [{ label: 'Слайд-шоу', icon: 'slides', run: () => slideshow(rest) }] : []),
         ...(!IN_FRAME && !it.src ? [{ label: 'Зберегти файл', icon: 'download', run: () => downloadItem(it) }] : []),
         { label: 'Інформація', icon: 'info', run: () => this.info() },
@@ -400,7 +404,7 @@ const V = {
       : { title: `${w[0].toUpperCase() + w.slice(1)} буде переміщено в «Нещодавно видалені» на 30 днів.`, actions: [{ label: `Видалити ${w}`, destructive: true }] });
     if (!ok) return;
     const m = this.media();
-    if (m) { FX.dissolve(m, m, { budget: 2800 }); m.style.opacity = '0'; }
+    if (m) { if (!this.cur().classList.contains('adult')) FX.dissolve(m, m, { budget: 2800 }); m.style.opacity = '0'; }
     await sleep(RM ? 0 : 260);
     if (permanent) await purgeItems([it.id]); else await trashItems([it.id]);
     invalidate();
@@ -428,7 +432,7 @@ const V = {
 
 // ---------- slideshow (crossfade + slow zoom) ----------
 async function slideshow(items) {
-  const its = items.filter(i => i.kind === 'image');
+  const its = items.filter(i => i.kind === 'image' && !blurred(i));
   if (!its.length) return;
   Back.arm();
   const w = h(`<div class="ss" role="dialog" aria-label="Слайд-шоу"><div class="ss-layer"></div><div class="ss-layer"></div><div class="ss-cap"></div><button class="ss-x" aria-label="Закрити">${I.x}</button></div>`);

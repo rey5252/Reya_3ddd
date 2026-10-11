@@ -141,7 +141,7 @@ const DB = {
 
 // ---------- state ----------
 const S = { items: [], byId: new Map(), albums: [], folders: [], persist: true };
-const META_KEYS = ['id', 'name', 'kind', 'mime', 'size', 'w', 'h', 'duration', 'date', 'added', 'path', 'fav', 'deleted', 'sample', 'fkey', 'thumb', 'src'];
+const META_KEYS = ['id', 'name', 'kind', 'mime', 'size', 'w', 'h', 'duration', 'date', 'added', 'path', 'fav', 'deleted', 'sample', 'fkey', 'thumb', 'src', 'nsfw', 'adult'];
 const rec = it => { const o = {}; for (const k of META_KEYS) o[k] = it[k]; return o; };
 const saveItems = its => DB.put('items', [].concat(its).map(rec));
 const saveAlbums = as => DB.put('albums', [].concat(as));
@@ -238,6 +238,7 @@ const SMART = {
   instagram: { name: 'Instagram', icon: 'insta', group: 'sources', get: () => live().filter(i => RX.instagram.test(hay(i))) },
   downloads: { name: 'Завантаження', icon: 'download', group: 'sources', get: () => live().filter(i => RX.downloads.test(hay(i))) },
   recent: { name: 'Нещодавно додані', icon: 'clock', get: () => { const cut = Date.now() - 30 * 864e5; return live().filter(i => i.added >= cut); } },
+  adult: { name: '18+', icon: 'eyeOff', get: () => live().filter(isAdult) },
   deleted: { name: 'Нещодавно видалені', icon: 'trash', get: () => S.items.filter(i => i.deleted) },
 };
 
@@ -456,7 +457,7 @@ function ctxMenu(anchor, { previewItem = null, previewEl = null, items }) {
   let prev = null, pr = null;
   if (previewItem || previewEl) {
     prev = h('<div class="ctx-prev"></div>');
-    if (previewItem) { const u = turl(previewItem); if (u) prev.innerHTML = `<img src="${u}" alt="">`; }
+    if (previewItem) { const u = turl(previewItem); if (u) prev.innerHTML = `<img src="${u}"${typeof b18 === 'function' ? b18(previewItem) : ''} alt="">`; }
     else prev.append(previewEl);
     const aspect = previewItem && previewItem.w && previewItem.h ? previewItem.w / previewItem.h : r.width / r.height;
     let pw = previewItem ? Math.min(W - 32, 360) : Math.min(r.width * 1.12, W - 32), ph = pw / aspect;

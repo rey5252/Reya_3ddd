@@ -295,7 +295,7 @@ async function runImport() {
           batch.push(rec(it)); if (batch.length >= 250) await flush();
           const u = (!it.src || added % 9 === 1) && turl(it);
           if (u) {
-            const img = h(`<img src="${u}" alt="">`); pile.append(img);
+            const img = h(`<img src="${u}"${b18(it)} alt="">`); pile.append(img);
             if (!RM) img.animate([{ opacity: 0, transform: `translateY(30px) scale(.6) rotate(${(Math.random() - .5) * 30}deg)` }, { opacity: 1, transform: `rotate(${(Math.random() - .5) * 16}deg)` }], { duration: 420, easing: SOFT_SPRING, fill: 'forwards' });
             while (pile.childElementCount > 5) pile.firstElementChild.remove();
           }
@@ -316,6 +316,7 @@ async function runImport() {
   indexItems();
   IMP.running = false; IMP.queue = [];
   invalidate({ flip: true });
+  scheduleAdultScan();
   if (!sh.closed) {
     const ring = $('.ring', sh.body); ring.classList.add('done'); txt.textContent = '';
     $('.prog-title', sh.body).textContent = added ? 'Готово' : dup ? 'Усе це вже є в галереї' : 'Не вдалося імпортувати';

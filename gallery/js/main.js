@@ -20,6 +20,8 @@ function buildUI() {
   document.addEventListener('gesturestart', e => e.preventDefault());
   addEventListener('resize', () => { measureSafe(); const p = topPage('library'); p && p.moveKnob(); });
   initEdgeSwipe(); initDrop(); V.init(); Back.init();
+  document.body.classList.toggle('blur18', blur18On());
+  scheduleAdultScan();
 }
 
 async function boot() {
