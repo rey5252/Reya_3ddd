@@ -39,10 +39,10 @@ def materials(m: Model):
     m.material("black", rgb(BLACK), metallic=0.55, roughness=0.38)
     m.material("dark", rgb("#2a2a31"), metallic=0.4, roughness=0.5)
     m.material("bowl", rgb("#14161a"), metallic=0.3, roughness=0.45, emissive=rgb(TEAL, 0.06))
-    m.material("teal", rgb(TEAL), roughness=0.25, emissive=rgb(TEAL, 2.2))
+    m.material("teal", rgb(TEAL), roughness=0.25, emissive=rgb(TEAL, 1.6))
     m.material("teal_soft", rgb(TEAL), roughness=0.3, emissive=rgb(TEAL, 1.1))
     m.material("core", rgb("#eafffb"), roughness=0.2, emissive=rgb("#c8fff5", 2.5))
-    m.material("halo", rgb(TEAL), roughness=0.3, emissive=rgb(TEAL, 0.9), alpha=0.3)
+    m.material("halo", rgb(TEAL), roughness=0.3, emissive=rgb(TEAL, 0.9), alpha=0.22)
 
 
 def band(r0, y0, r1, y1, seg=48):
@@ -171,10 +171,10 @@ def build_tower():
             lp * math.cos(math.radians(ca)), PLATE_TOP + 0.025, lp * math.sin(math.radians(ca))), "teal")
 
     # ---- lower tier: black base band, white slope, crimson stripe, white shoulder
-    base.add(band(*L0, *L1, 56), "black")
-    base.add(band(*L1, *L2, 56), "white")
-    base.add(band(*L2, *L3, 56), "crimson")
-    base.add(lathe([L3, (2.30, 1.585), U0], 56), "white")
+    base.add(band(*L0, *L1, 48), "black")
+    base.add(band(*L1, *L2, 48), "white")
+    base.add(band(*L2, *L3, 48), "crimson")
+    base.add(lathe([L3, (2.30, 1.585), U0], 48), "white")
     for i in range(10):    # teal light strips on the black band (front arc)
         a = FRONT + (i - 4.5) * 17
         if abs(((a - FRONT + 180) % 360) - 180) < 8:
@@ -192,21 +192,21 @@ def build_tower():
         base.add(tube_between(p0, p1, 0.016, 4), "trim")
 
     # ---- side fins (screen left / right in the RA3 view)
-    fin_pts = [(1.70, 2.62), (2.18, 2.78), (3.42, 0.62), (3.34, PLATE_TOP), (2.60, PLATE_TOP)]
+    fin_pts = [(1.66, 3.05), (2.12, 3.22), (3.62, 0.66), (3.54, PLATE_TOP), (2.60, PLATE_TOP)]
     for fa in (FRONT + 90, FRONT - 90):
-        fin = prism_xy(fin_pts, 0.30)
-        stripe = prism_xy([(2.62, 1.55), (2.86, 1.62), (3.08, 1.24), (2.85, 1.18)], 0.32)
-        cap = box(0.34, 0.12, 0.36).translate(3.36, 0.47, 0)
-        tip = box(0.08, 0.10, 0.20).translate(3.43, 0.70, 0)
+        fin = prism_xy(fin_pts, 0.42)
+        stripe = prism_xy([(2.62, 1.86), (2.90, 1.94), (3.16, 1.50), (2.90, 1.43)], 0.44)
+        cap = box(0.36, 0.14, 0.48).translate(3.52, 0.48, 0)
+        tip = box(0.08, 0.10, 0.26).translate(3.62, 0.72, 0)
         base.add(fin.rotate(0, -fa, 0), "white")
         base.add(stripe.rotate(0, -fa, 0), "crimson")
         base.add(cap.rotate(0, -fa, 0), "black")
         base.add(tip.rotate(0, -fa, 0), "teal")
-        base.add(prism_xy([(1.75, 2.58), (2.15, 2.72), (2.2, 2.66), (1.8, 2.52)], 0.34).rotate(0, -fa, 0), "black")
+        base.add(prism_xy([(1.70, 3.0), (2.12, 3.15), (2.18, 3.08), (1.76, 2.93)], 0.46).rotate(0, -fa, 0), "black")
 
     # ---- upper body: white sloped drum with black crown band
-    base.add(band(*U0, *U1, 56), "white")
-    base.add(band(*U1, *U2, 56), "black")
+    base.add(band(*U0, *U1, 48), "white")
+    base.add(band(*U1, *U2, 48), "black")
     base.add(lathe([U2, (1.30, TURRET_Y + 0.01), (0.0, TURRET_Y + 0.01)], 40), "dark")
     lean_u = slope_deg(*U0, *U1)
     for side in (FRONT, FRONT + 180):     # rising-sun emblems + crimson stripes
@@ -265,9 +265,9 @@ def build_tower():
     def add_e(mesh, mat):
         E.setdefault(mat, []).append(mesh)
 
-    add_e(lathe([(0.0, -0.12), (0.62, -0.12), (1.35, 0.08), (1.88, 0.38), (2.16, 0.72)], 56), "white")
-    add_e(lathe([(2.16, 0.72), (2.30, 0.78), (2.30, 0.93), (2.12, 0.98), (2.02, 0.94)], 56), "crimson")
-    add_e(lathe([(2.02, 0.94), (1.72, 0.64), (1.15, 0.36), (0.45, 0.22), (0.0, 0.21)], 56), "bowl")
+    add_e(lathe([(0.0, -0.12), (0.62, -0.12), (1.35, 0.08), (1.88, 0.38), (2.16, 0.72)], 48), "white")
+    add_e(lathe([(2.16, 0.72), (2.30, 0.78), (2.30, 0.93), (2.12, 0.98), (2.02, 0.94)], 48), "crimson")
+    add_e(lathe([(2.02, 0.94), (1.72, 0.64), (1.15, 0.36), (0.45, 0.22), (0.0, 0.21)], 48), "bowl")
     for (R, y, tube) in ((1.80, 0.71, 0.04), (1.30, 0.43, 0.035), (0.80, 0.285, 0.03)):
         add_e(torus(R, tube, 40, 5).translate(0, y + 0.02, 0), "teal")
     for i in range(8):
@@ -345,18 +345,17 @@ def build_nanocore():
         base.add(box(0.12, 0.05, 0.03).translate(-0.40, 1.18, sz * 0.735), "teal")
         for x in (-1.15, -0.65, 0.25, 0.75):                                             # running lights
             base.add(box(0.24, 0.05, 0.02).translate(x, 0.48, sz * 0.865), "teal")
-        for mat, mm in emblem(0.17, 8, None, 16).items():
+        for mat, mm in emblem(0.17, 8, None, 12).items():
             base.add(mm.rotate(0, 0 if sz > 0 else 180, 0).translate(-0.20, 0.50, sz * 0.852), mat)
     base.add(box(0.02, 0.06, 0.9).translate(-1.755, 0.52, 0), "teal")                     # tail light
     # 4 hover pads
     for px in (-1.12, 1.10):
         for pz in (-0.80, 0.80):
-            base.add(band(0.30, 0.02, 0.35, 0.16, 16).translate(px, 0, pz), "black")
-            base.add(band(0.35, 0.16, 0.30, 0.30, 16).translate(px, 0, pz), "white")
-            base.add(band(0.36, 0.15, 0.36, 0.19, 16).translate(px, 0, pz), "crimson")
-            base.add(disc(0.30, 16).translate(px, 0.30, pz), "white")
-            base.add(disc(0.26, 16).rotate(180, 0, 0).translate(px, 0.02, pz), "teal")
-            base.add(cylinder(0.20, 0.02, 12).translate(px, 0.0, pz), "teal_soft")
+            base.add(band(0.30, 0.0, 0.35, 0.16, 14).translate(px, 0, pz), "black")
+            base.add(band(0.35, 0.16, 0.30, 0.30, 14).translate(px, 0, pz), "white")
+            base.add(band(0.36, 0.15, 0.36, 0.19, 14).translate(px, 0, pz), "crimson")
+            base.add(disc(0.30, 14).translate(px, 0.30, pz), "white")
+            base.add(disc(0.29, 14).rotate(180, 0, 0).translate(px, 0.004, pz), "teal")
     return m
 
 
