@@ -189,6 +189,12 @@ def drip(mask, length=40, seed=0):
     return out * afbm(64, 4, 3, seed) ** 1.5
 
 
+def soft_scratches(count, length, seed):
+    """Short scratches, faded in and out by noise so they cluster on worn areas."""
+    m = np.clip(tk.scratches(count=count, length=length, seed=seed), 0, 1)
+    return m * np.clip((tk.fbm(cells=6, octaves=3, seed=seed + 1) - 0.35) * 2.0, 0, 1)
+
+
 def cracks(n, steps, seed):
     r = tk.rng(seed)
     m = np.zeros((S, S))
@@ -196,7 +202,7 @@ def cracks(n, steps, seed):
         x, y = r.random(2) * S
         a = r.random() * 2 * np.pi
         for _s in range(steps):
-            a += r.normal(0, 0.35)
+            a += r.normal(0, 0.16)
             x += np.cos(a) * 1.5
             y += np.sin(a) * 1.5
             m[int(y) % S, int(x) % S] = 1
@@ -255,7 +261,7 @@ def plated(rects, seed, paint, under, *, gap=3, bevel=7, rivet_inset=13, rivet_s
     chip = chip_mask(dist, chip_w, seed + 3, spots=chip_spots)
     chip = np.maximum(chip, np.clip((riv - 0.55) * 4, 0, 1) * (mid_n > 0.55))  # worn rivet tops
     chip *= sstep(0.0, 0.25, h + riv)                                          # grooves stay painted
-    scr = np.clip(tk.scratches(count=n_scratch, length=46, seed=seed + 4), 0, 1) if n_scratch else np.zeros((S, S))
+    scr = soft_scratches(n_scratch, 22, seed + 4) if n_scratch else np.zeros((S, S))
 
     bare = ramp(under[0], under[1], mid_n)
     col = lerp(base, bare, chip)
@@ -267,7 +273,7 @@ def plated(rects, seed, paint, under, *, gap=3, bevel=7, rivet_inset=13, rivet_s
         deep = inner
     rim = np.clip(dilate(chip, 1) - chip, 0, 1)
     col = lerp(col, "#1e1f18", rim * 0.55)
-    col = lerp(col, bare * 1.05, scr * (1 - chip) * 0.45)
+    col = lerp(col, bare * 1.05, scr * (1 - chip) * 0.3)
 
     height = h * 0.9 + riv * 0.5 + (1 - chip) * 0.05 - scr * 0.02 + mid_n * 0.015
     lam = light(height, nrm_strength)
@@ -293,7 +299,7 @@ def steel_olive():
     rects = [(0, 0, 256, 176), (256, 0, 512, 176),
              (128, 176, 384, 304), (384, 176, 640, 304),
              (0, 304, 176, 512), (176, 304, 512, 512)]
-    t = plated(rects, 100, ("#4c513c", "#6a6f56"), ("#8f8e80", "#b9b7a7"))
+    t = plated(rects, 100, ("#4b5236", "#6d7450"), ("#8f8e80", "#b9b7a7"))
     finish("steel_olive", t["col"], t["height"], t["nrm"], t["spec"])
 
 
@@ -301,7 +307,7 @@ def paint_red():
     rects = [(0, 0, 256, 256), (256, 0, 512, 256),
              (0, 256, 160, 512), (160, 256, 352, 512), (352, 256, 512, 512)]
     t = plated(rects, 200, ("#a8231a", "#d63a26"), ("#8f8e80", "#b9b7a7"),
-               primer=("#4c513c", "#666b52"), chip_w=12, chip_spots=0.05,
+               primer=("#4b5236", "#666d4c"), chip_w=12, chip_spots=0.05,
                grime="#2a1610", paint_spec=0.34)
     finish("paint_red", t["col"], t["height"], t["nrm"], t["spec"], house=1 - t["chip"])
 
@@ -318,7 +324,7 @@ def hazard():
     n = tk.fbm(cells=20, octaves=4, seed=seed + 3)
     wear = np.clip(lo * 0.9 + 0.1, 0, 1)
     chip = np.clip((n * wear - 0.52) * 10, 0, 1)
-    scr = np.clip(tk.scratches(count=90, length=50, seed=seed + 4), 0, 1)
+    scr = soft_scratches(110, 26, seed + 4)
     steel = ramp("#77766c", "#a9a798", mid)
     under = lerp(steel, RUST, np.clip((tk.fbm(cells=10, octaves=3, seed=seed + 5) - 0.55) * 3, 0, 1))
     col = lerp(col, under, chip)
@@ -338,7 +344,7 @@ def hazard():
 def copper_coil():
     seed = 400
     P = 16                                   # one winding = 16 px = 6 cm; 32 windings per tile
-    q = YY + XX * (P / S)                    # slight helix: shifts one winding across the tile
+    q = YY + 0 * XX                          # horizontal windings (per-winding tone stays seamless)
     ph = (q % P) / P
     idx = np.floor(q / P).astype(int) % (S // P)
     cs = 2 * ph - 1                          # -1 top .. +1 bottom of the wire
@@ -347,7 +353,7 @@ def copper_coil():
     tone = r.uniform(-0.07, 0.07, S // P)[idx]
     lo = tk.fbm(cells=4, octaves=4, seed=seed + 1)
     streak = afbm(16, 64, 3, seed + 2)
-    base = ramp("#9a4a1f", "#c8703a", lo * 0.6 + streak * 0.4)
+    base = ramp("#a8521f", "#cf7838", lo * 0.2 + streak * 0.8)
     base = base * (1 + tone)[..., None]
     lam = light(wire, 3.0)
     col = base * np.clip(1 + 1.1 * lam, 0.25, 1.7)[..., None]
@@ -357,7 +363,7 @@ def copper_coil():
     col = lerp(col, "#2a1208", gap * 0.9)
     # dark varnish / oxidation blotches and verdigris in the gaps
     ox = np.clip((tk.fbm(cells=8, octaves=4, seed=seed + 3) - 0.55) * 2.5, 0, 1)
-    col = lerp(col, "#5a2a14", ox * 0.5)
+    col = lerp(col, "#6a3218", ox * 0.3)
     ver = np.clip((tk.fbm(cells=16, octaves=3, seed=seed + 4) - 0.62) * 4, 0, 1) * gap
     col = lerp(col, "#3f8f6e", ver * 0.7)
     height = wire * 0.9 + streak * 0.03
@@ -381,7 +387,10 @@ def concrete():
     crack = cracks(9, 120, seed + 1)
     lo = tk.fbm(cells=4, octaves=5, seed=seed + 2)
     mid = tk.fbm(cells=16, octaves=4, seed=seed + 3)
-    agg = np.clip((tk.value_noise(cells=128, seed=seed + 4) - 0.72) * 5, 0, 1)
+    agg = np.zeros((S, S))
+    ap, ar = r.random((900, 2)) * S, r.uniform(0.9, 2.2, 900)
+    for k in range(0, 900, 150):
+        agg = np.maximum(agg, domes([tuple(p) for p in ap[k:k + 150]], ar[k], 1.0))
     # corner/edge chips on slabs
     chip = chip_mask(dist, 6, seed + 5, cells=20, bias=0.75)
     tone = r.uniform(-0.04, 0.04, len(rects))[pid]
@@ -418,14 +427,14 @@ def sandbag():
             cx = i * bw + off + bw / 2 + r.uniform(-4, 4)
             cy = j * bh + bh / 2 + r.uniform(-3, 3)
             ax = bw / 2 + r.uniform(2, 8)
-            ay = bh / 2 + r.uniform(1, 5)
+            ay = bh / 2 + r.uniform(2, 5)
             x0, x1 = int(cx - ax - 2), int(cx + ax + 3)
             y0, y1 = int(cy - ay - 2), int(cy + ay + 3)
             yy, xx = np.mgrid[y0:y1, x0:x1]
             dx = (xx - cx) / ax
             dy = (yy - cy) / ay
-            ayk = 1 - 0.38 * np.abs(dx) ** 4                     # tied, pinched ends
-            e = np.abs(dx) ** 3.0 + (dy / ayk) ** 2
+            ayk = 1 - 0.22 * np.abs(dx) ** 6                     # tied, pinched ends
+            e = np.abs(dx) ** 4.0 + np.abs(dy / ayk) ** 2.2
             hh = np.clip(1 - e, 0, 1) ** 0.45
             hh *= 1 + 0.06 * dy                                  # sagging: fuller at the bottom
             iy, ix = yy % S, xx % S
@@ -452,14 +461,14 @@ def sandbag():
     stitch = stitch_line * dash * inside
     seam_groove = np.clip(1 - sx / 0.04, 0, 1) * (np.abs(uy) < 0.8) * inside
 
-    hgt = height * 1.0 + crease * 0.05 * inside + lumps * 0.05 * inside + weave * 0.025 * inside \
+    hgt = height * 1.0 + crease * 0.05 * inside + lumps * 0.05 * inside + weave * 0.015 * inside \
         - seam_groove * 0.04 + stitch * 0.03
     tone = r.uniform(-0.08, 0.08, k)[bid]
     hue = r.uniform(0, 1, k)[bid]
     lo = tk.fbm(cells=4, octaves=4, seed=seed + 3)
-    col = ramp("#b39a63", "#d4bd85", lo * 0.6 + lumps * 0.4)
-    col = lerp(col, "#a39a6a", (hue > 0.7) * 0.5)              # a few greener / older bags
-    col = col * (1 + tone)[..., None] * (1 + 0.06 * (weave - 0.5) * inside)[..., None]
+    col = ramp("#a3824a", "#c9a96a", lo * 0.6 + lumps * 0.4)
+    col = lerp(col, "#94875a", (hue > 0.7) * 0.6)              # a few greener / older bags
+    col = col * (1 + tone)[..., None] * (1 + 0.07 * (weave - 0.5) * inside)[..., None]
     lam = light(hgt, 5.0)
     col = col * np.clip(1 + 0.9 * lam, 0.3, 1.5)[..., None]
     col = col * (1.06 - 0.12 * np.clip(uy, -1, 1) * 0.5)[..., None]
@@ -467,7 +476,7 @@ def sandbag():
     col = lerp(col, "#5a4628", seam_groove * 0.4)
     dirt = np.clip(uy, 0, 1) ** 2 * tk.fbm(cells=8, octaves=4, seed=seed + 4)
     col = lerp(col, "#5b4a2c", dirt * 0.5)
-    col = lerp(col, "#241c10", 1 - inside * 0.92 - 0.08 * sstep(0.0, 0.05, height))
+    col = lerp(col, "#2e2214", 1 - inside)
     spec = 0.06 + 0.06 * lumps * inside + 0.1 * stitch
     finish("sandbag", col, hgt, 5.0, spec)
 
@@ -489,7 +498,7 @@ def plate_steel():
         return lerp(out, ramp("#b0261b", "#d43727", mid), redl)
 
     ex = [(x, y) for x in (128, 384) for y in (128, 384)]               # centre bolts
-    t = plated(rects, 700, ("#6c6e68", "#83857d"), ("#a3a397", "#c4c3b6"), overlay=overlay,
+    t = plated(rects, 700, ("#62655d", "#7f8277"), ("#a3a397", "#c4c3b6"), overlay=overlay,
                rivet_inset=12, rivet_spacing=32, rivet_r=5.8, chip_w=11, chip_spots=0.05,
                n_scratch=110, grime="#23231e", paint_spec=0.34, extra_pts=ex)
     house = redl * (1 - t["chip"])
@@ -510,27 +519,31 @@ def dark_metal():
 
 
 def brass():
+    """Polished brass: soft painted reflections, turned bands, a little tarnish."""
     seed = 900
-    brushed = afbm(4, 128, 4, seed)
-    lo = tk.fbm(cells=4, octaves=4, seed=seed + 1)
-    # turned bands: two raised rings per tile with small grooves
-    v = (YY % 256) / 256.0
-    ring = sstep(0.02, 0.05, v) * (1 - sstep(0.95, 0.98, v))
-    groove = np.exp(-((v - 0.5) / 0.006) ** 2) * 0.6
-    dents = domes([tuple(p) for p in tk.rng(seed).random((26, 2)) * S], 6.0, 1.0)
-    height = ring * 0.6 - groove * 0.3 - dents * 0.15 + brushed * 0.04
-    col = ramp("#a77f2c", "#d8b257", lo * 0.55 + brushed * 0.45)
+    r = tk.rng(seed)
+    fine = afbm(8, 128, 3, seed)                                 # faint turning marks
+    sheen = afbm(1, 6, 3, seed + 1)                              # broad horizontal reflections
+    lo = tk.fbm(cells=4, octaves=4, seed=seed + 2)
+    # raised turned band (40 px) with a pair of engraved lines, once per tile
+    v = (YY - 236) % S
+    band = sstep(0, 6, v) * (1 - sstep(34, 40, v))
+    lines = np.exp(-((v - 13) / 1.4) ** 2) + np.exp(-((v - 27) / 1.4) ** 2)
+    dents = domes([tuple(p) for p in r.random((18, 2)) * S], 9.0, 1.5)
+    height = band * 0.5 - lines * 0.12 - dents * 0.08 + fine * 0.015
+    refl = sstep(0.3, 0.7, sheen)
+    col = ramp("#8a6418", "#e8c255", refl * 0.85 + lo * 0.15)
+    col = lerp(col, "#fff2b8", sstep(0.72, 0.95, sheen) * 0.7)  # hot reflection streaks
+    col = col * (0.95 + 0.1 * fine)[..., None]
     lam = light(height, 4.0)
-    col = col * np.clip(1 + 1.1 * lam, 0.3, 1.7)[..., None]
-    col = lerp(col, "#fff0b8", np.clip(lam, 0, 1) * 0.6)
-    col = col * (1.06 - 0.12 * ((YY % 256) / 256.0))[..., None]
-    tarn = np.clip((tk.fbm(cells=6, octaves=5, seed=seed + 2) - 0.55) * 2.2, 0, 1)
-    col = lerp(col, "#6c5a2a", tarn * 0.55)
-    cav = np.clip(cavity(height, 3) * 8, 0, 1)
-    col = lerp(col, "#3a2c10", cav * 0.7)
-    scr = np.clip(tk.scratches(count=50, length=40, seed=seed + 3), 0, 1)
-    col = lerp(col, "#f6dc90", scr * 0.35)
-    spec = (0.82 + 0.12 * brushed) * (1 - 0.55 * tarn) * (1 - 0.6 * cav)
+    col = col * np.clip(1 + 1.2 * lam, 0.3, 1.8)[..., None]
+    col = lerp(col, "#fff4c4", np.clip(lam * 3, 0, 1) * 0.7)       # crisp lit bevels
+    tarn = np.clip((tk.fbm(cells=6, octaves=5, seed=seed + 3) - 0.6) * 2.5, 0, 1)
+    cav = np.clip(cavity(height, 3) * 10, 0, 1)
+    col = lerp(col, "#5e4a1c", np.clip(tarn * 0.25 + cav * 0.7, 0, 0.85))
+    scr = soft_scratches(60, 18, seed + 4)
+    col = lerp(col, "#fbe7a6", scr * 0.3)
+    spec = (0.7 + 0.25 * refl) * (1 - 0.5 * tarn) * (1 - 0.6 * cav)
     finish("brass", col, height, 4.0, spec)
 
 
