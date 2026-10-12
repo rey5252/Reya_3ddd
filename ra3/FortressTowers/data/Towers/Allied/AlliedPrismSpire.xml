@@ -218,37 +218,14 @@
             <ScriptedModelDraw
                 id="ModuleTag_Draw"
                 OkToChangeModelColor="true"
-                Scale="1.3"
-                ExtraPublicBone="FX_CRYSTAL FX_MUZZLE">
+                ExtraPublicBone="FX_MUZZLE01 FX_GLOW">
+                <!-- Custom Fortress Protocol model (art/FT/FTPrismSpire.w3x, built by scripts/build_models.py). -->
                 <ModelConditionState ParseCondStateType="PARSE_DEFAULT">
-                    <Model Name="AUSpecTwr_SKN" />
-                    <Texture Original="AUSpecTwr_crystal.tga" New="AUSpecTwr_crystal_blue.tga" />
+                    <Model Name="FTPrismSpire" />
+                    <Turret TurretNameKey="TURRET" TurretID="1" />
                     <WeaponFireFXBone WeaponSlotType="PRIMARY_WEAPON" BoneName="FX_MUZZLE" />
                     <WeaponLaunchBone WeaponSlotType="PRIMARY_WEAPON" BoneName="FX_MUZZLE" />
                 </ModelConditionState>
-                <ModelConditionState ParseCondStateType="PARSE_NORMAL" ConditionsYes="REALLYDAMAGED">
-                    <Model Name="AUSpecTwr_D_SKN" />
-                    <Texture Original="AUSpecTwr_crystal.tga" New="AUSpecTwr_crystal_blue.tga" />
-                </ModelConditionState>
-                <ModelConditionState ParseCondStateType="PARSE_NORMAL" ConditionsYes="RUBBLE">
-                    <Model Name="AUSpecTwr_R_SKN" />
-                </ModelConditionState>
-
-                <AnimationState ParseCondStateType="PARSE_DEFAULT">
-                    <Animation AnimationName="AUSpecTwr_SKN.AUSpecTwr_IDLA" AnimationMode="LOOP" />
-                </AnimationState>
-                <AnimationState ConditionsYes="PREATTACK_A">
-                    <Animation AnimationName="AUSpecTwr_SKN.AUSpecTwr_CHGA" AnimationMode="ONCE" />
-                </AnimationState>
-                <AnimationState ConditionsYes="FIRING_A">
-                    <Animation AnimationName="AUSpecTwr_SKN.AUSpecTwr_ATKA" AnimationMode="ONCE" />
-                </AnimationState>
-                <AnimationState ConditionsYes="CONSTRUCTION_UNDERWAY">
-                    <Animation AnimationName="AUSpecTwr_SKN.AUSpecTwr_BLDA" AnimationMode="MANUAL" />
-                </AnimationState>
-                <AnimationState ConditionsYes="UNDERPOWERED">
-                    <Animation AnimationName="AUSpecTwr_SKN.AUSpecTwr_OFFA" AnimationMode="ONCE" />
-                </AnimationState>
             </ScriptedModelDraw>
         </Draws>
 

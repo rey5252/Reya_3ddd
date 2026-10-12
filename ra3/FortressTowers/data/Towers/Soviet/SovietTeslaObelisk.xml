@@ -73,67 +73,18 @@
             <ScriptedModelDraw
                 id="ModuleTag_Draw"
                 OkToChangeModelColor="true"
-                ExtraPublicBone="FX_TOP FX_ARC01 FX_ARC02"
-                Scale="1.35">
-                <!-- VERIFY: model and animation names of the vanilla Tesla Coil (SBTeslaCoil_SKN / _IDLA / _ATKA / _BLDA / _DIEA / _CHGA) -->
-                <ModelConditionState
-                    ParseCondStateType="PARSE_DEFAULT">
-                    <Model
-                        Name="SBTeslaCoil_SKN" />
+                ExtraPublicBone="FX_MUZZLE01 FX_GLOW">
+                <!-- Custom Fortress Protocol model (art/FT/FTTeslaObelisk.w3x, built by scripts/build_models.py). -->
+                <ModelConditionState ParseCondStateType="PARSE_DEFAULT">
+                    <Model Name="FTTeslaObelisk" />
+                    <WeaponFireFXBone WeaponSlotType="PRIMARY_WEAPON" BoneName="FX_MUZZLE" />
+                    <WeaponLaunchBone WeaponSlotType="PRIMARY_WEAPON" BoneName="FX_MUZZLE" />
                 </ModelConditionState>
-                <ModelConditionState
-                    ParseCondStateType="PARSE_NORMAL"
-                    ConditionsYes="REALLYDAMAGED">
-                    <Model
-                        Name="SBTeslaCoil_D1" />
-                    <!-- VERIFY: damaged model name -->
-                </ModelConditionState>
-
-                <AnimationState
-                    ParseCondStateType="PARSE_DEFAULT">
-                    <Animation
-                        AnimationName="SBTeslaCoil_IDLA"
-                        AnimationMode="LOOP" />
+                <AnimationState ParseCondStateType="PARSE_NORMAL" ConditionsYes="FIRING_OR_PREATTACK_A">
+                    <FXEvent Frame="0" Name="FX_TeslaCoilChargeUp" />
                 </AnimationState>
-                <AnimationState
-                    ConditionsYes="AWAITING_CONSTRUCTION">
-                    <Animation
-                        AnimationName="SBTeslaCoil_BLDA"
-                        AnimationMode="MANUAL" />
-                </AnimationState>
-                <AnimationState
-                    ConditionsYes="ACTIVELY_CONSTRUCTING">
-                    <Animation
-                        AnimationName="SBTeslaCoil_BLDA"
-                        AnimationMode="ONCE" />
-                </AnimationState>
-                <AnimationState
-                    ConditionsYes="FIRING_OR_PREATTACK_A">
-                    <Animation
-                        AnimationName="SBTeslaCoil_ATKA"
-                        AnimationMode="ONCE" />
-                    <!-- VERIFY: FX list for the charge-up glow (red-orange tint for Soviets) -->
-                    <FXEvent
-                        Frame="0"
-                        Name="FX_TeslaCoilChargeUp" />
-                </AnimationState>
-                <AnimationState
-                    ConditionsYes="USER_1">
-                    <!-- USER_1 = overcharged by a Tesla Trooper (set by the status/upgrade below) -->
-                    <Animation
-                        AnimationName="SBTeslaCoil_CHGA"
-                        AnimationMode="LOOP" />
-                    <!-- VERIFY: overcharge animation and FX names -->
-                    <FXEvent
-                        Frame="0"
-                        Name="FX_TeslaCoilOvercharged"
-                        FireWhenSkipped="true" />
-                </AnimationState>
-                <AnimationState
-                    ConditionsYes="DYING">
-                    <Animation
-                        AnimationName="SBTeslaCoil_DIEA"
-                        AnimationMode="ONCE" />
+                <AnimationState ParseCondStateType="PARSE_NORMAL" ConditionsYes="USER_1">
+                    <FXEvent Frame="0" Name="FX_TeslaCoilOvercharged" FireWhenSkipped="true" />
                 </AnimationState>
             </ScriptedModelDraw>
         </Draws>

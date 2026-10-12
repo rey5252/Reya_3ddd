@@ -6,8 +6,8 @@
 **«Посилена броня фортець»** (`Upgrade_FortressReinforcedPlating`, +25% HP усім вежам мода, $1500,
 купується на будівельному майданчику).
 
-Нових 3D-моделей мод не потребує: кожна вежа — змінена копія ванільної споруди з `SageXml`
-(та сама модель / анімації / FX, але нові ID, характеристики, зброя, масштаб і колір ефектів).
+Кожна вежа має **власну 3D-модель з текстурами у стилі RA3** (`FortressTowers/art/FT/*.w3x` + `.tga`, уже експортовані),
+а логіка (зброя, броня, FX) зроблена як змінена копія ванільної споруди з `SageXml`. Деталі — розділ «3D-моделі» нижче.
 
 Внутрішнє ім'я: `FortressTowers`, версія `1.0`. Контракт (ID, цифри, правила) — у [SPEC.md](SPEC.md).
 
@@ -191,3 +191,149 @@ ra3/
 
 Інтерактивне прев'ю з ілюстраціями й характеристиками веж: [preview/index.html](preview/index.html) —
 відкрийте файл у будь-якому браузері (працює без інтернету).
+
+## 3D-моделі
+
+У мода є **власні 3D-моделі всіх 9 веж + 3 наноядер Імперії** з текстурами (див. [models/textures/README.md](models/textures/README.md)).
+Їх будує процедурний генератор на Python (контракт — розділи «3D-моделі» й «Текстури» у [SPEC.md](SPEC.md)):
+
+```
+models/
+  meshkit.py               ← бібліотека примітивів (numpy) + запис glTF 2.0 (.glb)
+  towers/<TowerId>.py      ← генератор вежі (для Японії — ще й <TowerId>Nanocore)
+  glb/<TowerId>.glb        ← результат (Y — вгору, 1 одиниця ≈ 1 м, фундамент 6×6 м)
+  textures/                ← процедурні текстури <set>/<name>_{dif,nrm,spm}.png — див. models/textures/README.md
+scripts/
+  build_models.py          ← запуск усіх генераторів + звіт + (опційно) експорт у W3X
+  blender_export_w3x.py    ← Blender-скрипт: .glb → .w3x (+ .tga текстури) у FortressTowers/art/FT/
+FortressTowers/
+  art/FT/*.w3x, *.tga      ← експортований арт (ART:-асети для SDK), див. FortressTowers/art/README.md
+  data/Art/FortressModels.xml  ← Include усіх 12 моделей (ART:FT<Name>.w3x)
+```
+
+Ім'я моделі в грі — `FT` + назва без префікса фракції:
+
+| Вежа | Модель (W3DContainer) | Рухомі кістки | Точки FX |
+|------|-----------------------|---------------|----------|
+| `AlliedPrismSpire` | `FTPrismSpire` | `TURRET` | `FX_MUZZLE01`, `FX_GLOW` |
+| `AlliedCryoBastion` | `FTCryoBastion` | `TURRET`, нахил `EMITTER` | `FX_MUZZLE01`, `FX_GLOW` |
+| `AlliedAegisSpire` | `FTAegisSpire` | `TURRET` | `FX_MUZZLE01..02`, `FX_SHIELDDOME` |
+| `SovietTeslaObelisk` | `FTTeslaObelisk` | `EMITTER` | `FX_MUZZLE01`, `FX_GLOW` |
+| `SovietFlakNest` | `FTFlakNest` | `TURRET`, нахил `BARREL` | `FX_MUZZLE01..03` |
+| `SovietInfernoBunker` | `FTInfernoBunker` | `TURRET` | `FX_MUZZLE01..04`, `FX_GLOW` |
+| `JapanTenguSpire` | `FTTenguSpire` (+ `FTTenguSpireNanocore`) | `TURRET` | `FX_MUZZLE01..06`, `FX_GLOW` |
+| `JapanWaveCitadel` | `FTWaveCitadel` (+ `FTWaveCitadelNanocore`) | `TURRET`, нахил `EMITTER` | `FX_MUZZLE01`, `FX_GLOW` |
+| `JapanKitsuneShrine` | `FTKitsuneShrine` (+ `FTKitsuneShrineNanocore`) | `EMITTER` | `FX_MUZZLE01`, `FX_GLOW` |
+
+Кожна модель має ще кістку `BASE` (корінь). Бюджет — 3 000–12 000 трикутників на вежу, ≤ 2 500 на наноядро
+(`build_models.py` перевіряє й показує фактичні цифри).
+
+### Перегенерувати (.py → .glb)
+
+Потрібні Python 3.8+ і `numpy` (для текстур — ще `Pillow`): `py -3 -m pip install numpy pillow`.
+
+```bat
+py -3 ra3\scripts\build_models.py                 :: усі models/towers/*.py → models/glb/*.glb + звіт
+py -3 ra3\scripts\build_models.py --textures      :: спершу ще й models/textures/gen_*.py
+py -3 ra3\scripts\build_models.py --only AlliedPrismSpire
+py -3 ra3\scripts\build_models.py --no-generate   :: лише звіт по наявних .glb
+```
+
+Звіт: трикутники / вершини / вузли / матеріали / текстури кожного `.glb`, імена кісток, відсутні файли
+й посилання на відсутні текстури (скрипт не падає, якщо частини моделей ще немає).
+Окремий генератор можна запустити й напряму: `py -3 -I ra3\models\towers\AlliedPrismSpire.py`.
+
+### Переглянути
+
+- Будь-який переглядач glTF: «Засоби перегляду 3D» у Windows, <https://gltf-viewer.donmccurdy.com/>,
+  Blender (*File → Import → glTF 2.0*). Текстури підтягуються з `models/textures/` за відносними
+  шляхами, тож `.glb` не переносьте окремо від теки `models/`.
+- 3D-режим прев'ю [preview/index.html](preview/index.html) (three.js з CDN — потрібен інтернет).
+  Якщо браузер не вантажить `.glb` з `file://`, запустіть у теці `ra3` `py -3 -m http.server 8000`
+  і відкрийте <http://localhost:8000/preview/>.
+
+### Конвертувати в W3X (для гри)
+
+RA3 читає моделі у форматі **W3X** (XML-варіант W3D). Шлях спільноти — Blender + плагін OpenSAGE:
+
+1. Встановіть **Blender 3.6 LTS або 4.x** (<https://www.blender.org/download/>).
+2. Встановіть плагін **OpenSAGE W3D/W3X** (`io_mesh_w3d`): архів `io_mesh_w3d.zip` з
+   <https://github.com/OpenSAGE/OpenSAGE.BlenderPlugin/releases> → у Blender *Edit → Preferences →
+   Add-ons → Install…* (у Blender 4.2+ архів можна просто перетягнути у вікно — встановиться як extension)
+   → увімкніть «Import/Export Westwood W3D Format». Або вкажіть теку з `io_mesh_w3d` скрипту:
+   `-- --addon-path D:\OpenSAGE.BlenderPlugin` (для git-клону потрібен `git submodule update --init`).
+3. Експорт усіх моделей у `FortressTowers\art\FT\`:
+   ```bat
+   py -3 ra3\scripts\build_models.py --blender "C:\Program Files\Blender Foundation\Blender 4.2\blender.exe"
+   ```
+   або напряму:
+   ```bat
+   blender -b -P ra3\scripts\blender_export_w3x.py -- ra3\models\glb ra3\FortressTowers\art\FT
+   ```
+   Параметри скрипту (після `--`; через `build_models.py` — після окремого `--`):
+   `--scale 10`, `--yaw <град>`, `--shader auto|<Name>.fx`, `--only A,B`, `--no-textures`,
+   `--no-flip-normal-g`, `--technique N`, `--individual-files`, `--drop-fx-meshes`, `--keep-case`,
+   `--save-blend <тека>` (зберегти підготовлену сцену `.blend` для ручного доопрацювання), `--addon-path <тека>`.
+
+Що робить скрипт (умовності RA3):
+
+- **Масштаб:** 10 одиниць світу RA3 на 1 м (фундамент 6 м → 60 одиниць, Prism 9 м → 90 одиниць —
+  збігається з `<Geometry>` у XML веж). `--scale` — якщо в грі вежі завеликі/замалі.
+- **Осі:** вбудований імпортер glTF у Blender сам перетворює Y-up → Z-up (як у W3D).
+- **Напрям «вперед»:** вежі й юніти у W3D дивляться вздовж +X, а генератори робили по-різному.
+  Таблиці поправок у скрипті: `YAW_FIX` (обертає всю модель, кратно 90°, щоб квадратний фундамент лишався
+  по сітці; `SovietFlakNest` −90°: гармати дивились у glTF −Z = Blender +Y) і `NODE_YAW_FIX`
+  (обертає лише піддерево вузла: `AlliedAegisSpire` → `Turret` +45°, бо голова змодельована
+  розвернутою до камери). `AlliedCryoBastion` і `JapanTenguSpireNanocore` вже дивляться в +X.
+  Решта — 0 (симетричні або без башти). Якщо башта в грі «цілиться боком» — виправте таблицю
+  або `NaturalTurretAngle` у `TurretSettings`. `<!-- VERIFY -->`
+- **Ієрархія:** кожен вузол glTF (`Base`, `Turret`, `Barrel`, `Emitter`, `FX_*`) стає кісткою
+  (pivot) скелета `<FTName>_SKL` з ВЕЛИКИМИ літерами імен (`TURRET`, `FX_MUZZLE01`); меші жорстко
+  прив'язані до своїх кісток, кожен матеріал — окремий W3X-меш `<FTName>.<КІСТКА>_<МАТЕРІАЛ>`.
+  Маркери `FX_*` (кубики 5 см) експортуються прихованими й без тіні (`--drop-fx-meshes` — не експортувати).
+- **Матеріали:** без текстур — `DefaultW3D.fx` з кольорами з PBR (DiffuseColor/SpecularColor/EmissiveColor).
+  З текстурами (див. [models/textures/README.md](models/textures/README.md)) — шейдер фракції
+  (`ObjectsAllied.fx` / `ObjectsSoviet.fx` / `ObjectsJapan.fx`, `<!-- VERIFY -->`) з
+  `DiffuseTexture` = `_dif`, `NormalMap` = `_nrm` (зелений канал інвертується OpenGL → DirectX,
+  `<!-- VERIFY -->`), `SpecMap` = `_spm` (R — блиск, G — самосвітіння, B — колір гравця).
+  Текстури зберігаються як `FT<Набір>_<ім'я>_<dif|nrm|spm>.tga` + `.xml` Texture-асет поруч;
+  `.w3x` сам їх підключає. DDS: TGA зазвичай стискає `BinaryAssetBuilder`; якщо ні — сконвертуйте
+  у DXT5 `.dds` (texconv / NVIDIA Texture Tools) і виправте `File=` у `.xml` текстури.
+- **Анімацій немає:** башти повертає рушій через `<Turret TurretNameKey=... TurretPitch=...>`,
+  світіння/постріли — через `ParticleSysBone` / `WeaponFireFXBone` на кістках `FX_*`.
+
+### Як вежі підключені до нових моделей
+
+**Уже зроблено:** усі 12 `.w3x` (і 60 текстур `.tga`) експортовано в `FortressTowers/art/FT/`,
+`data/mod.xml` підключає `Art/FortressModels.xml`, а `ScriptedModelDraw` усіх веж і наноядер указує на `FT<Name>`.
+Якщо змінили модель — перебудуйте: `python3 models/build_all.py`, потім `python3 scripts/build_models.py --no-generate --blender <blender.exe>`.
+Щоб повернутися до ванільних моделей, відкотіть ці зміни в git. Що саме змінено:
+
+1. У `data/mod.xml` перед `<!-- Towers: Allies -->` додайте:
+   ```xml
+   <!-- Art: власні W3X-моделі веж (спершу scripts/build_models.py --blender ...) -->
+   <Include type="all" source="Art/FortressModels.xml" />
+   ```
+2. У файлі кожної вежі (і наноядра) замініть `ScriptedModelDraw` на варіант з новою моделлю:
+   `<Model Name="FT<Name>" />` у всіх станах (окремих пошкоджених/зруйнованих моделей немає),
+   кістки — з таблиці вище (`TurretNameKey="TURRET"`, `TurretPitch="BARREL"`/`"EMITTER"`,
+   `WeaponFireFXBone`/`WeaponLaunchBone BoneName="FX_MUZZLE"` — рушій сам шукає `FX_MUZZLE01`, `02`…),
+   приберіть `Scale` (модель уже в масштабі), `<Texture Original=... New=...>`, `DrawScaleSetting`
+   і всі `<Animation>` ванільних моделей (їхні скелети не збігаються з нашими).
+3. `scripts\build_mod.bat` копіює в SDK і теку `art\` — нічого додатково переносити не треба.
+
+### Чесні застереження
+
+- **Моделі в грі не перевірялися.** Експорт перевірено лише в Blender 4.2 + плагін OpenSAGE 0.7.x
+  (повторний імпорт `.w3x` тим самим плагіном дає ту саму геометрію й кістки); `BinaryAssetBuilder`
+  і RA3 їх ще не бачили.
+- Позначки `VERIFY` у `scripts/blender_export_w3x.py` і `data/Art/FortressModels.xml`: як SDK розв'язує
+  `ART:` (тека `art/FT/` за першими двома літерами чи просто `art/`), імена шейдерів RA3 і їхні
+  параметри / `TechniqueIndex`, напрям зеленого каналу normal map, канали SPM, масштаб 10 од./м,
+  напрям башт. Найнадійніше — порівняти з будь-яким ванільним `.w3x` споруди тієї ж фракції
+  (наприклад, імпортувати його тим самим плагіном у Blender).
+- Без текстур моделі мають лише пласкі кольори PBR (`DefaultW3D.fx`): у грі вони виглядатимуть
+  «пластиково» і без кольору гравця. Для кольору гравця потрібні faction-шейдер і SPM (канал B);
+  прозорі матеріали (щити, кристали) можуть потребувати ручного налаштування Blend mode у W3D-панелі
+  матеріалу (`--save-blend`, правка в Blender, повторний експорт з UI: *File → Export → Westwood W3D*, формат W3X, режим *Hierarchical Model*).
+- Немає моделей пошкодженого стану, руїн, анімацій побудови/розгортання наноядер і LOD.

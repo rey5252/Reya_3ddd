@@ -163,63 +163,16 @@
             <ScriptedModelDraw
                 id="ModuleTag_Draw"
                 OkToChangeModelColor="true"
-                Scale="1.4"
-                ExtraPublicBone="TURRET MUZZLEFX01"
-                StaticModelLODMode="true">
-                <!-- VERIFY: model / skeleton / animation names of the vanilla Wave-Force Tower
-                     (believed JUWaveForceTower_SKN / JUWaveForceTower_SKL / JUWaveForceTower_* anims). -->
-                <ModelConditionState
-                    ParseCondState="DEFAULT">
-                    <Model Name="JUWaveForceTower_SKN" />
-                    <WeaponFireFXBone WeaponSlotID="1" WeaponSlotType="PRIMARY_WEAPON" BoneName="MUZZLEFX01" />
-                    <WeaponLaunchBone WeaponSlotID="1" WeaponSlotType="PRIMARY_WEAPON" BoneName="MUZZLEFX01" />
-                    <Turret TurretNameKey="TURRET" TurretPitch="TURRET_PITCH" TurretID="1" />
+                ExtraPublicBone="FX_MUZZLE01 FX_GLOW">
+                <!-- Custom Fortress Protocol model (art/FT/FTWaveCitadel.w3x, built by scripts/build_models.py). -->
+                <ModelConditionState ParseCondStateType="PARSE_DEFAULT">
+                    <Model Name="FTWaveCitadel" />
+                    <Turret TurretNameKey="TURRET" TurretPitch="EMITTER" TurretID="1" />
+                    <WeaponFireFXBone WeaponSlotID="1" WeaponSlotType="PRIMARY_WEAPON" BoneName="FX_MUZZLE" />
+                    <WeaponLaunchBone WeaponSlotID="1" WeaponSlotType="PRIMARY_WEAPON" BoneName="FX_MUZZLE" />
                 </ModelConditionState>
-                <ModelConditionState
-                    ParseCondState="REALLYDAMAGED">
-                    <Model Name="JUWaveForceTower_D1" />
-                    <WeaponFireFXBone WeaponSlotID="1" WeaponSlotType="PRIMARY_WEAPON" BoneName="MUZZLEFX01" />
-                    <WeaponLaunchBone WeaponSlotID="1" WeaponSlotType="PRIMARY_WEAPON" BoneName="MUZZLEFX01" />
-                    <Turret TurretNameKey="TURRET" TurretPitch="TURRET_PITCH" TurretID="1" />
-                </ModelConditionState>
-                <ModelConditionState
-                    ParseCondState="RUBBLE">
-                    <Model Name="JUWaveForceTower_RBL" />
-                </ModelConditionState>
-                <AnimationState
-                    ParseCondStateType="PARSE_DEFAULT"
-                    StateName="Idle">
-                    <Animation
-                        AnimationName="JUWaveForceTower_IDLA"
-                        AnimationMode="LOOP" />
-                </AnimationState>
-                <AnimationState
-                    ParseCondStateType="PARSE_NORMAL"
-                    ConditionsYes="PREATTACK_A"
-                    StateName="Charging">
-                    <Animation
-                        AnimationName="JUWaveForceTower_CHGA"
-                        AnimationMode="ONCE" />
-                    <!-- Teal/white charge glow, ~6 s (matches PreAttackDelay). -->
-                    <FXEvent
-                        Frame="0"
-                        Effect="FX_JapanWaveCitadelChargeGlow" />
-                </AnimationState>
-                <AnimationState
-                    ParseCondStateType="PARSE_NORMAL"
-                    ConditionsYes="FIRING_A"
-                    StateName="Firing">
-                    <Animation
-                        AnimationName="JUWaveForceTower_ATKA"
-                        AnimationMode="ONCE" />
-                </AnimationState>
-                <AnimationState
-                    ParseCondStateType="PARSE_NORMAL"
-                    ConditionsYes="AWAITING_CONSTRUCTION"
-                    StateName="Unpacking">
-                    <Animation
-                        AnimationName="JUWaveForceTower_BLDA"
-                        AnimationMode="MANUAL" />
+                <AnimationState ParseCondStateType="PARSE_NORMAL" ConditionsYes="PREATTACK_A" StateName="Charging">
+                    <FXEvent Frame="0" Effect="FX_JapanWaveCitadelChargeGlow" />
                 </AnimationState>
             </ScriptedModelDraw>
         </Draws>
@@ -335,39 +288,13 @@
         <Draws>
             <ScriptedModelDraw
                 id="ModuleTag_Draw"
-                OkToChangeModelColor="true"
-                Scale="1.4">
-                <!-- VERIFY: vanilla Empire nanocore model / anim names (believed JUNanoCore_SKN / JUNanoCore_* ). -->
-                <ModelConditionState
-                    ParseCondState="DEFAULT">
-                    <Model Name="JUNanoCore_SKN" />
+                OkToChangeModelColor="true">
+                <!-- Custom Fortress Protocol model (art/FT/FTWaveCitadelNanocore.w3x, built by scripts/build_models.py). -->
+                <ModelConditionState ParseCondStateType="PARSE_DEFAULT">
+                    <Model Name="FTWaveCitadelNanocore" />
                 </ModelConditionState>
-                <AnimationState
-                    ParseCondStateType="PARSE_DEFAULT"
-                    StateName="Idle">
-                    <Animation
-                        AnimationName="JUNanoCore_IDLA"
-                        AnimationMode="LOOP" />
-                </AnimationState>
-                <AnimationState
-                    ParseCondStateType="PARSE_NORMAL"
-                    ConditionsYes="MOVING"
-                    StateName="Moving">
-                    <Animation
-                        AnimationName="JUNanoCore_MOVA"
-                        AnimationMode="LOOP" />
-                </AnimationState>
-                <AnimationState
-                    ParseCondStateType="PARSE_NORMAL"
-                    ConditionsYes="UNPACKING"
-                    StateName="Unpacking">
-                    <Animation
-                        AnimationName="JUNanoCore_UNPA"
-                        AnimationMode="ONCE" />
-                    <FXEvent
-                        Frame="0"
-                        Effect="FX_JapanNanocoreUnpack" />
-                    <!-- VERIFY: vanilla nanocore unpack FX name. -->
+                <AnimationState ParseCondStateType="PARSE_NORMAL" ConditionsYes="UNPACKING" StateName="Unpacking">
+                    <FXEvent Frame="0" Effect="FX_JapanNanocoreUnpack" />
                 </AnimationState>
             </ScriptedModelDraw>
         </Draws>

@@ -132,46 +132,13 @@
             <ScriptedModelDraw
                 id="ModuleTag_Draw"
                 OkToChangeModelColor="true"
-                ExtraPublicBone="FXBONE01"
-                Scale="0.85">
-                <!-- VERIFY: model/animation names of vanilla Nanoswarm Hive (JBNanoSwarmHive_*) -->
-                <ModelConditionState
-                    ParseCondStateType="PARSE_DEFAULT">
-                    <Model Name="JBNanoSwrm_SKN" />
+                ExtraPublicBone="FX_MUZZLE01 FX_GLOW">
+                <!-- Custom Fortress Protocol model (art/FT/FTKitsuneShrine.w3x, built by scripts/build_models.py). -->
+                <ModelConditionState ParseCondStateType="PARSE_DEFAULT">
+                    <Model Name="FTKitsuneShrine" />
+                    <WeaponFireFXBone WeaponSlotType="PRIMARY_WEAPON" BoneName="FX_MUZZLE" />
+                    <WeaponLaunchBone WeaponSlotType="PRIMARY_WEAPON" BoneName="FX_MUZZLE" />
                 </ModelConditionState>
-                <ModelConditionState
-                    ParseCondStateType="PARSE_NORMAL"
-                    ConditionsYes="REALLYDAMAGED">
-                    <Model Name="JBNanoSwrm_D1" /> <!-- VERIFY -->
-                </ModelConditionState>
-                <ModelConditionState
-                    ParseCondStateType="PARSE_NORMAL"
-                    ConditionsYes="RUBBLE">
-                    <Model Name="JBNanoSwrm_D2" /> <!-- VERIFY -->
-                </ModelConditionState>
-                <AnimationState
-                    ParseCondStateType="PARSE_DEFAULT">
-                    <Animation
-                        AnimationName="JBNanoSwrm_IDLA"
-                        AnimationMode="LOOP" /> <!-- VERIFY -->
-                </AnimationState>
-                <AnimationState
-                    ParseCondStateType="PARSE_NORMAL"
-                    ConditionsYes="UNPACKING">
-                    <Animation
-                        AnimationName="JBNanoSwrm_BLDA"
-                        AnimationMode="ONCE" /> <!-- VERIFY: unpack/build-up animation -->
-                </AnimationState>
-                <AnimationState
-                    ParseCondStateType="PARSE_NORMAL"
-                    ConditionsYes="FIRING_A">
-                    <Animation
-                        AnimationName="JBNanoSwrm_ATKA"
-                        AnimationMode="ONCE" /> <!-- VERIFY: activation animation of the hive -->
-                    <Script>
-                        CurDrawableShowSubObject("FX_Ring")
-                    </Script> <!-- VERIFY: sub-object name -->
-                </AnimationState>
             </ScriptedModelDraw>
         </Draws>
 
@@ -311,30 +278,10 @@
             <ScriptedModelDraw
                 id="ModuleTag_Draw"
                 OkToChangeModelColor="true">
-                <ModelConditionState
-                    ParseCondStateType="PARSE_DEFAULT">
-                    <Model Name="JUNanoCore_SKN" /> <!-- VERIFY: vanilla Empire defence nanocore model -->
+                <!-- Custom Fortress Protocol model (art/FT/FTKitsuneShrineNanocore.w3x, built by scripts/build_models.py). -->
+                <ModelConditionState ParseCondStateType="PARSE_DEFAULT">
+                    <Model Name="FTKitsuneShrineNanocore" />
                 </ModelConditionState>
-                <AnimationState
-                    ParseCondStateType="PARSE_DEFAULT">
-                    <Animation
-                        AnimationName="JUNanoCore_IDLA"
-                        AnimationMode="LOOP" /> <!-- VERIFY -->
-                </AnimationState>
-                <AnimationState
-                    ParseCondStateType="PARSE_NORMAL"
-                    ConditionsYes="MOVING">
-                    <Animation
-                        AnimationName="JUNanoCore_MOVA"
-                        AnimationMode="LOOP" /> <!-- VERIFY -->
-                </AnimationState>
-                <AnimationState
-                    ParseCondStateType="PARSE_NORMAL"
-                    ConditionsYes="UNPACKING">
-                    <Animation
-                        AnimationName="JUNanoCore_UNPA"
-                        AnimationMode="ONCE" /> <!-- VERIFY -->
-                </AnimationState>
             </ScriptedModelDraw>
         </Draws>
 

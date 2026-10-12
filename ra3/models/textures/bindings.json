@@ -144,11 +144,7 @@
     "olive_lt": "soviet/steel_olive",
     "steel": "soviet/plate_steel",
     "gun_dark": "soviet/dark_metal",
-    "rivet": {
-      "texture": "soviet/plate_steel",
-      "tile": 6.0,
-      "offset": 0.5
-    }
+    "rivet": "soviet/plate_steel"
   },
   "SovietInfernoBunker": {
     "concrete": "soviet/concrete",

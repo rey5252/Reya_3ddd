@@ -193,39 +193,26 @@
             <ScriptedModelDraw
                 id="ModuleTag_Draw"
                 OkToChangeModelColor="true"
-                Scale="1.35"
-                ExtraPublicBone="FX_FLAME01 FX_FLAME02">
-                <!-- VERIFY: модель "SUSentryGun_SKN", скелет "SUSentryGun_SKL", анімації "SUSentryGun_IDLA"/"SUSentryGun_ATKA",
-                     кістки "Turret"/"Muzzle01" - узяти точні імена з SovietSentryGun.xml. Кістки FX_FLAME* - VERIFY
-                     (якщо їх немає, прив'язати вогняні ParticleSysBone до Muzzle01). -->
+                ExtraPublicBone="FX_MUZZLE01 FX_MUZZLE02 FX_MUZZLE03 FX_MUZZLE04 FX_GLOW">
+                <!-- Custom Fortress Protocol model (art/FT/FTInfernoBunker.w3x, built by scripts/build_models.py). -->
                 <ModelConditionState ParseCondStateType="PARSE_DEFAULT">
-                    <Model Name="SUSentryGun_SKN" />
-                    <Turret TurretNameKey="Turret" TurretPitch="TurretEL" />
-                    <WeaponFireFXBone WeaponSlotType="PRIMARY_WEAPON" BoneName="Muzzle01" />
-                    <WeaponLaunchBone WeaponSlotType="PRIMARY_WEAPON" BoneName="Muzzle01" />
-                    <!-- Постійний "запальник" біля дула - червоно-помаранчевий -->
-                    <!-- VERIFY: "FireSmallPilotLight" - ім'я ванільної системи частинок малого вогню -->
-                    <ParticleSysBone BoneName="Muzzle01" FXParticleSystemTemplate="FireSmallPilotLight" FollowBone="true" />
+                    <Model Name="FTInfernoBunker" />
+                    <Turret TurretNameKey="TURRET" TurretID="1" />
+                    <WeaponFireFXBone WeaponSlotType="PRIMARY_WEAPON" BoneName="FX_MUZZLE" />
+                    <WeaponLaunchBone WeaponSlotType="PRIMARY_WEAPON" BoneName="FX_MUZZLE" />
+                    <ParticleSysBone BoneName="FX_MUZZLE01" FXParticleSystemTemplate="FireSmallPilotLight" FollowBone="true" />
+                    <ParticleSysBone BoneName="FX_MUZZLE02" FXParticleSystemTemplate="FireSmallPilotLight" FollowBone="true" />
+                    <ParticleSysBone BoneName="FX_MUZZLE03" FXParticleSystemTemplate="FireSmallPilotLight" FollowBone="true" />
+                    <ParticleSysBone BoneName="FX_MUZZLE04" FXParticleSystemTemplate="FireSmallPilotLight" FollowBone="true" />
                 </ModelConditionState>
                 <ModelConditionState ParseCondStateType="PARSE_NORMAL" ConditionsYes="REALLYDAMAGED">
-                    <Model Name="SUSentryGun_SKN" />
-                    <Turret TurretNameKey="Turret" TurretPitch="TurretEL" />
-                    <WeaponFireFXBone WeaponSlotType="PRIMARY_WEAPON" BoneName="Muzzle01" />
-                    <WeaponLaunchBone WeaponSlotType="PRIMARY_WEAPON" BoneName="Muzzle01" />
-                    <!-- VERIFY: "FireMediumBuilding" - ванільний вогонь сильно пошкодженої споруди -->
-                    <ParticleSysBone BoneName="Muzzle01" FXParticleSystemTemplate="FireSmallPilotLight" FollowBone="true" />
-                    <ParticleSysBone BoneName="ROOT" FXParticleSystemTemplate="FireMediumBuilding" FollowBone="true" />
+                    <Model Name="FTInfernoBunker" />
+                    <Turret TurretNameKey="TURRET" TurretID="1" />
+                    <WeaponFireFXBone WeaponSlotType="PRIMARY_WEAPON" BoneName="FX_MUZZLE" />
+                    <WeaponLaunchBone WeaponSlotType="PRIMARY_WEAPON" BoneName="FX_MUZZLE" />
+                    <ParticleSysBone BoneName="FX_MUZZLE01" FXParticleSystemTemplate="FireSmallPilotLight" FollowBone="true" />
+                    <ParticleSysBone BoneName="BASE" FXParticleSystemTemplate="FireMediumBuilding" FollowBone="true" />
                 </ModelConditionState>
-                <AnimationState ParseCondStateType="PARSE_DEFAULT">
-                    <Animation AnimationName="SUSentryGun_IDLA" AnimationMode="LOOP" />
-                </AnimationState>
-                <AnimationState ParseCondStateType="PARSE_NORMAL" ConditionsYes="FIRING_A">
-                    <Animation AnimationName="SUSentryGun_ATKA" AnimationMode="LOOP" />
-                </AnimationState>
-                <AnimationState ParseCondStateType="PARSE_NORMAL" ConditionsYes="DYING">
-                    <!-- VERIFY: "SUSentryGun_DIEA" - анімація руйнування -->
-                    <Animation AnimationName="SUSentryGun_DIEA" AnimationMode="ONCE" />
-                </AnimationState>
             </ScriptedModelDraw>
         </Draws>
 

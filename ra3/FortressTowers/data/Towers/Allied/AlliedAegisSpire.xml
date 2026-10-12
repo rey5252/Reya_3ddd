@@ -205,41 +205,20 @@
             <ScriptedModelDraw
                 id="ModuleTag_Draw"
                 OkToChangeModelColor="true"
-                Scale="1.15"
-                ExtraPublicBone="FX_DOME MUZZLE01 MUZZLE02">
+                ExtraPublicBone="FX_SHIELDDOME FX_MUZZLE01 FX_MUZZLE02">
+                <!-- Custom Fortress Protocol model (art/FT/FTAegisSpire.w3x, built by scripts/build_models.py). -->
                 <ModelConditionState ParseCondStateType="PARSE_DEFAULT">
-                    <Model Name="ABMultigunner_SKN" />
-                    <Turret TurretNameKey="TURRET" TurretPitch="TURRET_EL" TurretID="1" />
-                    <WeaponFireFXBone WeaponSlotType="PRIMARY_WEAPON" BoneName="MUZZLE" />
-                    <WeaponLaunchBone WeaponSlotType="PRIMARY_WEAPON" BoneName="MUZZLE" />
-                    <WeaponMuzzleFlash WeaponSlotType="PRIMARY_WEAPON" BoneName="MUZZLEFX" />
-                    <ParticleSysBone BoneName="FX_DOME" FXParticleSystemTemplate="FXPS_AlliedAegisSpireDome" FollowBone="true" />
+                    <Model Name="FTAegisSpire" />
+                    <Turret TurretNameKey="TURRET" TurretID="1" />
+                    <WeaponFireFXBone WeaponSlotType="PRIMARY_WEAPON" BoneName="FX_MUZZLE" />
+                    <WeaponLaunchBone WeaponSlotType="PRIMARY_WEAPON" BoneName="FX_MUZZLE" />
+                    <WeaponMuzzleFlash WeaponSlotType="PRIMARY_WEAPON" BoneName="FX_MUZZLE" />
+                    <ParticleSysBone BoneName="FX_SHIELDDOME" FXParticleSystemTemplate="FXPS_AlliedAegisSpireDome" FollowBone="true" />
                 </ModelConditionState>
                 <ModelConditionState ParseCondStateType="PARSE_NORMAL" ConditionsYes="DISABLED">
-                    <!-- No dome while unpowered / disabled. -->
-                    <Model Name="ABMultigunner_SKN" />
-                    <Turret TurretNameKey="TURRET" TurretPitch="TURRET_EL" TurretID="1" />
+                    <Model Name="FTAegisSpire" />
+                    <Turret TurretNameKey="TURRET" TurretID="1" />
                 </ModelConditionState>
-                <ModelConditionState ParseCondStateType="PARSE_NORMAL" ConditionsYes="REALLYDAMAGED">
-                    <Model Name="ABMultigunner_D_SKN" />
-                    <Turret TurretNameKey="TURRET" TurretPitch="TURRET_EL" TurretID="1" />
-                    <WeaponFireFXBone WeaponSlotType="PRIMARY_WEAPON" BoneName="MUZZLE" />
-                    <WeaponLaunchBone WeaponSlotType="PRIMARY_WEAPON" BoneName="MUZZLE" />
-                    <ParticleSysBone BoneName="FX_DOME" FXParticleSystemTemplate="FXPS_AlliedAegisSpireDome" FollowBone="true" />
-                </ModelConditionState>
-
-                <AnimationState ParseCondStateType="PARSE_DEFAULT">
-                    <Animation AnimationName="ABMultigunner_IDLA" AnimationMode="LOOP" />
-                </AnimationState>
-                <AnimationState ParseCondStateType="PARSE_NORMAL" ConditionsYes="AWAITING_CONSTRUCTION">
-                    <Animation AnimationName="ABMultigunner_BLDA" AnimationMode="MANUAL" />
-                </AnimationState>
-                <AnimationState ParseCondStateType="PARSE_NORMAL" ConditionsYes="ACTIVELY_CONSTRUCTING">
-                    <Animation AnimationName="ABMultigunner_BLDA" AnimationMode="ONCE" />
-                </AnimationState>
-                <AnimationState ParseCondStateType="PARSE_NORMAL" ConditionsYes="FIRING_OR_PREATTACK_A">
-                    <Animation AnimationName="ABMultigunner_ATKA" AnimationMode="ONCE" />
-                </AnimationState>
             </ScriptedModelDraw>
         </Draws>
 

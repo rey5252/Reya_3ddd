@@ -230,40 +230,19 @@
             <ScriptedModelDraw
                 id="ModuleTag_Draw"
                 OkToChangeModelColor="true"
-                Scale="0.95"
-                ExtraPublicBone="FX_EMITTER">
+                ExtraPublicBone="FX_MUZZLE01 FX_GLOW">
+                <!-- Custom Fortress Protocol model (art/FT/FTCryoBastion.w3x, built by scripts/build_models.py). -->
                 <ModelConditionState ParseCondStateType="PARSE_DEFAULT">
-                    <Model Name="ABSpectrumTwr_SKN" />  <!-- VERIFY: model -->
-                    <WeaponFireFXBone WeaponSlotType="PRIMARY_WEAPON" BoneName="FX_EMITTER" />
-                    <WeaponLaunchBone WeaponSlotType="PRIMARY_WEAPON" BoneName="FX_EMITTER" />
-                    <WeaponFireFXBone WeaponSlotType="SECONDARY_WEAPON" BoneName="FX_EMITTER" />
-                    <WeaponLaunchBone WeaponSlotType="SECONDARY_WEAPON" BoneName="FX_EMITTER" />
-                    <!-- Cryo idle mist borrowed from Cryocopter. VERIFY: particle system name. -->
-                    <ParticleSysBone BoneName="FX_EMITTER" FXParticleSystemTemplate="CryocopterFreezeRayGlow" FollowBone="true" />
+                    <Model Name="FTCryoBastion" />
+                    <Turret TurretNameKey="TURRET" TurretPitch="EMITTER" TurretID="1" />
+                    <WeaponFireFXBone WeaponSlotType="PRIMARY_WEAPON" BoneName="FX_MUZZLE" />
+                    <WeaponLaunchBone WeaponSlotType="PRIMARY_WEAPON" BoneName="FX_MUZZLE" />
+                    <WeaponFireFXBone WeaponSlotType="SECONDARY_WEAPON" BoneName="FX_MUZZLE" />
+                    <WeaponLaunchBone WeaponSlotType="SECONDARY_WEAPON" BoneName="FX_MUZZLE" />
+                    <ParticleSysBone BoneName="FX_GLOW" FXParticleSystemTemplate="CryocopterFreezeRayGlow" FollowBone="true" />
                 </ModelConditionState>
-                <ModelConditionState ParseCondStateType="PARSE_NORMAL" ConditionsYes="REALLYDAMAGED">
-                    <Model Name="ABSpectrumTwr_D1SKN" /> <!-- VERIFY: damaged model -->
-                </ModelConditionState>
-                <ModelConditionState ParseCondStateType="PARSE_NORMAL" ConditionsYes="RUBBLE">
-                    <Model Name="ABSpectrumTwr_D2SKN" /> <!-- VERIFY: rubble model -->
-                </ModelConditionState>
-
-                <AnimationState ParseCondStateType="PARSE_DEFAULT">
-                    <Animation AnimationName="ABSpectrumTwr_IDLA" AnimationMode="LOOP" /> <!-- VERIFY -->
-                </AnimationState>
-                <AnimationState ParseCondStateType="PARSE_NORMAL" ConditionsYes="AWAITING_CONSTRUCTION">
-                    <Animation AnimationName="ABSpectrumTwr_BLDA" AnimationMode="MANUAL" /> <!-- VERIFY -->
-                </AnimationState>
-                <AnimationState ParseCondStateType="PARSE_NORMAL" ConditionsYes="ACTIVELY_BEING_CONSTRUCTED">
-                    <Animation AnimationName="ABSpectrumTwr_BLDA" AnimationMode="ONCE" /> <!-- VERIFY -->
-                </AnimationState>
                 <AnimationState ParseCondStateType="PARSE_NORMAL" ConditionsYes="FIRING_OR_PREATTACK_A">
-                    <Animation AnimationName="ABSpectrumTwr_ATKA" AnimationMode="LOOP" /> <!-- VERIFY -->
-                    <!-- Cryo charge FX while beaming. VERIFY: FX name. -->
-                    <ParticleSysBone BoneName="FX_EMITTER" FXParticleSystemTemplate="CryocopterFreezeRayCharge" FollowBone="true" />
-                </AnimationState>
-                <AnimationState ParseCondStateType="PARSE_NORMAL" ConditionsYes="SOLD">
-                    <Animation AnimationName="ABSpectrumTwr_BLDA" AnimationMode="ONCE_BACKWARDS" /> <!-- VERIFY -->
+                    <ParticleSysBone BoneName="FX_MUZZLE01" FXParticleSystemTemplate="CryocopterFreezeRayCharge" FollowBone="true" />
                 </AnimationState>
             </ScriptedModelDraw>
         </Draws>

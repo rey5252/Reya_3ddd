@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    FortressTowers 1.0 - власні 3D-моделі веж (W3X), експортовані scripts/blender_export_w3x.py
+    з models/glb/*.glb у FortressTowers/art/FT/.
+
+    Кожен <FTName>.w3x містить W3DHierarchy "<FTName>_SKL", меші "<FTName>.<MESH>" і
+    W3DContainer "<FTName>" (саме його ім'я пишеться в <Model Name="..."/> Draw-модуля), а
+    також сам підключає свої текстури (ART:FT<Set>_<name>_<dif|nrm|spm>.xml).
+
+    УВАГА: підключайте цей файл у data/mod.xml лише ПІСЛЯ експорту всіх 12 .w3x, інакше
+    BinaryAssetBuilder зупиниться на відсутньому файлі.
+
+    VERIFY: префікс ART: у RA3 Mod SDK шукає арт мода в Mods/FortressTowers/Art (регістр у Windows
+    неважливий) і, за конвенцією SAGE, у підтеці з перших двох літер імені файла
+    (ART:FTPrismSpire.w3x -> Art/FT/FTPrismSpire.w3x). Якщо збирання не знаходить файли -
+    перенесіть їх з art/FT/ просто в art/ або змініть source на "ART:FT/FTPrismSpire.w3x".
+-->
+<AssetDeclaration xmlns="uri:ea.com:eala:asset" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Includes>
+        <!-- Allies -->
+        <Include type="all" source="ART:FTPrismSpire.w3x" />
+        <Include type="all" source="ART:FTCryoBastion.w3x" />
+        <Include type="all" source="ART:FTAegisSpire.w3x" />
+
+        <!-- Soviets -->
+        <Include type="all" source="ART:FTTeslaObelisk.w3x" />
+        <Include type="all" source="ART:FTFlakNest.w3x" />
+        <Include type="all" source="ART:FTInfernoBunker.w3x" />
+
+        <!-- Empire of the Rising Sun: towers + nanocores -->
+        <Include type="all" source="ART:FTTenguSpire.w3x" />
+        <Include type="all" source="ART:FTTenguSpireNanocore.w3x" />
+        <Include type="all" source="ART:FTWaveCitadel.w3x" />
+        <Include type="all" source="ART:FTWaveCitadelNanocore.w3x" />
+        <Include type="all" source="ART:FTKitsuneShrine.w3x" />
+        <Include type="all" source="ART:FTKitsuneShrineNanocore.w3x" />
+    </Includes>
+</AssetDeclaration>

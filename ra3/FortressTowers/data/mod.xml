@@ -11,6 +11,9 @@
         <Include type="reference" source="DATA:global.xml" />
         <Include type="reference" source="DATA:audio.xml" />
 
+        <!-- Art: custom W3X tower models in art/FT (exported with scripts/build_models.py and Blender) -->
+        <Include type="all" source="Art/FortressModels.xml" />
+
         <!-- Towers: Allies -->
         <Include type="all" source="Towers/Allied/AlliedPrismSpire.xml" />
         <Include type="all" source="Towers/Allied/AlliedCryoBastion.xml" />

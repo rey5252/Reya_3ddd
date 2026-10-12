@@ -124,32 +124,21 @@
             <ScriptedModelDraw
                 id="ModuleTag_Draw"
                 OkToChangeModelColor="true"
-                Scale="1.15">
+                ExtraPublicBone="FX_MUZZLE01 FX_MUZZLE02 FX_MUZZLE03">
+                <!-- Custom Fortress Protocol model (art/FT/FTFlakNest.w3x, built by scripts/build_models.py). -->
                 <ModelConditionState ParseCondStateType="PARSE_DEFAULT">
-                    <Model Name="SBFlakCan_SKN" />
-                    <Turret TurretNameKey="Turret" TurretPitch="TurretEL" TurretID="1" />
-                    <WeaponFireFXBone WeaponSlotType="PRIMARY_WEAPON" BoneName="Muzzle" />
-                    <WeaponLaunchBone WeaponSlotType="PRIMARY_WEAPON" BoneName="Muzzle" />
+                    <Model Name="FTFlakNest" />
+                    <Turret TurretNameKey="TURRET" TurretPitch="BARREL" TurretID="1" />
+                    <WeaponFireFXBone WeaponSlotType="PRIMARY_WEAPON" BoneName="FX_MUZZLE" />
+                    <WeaponLaunchBone WeaponSlotType="PRIMARY_WEAPON" BoneName="FX_MUZZLE" />
                 </ModelConditionState>
-                <ModelConditionState ConditionsYes="REALLYDAMAGED">
-                    <Model Name="SBFlakCan_SKN" />
-                    <Turret TurretNameKey="Turret" TurretPitch="TurretEL" TurretID="1" />
-                    <WeaponFireFXBone WeaponSlotType="PRIMARY_WEAPON" BoneName="Muzzle" />
-                    <WeaponLaunchBone WeaponSlotType="PRIMARY_WEAPON" BoneName="Muzzle" />
-                    <ParticleSysBone BoneName="Turret" FXParticleSystemTemplate="SmokeStructureDamagedMedium" FollowBone="true" />
+                <ModelConditionState ParseCondStateType="PARSE_NORMAL" ConditionsYes="REALLYDAMAGED">
+                    <Model Name="FTFlakNest" />
+                    <Turret TurretNameKey="TURRET" TurretPitch="BARREL" TurretID="1" />
+                    <WeaponFireFXBone WeaponSlotType="PRIMARY_WEAPON" BoneName="FX_MUZZLE" />
+                    <WeaponLaunchBone WeaponSlotType="PRIMARY_WEAPON" BoneName="FX_MUZZLE" />
+                    <ParticleSysBone BoneName="TURRET" FXParticleSystemTemplate="SmokeStructureDamagedMedium" FollowBone="true" />
                 </ModelConditionState>
-                <AnimationState ParseCondStateType="PARSE_DEFAULT">
-                    <Animation AnimationName="SBFlakCan_IDLA" AnimationMode="LOOP" />
-                </AnimationState>
-                <AnimationState ConditionsYes="FIRING_OR_PREATTACK_A">
-                    <Animation AnimationName="SBFlakCan_ATKA" AnimationMode="ONCE" />
-                </AnimationState>
-                <AnimationState ConditionsYes="AWAITING_CONSTRUCTION">
-                    <Animation AnimationName="SBFlakCan_BLDA" AnimationMode="MANUAL" />
-                </AnimationState>
-                <AnimationState ConditionsYes="ACTIVELY_BEING_CONSTRUCTED">
-                    <Animation AnimationName="SBFlakCan_BLDA" AnimationMode="ONCE" />
-                </AnimationState>
             </ScriptedModelDraw>
         </Draws>
 

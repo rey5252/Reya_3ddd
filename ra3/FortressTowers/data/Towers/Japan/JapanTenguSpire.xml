@@ -162,61 +162,17 @@
             <ScriptedModelDraw
                 id="ModuleTag_Draw"
                 OkToChangeModelColor="true"
-                ExtraPublicBone="FIREPOINT01 FIREPOINT02 FIREPOINT03 FIREPOINT04">
-                <!-- VERIFY: модель/скелет/анімації Wave-Force Tower — JBWaveFTwr_SKN / JBWaveFTwr_SKL;
-                     кістки FIREPOINT01..04 можуть мати інші імена (у ванілі одна точка WEAPON01). -->
-                <ModelConditionState
-                    ParseCondStateType="PARSE_DEFAULT">
-                    <Model
-                        Name="JBWaveFTwr_SKN" />
-                    <Texture Original="JBWaveFTwr" New="JBWaveFTwr" />
-                    <ParticleSysBone
-                        BoneName="TOPCORE"
-                        FXParticleSystemTemplate="JapanTenguSpireCoreGlow"
-                        FollowBone="true" />
-                    <!-- VERIFY: BoneName TOPCORE та система частинок бірюзового світіння (на основі
-                         FX ядра JapanNanoSwarmHive, напр. NanoSwarmHiveCoreGlow). -->
+                ExtraPublicBone="FX_GLOW FX_MUZZLE01 FX_MUZZLE02 FX_MUZZLE03 FX_MUZZLE04 FX_MUZZLE05 FX_MUZZLE06">
+                <!-- Custom Fortress Protocol model (art/FT/FTTenguSpire.w3x, built by scripts/build_models.py). -->
+                <ModelConditionState ParseCondStateType="PARSE_DEFAULT">
+                    <Model Name="FTTenguSpire" />
+                    <Turret TurretNameKey="TURRET" TurretID="1" />
+                    <WeaponFireFXBone WeaponSlotType="PRIMARY_WEAPON" BoneName="FX_MUZZLE" />
+                    <WeaponLaunchBone WeaponSlotType="PRIMARY_WEAPON" BoneName="FX_MUZZLE" />
+                    <ParticleSysBone BoneName="FX_GLOW" FXParticleSystemTemplate="JapanTenguSpireCoreGlow" FollowBone="true" />
                 </ModelConditionState>
-                <ModelConditionState
-                    ParseCondStateType="PARSE_NORMAL"
-                    ConditionsYes="REALLYDAMAGED">
-                    <Model
-                        Name="JBWaveFTwr_D1_SKN" />
-                    <!-- VERIFY: модель сильно пошкодженого стану. -->
-                </ModelConditionState>
-                <ModelConditionState
-                    ParseCondStateType="PARSE_NORMAL"
-                    ConditionsYes="RUBBLE">
-                    <Model
-                        Name="JBWaveFTwr_D2_SKN" />
-                    <!-- VERIFY: модель руїн. -->
-                </ModelConditionState>
-                <AnimationState
-                    ParseCondStateType="PARSE_DEFAULT">
-                    <Animation
-                        AnimationName="JBWaveFTwr_IDLA"
-                        AnimationMode="LOOP" />
-                </AnimationState>
-                <AnimationState
-                    ParseCondStateType="PARSE_NORMAL"
-                    ConditionsYes="AWAITING_CONSTRUCTION">
-                    <Animation
-                        AnimationName="JBWaveFTwr_BLDA"
-                        AnimationMode="MANUAL" />
-                    <!-- VERIFY: анімація розгортання з наноядра (у ванілі *_BLDA / *_UNPK). -->
-                </AnimationState>
-                <AnimationState
-                    ParseCondStateType="PARSE_NORMAL"
-                    ConditionsYes="ATTACKING">
-                    <Animation
-                        AnimationName="JBWaveFTwr_ATKA"
-                        AnimationMode="ONCE" />
-                </AnimationState>
             </ScriptedModelDraw>
             <!-- Тонший «шпиль»: масштаб 0.85 від Wave-Force Tower -->
-            <DrawScaleSetting Scale="0.85" />
-            <!-- VERIFY: у RA3 масштаб задається атрибутом Scale на <GameObject> або на Draw-модулі;
-                 перенести Scale="0.85" туди, якщо елемент DrawScaleSetting не існує в схемі SDK. -->
         </Draws>
 
         <Behaviors>
@@ -361,34 +317,10 @@
             <ScriptedModelDraw
                 id="ModuleTag_Draw"
                 OkToChangeModelColor="true">
-                <!-- VERIFY: модель ядра оборонних споруд Імперії — JUNanocoreDef_SKN / JUNanocoreDef_SKL;
-                     анімації руху *_MOVA та розгортання *_UNPA. -->
-                <ModelConditionState
-                    ParseCondStateType="PARSE_DEFAULT">
-                    <Model
-                        Name="JUNanocoreDef_SKN" />
+                <!-- Custom Fortress Protocol model (art/FT/FTTenguSpireNanocore.w3x, built by scripts/build_models.py). -->
+                <ModelConditionState ParseCondStateType="PARSE_DEFAULT">
+                    <Model Name="FTTenguSpireNanocore" />
                 </ModelConditionState>
-                <AnimationState
-                    ParseCondStateType="PARSE_DEFAULT">
-                    <Animation
-                        AnimationName="JUNanocoreDef_IDLA"
-                        AnimationMode="LOOP" />
-                </AnimationState>
-                <AnimationState
-                    ParseCondStateType="PARSE_NORMAL"
-                    ConditionsYes="MOVING">
-                    <Animation
-                        AnimationName="JUNanocoreDef_MOVA"
-                        AnimationMode="LOOP" />
-                </AnimationState>
-                <AnimationState
-                    ParseCondStateType="PARSE_NORMAL"
-                    ConditionsYes="UNPACKING">
-                    <Animation
-                        AnimationName="JUNanocoreDef_UNPA"
-                        AnimationMode="ONCE" />
-                    <!-- VERIFY: умова моделі під час розгортання (UNPACKING / DEPLOYING). -->
-                </AnimationState>
             </ScriptedModelDraw>
         </Draws>
 
