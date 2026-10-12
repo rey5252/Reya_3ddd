@@ -74,7 +74,7 @@ const PAGE = `<!doctype html><html><body style="margin:0;background:transparent"
 const S=${SIZE};
 const r=new THREE.WebGLRenderer({canvas:document.getElementById('c'),antialias:true,alpha:true,preserveDrawingBuffer:true});
 r.setPixelRatio(1); r.setClearColor(0x000000,0);
-r.outputEncoding=THREE.sRGBEncoding; r.toneMapping=THREE.ACESFilmicToneMapping; r.toneMappingExposure=1.08;
+r.outputEncoding=THREE.sRGBEncoding; r.toneMapping=THREE.ACESFilmicToneMapping; r.toneMappingExposure=0.92;
 r.shadowMap.enabled=true; r.shadowMap.type=THREE.PCFSoftShadowMap;
 const pmrem=new THREE.PMREMGenerator(r);
 const envTex=pmrem.fromScene(new THREE.RoomEnvironment(),0.04).texture;
@@ -89,7 +89,7 @@ function addLights(scene,cam,c,R){
   const fwd=new THREE.Vector3().subVectors(cam.position,c).setY(0).normalize();
   const side=new THREE.Vector3().crossVectors(new THREE.Vector3(0,1,0),fwd).normalize();
   const at=(f,s,u,d)=>c.clone().addScaledVector(fwd,f*d).addScaledVector(side,s*d).add(new THREE.Vector3(0,u*d,0));
-  const key=new THREE.DirectionalLight(0xfff1dc,1.9); key.position.copy(at(0.75,-0.75,1.25,R*3)); key.target.position.copy(c);
+  const key=new THREE.DirectionalLight(0xfff1dc,1.7); key.position.copy(at(0.75,-0.75,1.25,R*3)); key.target.position.copy(c);
   key.castShadow=true; key.shadow.mapSize.set(2048,2048); key.shadow.bias=-0.0004; key.shadow.normalBias=0.02;
   Object.assign(key.shadow.camera,{left:-R*1.6,right:R*1.6,top:R*1.6,bottom:-R*1.6,near:0.1,far:R*8});
   const rim=new THREE.DirectionalLight(0xdfeaff,2.6); rim.position.copy(at(-1.0,0.55,0.8,R*3)); rim.target.position.copy(c);
@@ -140,10 +140,11 @@ window.renderModel=(url,view)=>new Promise((res,rej)=>{
 // Upgrade_FortressReinforcedPlating: beveled armor plate, raised shield boss, rivets.
 window.renderPlate=()=>{
   const scene=makeScene();
-  const steel=new THREE.MeshStandardMaterial({color:0x8d98a6,metalness:0.85,roughness:0.33});
-  const steelDark=new THREE.MeshStandardMaterial({color:0x4a525e,metalness:0.8,roughness:0.45});
-  const gold=new THREE.MeshStandardMaterial({color:0xe0a836,metalness:0.9,roughness:0.28,emissive:0x2a1800});
-  const rivetM=new THREE.MeshStandardMaterial({color:0xc9d1da,metalness:0.9,roughness:0.25});
+  const C=h=>new THREE.Color(h).convertSRGBToLinear(); // r147 legacy mode: hex is linear otherwise
+  const steel=new THREE.MeshStandardMaterial({color:C(0x5a6573),metalness:0.35,roughness:0.5});
+  const steelDark=new THREE.MeshStandardMaterial({color:C(0x2a3039),metalness:0.4,roughness:0.6});
+  const gold=new THREE.MeshStandardMaterial({color:C(0xc98a12),metalness:0.7,roughness:0.32,emissive:C(0x2a1400)});
+  const rivetM=new THREE.MeshStandardMaterial({color:C(0x9aa4b0),metalness:0.6,roughness:0.3});
   const grp=new THREE.Group(); scene.add(grp);
   const rr=(w,h,cut)=>{ const s=new THREE.Shape(), x=w/2, y=h/2;
     s.moveTo(-x+cut,-y); s.lineTo(x-cut,-y); s.lineTo(x,-y+cut); s.lineTo(x,y-cut); s.lineTo(x-cut,y);
@@ -159,7 +160,7 @@ window.renderPlate=()=>{
   sh.quadraticCurveTo(0.8,-0.75,0,-1.15); sh.quadraticCurveTo(-0.8,-0.75,-0.85,0.15); sh.lineTo(-0.85,1.0);
   sh.quadraticCurveTo(-0.55,0.95,0,1.05);
   const shield=new THREE.Mesh(ext(sh,0.18,0.1),gold); shield.position.z=0.36; grp.add(shield);
-  const inner=new THREE.Mesh(ext(sh,0.08,0.05),steelDark); inner.scale.set(0.66,0.66,1); inner.position.set(0,0.02,0.58); grp.add(inner);
+  const inner=new THREE.Mesh(ext(sh,0.08,0.05),new THREE.MeshStandardMaterial({color:C(0x1d4fb0),metalness:0.3,roughness:0.45})); inner.scale.set(0.66,0.66,1); inner.position.set(0,0.02,0.58); grp.add(inner);
   // "+" on the shield (reinforcement)
   for(const [w,h] of [[0.18,0.75],[0.6,0.18]]){ const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,0.12),gold); m.position.set(0,0.0,0.7); grp.add(m); }
   // rivets around the rim
@@ -167,7 +168,7 @@ window.renderPlate=()=>{
   const pts=[]; for(const s of [-1,1]){ for(const t of [-1.2,-0.4,0.4,1.2]){ pts.push([t,s*1.72],[s*1.72,t]); } }
   for(const [x,y] of pts){ const m=new THREE.Mesh(rg,rivetM); m.rotation.x=Math.PI/2; m.position.set(x,y,0.38); grp.add(m); }
   grp.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
-  grp.rotation.set(-0.42,0.52,0.06);
+  grp.rotation.set(-0.35,0.45,0.05);
   const box=new THREE.Box3().setFromObject(grp), c=box.getCenter(new THREE.Vector3()), sz=box.getSize(new THREE.Vector3());
   const cam=new THREE.PerspectiveCamera(26,1,0.05,500); cam.position.set(c.x,c.y+0.6,c.z+sz.length()*2.6); cam.lookAt(c);
   addLights(scene,cam,c,sz.length()/2);

@@ -1,0 +1,151 @@
+{
+  "AlliedAegisSpire": {
+    "plate": "allied/plate_steel",
+    "plate_hi": "allied/plate_steel",
+    "plate_in": "allied/plate_steel",
+    "white": "allied/panel_white",
+    "blue": "allied/panel_blue",
+    "chrome": "allied/chrome",
+    "steel": "allied/chrome",
+    "dark": "allied/dark_metal"
+  },
+  "AlliedCryoBastion": {
+    "plate": "allied/plate_steel",
+    "armor": "allied/panel_white",
+    "blue": "allied/panel_blue",
+    "chrome": "allied/chrome",
+    "steel": "allied/chrome",
+    "dark": "allied/dark_metal",
+    "seam": "allied/dark_metal",
+    "vent": "allied/energy_cyan"
+  },
+  "AlliedPrismSpire": {
+    "plate": "allied/plate_steel",
+    "plate_in": "allied/plate_steel",
+    "white": "allied/panel_white",
+    "chrome": "allied/chrome",
+    "dark": "allied/dark_metal",
+    "blue": "allied/panel_blue",
+    "blue_dark": "allied/panel_blue"
+  },
+  "JapanKitsuneShrine": {
+    "stone": "empire/stone",
+    "stone_dark": {
+      "texture": "empire/stone",
+      "white": 0.32
+    },
+    "white": "empire/armor_white",
+    "crimson": "empire/lacquer_crimson",
+    "crimson_hi": "empire/lacquer_crimson",
+    "black": "empire/trim_black",
+    "graphite": "empire/trim_black",
+    "teal_floor": "empire/energy_teal"
+  },
+  "JapanKitsuneShrineNanocore": {
+    "stone": "empire/stone",
+    "stone_dark": {
+      "texture": "empire/stone",
+      "white": 0.32
+    },
+    "white": "empire/armor_white",
+    "crimson": "empire/lacquer_crimson",
+    "crimson_hi": "empire/lacquer_crimson",
+    "black": "empire/trim_black",
+    "graphite": "empire/trim_black",
+    "teal_floor": "empire/energy_teal"
+  },
+  "JapanTenguSpire": {
+    "white": "empire/armor_white",
+    "plate": "empire/armor_white",
+    "panel": {
+      "texture": "empire/armor_white",
+      "white": 0.36
+    },
+    "crimson": "empire/lacquer_crimson",
+    "black": "empire/trim_black"
+  },
+  "JapanTenguSpireNanocore": {
+    "white": "empire/armor_white",
+    "plate": "empire/armor_white",
+    "panel": {
+      "texture": "empire/armor_white",
+      "white": 0.36
+    },
+    "crimson": "empire/lacquer_crimson",
+    "black": "empire/trim_black"
+  },
+  "JapanWaveCitadel": {
+    "white": "empire/armor_white",
+    "plate": "empire/armor_white",
+    "trim": "empire/trim_black",
+    "crimson": "empire/lacquer_crimson",
+    "black": "empire/trim_black",
+    "dark": "empire/trim_black"
+  },
+  "JapanWaveCitadelNanocore": {
+    "white": "empire/armor_white",
+    "plate": "empire/armor_white",
+    "trim": "empire/trim_black",
+    "crimson": "empire/lacquer_crimson",
+    "black": "empire/trim_black",
+    "dark": "empire/trim_black"
+  },
+  "SovietFlakNest": {
+    "plate": "soviet/plate_steel",
+    "plate_top": "soviet/plate_steel",
+    "concrete": "soviet/concrete",
+    "floor": {
+      "texture": "soviet/concrete",
+      "white": 0.23
+    },
+    "haz_k": "soviet/dark_metal",
+    "bag": "soviet/sandbag",
+    "bag_dark": {
+      "texture": "soviet/sandbag",
+      "white": 0.43
+    },
+    "brass": "soviet/brass",
+    "red": "soviet/paint_red",
+    "olive": "soviet/steel_olive",
+    "olive_lt": "soviet/steel_olive",
+    "steel": "soviet/plate_steel",
+    "gun_dark": "soviet/dark_metal",
+    "rivet": "soviet/plate_steel"
+  },
+  "SovietInfernoBunker": {
+    "concrete": "soviet/concrete",
+    "concrete_lt": "soviet/concrete",
+    "groove": "soviet/dark_metal",
+    "olive": "soviet/steel_olive",
+    "olive_lt": "soviet/steel_olive",
+    "olive_hi": "soviet/steel_olive",
+    "red": "soviet/paint_red",
+    "red_dk": {
+      "texture": "soviet/paint_red",
+      "white": 0.5
+    },
+    "haz_k": "soviet/dark_metal",
+    "steel": "soviet/plate_steel",
+    "steel_dk": "soviet/dark_metal",
+    "rivet": "soviet/plate_steel",
+    "slit_frame": {
+      "texture": "soviet/dark_metal",
+      "white": 0.47
+    }
+  },
+  "SovietTeslaObelisk": {
+    "plate": "soviet/plate_steel",
+    "plate_dark": "soviet/dark_metal",
+    "red": "soviet/paint_red",
+    "red_dark": {
+      "texture": "soviet/paint_red",
+      "white": 0.5
+    },
+    "olive": "soviet/steel_olive",
+    "olive_light": "soviet/steel_olive",
+    "steel": "soviet/plate_steel",
+    "gunmetal": "soviet/dark_metal",
+    "copper": "soviet/copper_coil",
+    "hazard_k": "soviet/dark_metal"
+  }
+}

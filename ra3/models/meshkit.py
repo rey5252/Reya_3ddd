@@ -624,7 +624,9 @@ def _apply_texture(gl: dict, mat: dict, plan: dict):
         mat["normalTexture"] = {"index": tex_index(plan["nrm"])}
         if plan.get("normal_scale", 1.0) != 1.0:
             mat["normalTexture"]["scale"] = plan["normal_scale"]
-    mat.setdefault("extras", {})["ft_texture"] = plan["texture"]
+    ex = mat.setdefault("extras", {})
+    ex["ft_texture"] = plan["texture"]
+    ex["ft_design_color"] = [round(float(c), 6) for c in col[:3]]   # untinted colour (make_bindings.py)
 
 
 def rgb(hex_color: str, k: float = 1.0):
