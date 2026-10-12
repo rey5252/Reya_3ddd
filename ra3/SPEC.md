@@ -103,3 +103,18 @@ END
 - Імена вузлів (стануть кістками W3X): корінь `Base`; те, що обертається по горизонталі, — `Turret`; нахил — `Barrel`/`Emitter`; точки пострілу/FX — `FX_Muzzle01`, `FX_Muzzle02`…, `FX_Glow`. Вузол `FX_*` містить крихітний меш-маркер (куб 0.05) у точці кістки.
 - Матеріали: PBR (metallic/roughness), кольори з палітр фракцій вище; світні частини через `emissive=rgb(hex, k)`, k ≤ 2.5.
 - Ім'я моделі в грі (W3X-контейнер): `FT` + назва без префікса фракції, напр. `FTPrismSpire`, `FTTenguSpire`, `FTTenguSpireNanocore`.
+
+## Текстури (`models/textures/`)
+
+Стиль — як у Red Alert 3: чисті насичені кольори фракції, чіткі панелі з фасками й темними швами, світлий край зверху (запечене освітлення), легкий бруд і потертості лише по краях, без фотореалізму.
+
+- Бібліотека: `models/texkit.py` (numpy + Pillow): тайлові шуми, панелі, заклепки, смуги, подряпини, normal map з карти висот, `save_set()`, `contact_sheet()`.
+- Набори: `models/textures/<set>/`, де `<set>` ∈ `allied`, `soviet`, `empire`; генератор `models/textures/gen_<set>.py` (`python3 -I`, шляхи від `__file__`).
+- Кожна текстура — 3 файли 512×512, безшовні: `<name>_dif.png` (колір, sRGB), `<name>_nrm.png` (normal, OpenGL +Y; для гри — інверсія G, `<!-- VERIFY -->`), `<name>_spm.png` (маска RA3: R — блиск, G — самосвітіння, B — маска кольору гравця; `<!-- VERIFY -->` проти ванільних `_SPM`).
+- Щільність: 1 тайл = 2 м (2 одиниці моделі).
+- Обов'язкові імена:
+  - `allied`: `panel_white`, `panel_blue`, `chrome`, `energy_cyan`, `plate_steel`, `dark_metal`
+  - `soviet`: `steel_olive`, `paint_red`, `hazard`, `copper_coil`, `concrete`, `sandbag`, `plate_steel`, `dark_metal`, `brass`
+  - `empire`: `armor_white`, `lacquer_crimson`, `trim_black`, `energy_teal`, `stone`, `plate_steel`
+- Прив'язка до моделей: `models/textures/bindings.json` — `{ "<TowerId>": { "<ім'я матеріалу в моделі>": "<set>/<name>" } }`; `meshkit.save()` читає її, додає box-проєкцію UV (щільність вище) і посилання на текстури (зовнішні `uri` відносно `.glb`: `../textures/<set>/<name>_dif.png`).
+- Іконки збудови (камео) — `models/cameos/<TowerId>.png` 256×256 (і `<TowerId>_128.png`), рендер 3D-моделі з рамкою у стилі фракції RA3.
