@@ -2,7 +2,10 @@
   "AlliedAegisSpire": {
     "plate": "allied/plate_steel",
     "plate_hi": "allied/plate_steel",
-    "plate_in": "allied/plate_steel",
+    "plate_in": {
+      "texture": "allied/plate_steel",
+      "white": 0.45
+    },
     "white": "allied/panel_white",
     "blue": "allied/panel_blue",
     "chrome": "allied/chrome",
@@ -14,7 +17,10 @@
     "armor": "allied/panel_white",
     "blue": "allied/panel_blue",
     "chrome": "allied/chrome",
-    "steel": "allied/chrome",
+    "steel": {
+      "texture": "allied/chrome",
+      "white": 0.5
+    },
     "dark": "allied/dark_metal",
     "seam": "allied/dark_metal",
     "vent": "allied/energy_cyan"

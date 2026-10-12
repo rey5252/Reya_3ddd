@@ -14,6 +14,8 @@ installed and enabled, or pointed to with --addon-path):
       --only A,B           convert only these files (TowerId or FT name, without .glb).
       --no-textures        ignore textures referenced by the .glb (flat colours only).
       --no-flip-normal-g   keep the normal maps' green channel (default: invert G, OpenGL -> DirectX).
+      --technique N        force FXShader TechniqueIndex=N in the written .w3x (the plugin writes
+                           0, or 1/2 for normal-mapped materials; VERIFY against vanilla files).
       --individual-files   plugin option: hierarchy + every mesh in its own .w3x
                            (the container file then pulls them in with ART: includes).
       --drop-fx-meshes     do not export the tiny FX_* marker meshes at all (bones stay).
@@ -114,7 +116,7 @@ def parse_args(argv):
     args = argv[argv.index("--") + 1:] if "--" in argv else []
     opts = dict(scale=DEFAULT_SCALE, yaw=None, shader="auto", only=None, textures=True,
                 flip_g=True, individual_files=False, drop_fx=False, keep_case=False,
-                save_blend=None, addon_path=None)
+                save_blend=None, addon_path=None, technique=None)
     flags = {"--individual-files": "individual_files", "--drop-fx-meshes": "drop_fx",
              "--keep-case": "keep_case"}
     neg_flags = {"--no-textures": "textures", "--no-flip-normal-g": "flip_g"}
@@ -129,7 +131,8 @@ def parse_args(argv):
             opts[flags[a]] = True
         elif a in neg_flags:
             opts[neg_flags[a]] = False
-        elif a in ("--scale", "--yaw", "--shader", "--only", "--save-blend", "--addon-path"):
+        elif a in ("--scale", "--yaw", "--shader", "--only", "--save-blend", "--addon-path",
+                   "--technique"):
             if i + 1 >= len(args):
                 raise SystemExit("missing value after %s\n%s" % (a, USAGE))
             v = args[i + 1]
@@ -142,6 +145,8 @@ def parse_args(argv):
                 opts["shader"] = v
             elif a == "--only":
                 opts["only"] = {s.strip() for s in v.split(",") if s.strip()}
+            elif a == "--technique":
+                opts["technique"] = int(v)
             elif a == "--save-blend":
                 opts["save_blend"] = os.path.abspath(v)
             else:
@@ -332,7 +337,8 @@ class TextureBank:
         img.file_format = "TARGA"
         img.save()
         bpy.data.images.remove(img)
-        log("    texture %-44s -> %s" % (os.path.relpath(src), os.path.basename(dst)))
+        log("    texture %-36s -> %s" % ("/".join(src.replace("\\", "/").split("/")[-2:]),
+                                             os.path.basename(dst)))
         self.done[key] = name
         return name
 
@@ -345,12 +351,19 @@ def game_image(name, out_dir):
     return img
 
 
-def wire_texture(mat, bsdf, sock, img, non_color):
-    """Plug img into sock (existing image node is reused; a new one is created otherwise)."""
+def wire_texture(mat, bsdf, sock, img, non_color, direct=True):
+    """Plug img into sock (existing image node is reused; a new one is created otherwise).
+
+    direct=True links the image straight into the socket, dropping e.g. the glTF importer's
+    "baseColorFactor x texture" Mix node - the plugin only sees directly linked textures."""
     node = upstream_image(sock)
     if node is None:
         node = mat.node_tree.nodes.new("ShaderNodeTexImage")
         node.location = (bsdf.location.x - 400, bsdf.location.y - 300)
+        direct = True
+    if direct:
+        for link in list(sock.links):
+            mat.node_tree.links.remove(link)
         mat.node_tree.links.new(node.outputs["Color"], sock)
     node.image = img
     if non_color:
@@ -397,7 +410,9 @@ def prepare_material(mat, opts, bank, used_names):
                     nm = mat.node_tree.nodes.new("ShaderNodeNormalMap")
                     mat.node_tree.links.new(nm.outputs["Normal"], nsock)
                     nsock = nm.inputs["Color"]
-                wire_texture(mat, bsdf, nsock, game_image(nrm, bank.out_dir), True)
+                    wire_texture(mat, bsdf, nsock, game_image(nrm, bank.out_dir), True)
+                else:                     # keep the importer's Image -> Normal Map chain
+                    wire_texture(mat, bsdf, nsock, game_image(nrm, bank.out_dir), True, direct=False)
             spm = bank.convert(spm_src, "spm") if spm_src and os.path.isfile(spm_src) else None
             if spm:
                 # plugin: principled.specular_texture -> 'SpecMap' ("Specular IOR Level" in 4.x)
@@ -599,6 +614,12 @@ def convert(glb_path, out_dir, opts, bank):
         create_texture_xmls=textured > 0)     # <out_dir>/<texture>.xml + ART: include in the w3x
     if "FINISHED" not in res or not os.path.isfile(out):
         raise RuntimeError("W3X export failed (%s) - see the plugin messages above" % res)
+    if opts["technique"] is not None:
+        with open(out, encoding="utf-8") as fh:
+            text = fh.read()
+        text = re.sub(r'TechniqueIndex="\d+"', 'TechniqueIndex="%d"' % opts["technique"], text)
+        with open(out, "w", encoding="utf-8") as fh:
+            fh.write(text)
 
     tris = sum(len(ob.data.polygons) for ob in new_meshes)   # glTF meshes are triangles already
     return dict(src=os.path.basename(glb_path), ft=ft, out=out, bones=len(order), yaw=yaw_deg,
