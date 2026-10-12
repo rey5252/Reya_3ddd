@@ -1,0 +1,31 @@
+diff --git a/extractor/src/main/java/org/schabi/newpipe/extractor/utils/Utils.java b/extractor/src/main/java/org/schabi/newpipe/extractor/utils/Utils.java
+index bdf6bf2..c48a6d2 100644
+--- a/extractor/src/main/java/org/schabi/newpipe/extractor/utils/Utils.java
++++ b/extractor/src/main/java/org/schabi/newpipe/extractor/utils/Utils.java
+@@ -34,7 +34,12 @@ public final class Utils {
+      * @return The encoded URL.
+      */
+     public static String encodeUrlUtf8(final String string) {
+-        return URLEncoder.encode(string, StandardCharsets.UTF_8);
++        // Hvylia: the Charset overload is Java 10+ / Android 13+; the String overload works on Android 8+.
++        try {
++            return URLEncoder.encode(string, "UTF-8");
++        } catch (final java.io.UnsupportedEncodingException e) {
++            throw new IllegalStateException(e);
++        }
+     }
+ 
+     /**
+@@ -43,7 +48,11 @@ public final class Utils {
+      * @return The decoded URL.
+      */
+     public static String decodeUrlUtf8(final String url) {
+-        return URLDecoder.decode(url, StandardCharsets.UTF_8);
++        try {
++            return URLDecoder.decode(url, "UTF-8");
++        } catch (final java.io.UnsupportedEncodingException e) {
++            throw new IllegalStateException(e);
++        }
+     }
+ 
+     /**

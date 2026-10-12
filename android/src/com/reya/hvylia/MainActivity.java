@@ -82,6 +82,13 @@ public class MainActivity extends Activity {
     // Intentionally no web.onPause(): audio must keep playing while the app is in the background.
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        // Pick up MP3s downloaded from the YouTube tab while the page was not looking.
+        js("window.__hvyliaCheckImports&&__hvyliaCheckImports()");
+    }
+
+    @Override
     protected void onDestroy() {
         if (instance == this) instance = null;
         stopService(new Intent(this, PlayerService.class));
@@ -141,6 +148,7 @@ public class MainActivity extends Activity {
             String host = u.getHost();
             if (HOST.equals(host)) {
                 String path = u.getPath();
+                if ("/__dl".equals(path)) return downloaded(u.getQueryParameter("u"));
                 if (path == null || path.equals("/") || path.isEmpty()) path = "/index.html";
                 return asset("www" + path);
             }
@@ -168,6 +176,20 @@ public class MainActivity extends Activity {
             String enc = mime.startsWith("text/") || mime.endsWith("javascript") || mime.endsWith("json") ? "utf-8" : null;
             return new WebResourceResponse(mime, enc, 200, "OK", headers, in);
         } catch (IOException e) {
+            return notFound();
+        }
+    }
+
+    /** Streams an MP3 the YouTube tab saved, so the page can add it to its library. */
+    private WebResourceResponse downloaded(String uri) {
+        if (uri == null || !Store.isAllowed(this, uri)) return notFound();
+        try {
+            InputStream in = getContentResolver().openInputStream(Uri.parse(uri));
+            if (in == null) return notFound();
+            Map<String, String> headers = new HashMap<>();
+            headers.put("Cache-Control", "no-store");
+            return new WebResourceResponse("audio/mpeg", null, 200, "OK", headers, in);
+        } catch (IOException | SecurityException e) {
             return notFound();
         }
     }
@@ -212,6 +234,19 @@ public class MainActivity extends Activity {
                     try { getWindow().setStatusBarColor(Color.parseColor(hex)); } catch (IllegalArgumentException ignored) { }
                 }
             });
+        }
+
+        @JavascriptInterface
+        public void openYouTube() {
+            runOnUiThread(new Runnable() {
+                @Override public void run() { startActivity(new Intent(MainActivity.this, YouTubeActivity.class)); }
+            });
+        }
+
+        /** JSON array of {uri, name} for MP3s waiting to be added to the library; clears the queue. */
+        @JavascriptInterface
+        public String takePendingImports() {
+            return Store.takePending(MainActivity.this);
         }
 
         @JavascriptInterface
