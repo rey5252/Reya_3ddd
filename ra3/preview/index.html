@@ -186,6 +186,8 @@ h1, h2, h3 { text-wrap: balance; margin: 0; font-weight: 400; }
 #cv-ground { z-index: 1; }
 #units { position: absolute; inset: 0; z-index: 2; }
 #cv-fx { z-index: 3; pointer-events: none; }
+.scene canvas.gl { z-index: 1; cursor: grab; }
+.scene canvas.gl:active { cursor: grabbing; }
 .scene::after {
   content: "";
   position: absolute; inset: 0;
@@ -283,6 +285,7 @@ h1, h2, h3 { text-wrap: balance; margin: 0; font-weight: 400; }
 }
 .cameo-art { position: absolute; inset: 0; display: block; }
 .cameo-art img { position: absolute; width: 142%; height: auto; max-width: none; left: -21%; top: -10%; pointer-events: none; }
+.cameo-art img.snap { width: 100%; height: 100%; left: 0; top: 0; object-fit: cover; }
 .cameo-price {
   position: absolute; left: 0; right: 0; bottom: 0;
   padding: 2px 4px;
@@ -326,7 +329,7 @@ h1, h2, h3 { text-wrap: balance; margin: 0; font-weight: 400; }
 .sb-hint { margin: 0; color: var(--ink-faint); font-size: 12.5px; line-height: 1.45; }
 
 /* ---------- Detail ---------- */
-.detail-body { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 20px; padding: 16px 18px 20px 22px; }
+.detail-body { display: grid; grid-template-columns: 236px minmax(0, 1fr); gap: 20px; padding: 16px 18px 20px 22px; }
 .pedestal {
   position: relative;
   align-self: start;
@@ -340,7 +343,21 @@ h1, h2, h3 { text-wrap: balance; margin: 0; font-weight: 400; }
     var(--inset);
 }
 .pedestal img { position: absolute; inset: 0; width: 100%; height: 100%; }
-.pedestal .tid { position: absolute; left: 8px; bottom: 6px; font: 10px/1.2 var(--font-mono); color: var(--ink-faint); }
+.pedestal .tid { position: absolute; right: 8px; top: 8px; z-index: 2; font: 10px/1.2 var(--font-mono); color: var(--ink-faint); pointer-events: none; }
+.pedestal canvas.viewer-gl { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: grab; touch-action: pan-y; }
+.pedestal canvas.viewer-gl:active { cursor: grabbing; }
+.ped-chip { position: absolute; left: 8px; top: 7px; z-index: 2; padding: 1px 6px; font: 600 10px/1.4 var(--font-mono); letter-spacing: .1em; color: var(--tc-hi); border: 1px solid color-mix(in srgb, var(--tc-hi) 50%, transparent); background: var(--shade); pointer-events: none; }
+.ped-load { position: absolute; left: 8px; right: 8px; bottom: 44px; z-index: 2; text-align: center; font: 11px/1.35 var(--font-mono); color: var(--ink-dim); text-shadow: 0 1px 2px var(--bg); pointer-events: none; }
+.nano-btn {
+  position: absolute; right: 8px; bottom: 8px; z-index: 3;
+  min-height: 30px; padding: 4px 10px;
+  font: 600 11px/1.2 var(--font-mono); letter-spacing: .06em; text-transform: uppercase;
+  color: var(--ink); background: linear-gradient(180deg, var(--panel-2), var(--inset));
+  border: 1px solid var(--metal-hi); cursor: pointer;
+}
+.nano-btn:hover { border-color: var(--tc-hi); }
+.nano-btn[aria-pressed="true"] { color: var(--bg); background: var(--tc-hi); border-color: var(--tc-hi); }
+.ped-hint { position: absolute; left: 8px; bottom: 8px; z-index: 2; font: 10px/1.2 var(--font-mono); color: var(--ink-faint); pointer-events: none; max-width: 52%; }
 .info { min-width: 0; display: grid; gap: 14px; align-content: start; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .chip {
@@ -415,7 +432,7 @@ td.role { color: var(--ink-dim); font-size: 13px; min-width: 14em; }
 }
 @media (max-width: 720px) {
   .detail-body { grid-template-columns: minmax(0, 1fr); padding: 14px 14px 18px; }
-  .pedestal { width: 190px; justify-self: center; }
+  .pedestal { width: 236px; justify-self: center; }
   .meta { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 560px) {
@@ -468,14 +485,14 @@ td.role { color: var(--ink-dim); font-size: 13px; min-width: 14em; }
         <canvas id="cv-fx" aria-hidden="true"></canvas>
         <div class="hud hud-tl" aria-hidden="true">ОГЛЯД · РЕЖИМ ОБОРОНИ<br><span id="hud-count">9 веж на полі</span></div>
         <div class="hud hud-tr" id="hud-sel" aria-hidden="true"></div>
-        <div class="hud hud-bl" aria-hidden="true">1 клітина = 50 од. дальності</div>
+        <div class="hud hud-bl" id="hud-bl" aria-hidden="true">1 клітина = 50 од. дальності</div>
         <div class="hud hud-br" aria-hidden="true">
           <span><i class="key key-enemy"></i>Ворожа техніка</span>
           <span><i class="key key-air"></i>Авіація</span>
           <span><i class="key key-range"></i>Зона дії</span>
         </div>
       </div>
-      <p class="field-hint">Клікніть вежу на полі, щоб побачити її зону дії. Ефекти атаки спрощені.</p>
+      <p class="field-hint" id="field-hint">Клікніть вежу на полі, щоб побачити її зону дії. Ефекти атаки спрощені.</p>
     </section>
 
     <aside class="side frame" aria-labelledby="side-title">
@@ -499,7 +516,13 @@ td.role { color: var(--ink-dim); font-size: 13px; min-width: 14em; }
     <section class="detail frame" id="detail" aria-labelledby="d-name">
       <div class="bar"><h2>Обрана вежа</h2><span class="label" id="d-type"></span></div>
       <div class="detail-body">
-        <div class="pedestal" id="d-art"></div>
+        <div class="pedestal" id="d-art">
+          <span class="ped-chip" id="d-chip3d" hidden>3D</span>
+          <span class="tid" id="d-tid"></span>
+          <span class="ped-load" id="d-load" hidden></span>
+          <span class="ped-hint" id="d-hint" hidden>Перетягніть, щоб обертати</span>
+          <button type="button" class="nano-btn" id="d-nano" hidden aria-pressed="false">Наноядро</button>
+        </div>
         <div class="info">
           <div>
             <div class="chips" id="d-chips"></div>
@@ -536,6 +559,10 @@ td.role { color: var(--ink-dim); font-size: 13px; min-width: 14em; }
   </footer>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/environments/RoomEnvironment.js"></script>
 <script>
 (() => {
   'use strict';
@@ -662,7 +689,8 @@ td.role { color: var(--ink-dim); font-size: 13px; min-width: 14em; }
   /* ================= State ================= */
   const reduceMQ = matchMedia('(prefers-reduced-motion: reduce)');
   let reduced = reduceMQ.matches;
-  const state = { faction: 'all', sel: 'AlliedPrismSpire', sort: { key: null, dir: 1 }, credits: 15000, build: null };
+  const state = { faction: 'all', sel: 'AlliedPrismSpire', sort: { key: null, dir: 1 }, credits: 15000, build: null, nano: false };
+  let F3 = null, VIEW = null;
   try {
     const f = localStorage.getItem('fp-faction');
     if (f && (f === 'all' || FACTIONS[f])) state.faction = f;
@@ -710,8 +738,7 @@ td.role { color: var(--ink-dim); font-size: 13px; min-width: 14em; }
       : 'Сумарне споживання показаних веж' + (state.faction === 'all' ? ' (без Імперії).' : '.');
     $('#hud-count').textContent = vis.length === 9 ? '9 веж на полі' : '3 вежі · ' + FACTIONS[state.faction].name;
     $('#field-sector').textContent = state.faction === 'all' ? 'Сектор 7-Г · усі фракції' : 'Сектор 7-Г · ' + (FACTIONS[state.faction].short || FACTIONS[state.faction].name);
-    placeUnits();
-    drawStatic();
+    if (F3) F3.refresh(true); else { placeUnits(); drawStatic(); }
   }
 
   /* ================= Sidebar ================= */
@@ -728,7 +755,14 @@ td.role { color: var(--ink-dim); font-size: 13px; min-width: 14em; }
     b.setAttribute('aria-label', T.name + ', $' + T.cost);
     const art = document.createElement('span');
     art.className = 'cameo-art';
-    art.appendChild(towerImg(T));
+    const ci = new Image();
+    ci.alt = '';
+    ci.className = 'snap';
+    T.cameoImg = ci;
+    T.cameoLevel = 'png';
+    ci.addEventListener('error', () => cameoFallback(T));
+    ci.src = 'cameos/' + T.id + '.png';
+    art.appendChild(ci);
     b.appendChild(art);
     b.insertAdjacentHTML('beforeend', '<span class="cameo-wipe"></span><span class="cameo-state"></span><span class="cameo-price">$' + nf(T.cost) + '</span>');
     b.addEventListener('mouseenter', () => select(T.id));
@@ -740,6 +774,23 @@ td.role { color: var(--ink-dim); font-size: 13px; min-width: 14em; }
     T.cameoState = b.querySelector('.cameo-state');
     cameosEl.appendChild(b);
   });
+
+  /* cameo image priority: RA3-style PNG, then offscreen 3D snapshot, then SVG art */
+  function cameoFallback(T) {
+    const img = T.cameoImg;
+    if (T.cameoLevel === 'png') {
+      if (T.snapshot) { T.cameoLevel = 'snap'; img.className = 'snap'; img.src = T.snapshot; return; }
+      T.cameoLevel = 'svg'; img.className = ''; img.src = 'art/' + T.id + '.svg';
+    } else if (T.cameoLevel === 'snap') {
+      T.cameoLevel = 'svg'; img.className = ''; img.src = 'art/' + T.id + '.svg';
+    } else if (T.cameoLevel === 'svg') {
+      T.cameoLevel = 'none'; img.src = placeholderSrc(T.f);
+    }
+  }
+  function setSnapshot(T, url) {
+    T.snapshot = url;
+    if (T.cameoLevel === 'svg' || T.cameoLevel === 'none') { T.cameoLevel = 'snap'; T.cameoImg.className = 'snap'; T.cameoImg.src = url; }
+  }
 
   function cameoState(T, cls, text, p) {
     const b = T.cameo;
@@ -795,8 +846,8 @@ td.role { color: var(--ink-dim); font-size: 13px; min-width: 14em; }
     state.build = null;
     cameoState(T, null, '', 0);
     setStatus('Розміщено: ' + T.name + '.');
-    if (T.g) events.push({ T, start: performance.now() });
-    ensureLoop();
+    if (F3) F3.place(T);
+    else { if (T.g) events.push({ T, start: performance.now() }); ensureLoop(); }
   }
 
   function cancelBuild(T) {
@@ -819,10 +870,7 @@ td.role { color: var(--ink-dim); font-size: 13px; min-width: 14em; }
     const F = FACTIONS[T.f];
     $('#detail').className = 'detail frame f-' + T.f;
     $('#d-type').textContent = T.type;
-    const ped = $('#d-art');
-    ped.textContent = '';
-    ped.appendChild(towerImg(T, T.name));
-    ped.insertAdjacentHTML('beforeend', '<span class="tid">' + T.id + '</span>');
+    renderPedestal();
     $('#d-chips').innerHTML = '<span class="chip fac">' + ICONS[T.f] + F.name + '</span><span class="chip">Side=' + F.side + '</span>' + (T.air ? '<span class="chip">Лише повітря</span>' : '');
     $('#d-name').textContent = T.name;
     $('#d-role').textContent = T.role;
@@ -839,6 +887,30 @@ td.role { color: var(--ink-dim); font-size: 13px; min-width: 14em; }
     const hud = $('#hud-sel');
     hud.className = 'hud hud-tr f-' + T.f;
     hud.innerHTML = 'ОБРАНО: ' + T.name.toUpperCase() + '<br>R ' + T.range + (T.air ? ' · ППО' : '');
+  }
+
+  function pedFallback(T, msg) {
+    const ped = $('#d-art');
+    ped.querySelectorAll('img.ped-img').forEach(n => n.remove());
+    const img = towerImg(T, T.name);
+    img.className = 'ped-img';
+    ped.prepend(img);
+    $('#d-load').hidden = !msg;
+    $('#d-load').textContent = msg || '';
+  }
+  function renderPedestal() {
+    const T = sel();
+    const empire = T.f === 'empire';
+    const nano = $('#d-nano');
+    nano.hidden = !(VIEW && empire);
+    nano.setAttribute('aria-pressed', String(state.nano));
+    nano.textContent = state.nano ? 'Вежа' : 'Наноядро';
+    nano.setAttribute('aria-label', state.nano ? 'Показати вежу' : 'Показати наноядро');
+    $('#d-tid').textContent = T.id + (state.nano ? 'Nanocore' : '');
+    $('#d-chip3d').hidden = !VIEW;
+    $('#d-hint').hidden = !VIEW || !empire ? !VIEW : true;
+    if (VIEW) VIEW.show(T, state.nano);
+    else pedFallback(T, '');
   }
 
   /* ================= Table ================= */
@@ -920,6 +992,7 @@ td.role { color: var(--ink-dim); font-size: 13px; min-width: 14em; }
   function select(id) {
     if (state.sel === id) return;
     state.sel = id;
+    state.nano = false;
     renderSelection();
   }
   function renderSelection() {
@@ -930,7 +1003,7 @@ td.role { color: var(--ink-dim); font-size: 13px; min-width: 14em; }
       T.row.classList.toggle('is-sel', on);
     });
     renderDetail();
-    drawStatic();
+    if (F3) F3.refresh(false); else drawStatic();
   }
 
   /* ================= Scene ================= */
@@ -1478,7 +1551,7 @@ td.role { color: var(--ink-dim); font-size: 13px; min-width: 14em; }
   let raf = 0, sceneOnScreen = true;
   function tick(now) { raf = 0; draw(now); ensureLoop(); }
   function ensureLoop() {
-    if (raf) return;
+    if (raf || F3) return;
     if (reduced) { if (events.length) events.length = 0; return; }
     if (!sceneOnScreen || document.hidden) return;
     raf = requestAnimationFrame(tick);
@@ -1486,6 +1559,7 @@ td.role { color: var(--ink-dim); font-size: 13px; min-width: 14em; }
   function drawStatic() { if (reduced) draw(performance.now()); else ensureLoop(); }
 
   function layout() {
+    if (F3) { F3.resize(); return; }
     const w = scene.clientWidth, h = scene.clientHeight;
     if (!w || !h) return;
     W = w; H = h;
@@ -1504,15 +1578,19 @@ td.role { color: var(--ink-dim); font-size: 13px; min-width: 14em; }
   if ('IntersectionObserver' in window) {
     new IntersectionObserver(entries => {
       sceneOnScreen = entries[0].isIntersecting;
-      ensureLoop();
+      if (F3) F3.kick(); else ensureLoop();
     }).observe(scene);
   }
-  document.addEventListener('visibilitychange', ensureLoop);
-  const onMotion = () => { reduced = reduceMQ.matches; drawStatic(); };
+  document.addEventListener('visibilitychange', () => { if (F3) F3.kick(); else ensureLoop(); if (VIEW) VIEW.kick(); });
+  const onMotion = () => { reduced = reduceMQ.matches; if (F3) F3.motion(); else drawStatic(); if (VIEW) VIEW.motion(); };
   if (reduceMQ.addEventListener) reduceMQ.addEventListener('change', onMotion);
+
+  /* @@3D@@ */
 
   /* ================= Init ================= */
   if (!visible().includes(sel())) state.sel = visible()[0].id;
+  init3D();
+  $('#d-nano').addEventListener('click', () => { state.nano = !state.nano; renderPedestal(); });
   renderCredits();
   renderFaction();
   sortTable();

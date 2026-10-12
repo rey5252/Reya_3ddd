@@ -124,10 +124,8 @@ function shadowCatcher(y,R){
 window.renderModel=(url,view)=>new Promise((res,rej)=>{
   new THREE.GLTFLoader().load(url,gltf=>{
     const scene=makeScene(), root=gltf.scene;
-    root.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true;
-      // FX_* bone markers are tiny helper cubes — hide them in cameos
-      let p=o; while(p){ if(/^FX_/.test(p.name||'')&&o.geometry&&o.geometry.boundingSphere===null){} p=p.parent; }
-    }});
+    root.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; } });
+    // FX_* bone markers are tiny helper cubes — hide them in cameos
     root.traverse(o=>{ if(o.isMesh&&/^FX_/.test(o.name||'')) o.visible=false;
       if(o.isMesh&&o.parent&&/^FX_/.test(o.parent.name||'')&&o.parent.children.length===1) o.visible=false; });
     scene.add(root);
