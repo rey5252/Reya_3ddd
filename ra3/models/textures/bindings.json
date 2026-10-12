@@ -1,10 +1,18 @@
 {
   "AlliedAegisSpire": {
-    "plate": "allied/plate_steel",
-    "plate_hi": "allied/plate_steel",
+    "plate": {
+      "texture": "allied/plate_steel",
+      "tile": 6.0,
+      "offset": 0.5
+    },
+    "plate_hi": {
+      "texture": "allied/plate_steel",
+      "tile": 6.0
+    },
     "plate_in": {
       "texture": "allied/plate_steel",
-      "white": 0.45
+      "white": 0.45,
+      "tile": 6.0
     },
     "white": "allied/panel_white",
     "blue": "allied/panel_blue",
@@ -13,7 +21,11 @@
     "dark": "allied/dark_metal"
   },
   "AlliedCryoBastion": {
-    "plate": "allied/plate_steel",
+    "plate": {
+      "texture": "allied/plate_steel",
+      "tile": 6.0,
+      "offset": 0.5
+    },
     "armor": "allied/panel_white",
     "blue": "allied/panel_blue",
     "chrome": "allied/chrome",
@@ -26,8 +38,15 @@
     "vent": "allied/energy_cyan"
   },
   "AlliedPrismSpire": {
-    "plate": "allied/plate_steel",
-    "plate_in": "allied/plate_steel",
+    "plate": {
+      "texture": "allied/plate_steel",
+      "tile": 6.0,
+      "offset": 0.5
+    },
+    "plate_in": {
+      "texture": "allied/plate_steel",
+      "tile": 6.0
+    },
     "white": "allied/panel_white",
     "chrome": "allied/chrome",
     "dark": "allied/dark_metal",
@@ -97,14 +116,26 @@
     "dark": "empire/trim_black"
   },
   "SovietFlakNest": {
-    "plate": "soviet/plate_steel",
-    "plate_top": "soviet/plate_steel",
+    "plate": {
+      "texture": "soviet/plate_steel",
+      "tile": 6.0,
+      "offset": 0.5
+    },
+    "plate_top": {
+      "texture": "soviet/plate_steel",
+      "tile": 6.0,
+      "offset": 0.5
+    },
     "concrete": "soviet/concrete",
     "floor": {
       "texture": "soviet/concrete",
       "white": 0.23
     },
-    "haz_k": "soviet/dark_metal",
+    "haz_y": "soviet/hazard",
+    "haz_k": {
+      "texture": "soviet/hazard",
+      "white": 0.15
+    },
     "bag": "soviet/sandbag",
     "bag_dark": "soviet/sandbag",
     "brass": "soviet/brass",
@@ -113,7 +144,11 @@
     "olive_lt": "soviet/steel_olive",
     "steel": "soviet/plate_steel",
     "gun_dark": "soviet/dark_metal",
-    "rivet": "soviet/plate_steel"
+    "rivet": {
+      "texture": "soviet/plate_steel",
+      "tile": 6.0,
+      "offset": 0.5
+    }
   },
   "SovietInfernoBunker": {
     "concrete": "soviet/concrete",
@@ -127,7 +162,11 @@
       "texture": "soviet/paint_red",
       "white": 0.5
     },
-    "haz_k": "soviet/dark_metal",
+    "haz_y": "soviet/hazard",
+    "haz_k": {
+      "texture": "soviet/hazard",
+      "white": 0.15
+    },
     "steel": "soviet/plate_steel",
     "steel_dk": "soviet/dark_metal",
     "rivet": "soviet/plate_steel",
@@ -137,7 +176,11 @@
     }
   },
   "SovietTeslaObelisk": {
-    "plate": "soviet/plate_steel",
+    "plate": {
+      "texture": "soviet/plate_steel",
+      "tile": 6.0,
+      "offset": 0.5
+    },
     "plate_dark": "soviet/dark_metal",
     "red": "soviet/paint_red",
     "red_dark": {
@@ -149,6 +192,10 @@
     "steel": "soviet/plate_steel",
     "gunmetal": "soviet/dark_metal",
     "copper": "soviet/copper_coil",
-    "hazard_k": "soviet/dark_metal"
+    "hazard_y": "soviet/hazard",
+    "hazard_k": {
+      "texture": "soviet/hazard",
+      "white": 0.15
+    }
   }
 }

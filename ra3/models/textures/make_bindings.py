@@ -5,14 +5,15 @@ Run:  python3 -I models/textures/make_bindings.py [--check]
 For every models/glb/<Model>.glb it reads the glTF JSON chunk, takes the material names and maps
 each one to a texture of that model's faction set (SPEC.md, "Текстури"):
 
-  * MANUAL[<Model>][<material>] wins (value "<set>/<name>", {"texture": ..., "white": ...} or None
-    = leave untextured);
+  * MANUAL[<Model>][<material>] wins (value "<set>/<name>", {"texture" (or "tex"): ..., "white": ...,
+    "tile": ..., "offset": ...} or None = leave untextured);
   * otherwise translucent (alpha < 1) and glowing (emissive) materials stay untextured, except where
     ENERGY_OK allows an energy_* texture;
   * otherwise the first matching regex of the faction's KEYWORDS table decides; a list of
     candidates picks the texture whose average brightness (after meshkit's tint) is closest to the
     material colour;
-  * no match -> untextured (listed in the report so the table can be extended).
+  * no match -> untextured (listed in the report so the table can be extended);
+  * */plate_steel on the foundation plate gets tile 6 (one framed deck panel per 6 x 6 plate).
 
 Tint: meshkit lerps a textured material's baseColorFactor towards white by TEX_TINT_WHITE (0.7), so
 the texture's own colours show. When that would make the surface much brighter than the model's
@@ -89,14 +90,25 @@ ENERGY_OK = {
     "soviet": {},
 }
 
-# Per-model manual overrides: {model: {material: "<set>/<name>" | {"texture":..., "white":...} | None}}
+# Per-model manual overrides: {model: {material: "<set>/<name>" | {"texture":..., "white":...,
+# "tile":..., "offset":...} | None}}
 MANUAL: dict[str, dict] = {
-    # geometric yellow/black hazard bands: only the black strips get a texture, the yellow
-    # strips keep their flat paint so the modelled stripes stay readable
-    "SovietFlakNest": {"haz_y": None, "haz_k": "soviet/dark_metal"},
-    "SovietTeslaObelisk": {"hazard_y": None, "hazard_k": "soviet/dark_metal"},
-    "SovietInfernoBunker": {"haz_y": None, "haz_k": "soviet/dark_metal"},
+    # separate yellow/black hazard materials: both take the hazard texture (its stripes + wear
+    # show through the yellow blocks, the near-black tint keeps the black blocks dark)
+    "SovietFlakNest": {"haz_y": "soviet/hazard", "haz_k": "soviet/hazard"},
+    "SovietTeslaObelisk": {"hazard_y": "soviet/hazard", "hazard_k": "soviet/hazard"},
+    "SovietInfernoBunker": {"haz_y": "soviet/hazard", "haz_k": "soviet/hazard"},
 }
+
+# */plate_steel is drawn as ONE deck panel framed on the tile border, so on the foundation plate
+# one tile must span the whole 6 x 6 plate: tile 6, offset 0.5 puts the frame on the plate edges.
+# Applied automatically to plate_steel bindings of materials whose geometry spans the plate
+# (x and z extent >= FOUNDATION_MIN_EXTENT, lowest point at or below the plate top).
+FOUNDATION_TEX = ("plate_steel",)
+FOUNDATION_TILE = {"tile": 6.0, "offset": 0.5}
+FOUNDATION_MIN_EXTENT = 5.4
+FOUNDATION_NAMES = r"plate.*|deck.*|floor.*|base.*|foundation.*"   # not rivets/bolts spread on it
+PLATE_TOP = 0.35
 
 
 TINT_WHITE = 0.7      # must match meshkit.TEX_TINT_WHITE
@@ -206,6 +218,67 @@ def classify(model: str, mat: dict, tset: str):
     return None, "no keyword"
 
 
+# The */plate_steel textures are one deck panel with a frame on the tile border, so on the
+# foundation itself one tile spans the whole 6x6 plate instead of the default 2 units.
+PLATE_MATERIALS = re.compile(r"^plate(_top|_hi|_in)?$")
+PLATE_TILE = 6.0
+
+
+def plate_tile(name, binding):
+    tex = binding if isinstance(binding, str) else binding.get("texture")
+    if not (tex and tex.endswith("/plate_steel") and PLATE_MATERIALS.match(name)):
+        return binding
+    out = {"texture": tex} if isinstance(binding, str) else dict(binding)
+    out["tile"] = PLATE_TILE
+    return out
+
+
+def material_bounds(js: dict) -> dict:
+    """{material index: (min xyz, max xyz)} in model space (node translations applied)."""
+    out = {}
+    nodes, meshes, acc = js.get("nodes", []), js.get("meshes", []), js.get("accessors", [])
+
+    def walk(i, off):
+        n = nodes[i]
+        t = n.get("translation", [0, 0, 0])
+        o = [off[k] + t[k] for k in range(3)]
+        if "mesh" in n:
+            for prim in meshes[n["mesh"]]["primitives"]:
+                a = acc[prim["attributes"]["POSITION"]]
+                if "min" not in a:
+                    continue
+                lo = [a["min"][k] + o[k] for k in range(3)]
+                hi = [a["max"][k] + o[k] for k in range(3)]
+                mi = prim.get("material")
+                if mi in out:
+                    plo, phi = out[mi]
+                    lo = [min(lo[k], plo[k]) for k in range(3)]
+                    hi = [max(hi[k], phi[k]) for k in range(3)]
+                out[mi] = (lo, hi)
+        for c in n.get("children", []):
+            walk(c, o)
+
+    for r in js.get("scenes", [{}])[js.get("scene", 0)].get("nodes", []):
+        walk(r, [0.0, 0.0, 0.0])
+    return out
+
+
+def foundation_density(binding, bounds, name=""):
+    """plate_steel on the foundation plate -> one tile per plate (see FOUNDATION_TILE)."""
+    tex = binding if isinstance(binding, str) else binding.get("texture") or binding.get("tex")
+    if (not tex or tex.split("/")[-1] not in FOUNDATION_TEX or not bounds
+            or not re.fullmatch(FOUNDATION_NAMES, name)):
+        return binding, False
+    lo, hi = bounds
+    if (hi[0] - lo[0] >= FOUNDATION_MIN_EXTENT and hi[2] - lo[2] >= FOUNDATION_MIN_EXTENT
+            and lo[1] <= PLATE_TOP + 0.05):
+        b = {"texture": tex} if isinstance(binding, str) else dict(binding)
+        if "tile" not in b:
+            b.update(FOUNDATION_TILE)
+        return b, True
+    return binding, False
+
+
 def build(verbose=True):
     out, missing = {}, set()
     for glb in sorted(GLB_DIR.glob("*.glb")):
@@ -221,15 +294,21 @@ def build(verbose=True):
             continue
         entry = {}
         lines = []
-        for mat in js.get("materials", []):
+        bounds = material_bounds(js)
+        for mi, mat in enumerate(js.get("materials", [])):
             b, why = classify(model, mat, tset)
+            if b:
+                b, fnd = foundation_density(b, bounds.get(mi), mat.get("name", ""))
+                if fnd:
+                    why += ", foundation tile 6"
             nm = mat.get("name", "?")
             if b:
+                b = plate_tile(nm, b)
                 entry[nm] = b
-                tex = b if isinstance(b, str) else b.get("texture")
+                tex = b if isinstance(b, str) else (b.get("texture") or b.get("tex"))
                 if not (HERE / f"{tex}_dif.png").exists():
                     missing.add(tex)
-            shown = (b if isinstance(b, str) else (b or {}).get("texture")) or "-"
+            shown = (b if isinstance(b, str) else (b or {}).get("texture") or (b or {}).get("tex")) or "-"
             if isinstance(b, dict) and "white" in b:
                 shown += f" w={b['white']}"
             lines.append(f"    {nm:<16} -> {shown:<30} ({why})")
@@ -246,7 +325,7 @@ def main():
     for tset, names in REQUIRED.items():  # sanity: every bound texture must be a required name
         for model, ent in data.items():
             for mat, b in ent.items():
-                t = b if isinstance(b, str) else b["texture"]
+                t = b if isinstance(b, str) else (b.get("texture") or b.get("tex"))
                 s, n = t.split("/", 1)
                 if s == tset and n not in names:
                     print(f"WARNING {model}.{mat}: {t} is not in the SPEC list for {tset}")

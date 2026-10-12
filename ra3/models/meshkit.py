@@ -414,7 +414,8 @@ class Model:
         """Write the model as .glb.
 
         textures: None = automatic (on unless env FT_NO_TEXTURES=1), False = never, True = always.
-        bindings: optional {material: "<set>/<name>" | {...}} overriding models/textures/bindings.json
+        bindings: optional {material: "<set>/<name>" | {"texture" (or "tex"), "white", "tile",
+                  "offset", "normal_scale"}} overriding models/textures/bindings.json
                   for this model. Bound materials get box-projected UVs (1 tile = TEX_TILE units)
                   and external baseColor/normal textures (uri relative to the .glb).
         """
@@ -480,7 +481,7 @@ class Model:
                 prims = []
                 for mn, mesh in n.prims.items():
                     if mn in tex_plan:
-                        mesh = box_project_uv(mesh, tex_plan[mn]["tile"])
+                        mesh = box_project_uv(mesh, tex_plan[mn]["tile"], tex_plan[mn]["offset"])
                     p = (mesh.pos - t).astype(np.float32)
                     prims.append({"attributes": {
                         "POSITION": accessor(p, 5126, "VEC3", 34962, True),
@@ -532,7 +533,7 @@ class Model:
                 continue
             if isinstance(spec, str):
                 spec = {"texture": spec}
-            name = spec.get("texture")
+            name = spec.get("texture") or spec.get("tex")
             if not name:
                 continue
             dif = TEXTURES_DIR / f"{name}_dif.png"
@@ -545,6 +546,7 @@ class Model:
                         "nrm": _rel_uri(nrm, path.parent) if nrm.exists() else None,
                         "white": float(spec.get("white", TEX_TINT_WHITE)),
                         "tile": float(spec.get("tile", TEX_TILE)),
+                        "offset": _pair(spec.get("offset", 0.0)),
                         "normal_scale": float(spec.get("normal_scale", 1.0))}
         return plan
 
@@ -561,6 +563,12 @@ def load_bindings(file=None) -> dict:
         return {}
 
 
+def _pair(v):
+    if isinstance(v, (int, float)):
+        return (float(v), float(v))
+    return (float(v[0]), float(v[1]))
+
+
 def _rel_uri(target: Path, base_dir: Path) -> str:
     return Path(os.path.relpath(Path(target).resolve(), Path(base_dir).resolve())).as_posix()
 
@@ -570,10 +578,12 @@ def _rel_uri(target: Path, base_dir: Path) -> str:
 _BOX_AXES = ((2, -1, 1, -1), (2, 1, 1, -1), (0, 1, 2, 1), (0, 1, 2, -1), (0, 1, 1, -1), (0, -1, 1, -1))
 
 
-def box_project_uv(mesh: Mesh, tile: float = TEX_TILE) -> Mesh:
+def box_project_uv(mesh: Mesh, tile: float = TEX_TILE, offset=(0.0, 0.0)) -> Mesh:
     """Box (tri-planar, per triangle) UVs from world positions: each triangle is projected along the
-    dominant axis of its face normal, 1 tile = `tile` units. Vertices are split only where triangles
-    sharing them project along different axes; positions/normals/triangles are unchanged."""
+    dominant axis of its face normal, 1 tile = `tile` units, uv = projected / tile + offset (e.g.
+    tile 6 + offset 0.5 puts the tile border exactly on the edges of the 6 x 6 foundation plate).
+    Vertices are split only where triangles sharing them project along different axes;
+    positions/normals/triangles are unchanged."""
     if len(mesh.idx) == 0:
         return mesh
     tri = mesh.pos[mesh.idx]
@@ -592,7 +602,7 @@ def box_project_uv(mesh: Mesh, tile: float = TEX_TILE) -> Mesh:
     r = np.arange(len(src))
     u = p[r, axes[:, 0]] * axes[:, 1]
     v = p[r, axes[:, 2]] * axes[:, 3]
-    uv = np.stack([u, v], 1) / float(tile)
+    uv = np.stack([u, v], 1) / float(tile) + np.asarray(offset, np.float32)
     return Mesh(p, mesh.nrm[src], uv, inv.reshape(-1, 3))
 
 
