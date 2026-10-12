@@ -344,7 +344,7 @@ h1, h2, h3 { text-wrap: balance; margin: 0; font-weight: 400; }
     var(--inset);
 }
 .pedestal img { position: absolute; inset: 0; width: 100%; height: 100%; }
-.pedestal .tid { position: absolute; right: 8px; top: 8px; z-index: 2; font: 10px/1.2 var(--font-mono); color: var(--ink-faint); pointer-events: none; }
+.pedestal .tid { position: absolute; left: 8px; bottom: 10px; max-width: calc(100% - 100px); overflow-wrap: anywhere; z-index: 2; font: 10px/1.2 var(--font-mono); color: var(--ink-faint); pointer-events: none; }
 .pedestal canvas.viewer-gl { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: grab; touch-action: pan-y; }
 .pedestal canvas.viewer-gl:active { cursor: grabbing; }
 .ped-chip { position: absolute; left: 8px; top: 7px; z-index: 2; padding: 1px 6px; font: 600 10px/1.4 var(--font-mono); letter-spacing: .1em; color: var(--tc-hi); border: 1px solid color-mix(in srgb, var(--tc-hi) 50%, transparent); background: var(--shade); pointer-events: none; }
@@ -358,7 +358,6 @@ h1, h2, h3 { text-wrap: balance; margin: 0; font-weight: 400; }
 }
 .nano-btn:hover { border-color: var(--tc-hi); }
 .nano-btn[aria-pressed="true"] { color: var(--bg); background: var(--tc-hi); border-color: var(--tc-hi); }
-.ped-hint { position: absolute; left: 8px; bottom: 8px; z-index: 2; font: 10px/1.2 var(--font-mono); color: var(--ink-faint); pointer-events: none; max-width: 52%; }
 .info { min-width: 0; display: grid; gap: 14px; align-content: start; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .chip {
@@ -518,10 +517,9 @@ td.role { color: var(--ink-dim); font-size: 13px; min-width: 14em; }
       <div class="bar"><h2>Обрана вежа</h2><span class="label" id="d-type"></span></div>
       <div class="detail-body">
         <div class="pedestal" id="d-art">
-          <span class="ped-chip" id="d-chip3d" hidden>3D</span>
+          <span class="ped-chip" id="d-chip3d" hidden>3D · перетягніть</span>
           <span class="tid" id="d-tid"></span>
           <span class="ped-load" id="d-load" hidden></span>
-          <span class="ped-hint" id="d-hint" hidden>Перетягніть, щоб обертати</span>
           <button type="button" class="nano-btn" id="d-nano" hidden aria-pressed="false">Наноядро</button>
         </div>
         <div class="info">
@@ -909,7 +907,6 @@ td.role { color: var(--ink-dim); font-size: 13px; min-width: 14em; }
     nano.setAttribute('aria-label', state.nano ? 'Показати вежу' : 'Показати наноядро');
     $('#d-tid').textContent = T.id + (state.nano ? 'Nanocore' : '');
     $('#d-chip3d').hidden = !VIEW;
-    $('#d-hint').hidden = !VIEW;
     if (VIEW) VIEW.show(T, state.nano);
     else pedFallback(T, '');
   }
@@ -1785,7 +1782,7 @@ td.role { color: var(--ink-dim); font-size: 13px; min-width: 14em; }
       t.anisotropy = R.capabilities.getMaxAnisotropy();
       return t;
     }
-    const groundMat = new THREE.MeshStandardMaterial({ map: groundTexture(), roughness: .95, metalness: 0, envMapIntensity: .35 });
+    const groundMat = new THREE.MeshStandardMaterial({ map: groundTexture(), roughness: .95, metalness: 0, envMapIntensity: .2 });
     const ground = new THREE.Mesh(new THREE.PlaneGeometry(GS, GS).rotateX(-Math.PI / 2), groundMat);
     ground.receiveShadow = true;
     world.add(ground);
@@ -1815,7 +1812,7 @@ td.role { color: var(--ink-dim); font-size: 13px; min-width: 14em; }
     })();
 
     /* ---- enemies built from primitives ---- */
-    const hullMat = new THREE.MeshStandardMaterial({ color: 0x4a4e44, metalness: .5, roughness: .6 });
+    const hullMat = new THREE.MeshStandardMaterial({ color: 0x3a3e35, metalness: .45, roughness: .7, envMapIntensity: .5 });
     const darkMat = new THREE.MeshStandardMaterial({ color: 0x24271f, metalness: .4, roughness: .7 });
     const hostileMat = new THREE.MeshBasicMaterial({ color: COLOR.hostile, transparent: true, opacity: .75, depthWrite: false, toneMapped: false });
     const stealthMat = new THREE.MeshBasicMaterial({ color: 0xd48cff, transparent: true, opacity: .3, depthWrite: false, wireframe: true, toneMapped: false });
@@ -2427,8 +2424,17 @@ td.role { color: var(--ink-dim); font-size: 13px; min-width: 14em; }
       R.setSize(w, h, false);
       cam.aspect = w / h;
       cam.updateProjectionMatrix();
+      fitCamera();
+      layoutTowers();
+      updateSelection();
+      render();
+    }
+    function fitCamera() {
+      const w = W3;
       const narrow = w < 560;
       spread = narrow ? .72 : 1;
+      target.set(0, 0, state.faction === 'all' ? -5 : -10);
+      controls.target.copy(target);
       const fitW = narrow ? 50 : 70;
       const hf = Math.atan(Math.tan(THREE.MathUtils.degToRad(15)) * cam.aspect);
       const d = (fitW / 2) / Math.tan(hf);
@@ -2440,9 +2446,6 @@ td.role { color: var(--ink-dim); font-size: 13px; min-width: 14em; }
       controls.update();
       const buf = R.getDrawingBufferSize(new THREE.Vector2());
       ptMats.forEach(m => { m.uniforms.uScale.value = buf.y / (2 * Math.tan(THREE.MathUtils.degToRad(15))); });
-      layoutTowers();
-      updateSelection();
-      render();
     }
 
     /* ---- picking ---- */
@@ -2489,7 +2492,7 @@ td.role { color: var(--ink-dim); font-size: 13px; min-width: 14em; }
 
     return {
       attach, place, kick, resize,
-      refresh(factionChanged) { if (factionChanged) layoutTowers(); updateSelection(); kick(); },
+      refresh(factionChanged) { if (factionChanged) { if (W3) fitCamera(); layoutTowers(); } updateSelection(); kick(); },
       motion() { controls.enableDamping = !reduced; kick(); }
     };
   }
@@ -2525,7 +2528,7 @@ td.role { color: var(--ink-dim); font-size: 13px; min-width: 14em; }
     rim.position.set(-7, 5, -8);
     sc3.add(rim);
     const ped = new THREE.Group();
-    const disc = new THREE.Mesh(new THREE.CylinderGeometry(4.3, 4.6, .4, 56), new THREE.MeshStandardMaterial({ color: 0x1b222a, metalness: .75, roughness: .4 }));
+    const disc = new THREE.Mesh(new THREE.CylinderGeometry(4.3, 4.6, .4, 56), new THREE.MeshStandardMaterial({ color: 0x141a20, metalness: .55, roughness: .62, envMapIntensity: .5 }));
     disc.position.y = -.2;
     disc.receiveShadow = true;
     const ringMat = new THREE.MeshBasicMaterial({ color: 0xffffff, toneMapped: false });
@@ -2599,6 +2602,9 @@ td.role { color: var(--ink-dim); font-size: 13px; min-width: 14em; }
         model = tmpl.clone(true);
         model.userData.key = k;
         sc3.add(model);
+        const fb = new THREE.Box3().setFromObject(model), fs = fb.getSize(new V3()), fc = fb.getCenter(new V3());
+        ped.scale.setScalar(Math.max(.35, Math.max(fs.x, fs.z) / 2 / 4.3 * 1.08));
+        ped.position.set(fc.x, fb.min.y, fc.z);
         const c = frame(model, cam, 35, 20, 1.05);
         ctl.target.copy(c);
         ctl.update();

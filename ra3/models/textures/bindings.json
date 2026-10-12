@@ -106,10 +106,7 @@
     },
     "haz_k": "soviet/dark_metal",
     "bag": "soviet/sandbag",
-    "bag_dark": {
-      "texture": "soviet/sandbag",
-      "white": 0.43
-    },
+    "bag_dark": "soviet/sandbag",
     "brass": "soviet/brass",
     "red": "soviet/paint_red",
     "olive": "soviet/steel_olive",
@@ -136,7 +133,7 @@
     "rivet": "soviet/plate_steel",
     "slit_frame": {
       "texture": "soviet/dark_metal",
-      "white": 0.47
+      "white": 0.49
     }
   },
   "SovietTeslaObelisk": {

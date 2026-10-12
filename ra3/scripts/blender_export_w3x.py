@@ -28,7 +28,8 @@ installed and enabled, or pointed to with --addon-path):
 What it does for every .glb:
   1. empties the scene, imports the glTF with Blender's built-in importer
      (that importer already converts glTF Y-up to Blender/W3D Z-up);
-  2. rotates the model by YAW_FIX[<TowerId>] so the turret's rest direction is +X, scales it;
+  2. rotates the model by YAW_FIX[<TowerId>] (and one node subtree by NODE_YAW_FIX) so the
+     turret's rest direction is +X, then scales it;
   3. builds one armature "<FTName>_SKL": every glTF node (Base, Turret, Barrel, Emitter, FX_*, ...)
      becomes a bone = W3X pivot, with the same parent/child structure (the wrapper root node named
      after the model is dropped - its children hang under the W3X ROOTTRANSFORM pivot);
@@ -83,19 +84,25 @@ HIERARCHY_SUFFIX = "_SKL"     # vanilla convention: XXX_SKN container + XXX_SKL 
 FACTION_PREFIXES = ("Allied", "Soviet", "Japan")
 MOVING_NODES = ("BASE", "TURRET", "BARREL", "EMITTER")
 
-# Per-model yaw correction, degrees counter-clockwise around Blender/W3D +Z (seen from above),
-# applied to the whole model after the glTF import.  W3D/W3X units and turrets conventionally
-# face +X; the generators did not all use the same "forward".  Axis mapping of Blender's glTF
-# importer (Y-up -> Z-up): glTF +X -> +X, glTF +Y -> +Z, glTF +Z -> -Y, glTF -Z -> +Y.
-#   rotation that maps Blender +Y to +X is -90 deg; -Y to +X is +90 deg.
-# Models not listed: 0 (forward already +X, or rotationally symmetric / no turret).
+# Per-model yaw correction, degrees counter-clockwise around Blender/W3D +Z (seen from above).
+# W3D/W3X units and turrets conventionally face +X; the generators did not all use the same
+# "forward".  Axis mapping of Blender's glTF importer (Y-up -> Z-up):
+#   glTF +X -> +X,  glTF +Y -> +Z,  glTF +Z -> -Y,  glTF -Z -> +Y.
+#   The rotation that maps Blender +Y to +X is -90 deg; -Y to +X is +90 deg.
+# YAW_FIX rotates the WHOLE model (keep it a multiple of 90 so the square 6 x 6 foundation stays
+# aligned with the RA3 build grid).  Models not listed: 0 (forward already +X, or no turret).
 YAW_FIX = {
     "AlliedCryoBastion": 0.0,          # turret forward = glTF +X  -> already +X
     "JapanTenguSpireNanocore": 0.0,    # nose = glTF +X            -> already +X
     "SovietFlakNest": -90.0,           # guns rest along glTF -Z = Blender +Y -> rotate -90 to +X
-    # Aegis head is modelled turned 45 deg toward glTF (+x,+z) = Blender (+x,-y), while its Turret
-    # node has no rotation: +45 makes the head look along +X at rest.
-    "AlliedAegisSpire": 45.0,          # VERIFY in game (turret rest direction / NaturalTurretAngle)
+}
+# NODE_YAW_FIX rotates only one node's subtree (the node, its meshes and child bones) around
+# that node's pivot, after YAW_FIX - for heads modelled turned "for the camera".
+NODE_YAW_FIX = {
+    # Aegis head is modelled turned 45 deg toward glTF (+x,+z) = Blender (+x,-y) while its Turret
+    # node has no rotation: +45 makes the head (and FX_Muzzle01/02) look along +X at rest; the
+    # plate and FX_ShieldDome stay as they are.
+    "AlliedAegisSpire": ("Turret", 45.0),   # VERIFY in game (turret rest / NaturalTurretAngle)
 }
 BONE_LEN_M = 0.02             # edit-bone length in metres (irrelevant for W3X, only for display)
 ADDON_MODULE = "io_mesh_w3d"
@@ -508,14 +515,36 @@ def convert(glb_path, out_dir, opts, bank):
     objs = [o for o in objs if o.type in ("MESH", "EMPTY")]
     order, wrappers = node_tree(objs)
 
-    # world transform used for the game: yaw around Z, then uniform scale
+    # world transform used for the game: yaw around Z (+ per-node yaw), then uniform scale
     yaw_deg = opts["yaw"] if opts["yaw"] is not None else YAW_FIX.get(stem, 0.0)
     if yaw_deg:
         log("  yaw correction %+g deg" % yaw_deg)
     yaw = Matrix.Rotation(math.radians(yaw_deg), 4, "Z")
+    game = {o: yaw @ o.matrix_world for o in order}
+    yaw_label = "%g" % yaw_deg
+    node_fix = NODE_YAW_FIX.get(stem) if opts["yaw"] is None else None
+    if node_fix:
+        fix_name, fix_deg = node_fix
+        top = [o for o in order if clean_name(o.name, False) == clean_name(fix_name, False)]
+        if top:
+            log("  %s yaw correction %+g deg" % (fix_name, fix_deg))
+            piv = Matrix.Translation(game[top[0]].to_translation())
+            spin = piv @ Matrix.Rotation(math.radians(fix_deg), 4, "Z") @ piv.inverted()
+            stack = [top[0]]
+            while stack:
+                n = stack.pop()
+                game[n] = spin @ game[n]
+                stack.extend(c for c in n.children if c in game)
+            yaw_label = "%g/%s%+g" % (yaw_deg, fix_name[:1], fix_deg)
+        else:
+            log("  warning: node %s for NODE_YAW_FIX not found" % fix_name)
     bone_mat, bone_name, used_bone_names = {}, {}, set()
     for o in order:
-        loc, rot, _ = (yaw @ o.matrix_world).decompose()
+        # pivot position gets the yaw, pivot orientation does NOT (the yaw is baked into the
+        # vertices): the engine turns TURRET/BARREL relative to the pivot's own axes, so a
+        # rest pivot aligned with the world keeps "forward = +X" in the pivot frame too.
+        loc = game[o].to_translation()
+        rot = o.matrix_world.to_quaternion()
         bone_mat[o] = Matrix.Translation(loc * s) @ rot.to_matrix().to_4x4()
         name = clean_name(o.name, keep_case)
         if name in used_bone_names:
@@ -558,7 +587,7 @@ def convert(glb_path, out_dir, opts, bank):
         is_fx = bname.upper().startswith("FX_")
         if is_fx and opts["drop_fx"]:
             continue
-        to_local = bone_mat[o].inverted() @ Matrix.Scale(s, 4) @ yaw @ o.matrix_world
+        to_local = bone_mat[o].inverted() @ Matrix.Scale(s, 4) @ game[o]
         parts = list(split_by_material(o))
         for k, (me, mat) in enumerate(parts):
             me.transform(to_local)
@@ -622,7 +651,7 @@ def convert(glb_path, out_dir, opts, bank):
             fh.write(text)
 
     tris = sum(len(ob.data.polygons) for ob in new_meshes)   # glTF meshes are triangles already
-    return dict(src=os.path.basename(glb_path), ft=ft, out=out, bones=len(order), yaw=yaw_deg,
+    return dict(src=os.path.basename(glb_path), ft=ft, out=out, bones=len(order), yaw=yaw_label,
                 meshes=len(new_meshes), tris=tris, textured=textured,
                 fx=sorted(b for b in used_bone_names if b.upper().startswith("FX_")),
                 moving=sorted(b for b in used_bone_names if b.upper() in MOVING_NODES))
@@ -675,7 +704,7 @@ def main():
     log("  %-32s %-24s %5s %6s %7s %5s %4s" % ("source", "W3X container", "bones", "meshes",
                                              "tris", "yaw", "tex"))
     for d in done:
-        log("  %-32s %-24s %5d %6d %7d %+5g %4d" % (d["src"], d["ft"], d["bones"], d["meshes"],
+        log("  %-32s %-24s %5d %6d %7d %5s %4d" % (d["src"], d["ft"], d["bones"], d["meshes"],
                                                    d["tris"], d["yaw"], d["textured"]))
         log("      moving bones: %s" % (" ".join(d["moving"]) or "-"))
         log("      FX bones    : %s" % (" ".join(d["fx"]) or "-"))
