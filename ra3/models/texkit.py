@@ -71,7 +71,8 @@ def blur(a, r=2):
 def panel_grid(size=SIZE, cols=4, rows=4, gap=4, bevel=10, jitter=0.0, seed=0):
     """Height map of raised panels separated by grooves (1 = panel top, 0 = groove).
 
-    jitter > 0 randomly merges/offsets rows for a less regular, hand-made layout.
+    jitter in 0..1 randomly offsets rows for a less regular, hand-made layout (values above 1
+    can leave gaps).
     Returns (height, panel_id) — panel_id lets you tint panels individually.
     """
     r = rng(seed)
@@ -95,7 +96,11 @@ def panel_grid(size=SIZE, cols=4, rows=4, gap=4, bevel=10, jitter=0.0, seed=0):
 
 
 def rivets(size=SIZE, spacing=32, radius=4, margin=0, seed=0, along="grid"):
-    """Height map of small domed rivets on a regular grid (wraps)."""
+    """Height map of small domed rivets on a regular grid.
+
+    Tiles only when `spacing` divides `size`. `margin`, `seed` and `along` are accepted for
+    compatibility but currently unused.
+    """
     yy, xx = np.mgrid[0:size, 0:size]
     cx = (xx + spacing // 2) % spacing - spacing // 2
     cy = (yy + spacing // 2) % spacing - spacing // 2
@@ -104,10 +109,16 @@ def rivets(size=SIZE, spacing=32, radius=4, margin=0, seed=0, along="grid"):
 
 
 def stripes(size=SIZE, period=64, angle_deg=45, duty=0.5):
-    """Diagonal stripe mask (hazard stripes). Period must divide size for seamless tiling at 45°."""
+    """Stripe mask (hazard stripes) that tiles seamlessly at any angle.
+
+    The stripe direction is snapped to the nearest one with a whole number of stripes across the
+    tile, so the real period can differ slightly from `period`.
+    """
     yy, xx = np.mgrid[0:size, 0:size]
     a = np.radians(angle_deg)
-    t = (xx * np.cos(a) + yy * np.sin(a)) / period
+    kx = round(size * np.cos(a) / period)
+    ky = round(size * np.sin(a) / period)
+    t = (xx * kx + yy * ky) / size
     return ((t % 1.0) < duty).astype(float)
 
 
@@ -121,7 +132,7 @@ def scratches(size=SIZE, count=120, length=40, seed=0):
         L = r.random() * length + 6
         for s in np.linspace(0, L, int(L * 2)):
             m[int(y + s * np.sin(a)) % size, int(x + s * np.cos(a)) % size] = 1
-    return blur(m, 1).clip(0, 1) * 2
+    return (blur(m, 1) * 2).clip(0, 1)
 
 
 def edge_wear(height, amount=0.5, noise=None):
