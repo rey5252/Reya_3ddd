@@ -51,10 +51,12 @@ def band(r0, y0, r1, y1, seg=48):
 
 
 def _cw(pts):
-    """meshkit.extrude wants polygons clockwise in the math (u, v) plane (ccw seen from +Y)."""
+    """Orient a polygon the way meshkit.extrude really needs it: counter-clockwise in the math
+    (u, v) plane (positive signed area). With the opposite order extrude's side normals point
+    inwards and _fix_winding then turns the side faces inside-out."""
     a = sum(pts[i][0] * pts[(i + 1) % len(pts)][1] - pts[(i + 1) % len(pts)][0] * pts[i][1]
             for i in range(len(pts)))
-    return list(reversed(pts)) if a > 0 else list(pts)
+    return list(reversed(pts)) if a < 0 else list(pts)
 
 
 def _swizzle(m: Mesh, order):
@@ -101,18 +103,39 @@ def rot_z(p, deg):
     return (x * math.cos(a) - y * math.sin(a), x * math.sin(a) + y * math.cos(a), z)
 
 
-def emblem(r=0.5, rays=14, t=0.025):
-    """Rising-sun emblem facing +z: white disc, crimson rays + sun. Returns (white, crimson)."""
-    w = cylinder(r, t, 28).rotate(90, 0, 0)                 # axis along -z..0 -> facing +z
-    w.translate(0, 0, t)
-    parts = [cylinder(r * 0.52, t, 24).rotate(90, 0, 0).translate(0, 0, 2 * t)]
-    half = math.radians(360.0 / rays / 2 * 0.62)
+def flat_disc(r, seg=28, rings=3, r_in=0.0):
+    """Single-sided flat disc / annulus facing +y, subdivided radially (wraps onto curves)."""
+    prof = [(r_in + (r - r_in) * (1 - i / rings), 0.0) for i in range(rings + 1)]
+    return lathe(prof, seg)
+
+
+def wrap(m: Mesh, R):
+    """Bend a mesh built facing +z (plane z=0 = surface) around a vertical cylinder of radius R."""
+    u, v, w = m.pos[:, 0].copy(), m.pos[:, 1].copy(), m.pos[:, 2].copy()
+    th = u / R
+    m.pos = np.stack([(R + w) * np.sin(th), v, (R + w) * np.cos(th) - R], 1).astype(np.float32)
+    nx, ny, nz = m.nrm[:, 0].copy(), m.nrm[:, 1].copy(), m.nrm[:, 2].copy()
+    m.nrm = np.stack([nx * np.cos(th) + nz * np.sin(th), ny, -nx * np.sin(th) + nz * np.cos(th)], 1).astype(np.float32)
+    return m
+
+
+def emblem(r=0.5, rays=14, body_r=None, seg=32):
+    """Rising-sun emblem facing +z: white disc, crimson rays + sun, black rim.
+    Returns dict material -> mesh. body_r bends it onto a round body of that radius."""
+    white = flat_disc(r, seg, 3).translate(0, 0.012, 0)
+    parts = [flat_disc(r * 0.42, seg, 2).translate(0, 0.03, 0)]
+    step = 360.0 / rays
     for i in range(rays):
-        c = math.radians(360.0 * i / rays + 360.0 / rays / 2)
-        pts = [(0.0, 0.0), (r * 0.93 * math.cos(c - half), r * 0.93 * math.sin(c - half)),
-               (r * 0.93 * math.cos(c + half), r * 0.93 * math.sin(c + half))]
-        parts.append(prism_xy(pts, t).translate(0, 0, 1.5 * t))
-    return w, merge(*parts)
+        c = step * i + step / 2
+        parts.append(lathe([(r * 0.9, 0), (r * 0.62, 0), (r * 0.36, 0)], 2,
+                           start_deg=c - step * 0.3, end_deg=c + step * 0.3).translate(0, 0.022, 0))
+    out = {"white": white, "crimson": merge(*parts),
+           "black": torus(r * 1.0, 0.03, seg, 4).scale(1, 0.6, 1).translate(0, 0.012, 0)}
+    for k, mm in out.items():
+        mm.rotate(90, 0, 0)
+        if body_r:
+            wrap(mm, body_r)
+    return out
 
 
 # --------------------------------------------------------------------------- tower
@@ -188,11 +211,9 @@ def build_tower():
     lean_u = slope_deg(*U0, *U1)
     for side in (FRONT, FRONT + 180):     # rising-sun emblems + crimson stripes
         ey = 3.05
-        w, c = emblem(0.56)
-        base.add(on_surface(w, side, r_at(*U0, *U1, ey) - 0.01, ey, lean_u), "white")
-        base.add(on_surface(c, side, r_at(*U0, *U1, ey) - 0.01, ey, lean_u), "crimson")
-        base.add(on_surface(torus(0.58, 0.035, 28, 6).rotate(90, 0, 0).translate(0, 0, 0.03), side,
-                            r_at(*U0, *U1, ey) - 0.01, ey, lean_u), "black")
+        rr = r_at(*U0, *U1, ey)
+        for mat, mm in emblem(0.74, 14, rr).items():
+            base.add(on_surface(mm, side, rr, ey, lean_u), mat)
         for da in (-27, 27):
             sy0, sy1 = 2.35, 3.95
             ym = (sy0 + sy1) / 2
@@ -212,14 +233,8 @@ def build_tower():
 
     # ---- two teal charging rings around the body (with soft halo)
     for (R, y) in ((2.62, 2.12), (2.18, 3.78)):
-        base.add(torus(R, 0.055, 48, 6).translate(0, y, 0), "core")
+        base.add(torus(R, 0.06, 48, 6).translate(0, y, 0), "teal")
         base.add(torus(R, 0.13, 40, 4).translate(0, y, 0), "halo")
-        for k in range(4):   # small emitter studs that "hold" the field
-            a = 360 * k / 4 + FRONT + 45
-            rb = r_at(*U0, *U1, y) if y > U0[1] else r_at(*L1, *L2, y)
-            base.add(on_surface(box(0.12, 0.12, max(R - rb - 0.15, 0.1)).translate(0, 0, max(R - rb - 0.15, 0.1) / 2),
-                                a, rb - 0.02, y), "dark")
-            base.add(on_surface(box(0.14, 0.14, 0.1), a, R - 0.12, y), "teal")
 
     # ---- Turret: black ring + support arms
     tur = base.node("Turret", (0, TURRET_Y, 0))
@@ -296,55 +311,52 @@ def build_nanocore():
     m = Model("JapanWaveCitadelNanocore")
     materials(m)
     base = m.node("Base")
-    # hull (side silhouette extruded across the width)
-    hull = [(-1.70, 0.36), (1.42, 0.36), (1.76, 0.62), (1.52, 0.98), (-1.52, 0.98), (-1.74, 0.78)]
-    base.add(prism_xy(hull, 1.56), "white")
-    skirt = [(-1.66, 0.30), (1.40, 0.30), (1.70, 0.56), (1.66, 0.62), (-1.72, 0.62)]
-    base.add(prism_xy(skirt, 1.66), "black")
-    base.add(prism_xy([(-1.60, 0.70), (1.60, 0.70), (1.66, 0.79), (-1.66, 0.79)], 1.60), "crimson")
-    # cab / visor at the front
-    base.add(prism_xy([(0.70, 0.96), (1.46, 0.96), (1.20, 1.28), (0.82, 1.30)], 1.20), "white")
-    base.add(prism_xy([(1.16, 1.0), (1.46, 1.0), (1.24, 1.26), (1.12, 1.26)], 1.0), "black")
-    base.add(box(0.06, 0.05, 0.9).translate(1.33, 1.08, 0), "teal")
-    # deck with folded dish package
-    base.add(box(1.9, 0.12, 1.36, bevel=0.15).translate(-0.4, 1.04, 0), "dark")
-    dish_c = (-0.42, 1.1, 0.0)
-    folded = [
-        (lathe([(0.0, 0.0), (0.5, 0.0), (0.95, 0.12), (1.05, 0.2)], 28), "white"),
-        (lathe([(1.05, 0.2), (1.12, 0.24), (1.12, 0.31), (1.0, 0.32)], 28), "crimson"),
-        (lathe([(1.0, 0.32), (0.6, 0.2), (0.0, 0.17)], 28), "bowl"),
-        (torus(0.78, 0.03, 28, 4).translate(0, 0.25, 0), "teal"),
-        (torus(0.45, 0.025, 24, 4).translate(0, 0.2, 0), "teal"),
-        (sphere(0.11, 10, 6).translate(0, 0.24, 0), "core"),
+    # lower hull (chamfered plan), black skirt, crimson stripe
+    base.add(box(3.5, 0.44, 1.70, bevel=0.32).translate(0, 0.56, 0), "white")
+    base.add(box(3.30, 0.12, 1.74, bevel=0.32).translate(0, 0.36, 0), "black")
+    base.add(box(3.52, 0.07, 1.72, bevel=0.32).translate(0, 0.66, 0), "crimson")
+    # upper deck with sloped nose and tail
+    base.add(prism_xy([(-1.62, 0.78), (1.64, 0.78), (1.22, 1.04), (-1.46, 1.04)], 1.42), "white")
+    base.add(prism_xy([(-1.30, 1.03), (0.60, 1.03), (0.60, 1.07), (-1.30, 1.07)], 1.22), "dark")
+    # cab / visor at the front (+x is forward)
+    base.add(prism_xy([(0.62, 1.03), (1.24, 1.03), (1.02, 1.30), (0.70, 1.32)], 1.10), "white")
+    base.add(prism_xy([(1.00, 1.05), (1.25, 1.05), (1.06, 1.28), (0.96, 1.28)], 0.96), "black")
+    base.add(box(0.04, 0.05, 0.86).rotate(0, 0, 40).translate(1.43, 0.92, 0), "teal")
+    base.add(box(0.30, 0.06, 0.06).translate(0.82, 1.335, 0), "crimson")
+    # folded dish package: closed bowl tilted back, horn folded along the tail
+    dc, tilt = (-0.40, 1.10, 0.0), 10.0
+    dish = [
+        (lathe([(0.0, 0.0), (0.42, 0.0), (0.66, 0.10), (0.72, 0.16)], 24), "white"),
+        (lathe([(0.72, 0.16), (0.78, 0.19), (0.78, 0.26), (0.70, 0.28)], 24), "crimson"),
+        (lathe([(0.70, 0.28), (0.45, 0.20), (0.0, 0.18)], 24), "bowl"),
+        (torus(0.56, 0.022, 24, 4).translate(0, 0.25, 0), "teal"),
+        (torus(0.33, 0.02, 20, 4).translate(0, 0.21, 0), "teal"),
+        (cylinder(0.15, 0.08, 12).translate(0, 0.18, 0), "black"),
+        (sphere(0.09, 10, 6).translate(0, 0.30, 0), "core"),
     ]
-    for mesh, mat in folded:
-        base.add(mesh.rotate(0, 0, 8).translate(*dish_c), mat)
-    # folded horn lying along the back, hinge blocks
-    base.add(tube_between((-0.9, 1.5, 0), (-1.68, 1.28, 0), 0.08, 10), "white")
-    base.add(cone(0.15, 0.4, 12).rotate(0, 0, 90).translate(-0.42, 1.52, 0).translate(0, 0, 0), "white")
-    base.add(box(0.36, 0.22, 0.5).translate(-1.38, 1.14, 0), "black")
-    base.add(sphere(0.06, 8, 5).translate(-1.70, 1.27, 0), "teal")
-    for sz in (-0.56, 0.56):
-        base.add(box(0.28, 0.3, 0.16).translate(-0.42, 1.2, sz * 1.0), "black")
-        base.add(box(0.1, 0.06, 0.04).translate(0.3, 1.0, sz * 1.27).translate(0, 0, 0), "teal")
-    # teal running lights along the sides + rear
+    for mesh, mat in dish:
+        base.add(mesh.rotate(0, 0, tilt).translate(*dc), mat)
+    base.add(tube_between((-0.48, 1.34, 0), (-1.42, 1.18, 0), 0.075, 10), "white")       # folded horn
+    base.add(band(0.11, 0, 0.11, 0.12, 10).rotate(0, 0, 80).translate(-1.18, 1.22, 0), "crimson")
+    base.add(sphere(0.07, 8, 5).translate(-1.47, 1.17, 0), "teal")
+    base.add(box(0.26, 0.16, 0.36).translate(-1.36, 1.10, 0), "black")                    # horn cradle
     for sz in (-1, 1):
-        for x in (-1.2, -0.6, 0.0, 0.6):
-            base.add(box(0.22, 0.05, 0.03).translate(x, 0.66, sz * 0.835), "teal")
-        w, c = emblem(0.22, rays=10, t=0.012)
-        ang = 0 if sz > 0 else 180
-        base.add(w.rotate(0, ang, 0).translate(-0.9 * (1 if sz > 0 else 1), 0.86, sz * 0.78), "white")
-        base.add(c.rotate(0, ang, 0).translate(-0.9, 0.86, sz * 0.78), "crimson")
-    base.add(box(0.03, 0.08, 1.0).translate(-1.74, 0.70, 0), "teal")
+        base.add(box(0.34, 0.24, 0.14).translate(-0.40, 1.16, sz * 0.66), "black")         # dish hinges
+        base.add(box(0.12, 0.05, 0.03).translate(-0.40, 1.18, sz * 0.735), "teal")
+        for x in (-1.15, -0.65, 0.25, 0.75):                                             # running lights
+            base.add(box(0.24, 0.05, 0.02).translate(x, 0.48, sz * 0.865), "teal")
+        for mat, mm in emblem(0.17, 8, None, 16).items():
+            base.add(mm.rotate(0, 0 if sz > 0 else 180, 0).translate(-0.20, 0.50, sz * 0.852), mat)
+    base.add(box(0.02, 0.06, 0.9).translate(-1.755, 0.52, 0), "teal")                     # tail light
     # 4 hover pads
-    for px in (-1.12, 1.08):
-        for pz in (-0.86, 0.86):
-            base.add(cylinder(0.36, 0.14, 20, r_top=0.32).translate(px, 0.16, pz), "white")
-            base.add(cylinder(0.38, 0.06, 20).translate(px, 0.28, pz), "crimson")
-            base.add(cylinder(0.30, 0.1, 20, r_top=0.36).translate(px, 0.06, pz), "black")
-            base.add(disc(0.24, 20).rotate(180, 0, 0).translate(px, 0.055, pz), "teal")
-            base.add(cylinder(0.26, 0.04, 20).translate(px, 0.0, pz), "teal_soft")
-            base.add(box(0.3, 0.16, 0.2).translate(px, 0.36, pz * 0.86), "dark")
+    for px in (-1.12, 1.10):
+        for pz in (-0.80, 0.80):
+            base.add(band(0.30, 0.02, 0.35, 0.16, 16).translate(px, 0, pz), "black")
+            base.add(band(0.35, 0.16, 0.30, 0.30, 16).translate(px, 0, pz), "white")
+            base.add(band(0.36, 0.15, 0.36, 0.19, 16).translate(px, 0, pz), "crimson")
+            base.add(disc(0.30, 16).translate(px, 0.30, pz), "white")
+            base.add(disc(0.26, 16).rotate(180, 0, 0).translate(px, 0.02, pz), "teal")
+            base.add(cylinder(0.20, 0.02, 12).translate(px, 0.0, pz), "teal_soft")
     return m
 
 
