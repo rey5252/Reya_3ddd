@@ -24,13 +24,21 @@ from __future__ import annotations
 
 import json
 import math
+import os
 import struct
+import sys
 from pathlib import Path
 
 import numpy as np
 
 PLATE_SIZE = 6.0
 PLATE_TOP = 0.35
+
+# --- textures (SPEC.md, "Текстури"): models/textures/<set>/<name>_{dif,nrm,spm}.png
+TEXTURES_DIR = Path(__file__).resolve().parent / "textures"
+BINDINGS_FILE = TEXTURES_DIR / "bindings.json"
+TEX_TILE = 2.0          # 1 texture tile = 2 model units (2 m)
+TEX_TINT_WHITE = 0.7    # baseColorFactor is lerped this far towards white on textured materials
 
 
 # --------------------------------------------------------------------------- mesh
@@ -246,9 +254,15 @@ def torus(R=1.0, r=0.15, segments=32, tube_segments=12) -> Mesh:
 
 
 def extrude(points2d, h=1.0, cap=True) -> Mesh:
-    """Extrude a convex-or-star-shaped polygon [(x, z), ...] (ccw seen from +Y) from y=0 to y=h."""
+    """Extrude a convex-or-star-shaped polygon [(x, z), ...] from y=0 to y=h.
+
+    Either winding order works: the points are reordered so the side walls always face outward.
+    """
     pts = [(float(x), float(z)) for x, z in points2d]
     n = len(pts)
+    area2 = sum(pts[i][0] * pts[(i + 1) % n][1] - pts[(i + 1) % n][0] * pts[i][1] for i in range(n))
+    if area2 < 0:  # side normals below are outward only for positive signed area in (x, z)
+        pts.reverse()
     pos, nrm, uv, idx = [], [], [], []
     for i in range(n):
         a, b = pts[i], pts[(i + 1) % n]
@@ -276,7 +290,7 @@ def extrude(points2d, h=1.0, cap=True) -> Mesh:
                 a, b = o + 1 + i, o + 1 + (i + 1) % n
                 idx.append((o, b, a) if flip else (o, a, b))
     m = Mesh(pos, nrm, uv, idx)
-    # make sure side winding faces outward regardless of input orientation
+    # make triangle winding agree with the (outward) normals computed above
     return _fix_winding(m)
 
 
@@ -396,9 +410,18 @@ class Model:
             yield n
             stack.extend(n.children)
 
-    def save(self, path):
+    def save(self, path, textures=None, bindings=None):
+        """Write the model as .glb.
+
+        textures: None = automatic (on unless env FT_NO_TEXTURES=1), False = never, True = always.
+        bindings: optional {material: "<set>/<name>" | {...}} overriding models/textures/bindings.json
+                  for this model. Bound materials get box-projected UVs (1 tile = TEX_TILE units)
+                  and external baseColor/normal textures (uri relative to the .glb).
+        """
         path = Path(path)
         mat_names = list(self.materials)
+        tex_plan = self._texture_plan(path, textures, bindings)
+        self.textured = sorted(tex_plan)
         gl = {"asset": {"version": "2.0", "generator": "Fortress Protocol meshkit"},
               "scene": 0, "scenes": [{"name": self.name, "nodes": []}],
               "nodes": [], "meshes": [], "materials": [], "accessors": [], "bufferViews": [], "buffers": []}
@@ -422,6 +445,8 @@ class Model:
             if m["alpha"] < 1:
                 mat["alphaMode"] = "BLEND"
                 mat["doubleSided"] = True
+            if mn in tex_plan:
+                _apply_texture(gl, mat, tex_plan[mn])
             gl["materials"].append(mat)
         blob = bytearray()
 
@@ -454,6 +479,8 @@ class Model:
             if n.prims:
                 prims = []
                 for mn, mesh in n.prims.items():
+                    if mn in tex_plan:
+                        mesh = box_project_uv(mesh, tex_plan[mn]["tile"])
                     p = (mesh.pos - t).astype(np.float32)
                     prims.append({"attributes": {
                         "POSITION": accessor(p, 5126, "VEC3", 34962, True),
@@ -487,6 +514,117 @@ class Model:
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(out)
         return path
+
+
+    # ------------------------------------------------------------------ textures
+
+    def _texture_plan(self, path: Path, textures=None, bindings=None) -> dict:
+        """{material: {"dif": uri, "nrm": uri|None, "white": f, "tile": f, "normal_scale": f}}."""
+        if textures is False or (textures is None and os.environ.get("FT_NO_TEXTURES", "") not in ("", "0")):
+            return {}
+        if bindings is None:
+            bindings = load_bindings().get(self.name)
+            if bindings is None:
+                bindings = load_bindings().get(path.stem, {})
+        plan = {}
+        for mn, spec in (bindings or {}).items():
+            if mn.startswith("_") or mn not in self.materials or not spec:
+                continue
+            if isinstance(spec, str):
+                spec = {"texture": spec}
+            name = spec.get("texture")
+            if not name:
+                continue
+            dif = TEXTURES_DIR / f"{name}_dif.png"
+            nrm = TEXTURES_DIR / f"{name}_nrm.png"
+            if not dif.exists():
+                print(f"meshkit: {self.name}: texture {name}_dif.png missing - material {mn!r} left untextured",
+                      file=sys.stderr)
+                continue
+            plan[mn] = {"texture": name, "dif": _rel_uri(dif, path.parent),
+                        "nrm": _rel_uri(nrm, path.parent) if nrm.exists() else None,
+                        "white": float(spec.get("white", TEX_TINT_WHITE)),
+                        "tile": float(spec.get("tile", TEX_TILE)),
+                        "normal_scale": float(spec.get("normal_scale", 1.0))}
+        return plan
+
+
+def load_bindings(file=None) -> dict:
+    """Read models/textures/bindings.json ({} if absent or broken)."""
+    f = Path(file) if file else BINDINGS_FILE
+    try:
+        return json.loads(f.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        return {}
+    except (OSError, ValueError) as e:
+        print(f"meshkit: cannot read {f}: {e} - saving without textures", file=sys.stderr)
+        return {}
+
+
+def _rel_uri(target: Path, base_dir: Path) -> str:
+    return Path(os.path.relpath(Path(target).resolve(), Path(base_dir).resolve())).as_posix()
+
+
+# face classes for box projection: (+X, -X, +Y, -Y, +Z, -Z) -> (u axis, u sign, v axis, v sign).
+# Side faces use v = -y so the image top points up (glTF v runs downwards in the image).
+_BOX_AXES = ((2, -1, 1, -1), (2, 1, 1, -1), (0, 1, 2, 1), (0, 1, 2, -1), (0, 1, 1, -1), (0, -1, 1, -1))
+
+
+def box_project_uv(mesh: Mesh, tile: float = TEX_TILE) -> Mesh:
+    """Box (tri-planar, per triangle) UVs from world positions: each triangle is projected along the
+    dominant axis of its face normal, 1 tile = `tile` units. Vertices are split only where triangles
+    sharing them project along different axes; positions/normals/triangles are unchanged."""
+    if len(mesh.idx) == 0:
+        return mesh
+    tri = mesh.pos[mesh.idx]
+    fn = np.cross(tri[:, 1] - tri[:, 0], tri[:, 2] - tri[:, 0])
+    deg = np.linalg.norm(fn, axis=1) < 1e-12
+    if deg.any():  # degenerate triangles: fall back to the averaged vertex normal
+        fn[deg] = mesh.nrm[mesh.idx[deg]].sum(1)
+    ax = np.abs(fn).argmax(1)
+    sign = fn[np.arange(len(fn)), ax] < 0
+    cls = (ax * 2 + sign).astype(np.int64)                       # (M,)
+    keys = mesh.idx.astype(np.int64) * 6 + cls[:, None]          # (M,3)
+    uniq, inv = np.unique(keys.reshape(-1), return_inverse=True)
+    src, c = uniq // 6, uniq % 6
+    p = mesh.pos[src]
+    axes = np.array(_BOX_AXES)[c]
+    r = np.arange(len(src))
+    u = p[r, axes[:, 0]] * axes[:, 1]
+    v = p[r, axes[:, 2]] * axes[:, 3]
+    uv = np.stack([u, v], 1) / float(tile)
+    return Mesh(p, mesh.nrm[src], uv, inv.reshape(-1, 3))
+
+
+def _apply_texture(gl: dict, mat: dict, plan: dict):
+    """Add baseColorTexture/normalTexture (external images, REPEAT + mipmaps) to a glTF material."""
+    def tex_index(uri):
+        imgs = gl.setdefault("images", [])
+        for i, im in enumerate(imgs):
+            if im.get("uri") == uri:
+                break
+        else:
+            imgs.append({"uri": uri, "mimeType": "image/png", "name": Path(uri).stem})
+            i = len(imgs) - 1
+        if not gl.get("samplers"):
+            gl["samplers"] = [{"magFilter": 9729, "minFilter": 9987, "wrapS": 10497, "wrapT": 10497}]
+        texs = gl.setdefault("textures", [])
+        for j, t in enumerate(texs):
+            if t["source"] == i:
+                return j
+        texs.append({"sampler": 0, "source": i})
+        return len(texs) - 1
+
+    pbr = mat["pbrMetallicRoughness"]
+    w = min(max(plan["white"], 0.0), 1.0)
+    col = pbr["baseColorFactor"]
+    pbr["baseColorFactor"] = [c + (1.0 - c) * w for c in col[:3]] + [col[3]]
+    pbr["baseColorTexture"] = {"index": tex_index(plan["dif"])}
+    if plan.get("nrm"):
+        mat["normalTexture"] = {"index": tex_index(plan["nrm"])}
+        if plan.get("normal_scale", 1.0) != 1.0:
+            mat["normalTexture"]["scale"] = plan["normal_scale"]
+    mat.setdefault("extras", {})["ft_texture"] = plan["texture"]
 
 
 def rgb(hex_color: str, k: float = 1.0):

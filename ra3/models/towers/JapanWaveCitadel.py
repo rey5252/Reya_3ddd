@@ -20,8 +20,8 @@ sys.path.insert(0, str(MODELS))
 
 import numpy as np  # noqa: E402
 
-from meshkit import (PLATE_TOP, Mesh, Model, box, cone, cylinder, disc, extrude,  # noqa: E402
-                     foundation_plate, lathe, merge, radial, rgb, sphere, torus, tube_between)
+from meshkit import (PLATE_TOP, Mesh, Model, box, cylinder, disc, extrude,  # noqa: E402
+                     lathe, merge, rgb, sphere, torus, tube_between)
 
 OUT = MODELS / "glb"
 
