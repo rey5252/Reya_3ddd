@@ -19,7 +19,8 @@ final class Mp3Encoder {
         AudioFormat pcm = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, sampleRate, 16, channels,
                 channels * 2, sampleRate, false, new HashMap<String, Object>());
         int mode = channels == 1 ? LameEncoder.CHANNEL_MODE_MONO : LameEncoder.CHANNEL_MODE_JOINT_STEREO;
-        lame = new LameEncoder(pcm, kbps, mode, LameEncoder.QUALITY_MIDDLE, false);
+        // LAME -q 7: ~2.6× faster than the default -q 5, inaudible at 128–320 kbps.
+        lame = new LameEncoder(pcm, kbps, mode, LameEncoder.QUALITY_LOW, false);
         chunk = Math.max(channels * 2, lame.getPCMBufferSize() / (channels * 2) * (channels * 2));
         mp3 = new byte[lame.getMP3BufferSize()];
         this.out = out;

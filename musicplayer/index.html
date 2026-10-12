@@ -310,7 +310,7 @@ body.is-loading .np-play .spin,body.is-loading .mini-play .spin{display:block}
 .mini-prog{position:absolute;left:10px;right:10px;bottom:0;height:2.5px;border-radius:2px;background:rgba(255,255,255,.2);overflow:hidden}
 .mini-prog i{position:absolute;inset:0;background:#fff;transform-origin:left;transform:scaleX(var(--p,0))}
 .tabbar{display:flex;padding:4px 8px calc(var(--safe-b) + 6px);height:calc(var(--tab-h) + var(--safe-b))}
-.tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--fg-2);font-size:11px;font-weight:700;transition:color .2s}
+.tab{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--fg-2);font-size:11px;font-weight:700;transition:color .2s}
 .tab .ic-f{display:none}
 .tab.on{color:var(--fg)}
 .tab.on .ic-o{display:none}
@@ -468,6 +468,8 @@ body.np-open .toasts{bottom:auto;top:calc(var(--safe-t) + 64px)}
 <symbol id="i-lib-f" viewBox="0 0 24 24"><path d="M5 3.5v17M10 3.5v17M14.2 4.2l5.6 16" fill="none" stroke="currentColor" stroke-width="2.9" stroke-linecap="round"/></symbol>
 <symbol id="i-yt" viewBox="0 0 24 24"><rect x="2.6" y="5.2" width="18.8" height="13.6" rx="4" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M10.2 9.4v5.2l4.5-2.6z" fill="currentColor"/></symbol>
 <symbol id="i-yt-f" viewBox="0 0 24 24"><rect x="2.2" y="4.8" width="19.6" height="14.4" rx="4.3" fill="currentColor"/><path d="M10.2 9.2v5.6l4.8-2.8z" fill="#101211"/></symbol>
+<symbol id="i-disc" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.2" fill="none" stroke="currentColor" stroke-width="1.9"/><circle cx="12" cy="12" r="2.6" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M6.6 9.6a6 6 0 0 1 3-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+<symbol id="i-disc-f" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="currentColor"/><circle cx="12" cy="12" r="2.8" fill="#101211"/><path d="M6.4 9.8a6.2 6.2 0 0 1 3.4-3.4" fill="none" stroke="#101211" stroke-width="1.6" stroke-linecap="round"/></symbol>
 <symbol id="i-play" viewBox="0 0 24 24"><path d="M7.5 4.9v14.2a1.2 1.2 0 0 0 1.8 1l11.3-7.1a1.2 1.2 0 0 0 0-2L9.3 3.9a1.2 1.2 0 0 0-1.8 1z" fill="currentColor"/></symbol>
 <symbol id="i-pause" viewBox="0 0 24 24"><rect x="5.5" y="4" width="4.6" height="16" rx="1.4" fill="currentColor"/><rect x="13.9" y="4" width="4.6" height="16" rx="1.4" fill="currentColor"/></symbol>
 <symbol id="i-next" viewBox="0 0 24 24"><path d="M5 5.3v13.4a1.1 1.1 0 0 0 1.7.9l9.6-6.7a1.1 1.1 0 0 0 0-1.8L6.7 4.4A1.1 1.1 0 0 0 5 5.3z" fill="currentColor"/><rect x="17.2" y="4.5" width="2.6" height="15" rx="1.3" fill="currentColor"/></symbol>
@@ -519,6 +521,7 @@ body.np-open .toasts{bottom:auto;top:calc(var(--safe-t) + 64px)}
       <button class="tab on" data-action="tab" data-tab="home"><svg class="ic ic-o"><use href="#i-home"/></svg><svg class="ic ic-f"><use href="#i-home-f"/></svg><span>Головна</span></button>
       <button class="tab" data-action="tab" data-tab="search"><svg class="ic ic-o"><use href="#i-search"/></svg><svg class="ic ic-f"><use href="#i-search-f"/></svg><span>Пошук</span></button>
       <button class="tab" id="ytTab" data-action="youtube" hidden><svg class="ic ic-o"><use href="#i-yt"/></svg><svg class="ic ic-f"><use href="#i-yt-f"/></svg><span>YouTube</span></button>
+      <button class="tab" id="spTab" data-action="spotify" hidden><svg class="ic ic-o"><use href="#i-disc"/></svg><svg class="ic ic-f"><use href="#i-disc-f"/></svg><span>Spotify</span></button>
       <button class="tab" data-action="tab" data-tab="library"><svg class="ic ic-o"><use href="#i-lib"/></svg><svg class="ic ic-f"><use href="#i-lib-f"/></svg><span>Бібліотека</span></button>
     </nav>
   </div>
@@ -1823,6 +1826,7 @@ const actions = {
   'np-artist': () => { const t = lib.get(P.current); if (t) openColl('artist', t.artist); },
   'np-menu': () => openTrackMenu(P.current, P.ctx && P.ctx.kind === 'playlist' && !P.fromQueue ? P.ctx.id : null),
   'youtube': () => { if (!AND || !AND.openYouTube) return; pauseNow(); AND.openYouTube(); },
+  'spotify': () => { if (!AND || !AND.openSpotify) return; pauseNow(); AND.openSpotify(); },
   'queue': () => openQueue(), 'sleep': () => openSleep(), 'speed': () => openSpeed(), 'settings': () => openSettings(),
   'import': () => { if (sheet.open) sheet.hide(); fileInput.click(); },
   'new-playlist': () => createPlaylist(),
@@ -2023,6 +2027,7 @@ async function boot() {
   updateMini(); renderNP(); syncMarks(); msMeta();
   if (location.hash === '#player' && P.current) openNP();
   if (AND && AND.openYouTube) $('#ytTab').hidden = false;
+  if (AND && AND.openSpotify) $('#spTab').hidden = false;
   importFromAndroid();
   // warm up the restored demo track in the background so the first tap on play starts instantly
   setTimeout(() => { const t = lib.get(P.current); if (t && t.demo && P.srcId !== t.id) sourceFor(t).catch(() => {}); }, 900);

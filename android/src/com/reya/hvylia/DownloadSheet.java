@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.Outline;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.InsetDrawable;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
@@ -22,43 +23,56 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.schabi.newpipe.extractor.ServiceList;
-import org.schabi.newpipe.extractor.stream.StreamInfo;
-
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-/** Bottom sheet: cover, title, channel, duration, MP3 quality with file sizes, folder, "Скачати". */
+/**
+ * Bottom sheet: cover, title, artist / channel, length, MP3 quality with file sizes, folder, «Скачати».
+ * Opens at once with what the page already shows; details that need the network fill in behind it.
+ */
 final class DownloadSheet extends Dialog {
+    /** What the sheet shows and what «Скачати» does. */
+    static final class Model {
+        String cover = "";
+        String title = "";
+        String subtitle = "";
+        String note = "";
+        long seconds;
+        int count = 1;
+        /** Optional: refines the model in the background (network). Throwing shows the error and offers a retry. */
+        Loader loader;
+        Starter starter;
+    }
+
+    interface Loader { void load(Model m) throws Exception; }
+    interface Starter { void start(int kbps, Uri tree); }
+
     private static final int[] RATES = { 320, 192, 128 };
     private static final ExecutorService IO = Executors.newCachedThreadPool();
 
-    private final YouTubeActivity act;
-    private final String videoId;
-    private final String videoUrl;
+    private final BrowserActivity act;
+    private final Model model;
     private final Handler main = new Handler(Looper.getMainLooper());
 
     private ImageView cover;
-    private TextView title, channel, length, status, folder, button;
+    private TextView title, subtitle, length, status, folder, button;
     private final LinearLayout[] rows = new LinearLayout[3];
     private final TextView[] sizes = new TextView[3];
     private final View[] radios = new View[3];
     private int selected;
-    private long seconds;
-    private boolean loading = true;
     private boolean failed;
     private boolean startAfterFolder;
-    private String videoTitle = "";
+    private String shownCover = "";
 
-    DownloadSheet(YouTubeActivity act, String videoId) {
+    DownloadSheet(BrowserActivity act, Model model) {
         super(act);
         this.act = act;
-        this.videoId = videoId;
-        this.videoUrl = "https://www.youtube.com/watch?v=" + videoId;
+        this.model = model;
         int saved = Store.kbps(act);
         selected = saved == 320 ? 0 : saved == 128 ? 2 : 1;
         build();
-        loadInfo();
+        refresh();
+        if (model.loader != null) load();
     }
 
     private int dp(float v) { return Ui.dp(act, v); }
@@ -81,7 +95,6 @@ final class DownloadSheet extends Dialog {
         gl.bottomMargin = dp(14);
         root.addView(grab, gl);
 
-        // header: cover + title, channel, duration
         LinearLayout head = new LinearLayout(act);
         head.setOrientation(LinearLayout.HORIZONTAL);
         head.setGravity(Gravity.CENTER_VERTICAL);
@@ -97,25 +110,27 @@ final class DownloadSheet extends Dialog {
         meta.setOrientation(LinearLayout.VERTICAL);
         LinearLayout.LayoutParams ml = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1);
         ml.leftMargin = dp(14);
-        title = Ui.text(act, "Завантажую дані про відео…", 16, Ui.FG, "manrope-800");
+        title = Ui.text(act, "", 16, Ui.FG, "manrope-800");
         title.setMaxLines(2);
         title.setEllipsize(TextUtils.TruncateAt.END);
         title.setLineSpacing(0, 1.12f);
-        channel = Ui.text(act, "", 13.5f, Ui.FG2, "manrope-600");
-        channel.setSingleLine(true);
-        channel.setEllipsize(TextUtils.TruncateAt.END);
+        subtitle = Ui.text(act, "", 13.5f, Ui.FG2, "manrope-600");
+        subtitle.setSingleLine(true);
+        subtitle.setEllipsize(TextUtils.TruncateAt.END);
         length = Ui.text(act, "", 12.5f, Ui.FG3, "manrope-600");
+        length.setSingleLine(true);
+        length.setEllipsize(TextUtils.TruncateAt.END);
         meta.addView(title);
         LinearLayout.LayoutParams cl = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         cl.topMargin = dp(6);
-        meta.addView(channel, cl);
+        meta.addView(subtitle, cl);
         LinearLayout.LayoutParams ll = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         ll.topMargin = dp(4);
         meta.addView(length, ll);
         head.addView(meta, ml);
         root.addView(head);
 
-        status = Ui.text(act, "", 13, Ui.DANGER, "manrope-600");
+        status = Ui.text(act, "", 13, Ui.FG3, "manrope-600");
         status.setVisibility(View.GONE);
         status.setLineSpacing(0, 1.2f);
         LinearLayout.LayoutParams sl = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -129,9 +144,12 @@ final class DownloadSheet extends Dialog {
         secl.bottomMargin = dp(8);
         root.addView(section, secl);
 
-        for (int i = 0; i < 3; i++) root.addView(qualityRow(i), rowParams());
+        for (int i = 0; i < 3; i++) {
+            LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            p.bottomMargin = dp(8);
+            root.addView(qualityRow(i), p);
+        }
 
-        // folder
         LinearLayout fr = new LinearLayout(act);
         fr.setOrientation(LinearLayout.HORIZONTAL);
         fr.setGravity(Gravity.CENTER_VERTICAL);
@@ -180,14 +198,6 @@ final class DownloadSheet extends Dialog {
             w.setWindowAnimations(R.style.SheetAnim);
             w.setNavigationBarColor(Ui.SHEET);
         }
-        updateRows();
-        updateButton();
-    }
-
-    private LinearLayout.LayoutParams rowParams() {
-        LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        p.bottomMargin = dp(8);
-        return p;
     }
 
     private View qualityRow(final int i) {
@@ -211,8 +221,7 @@ final class DownloadSheet extends Dialog {
             bl.leftMargin = dp(8);
             row.addView(badge, bl);
         }
-        View spacer = new View(act);
-        row.addView(spacer, new LinearLayout.LayoutParams(0, 1, 1));
+        row.addView(new View(act), new LinearLayout.LayoutParams(0, 1, 1));
         TextView size = Ui.text(act, "", 13.5f, Ui.FG2, "manrope-600");
         row.addView(size);
         row.setOnClickListener(v -> {
@@ -237,9 +246,36 @@ final class DownloadSheet extends Dialog {
             if (on) d.setColor(Ui.ACCENT);
             else { d.setColor(Color.TRANSPARENT); d.setStroke(dp(2), Ui.FG3); }
             radios[i].setBackground(d);
-            radios[i].setForeground(on ? new android.graphics.drawable.InsetDrawable(Ui.oval(Ui.ACCENT_INK), dp(7)) : null);
-            sizes[i].setText(seconds > 0 ? Ui.size(seconds, RATES[i]) : "");
+            radios[i].setForeground(on ? new InsetDrawable(Ui.oval(Ui.ACCENT_INK), dp(7)) : null);
+            sizes[i].setText(model.seconds > 0 ? Ui.size(model.seconds, RATES[i]) : "");
         }
+    }
+
+    /** Puts the model on screen; safe to call again after the loader changed it. */
+    private void refresh() {
+        title.setText(model.title.isEmpty() ? "Без назви" : model.title);
+        subtitle.setText(model.subtitle);
+        subtitle.setVisibility(model.subtitle.isEmpty() ? View.GONE : View.VISIBLE);
+        String len = model.seconds > 0 ? (model.count > 1 ? Ui.duration(model.seconds) + " загалом" : "Тривалість " + Ui.duration(model.seconds)) : "";
+        String line = model.count > 1 ? model.count + " " + tracks(model.count) + (len.isEmpty() ? "" : " · " + len) : len;
+        if (!model.note.isEmpty()) line = line.isEmpty() ? model.note : line + " · " + model.note;
+        length.setText(line);
+        button.setText(failed ? "Спробувати ще раз" : model.count > 1 ? "Скачати всі (" + model.count + ")" : "Скачати");
+        updateRows();
+        if (!model.cover.isEmpty() && !model.cover.equals(shownCover)) {
+            final String url = shownCover = model.cover;
+            IO.execute(() -> {
+                Bitmap b = DownloadService.fetchBitmap(url);
+                if (b == null) return;
+                final Bitmap sq = DownloadService.squareCrop(b, 300);
+                main.post(() -> { cover.setImageBitmap(sq); cover.setAlpha(0f); cover.animate().alpha(1f).setDuration(250).start(); });
+            });
+        }
+    }
+
+    private static String tracks(int n) {
+        int a = n % 10, b = n % 100;
+        return a == 1 && b != 11 ? "трек" : a >= 2 && a <= 4 && (b < 12 || b > 14) ? "треки" : "треків";
     }
 
     void refreshFolder() {
@@ -254,22 +290,8 @@ final class DownloadSheet extends Dialog {
         if (startAfterFolder) { startAfterFolder = false; onDownload(); }
     }
 
-    private void updateButton() {
-        if (loading) {
-            button.setText("Завантажую дані…");
-            button.setAlpha(0.55f);
-        } else if (failed) {
-            button.setText("Спробувати ще раз");
-            button.setAlpha(1f);
-        } else {
-            button.setText("Скачати");
-            button.setAlpha(1f);
-        }
-    }
-
     private void onDownload() {
-        if (loading) return;
-        if (failed) { loadInfo(); return; }
+        if (failed) { load(); return; }
         Uri tree = Store.tree(act);
         if (tree == null || Store.treeName(act, tree) == null) {
             startAfterFolder = true;
@@ -277,45 +299,28 @@ final class DownloadSheet extends Dialog {
             return;
         }
         act.ensureNotificationPermission();
-        DownloadService.start(act, videoUrl, videoTitle, RATES[selected], tree);
-        Toast.makeText(act, "Скачування почалося. Прогрес — у сповіщеннях.", Toast.LENGTH_SHORT).show();
+        model.starter.start(RATES[selected], tree);
+        Toast.makeText(act, model.count > 1 ? "У черзі " + model.count + " " + tracks(model.count) + ". Прогрес — у сповіщеннях."
+                : "Скачування почалося. Прогрес — у сповіщеннях.", Toast.LENGTH_SHORT).show();
         dismiss();
     }
 
-    private void loadInfo() {
-        loading = true;
+    private void load() {
         failed = false;
-        status.setVisibility(View.GONE);
-        updateButton();
-        IO.execute(() -> {
-            final Bitmap b = DownloadService.fetchBitmap("https://i.ytimg.com/vi/" + videoId + "/hqdefault.jpg");
-            if (b != null) {
-                final Bitmap sq = DownloadService.squareCrop(b, 300);
-                main.post(() -> { cover.setImageBitmap(sq); cover.setAlpha(0f); cover.animate().alpha(1f).setDuration(250).start(); });
-            }
-        });
+        status.setTextColor(Ui.FG3);
+        status.setText("Уточнюю дані…");
+        status.setVisibility(View.VISIBLE);
+        refresh();
         IO.execute(() -> {
             try {
-                YtDownloader.ensureInit();
-                final StreamInfo info = StreamInfo.getInfo(ServiceList.YouTube, videoUrl);
-                main.post(() -> {
-                    loading = false;
-                    videoTitle = info.getName() == null ? "" : info.getName();
-                    title.setText(videoTitle.isEmpty() ? "Відео без назви" : videoTitle);
-                    channel.setText(DownloadService.channel(info.getUploaderName()));
-                    seconds = info.getDuration();
-                    length.setText(seconds > 0 ? "Тривалість " + Ui.duration(seconds) : "");
-                    updateRows();
-                    updateButton();
-                });
+                model.loader.load(model);
+                main.post(() -> { status.setVisibility(View.GONE); refresh(); });
             } catch (final Throwable e) {
                 main.post(() -> {
-                    loading = false;
                     failed = true;
-                    if (videoTitle.isEmpty()) title.setText("Не вдалося отримати дані");
+                    status.setTextColor(Ui.DANGER);
                     status.setText(DownloadService.explain(e));
-                    status.setVisibility(View.VISIBLE);
-                    updateButton();
+                    refresh();
                 });
             }
         });

@@ -243,6 +243,13 @@ public class MainActivity extends Activity {
             });
         }
 
+        @JavascriptInterface
+        public void openSpotify() {
+            runOnUiThread(new Runnable() {
+                @Override public void run() { startActivity(new Intent(MainActivity.this, SpotifyActivity.class)); }
+            });
+        }
+
         /** JSON array of {uri, name} for MP3s waiting to be added to the library; clears the queue. */
         @JavascriptInterface
         public String takePendingImports() {

@@ -20,7 +20,6 @@ import android.provider.DocumentsContract;
 import android.widget.Toast;
 
 import org.schabi.newpipe.extractor.Image;
-import org.schabi.newpipe.extractor.ServiceList;
 import org.schabi.newpipe.extractor.exceptions.AgeRestrictedContentException;
 import org.schabi.newpipe.extractor.exceptions.ContentNotAvailableException;
 import org.schabi.newpipe.extractor.exceptions.ExtractionException;
@@ -46,22 +45,30 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
+import java.io.RandomAccessFile;
 import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.SocketException;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Downloads the audio of a YouTube video in the background and saves it as a tagged MP3:
- * NewPipeExtractor finds the best audio stream → chunked download → MediaCodec decode → MP3 (jump3r)
- * → ID3 title / artist / cover → the folder the user picked → added to Hvylia's library.
+ * Downloads audio in the background and saves it as a tagged MP3:
+ * (Spotify tracks: find the same recording on YouTube first) → NewPipeExtractor picks the best audio stream →
+ * parallel ranged download → MediaCodec decode → MP3 (jump3r) → ID3 title / artist / album / cover →
+ * the folder the user picked → added to Hvylia's library.
  */
 public class DownloadService extends Service {
     static final String ACTION_DOWNLOAD = "com.reya.hvylia.DOWNLOAD";
@@ -71,6 +78,7 @@ public class DownloadService extends Service {
     private static final int ID_PROGRESS = 10;
     private static final AtomicInteger NEXT_ID = new AtomicInteger(100);
     private static final int CHUNK = 2 * 1024 * 1024;
+    private static final int PARALLEL = 3;
 
     private final ExecutorService worker = Executors.newSingleThreadExecutor();
     private final Handler main = new Handler(Looper.getMainLooper());
@@ -79,9 +87,46 @@ public class DownloadService extends Service {
     private int queued; // main thread only
     private long lastUpdate;
 
-    static void start(Context c, String videoUrl, String title, int kbps, Uri tree) {
+    /** One download: either a YouTube video URL, or track details to look up on YouTube. */
+    static final class Job {
+        String url;      // YouTube watch URL, or null to search
+        String title = "";
+        String artist = "";
+        String album = "";
+        String cover = ""; // cover image URL (Spotify); empty = use the video thumbnail
+        String spotifyId = "";
+        long seconds;
+        int kbps = 192;
+        Uri tree;
+    }
+
+    static void startYouTube(Context c, String videoUrl, String title, int kbps, Uri tree) {
+        Job j = new Job();
+        j.url = videoUrl;
+        j.title = title == null ? "" : title;
+        j.kbps = kbps;
+        j.tree = tree;
+        start(c, j);
+    }
+
+    static void startTrack(Context c, SpotifyMeta.Track t, int kbps, Uri tree) {
+        Job j = new Job();
+        j.title = t.title;
+        j.artist = t.artists;
+        j.album = t.album;
+        j.cover = t.cover;
+        j.spotifyId = t.id;
+        j.seconds = t.seconds;
+        j.kbps = kbps;
+        j.tree = tree;
+        start(c, j);
+    }
+
+    private static void start(Context c, Job j) {
         Intent i = new Intent(c, DownloadService.class).setAction(ACTION_DOWNLOAD)
-                .putExtra("url", videoUrl).putExtra("title", title).putExtra("kbps", kbps).putExtra("tree", tree.toString());
+                .putExtra("url", j.url).putExtra("title", j.title).putExtra("artist", j.artist)
+                .putExtra("album", j.album).putExtra("cover", j.cover).putExtra("seconds", j.seconds).putExtra("spotify", j.spotifyId)
+                .putExtra("kbps", j.kbps).putExtra("tree", j.tree.toString());
         if (Build.VERSION.SDK_INT >= 26) c.startForegroundService(i);
         else c.startService(i);
     }
@@ -110,17 +155,25 @@ public class DownloadService extends Service {
             if (queued <= 0) stopSelfNow();
             return START_NOT_STICKY;
         }
-        final String url = intent.getStringExtra("url");
-        final String title = intent.getStringExtra("title");
-        final int kbps = intent.getIntExtra("kbps", 192);
-        final Uri tree = Uri.parse(intent.getStringExtra("tree"));
+        final Job j = new Job();
+        j.url = intent.getStringExtra("url");
+        j.title = nz(intent.getStringExtra("title"));
+        j.artist = nz(intent.getStringExtra("artist"));
+        j.album = nz(intent.getStringExtra("album"));
+        j.cover = nz(intent.getStringExtra("cover"));
+        j.seconds = intent.getLongExtra("seconds", 0);
+        j.spotifyId = nz(intent.getStringExtra("spotify"));
+        j.kbps = intent.getIntExtra("kbps", 192);
+        j.tree = Uri.parse(intent.getStringExtra("tree"));
         queued++;
-        Notification n = progress(title, queued > 1 ? "У черзі…" : "Готую скачування…", 0, true);
+        Notification n = progress(j.title, queued > 1 ? "У черзі: " + queued : "Готую скачування…", 0, true);
         if (Build.VERSION.SDK_INT >= 29) startForeground(ID_PROGRESS, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC);
         else startForeground(ID_PROGRESS, n);
-        worker.execute(() -> run(url, title == null ? "" : title, kbps, tree));
+        worker.execute(() -> run(j));
         return START_NOT_STICKY;
     }
+
+    private static String nz(String s) { return s == null ? "" : s; }
 
     @Override
     public IBinder onBind(Intent intent) { return null; }
@@ -139,36 +192,49 @@ public class DownloadService extends Service {
 
     // ---------------------------------------------------------------- the job
 
-    private void run(String url, String fallbackTitle, int kbps, Uri tree) {
+    private void run(Job job) {
         cancel = false;
-        String title = fallbackTitle;
+        String title = job.title;
         File src = null;
         File mp3 = null;
         try {
             YtDownloader.ensureInit();
-            update(title, "Отримую дані про відео…", 0, true, true);
-            StreamInfo info = StreamInfo.getInfo(ServiceList.YouTube, url);
-            if (info.getName() != null && !info.getName().trim().isEmpty()) title = info.getName().trim();
-            String artist = channel(info.getUploaderName());
+            String url = job.url;
+            if (url == null || url.isEmpty()) {
+                update(title, "Шукаю цей трек на YouTube…", 0, true, true);
+                if (!job.spotifyId.isEmpty() && (job.artist.isEmpty() || job.seconds <= 0 || job.cover.isEmpty())) {
+                    SpotifyMeta.Track t = new SpotifyMeta.Track();
+                    t.id = job.spotifyId; t.title = job.title; t.artists = job.artist; t.album = job.album;
+                    t.cover = job.cover; t.seconds = job.seconds;
+                    SpotifyMeta.complete(t);
+                    job.artist = t.artists; job.album = t.album; job.cover = t.cover; job.seconds = t.seconds;
+                }
+                url = YtSearch.find(job.title, job.artist, job.seconds);
+            }
+            checkCancel();
+            update(title, "Отримую звук…", 0, true, true);
+            StreamInfo info = StreamCache.get(url);
+            if (title.isEmpty() && info.getName() != null) title = info.getName().trim();
+            String artist = !job.artist.isEmpty() ? job.artist : channel(info.getUploaderName());
+            String album = !job.album.isEmpty() ? job.album : "YouTube";
             AudioStream audio = pickAudio(info.getAudioStreams());
             if (audio == null) throw new NoAudioException();
             checkCancel();
 
             String ext = audio.getFormat() != null ? audio.getFormat().getSuffix() : "m4a";
-            src = new File(getCacheDir(), "yt-" + info.getId() + "." + ext);
+            src = new File(getCacheDir(), "dl-" + info.getId() + "." + ext);
             download(audio, src, title);
 
-            update(title, "Готую обкладинку…", 56, false, true);
-            byte[] cover = cover(info);
+            byte[] cover = cover(job.cover, info);
             checkCancel();
 
-            mp3 = new File(getCacheDir(), "yt-" + info.getId() + ".mp3");
+            mp3 = new File(getCacheDir(), "dl-" + info.getId() + ".mp3");
             final String t = title;
             OutputStream os = new BufferedOutputStream(new FileOutputStream(mp3), 1 << 16);
             try {
-                os.write(Id3.tag(title, artist, "YouTube", cover, "image/jpeg"));
-                AudioTranscoder.toMp3(src.getPath(), os, kbps, new AudioTranscoder.Progress() {
-                    @Override public void on(float f) { update(t, "Перекодування в MP3…", 56 + Math.round(f * 42), false, false); }
+                os.write(Id3.tag(title, artist, album, cover, "image/jpeg"));
+                AudioTranscoder.toMp3(src.getPath(), os, job.kbps, new AudioTranscoder.Progress() {
+                    @Override public void on(float f) { update(t, "Перекодування в MP3…", 60 + Math.round(f * 38), false, false); }
                     @Override public boolean cancelled() { return cancel; }
                 });
             } catch (AudioTranscoder.CancelledException e) {
@@ -182,12 +248,12 @@ public class DownloadService extends Service {
             checkCancel();
 
             update(title, "Зберігаю у папку…", 99, false, true);
-            String fileName = fileName(title) + ".mp3";
-            Uri doc = save(tree, fileName, mp3);
+            String fileName = fileName(job.artist.isEmpty() ? title : job.artist + " - " + title) + ".mp3";
+            Uri doc = save(job.tree, fileName, mp3);
             Store.addPending(this, doc, fileName);
             MainActivity.js("window.__hvyliaCheckImports&&__hvyliaCheckImports()");
-            String folder = Store.treeName(this, tree);
-            finished(title, "MP3 " + kbps + " кбіт/с" + (folder != null ? " у папці «" + folder + "»" : "") + " і в бібліотеці Хвилі.", false);
+            String folder = Store.treeName(this, job.tree);
+            finished(title, "MP3 " + job.kbps + " кбіт/с" + (folder != null ? " у папці «" + folder + "»" : "") + " і в бібліотеці Хвилі.", false);
         } catch (AudioTranscoder.CancelledException e) {
             finished(title, "Скачування скасовано.", true);
         } catch (Throwable e) {
@@ -223,55 +289,101 @@ public class DownloadService extends Service {
         return best;
     }
 
-    private void download(AudioStream audio, File out, String title) throws IOException {
-        String url = audio.getContent();
+    // ---------------------------------------------------------------- download
+
+    /** Several ranged requests in parallel (YouTube serves each connection slowly); falls back to one stream. */
+    private void download(AudioStream audio, File out, final String title) throws IOException {
+        final String url = audio.getContent();
         ItagItem itag = audio.getItagItem();
-        long total = itag != null && itag.getContentLength() > 0 ? itag.getContentLength() : -1;
-        long pos = 0;
-        byte[] buf = new byte[64 * 1024];
-        OutputStream os = new BufferedOutputStream(new FileOutputStream(out), 1 << 16);
+        long known = itag != null && itag.getContentLength() > 0 ? itag.getContentLength() : -1;
+        final AtomicLong done = new AtomicLong();
+        RandomAccessFile raf = new RandomAccessFile(out, "rw");
         try {
-            int failures = 0;
-            while (total < 0 || pos < total) {
-                checkCancel();
-                long end = pos + CHUNK - 1;
-                if (total > 0) end = Math.min(end, total - 1);
-                HttpURLConnection c = (HttpURLConnection) new URL(url).openConnection();
-                try {
-                    c.setConnectTimeout(20000);
-                    c.setReadTimeout(30000);
-                    YtDownloader.streamHeaders(c, url);
-                    c.setRequestProperty("Range", "bytes=" + pos + "-" + end);
-                    int code = c.getResponseCode();
-                    if (code == 416 && total < 0) break;
-                    if (code == 403) throw new ForbiddenException();
-                    if (code != 200 && code != 206) throw new IOException("HTTP " + code);
-                    if (total < 0) total = totalSize(c, code);
-                    InputStream in = c.getInputStream();
-                    try {
-                        for (int n; (n = in.read(buf)) > 0; ) {
+            raf.setLength(0);
+            final FileChannel ch = raf.getChannel();
+            // First chunk tells us whether ranges work and how big the file is.
+            long[] probe = fetchRange(url, 0, CHUNK - 1, ch, done, known, title);
+            final long total = known > 0 ? known : probe[1];
+            if (probe[0] == 200 || total <= 0 || done.get() >= total) return; // whole file already came in one go
+            final AtomicLong next = new AtomicLong(CHUNK);
+            ExecutorService pool = Executors.newFixedThreadPool(PARALLEL);
+            List<Future<?>> parts = new ArrayList<>();
+            try {
+                for (int i = 0; i < PARALLEL; i++) {
+                    parts.add(pool.submit(() -> {
+                        for (long start; (start = next.getAndAdd(CHUNK)) < total; ) {
                             checkCancel();
-                            os.write(buf, 0, n);
-                            pos += n;
-                            if (total > 0) update(title, "Завантаження звуку…", (int) (pos * 55 / total), false, false);
+                            fetchRange(url, start, Math.min(start + CHUNK, total) - 1, ch, done, total, title);
                         }
-                    } finally { in.close(); }
-                    failures = 0;
-                    if (code == 200) break; // the server sent the whole file at once
-                    if (total < 0) break;
-                } catch (ForbiddenException | AudioTranscoder.CancelledException e) {
-                    throw e;
-                } catch (IOException e) {
-                    if (++failures > 4) throw e;
-                    SystemClock.sleep(1000L * failures);
-                } finally {
-                    c.disconnect();
+                        return null;
+                    }));
                 }
+                for (Future<?> f : parts) {
+                    try { f.get(); }
+                    catch (InterruptedException e) { throw new InterruptedIOException(); }
+                    catch (ExecutionException e) {
+                        cancelAll(parts);
+                        Throwable c = e.getCause();
+                        if (c instanceof IOException) throw (IOException) c;
+                        throw new IOException(c);
+                    }
+                }
+            } finally {
+                pool.shutdownNow();
             }
+            if (done.get() < total) throw new IOException("incomplete download");
         } finally {
-            os.close();
+            raf.close();
         }
-        if (pos == 0) throw new IOException("empty download");
+    }
+
+    private static void cancelAll(List<Future<?>> parts) {
+        for (Future<?> f : parts) f.cancel(true);
+    }
+
+    /**
+     * Downloads [start, end] into the file at its offset, retrying a few times from where it stopped.
+     * @return {HTTP status, total size or -1}
+     */
+    private long[] fetchRange(String url, long start, long end, FileChannel ch, AtomicLong done, long total, String title) throws IOException {
+        long pos = start;
+        int failures = 0;
+        byte[] buf = new byte[64 * 1024];
+        while (true) {
+            checkCancel();
+            HttpURLConnection c = (HttpURLConnection) new URL(url).openConnection();
+            try {
+                c.setConnectTimeout(20000);
+                c.setReadTimeout(30000);
+                YtDownloader.streamHeaders(c, url);
+                c.setRequestProperty("Range", "bytes=" + pos + "-" + end);
+                int code = c.getResponseCode();
+                if (code == 403) throw new ForbiddenException();
+                if (code != 200 && code != 206) throw new IOException("HTTP " + code);
+                long size = total > 0 ? total : totalSize(c, code);
+                if (code == 200 && pos > 0) throw new IOException("ranges not supported");
+                InputStream in = c.getInputStream();
+                try {
+                    for (int n; (n = in.read(buf)) > 0; ) {
+                        checkCancel();
+                        ch.write(ByteBuffer.wrap(buf, 0, n), pos);
+                        pos += n;
+                        long d = done.addAndGet(n);
+                        if (size > 0) update(title, "Завантаження звуку…", (int) Math.min(59, d * 60 / size), false, false);
+                    }
+                } finally { in.close(); }
+                long last = size > 0 ? Math.min(end, size - 1) : end;
+                if (code == 206 && pos <= last) throw new IOException("short read");
+                return new long[] { code, size };
+            } catch (ForbiddenException | AudioTranscoder.CancelledException e) {
+                throw e;
+            } catch (IOException e) {
+                if (++failures > 4) throw e;
+                SystemClock.sleep(800L * failures);
+            } finally {
+                c.disconnect();
+            }
+        }
     }
 
     private static long totalSize(HttpURLConnection c, int code) {
@@ -283,17 +395,21 @@ public class DownloadService extends Service {
         return code == 200 ? c.getContentLengthLong() : -1;
     }
 
-    /** A square JPEG cover from the video thumbnail, or null. */
-    private static byte[] cover(StreamInfo info) {
-        String url = null;
-        int bestW = -1;
-        for (Image im : info.getThumbnails()) {
-            int w = im.getWidth() > 0 ? im.getWidth() : 480;
-            if (w > bestW && w <= 1280) { bestW = w; url = im.getUrl(); }
+    // ---------------------------------------------------------------- cover
+
+    /** A square JPEG cover: the given image (Spotify), else the video thumbnail; null if none loads. */
+    private static byte[] cover(String coverUrl, StreamInfo info) {
+        Bitmap b = coverUrl.isEmpty() ? null : fetchBitmap(coverUrl);
+        if (b == null) {
+            String url = null;
+            int bestW = -1;
+            for (Image im : info.getThumbnails()) {
+                int w = im.getWidth() > 0 ? im.getWidth() : 480;
+                if (w > bestW && w <= 1280) { bestW = w; url = im.getUrl(); }
+            }
+            if (url != null) b = fetchBitmap(url);
+            if (b == null) b = fetchBitmap("https://i.ytimg.com/vi/" + info.getId() + "/hqdefault.jpg");
         }
-        if (url == null) url = "https://i.ytimg.com/vi/" + info.getId() + "/hqdefault.jpg";
-        Bitmap b = fetchBitmap(url);
-        if (b == null) b = fetchBitmap("https://i.ytimg.com/vi/" + info.getId() + "/hqdefault.jpg");
         if (b == null) return null;
         Bitmap sq = squareCrop(b, 600);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -321,12 +437,13 @@ public class DownloadService extends Service {
     static Bitmap squareCrop(Bitmap b, int size) {
         int w = b.getWidth(), h = b.getHeight();
         int top = 0, bottom = h;
-        // drop letterbox bars from 4:3 "hqdefault" thumbnails
-        if (w * 3 == h * 4) { int bar = h / 8; top = bar; bottom = h - bar; }
+        if (w * 3 == h * 4) { int bar = h / 8; top = bar; bottom = h - bar; } // letterboxed 4:3 "hqdefault"
         int ch = bottom - top, side = Math.min(w, ch);
         Bitmap cut = Bitmap.createBitmap(b, (w - side) / 2, top + (ch - side) / 2, side, side);
         return Bitmap.createScaledBitmap(cut, size, size, true);
     }
+
+    // ---------------------------------------------------------------- save
 
     private Uri save(Uri tree, String name, File file) throws IOException {
         try {
@@ -379,6 +496,7 @@ public class DownloadService extends Service {
             if (t instanceof FolderException) return "Немає доступу до папки. Обери папку ще раз у панелі скачування.";
             if (t instanceof TranscodeException) return "Не вдалося перекодувати звук у MP3. Спробуй іншу якість або інше відео.";
             if (t instanceof NoAudioException) return "У цього відео немає звукової доріжки, яку можна скачати.";
+            if (t instanceof YtSearch.NotFoundException) return "Не знайшов цей трек на YouTube. Спробуй інший трек.";
             if (t instanceof ForbiddenException) return "YouTube не дозволив скачати звук (помилка 403). Спробуй ще раз трохи пізніше.";
             if (t instanceof UnknownHostException || t instanceof ConnectException
                     || t instanceof InterruptedIOException || t instanceof SocketException
@@ -399,17 +517,18 @@ public class DownloadService extends Service {
 
     // ---------------------------------------------------------------- notifications
 
-    private void update(String title, String text, int percent, boolean indeterminate, boolean force) {
+    private synchronized void update(String title, String text, int percent, boolean indeterminate, boolean force) {
         long now = SystemClock.uptimeMillis();
         if (!force && now - lastUpdate < 500) return;
         lastUpdate = now;
-        nm.notify(ID_PROGRESS, progress(title, text + (indeterminate ? "" : " " + percent + "%"), percent, indeterminate));
+        String more = queued > 1 ? " · ще " + (queued - 1) + " в черзі" : "";
+        nm.notify(ID_PROGRESS, progress(title, text + (indeterminate ? "" : " " + percent + "%") + more, percent, indeterminate));
     }
 
     private Notification progress(String title, String text, int percent, boolean indeterminate) {
         Notification.Builder b = builder(CH_PROGRESS)
                 .setSmallIcon(R.drawable.ic_download)
-                .setContentTitle(title == null || title.isEmpty() ? "Скачування з YouTube" : title)
+                .setContentTitle(title == null || title.isEmpty() ? "Скачування MP3" : title)
                 .setContentText(text)
                 .setProgress(100, percent, indeterminate)
                 .setOngoing(true)
