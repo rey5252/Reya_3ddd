@@ -31,7 +31,7 @@ import java.util.Map;
  * so the app works offline.
  */
 public class MainActivity extends Activity {
-    static final String HOST = "appassets.androidplatform.net";
+    static final String HOST = Assets.HOST;
     private static final int PICK_AUDIO = 41;
     static MainActivity instance;
 
@@ -145,15 +145,8 @@ public class MainActivity extends Activity {
         @Override
         public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest req) {
             Uri u = req.getUrl();
-            String host = u.getHost();
-            if (HOST.equals(host)) {
-                String path = u.getPath();
-                if ("/__dl".equals(path)) return downloaded(u.getQueryParameter("u"));
-                if (path == null || path.equals("/") || path.isEmpty()) path = "/index.html";
-                return asset("www" + path);
-            }
-            if ("fonts.googleapis.com".equals(host)) return asset("www/fonts/fonts.css");
-            return null;
+            if (HOST.equals(u.getHost()) && "/__dl".equals(u.getPath())) return downloaded(u.getQueryParameter("u"));
+            return Assets.serve(MainActivity.this, u);
         }
 
         @Override
@@ -165,49 +158,18 @@ public class MainActivity extends Activity {
         }
     }
 
-    private WebResourceResponse asset(String path) {
-        if (path.contains("..")) return notFound();
-        try {
-            InputStream in = getAssets().open(path);
-            Map<String, String> headers = new HashMap<>();
-            headers.put("Cache-Control", "no-cache");
-            headers.put("Access-Control-Allow-Origin", "*");
-            String mime = mime(path);
-            String enc = mime.startsWith("text/") || mime.endsWith("javascript") || mime.endsWith("json") ? "utf-8" : null;
-            return new WebResourceResponse(mime, enc, 200, "OK", headers, in);
-        } catch (IOException e) {
-            return notFound();
-        }
-    }
-
     /** Streams an MP3 the YouTube tab saved, so the page can add it to its library. */
     private WebResourceResponse downloaded(String uri) {
-        if (uri == null || !Store.isAllowed(this, uri)) return notFound();
+        if (uri == null || !Store.isAllowed(this, uri)) return Assets.notFound();
         try {
             InputStream in = getContentResolver().openInputStream(Uri.parse(uri));
-            if (in == null) return notFound();
+            if (in == null) return Assets.notFound();
             Map<String, String> headers = new HashMap<>();
             headers.put("Cache-Control", "no-store");
             return new WebResourceResponse("audio/mpeg", null, 200, "OK", headers, in);
         } catch (IOException | SecurityException e) {
-            return notFound();
+            return Assets.notFound();
         }
-    }
-
-    private static WebResourceResponse notFound() {
-        return new WebResourceResponse("text/plain", "utf-8", 404, "Not Found", new HashMap<String, String>(), null);
-    }
-
-    private static String mime(String p) {
-        String l = p.toLowerCase();
-        if (l.endsWith(".html")) return "text/html";
-        if (l.endsWith(".css")) return "text/css";
-        if (l.endsWith(".js")) return "application/javascript";
-        if (l.endsWith(".json") || l.endsWith(".webmanifest")) return "application/json";
-        if (l.endsWith(".svg")) return "image/svg+xml";
-        if (l.endsWith(".png")) return "image/png";
-        if (l.endsWith(".woff2")) return "font/woff2";
-        return "application/octet-stream";
     }
 
     /** Called from the page as window.HvyliaAndroid.* (on a background thread). */

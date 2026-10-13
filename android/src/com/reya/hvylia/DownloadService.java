@@ -73,6 +73,7 @@ import java.util.regex.Pattern;
 public class DownloadService extends Service {
     static final String ACTION_DOWNLOAD = "com.reya.hvylia.DOWNLOAD";
     static final String ACTION_CANCEL = "com.reya.hvylia.CANCEL";
+    static final String ACTION_CANCEL_ALL = "com.reya.hvylia.CANCEL_ALL";
     private static final String CH_PROGRESS = "downloads";
     private static final String CH_DONE = "downloads_done";
     private static final int ID_PROGRESS = 10;
@@ -84,7 +85,9 @@ public class DownloadService extends Service {
     private final Handler main = new Handler(Looper.getMainLooper());
     private NotificationManager nm;
     private volatile boolean cancel;
-    private int queued; // main thread only
+    private volatile int epoch; // «Скасувати всі» moves it on: queued jobs of an older epoch are skipped
+    private volatile int queued; // changed on the main thread only
+    private int batchOk, batchFailed; // worker thread: results since the queue was last empty
     private long lastUpdate;
 
     /** One download: either a YouTube video URL, or track details to look up on YouTube. */
@@ -98,6 +101,7 @@ public class DownloadService extends Service {
         long seconds;
         int kbps = 192;
         Uri tree;
+        int epoch;
     }
 
     static void startYouTube(Context c, String videoUrl, String title, int kbps, Uri tree) {
@@ -146,7 +150,8 @@ public class DownloadService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         String action = intent != null ? intent.getAction() : null;
-        if (ACTION_CANCEL.equals(action)) {
+        if (ACTION_CANCEL.equals(action) || ACTION_CANCEL_ALL.equals(action)) {
+            if (ACTION_CANCEL_ALL.equals(action)) epoch++;
             cancel = true;
             if (queued <= 0) stopSelfNow();
             return START_NOT_STICKY;
@@ -165,6 +170,7 @@ public class DownloadService extends Service {
         j.spotifyId = nz(intent.getStringExtra("spotify"));
         j.kbps = intent.getIntExtra("kbps", 192);
         j.tree = Uri.parse(intent.getStringExtra("tree"));
+        j.epoch = epoch;
         queued++;
         Notification n = progress(j.title, queued > 1 ? "У черзі: " + queued : "Готую скачування…", 0, true);
         if (Build.VERSION.SDK_INT >= 29) startForeground(ID_PROGRESS, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC);
@@ -193,6 +199,14 @@ public class DownloadService extends Service {
     // ---------------------------------------------------------------- the job
 
     private void run(Job job) {
+        if (job.epoch != epoch) { // cancelled with «Скасувати всі» while waiting
+            if (queued <= 1) { batchOk = 0; batchFailed = 0; }
+            main.post(() -> {
+                queued--;
+                if (queued <= 0) stopSelfNow();
+            });
+            return;
+        }
         cancel = false;
         String title = job.title;
         File src = null;
@@ -202,7 +216,7 @@ public class DownloadService extends Service {
             String url = job.url;
             if (url == null || url.isEmpty()) {
                 update(title, "Шукаю цей трек на YouTube…", 0, true, true);
-                if (!job.spotifyId.isEmpty() && (job.artist.isEmpty() || job.seconds <= 0 || job.cover.isEmpty())) {
+                if (!job.spotifyId.isEmpty() && (job.artist.isEmpty() || job.seconds <= 0 || job.cover.isEmpty() || job.album.isEmpty())) {
                     SpotifyMeta.Track t = new SpotifyMeta.Track();
                     t.id = job.spotifyId; t.title = job.title; t.artists = job.artist; t.album = job.album;
                     t.cover = job.cover; t.seconds = job.seconds;
@@ -216,7 +230,7 @@ public class DownloadService extends Service {
             StreamInfo info = StreamCache.get(url);
             if (title.isEmpty() && info.getName() != null) title = info.getName().trim();
             String artist = !job.artist.isEmpty() ? job.artist : channel(info.getUploaderName());
-            String album = !job.album.isEmpty() ? job.album : "YouTube";
+            String album = !job.album.isEmpty() ? job.album : job.spotifyId.isEmpty() ? "YouTube" : "";
             AudioStream audio = pickAudio(info.getAudioStreams());
             if (audio == null) throw new NoAudioException();
             checkCancel();
@@ -539,6 +553,11 @@ public class DownloadService extends Service {
         Intent cancelIntent = new Intent(this, DownloadService.class).setAction(ACTION_CANCEL);
         PendingIntent pi = PendingIntent.getService(this, 1, cancelIntent, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
         b.addAction(new Notification.Action.Builder(android.graphics.drawable.Icon.createWithResource(this, R.drawable.ic_close), "Скасувати", pi).build());
+        if (queued > 1) {
+            Intent all = new Intent(this, DownloadService.class).setAction(ACTION_CANCEL_ALL);
+            PendingIntent pa = PendingIntent.getService(this, 3, all, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
+            b.addAction(new Notification.Action.Builder(android.graphics.drawable.Icon.createWithResource(this, R.drawable.ic_close), "Скасувати всі", pa).build());
+        }
         return b.build();
     }
 
@@ -553,8 +572,14 @@ public class DownloadService extends Service {
                 .setContentIntent(openApp())
                 .build();
         nm.notify(NEXT_ID.incrementAndGet(), n);
-        main.post(() -> Toast.makeText(getApplicationContext(),
-                failed ? text : "Готово: " + title, Toast.LENGTH_LONG).show());
+        if (failed) batchFailed++; else batchOk++;
+        if (queued > 1) return; // a pop-up per track of an album would be too much: one summary at the end
+        int all = batchOk + batchFailed;
+        final String toast = all <= 1 ? (failed ? text : "Готово: " + title)
+                : "Готово: " + batchOk + " з " + all + " треків" + (batchFailed > 0 ? " (не вдалося: " + batchFailed + ")" : "") + ".";
+        batchOk = 0;
+        batchFailed = 0;
+        main.post(() -> Toast.makeText(getApplicationContext(), toast, Toast.LENGTH_LONG).show());
     }
 
     private Notification.Builder builder(String channel) {

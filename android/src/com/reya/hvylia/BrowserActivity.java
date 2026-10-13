@@ -18,6 +18,7 @@ import android.webkit.CookieManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -62,6 +63,10 @@ abstract class BrowserActivity extends Activity {
     protected abstract void onDownloadTapped(String url);
     /** Whether a link stays inside this tab; others open in the system browser. */
     protected boolean keepsInside(Uri u) { return true; }
+    /** Extra set-up of the WebView before the first page loads (e.g. more JavaScript interfaces). */
+    protected void setUpWeb(WebView w) { }
+    /** A local answer for a request (bundled pages), or null to load it from the network. */
+    protected WebResourceResponse intercept(Uri u) { return null; }
 
     @Override
     protected void onCreate(Bundle state) {
@@ -87,6 +92,7 @@ abstract class BrowserActivity extends Activity {
         web.addJavascriptInterface(new Bridge(), "HvyliaNav");
         web.setWebViewClient(new Client());
         web.setWebChromeClient(new Chrome());
+        setUpWeb(web);
         root.addView(web, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 
         progress = new View(this);
@@ -224,6 +230,11 @@ abstract class BrowserActivity extends Activity {
     }
 
     private final class Client extends WebViewClient {
+        @Override
+        public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest req) {
+            return intercept(req.getUrl());
+        }
+
         @Override
         public void doUpdateVisitedHistory(WebView view, String url, boolean isReload) {
             onUrl(url);

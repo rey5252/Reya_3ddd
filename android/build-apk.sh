@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Builds Hvylia.apk: a native Android shell (WebView player, media notification, YouTube tab with
-# MP3 downloads) around ../musicplayer. No Gradle needed.
+# Builds Hvylia.apk: a native Android shell (WebView player, media notification, YouTube and Spotify tabs
+# with MP3 downloads) around ../musicplayer. No Gradle needed.
 # Tools (Ubuntu/Debian):  sudo apt install aapt zipalign apksigner protobuf-compiler  + JDK 17+, git, curl
 # Third-party libraries and D8 are prepared by ./build-libs.sh (called automatically).
 # The Android 14 framework jar is fetched once from Maven Central (Robolectric's android-all).
@@ -9,8 +9,8 @@ cd "$(dirname "$0")"
 HERE=$(pwd)
 OUT=$HERE/build
 BT=${BUILD_TOOLS:-/usr/lib/android-sdk/build-tools/debian}
-VERSION_CODE=${VERSION_CODE:-3}
-VERSION_NAME=${VERSION_NAME:-1.2}
+VERSION_CODE=${VERSION_CODE:-4}
+VERSION_NAME=${VERSION_NAME:-1.3}
 MIN_SDK=26
 ANDROID_JAR=${ANDROID_JAR:-$OUT/android-34.jar}
 KEYSTORE=${KEYSTORE:-$HERE/hvylia.keystore}
@@ -30,6 +30,7 @@ mkdir -p "$OUT/assets/www/fonts" "$OUT/assets/fonts" "$OUT/gen" "$OUT/classes" "
 
 # Web app (the same files as the PWA), its fonts for offline use, and fonts for the native screens
 cp -r ../musicplayer/index.html ../musicplayer/manifest.webmanifest ../musicplayer/icons "$OUT/assets/www/"
+cp web/*.html "$OUT/assets/www/"   # app-only screens (Spotify without an account)
 cp fonts/*.woff2 fonts/fonts.css "$OUT/assets/www/fonts/"
 cp fonts/ttf/*.ttf "$OUT/assets/fonts/"
 

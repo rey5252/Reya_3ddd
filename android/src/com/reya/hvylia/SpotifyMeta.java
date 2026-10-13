@@ -1,22 +1,17 @@
 package com.reya.hvylia;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Track details from open.spotify.com pages: the open page in the Spotify tab (read with JavaScript)
- * and, to fill gaps, the page's public link-preview tags. Only metadata — the audio itself comes from YouTube.
+ * A Spotify track for the download service, and the gap-filler for it: the track page's public link-preview tags
+ * (artist, length, cover, album). Only metadata — the audio itself comes from YouTube.
  */
 final class SpotifyMeta {
     static final class Track {
@@ -28,62 +23,7 @@ final class SpotifyMeta {
         long seconds;
     }
 
-    static final class Page {
-        String kind = ""; // track, album, playlist
-        String id = "";
-        String title = "";
-        String subtitle = "";
-        String cover = "";
-        final List<Track> tracks = new ArrayList<>();
-    }
-
-    private static final Pattern PATH = Pattern.compile("^/(?:intl-[a-z-]+/)?(track|album|playlist)/([A-Za-z0-9]{10,})");
-
-    /** Reads the open page: header, link-preview tags and (for albums and playlists) the visible track rows. */
-    static final String PAGE_JS = "(function(){"
-            + "function meta(n){var e=document.querySelector('meta[property=\"'+n+'\"],meta[name=\"'+n+'\"]');return e?e.content||'':''}"
-            + "function txt(e){return e?(e.textContent||'').trim():''}"
-            + "var m=location.pathname.match(/^\\/(?:intl-[a-z-]+\\/)?(track|album|playlist)\\/([A-Za-z0-9]+)/);if(!m)return JSON.stringify({});"
-            + "var h1=txt(document.querySelector('main h1, h1'));"
-            + "var cl=[].slice.call(document.querySelectorAll('[data-testid=\"creator-link\"]'));"
-            + "if(!cl.length)cl=[].slice.call(document.querySelectorAll('main a[href*=\"/artist/\"]')).filter(function(a){return !a.closest('[data-testid=\"tracklist-row\"]')}).slice(0,1);"
-            + "var creators=cl.slice(0,4).map(txt).filter(Boolean);"
-            + "var out={kind:m[1],id:m[2],title:h1||meta('og:title'),ogTitle:meta('og:title'),desc:meta('og:description'),image:meta('og:image'),"
-            + "duration:+meta('music:duration')||0,artist:meta('music:musician_description'),creators:creators,tracks:[]};"
-            + "var hi=document.querySelector('[data-testid=\"entity-image\"] img, main img[srcset]');if(hi&&(!out.image||out.ogTitle!==out.title))out.image=hi.src||out.image;"
-            + "if(m[1]==='track'){var dur=0;[].slice.call(document.querySelectorAll('main span, main div')).some(function(e){if(e.children.length)return false;"
-            + "var q=txt(e).match(/^(\\d{1,2}):(\\d{2})$/);if(q){dur=+q[1]*60+ +q[2];return true}return false});if(!out.duration)out.duration=dur;}"
-            + "else{[].slice.call(document.querySelectorAll('[data-testid=\"tracklist-row\"]')).forEach(function(r){"
-            + "var t=r.querySelector('a[href*=\"/track/\"]');if(!t)return;var id=(t.getAttribute('href').match(/track\\/([A-Za-z0-9]+)/)||[])[1]||'';"
-            + "var as=[].slice.call(r.querySelectorAll('a[href*=\"/artist/\"]')).map(txt).filter(Boolean);"
-            + "var al=r.querySelector('a[href*=\"/album/\"]');var img=r.querySelector('img');var d=0;"
-            + "[].slice.call(r.querySelectorAll('div,span')).some(function(e){if(e.children.length)return false;var q=txt(e).match(/^(\\d{1,2}):(\\d{2})$/);if(q){d=+q[1]*60+ +q[2];return true}return false});"
-            + "out.tracks.push({id:id,title:txt(t),artists:as.join(', '),album:txt(al),image:img?img.src:'',duration:d})})}"
-            + "return JSON.stringify(out)})()";
-
     private SpotifyMeta() { }
-
-    /** "track", "album", "playlist" or null for other Spotify pages. */
-    static String kindOf(String url) {
-        Matcher m = matcher(url);
-        return m != null ? m.group(1) : null;
-    }
-
-    static String idOf(String url) {
-        Matcher m = matcher(url);
-        return m != null ? m.group(2) : null;
-    }
-
-    private static Matcher matcher(String url) {
-        try {
-            URL u = new URL(url);
-            if (!"open.spotify.com".equalsIgnoreCase(u.getHost())) return null;
-            Matcher m = PATH.matcher(u.getPath());
-            return m.find() ? m : null;
-        } catch (IOException e) {
-            return null;
-        }
-    }
 
     /** Spotify image URLs carry the size in the hash prefix; ask for the 640 px cover. */
     static String bigCover(String url) {
@@ -91,58 +31,9 @@ final class SpotifyMeta {
         return url.replace("ab67616d00004851", "ab67616d0000b273").replace("ab67616d00001e02", "ab67616d0000b273");
     }
 
-    /** Parses what PAGE_JS returned (evaluateJavascript hands back a JSON-encoded string). */
-    static Page fromPageJs(String evaluated) {
-        Page p = new Page();
-        try {
-            Object v = new org.json.JSONTokener(evaluated).nextValue();
-            JSONObject o = new JSONObject(v instanceof String ? (String) v : String.valueOf(v));
-            p.kind = o.optString("kind");
-            p.id = o.optString("id");
-            p.title = o.optString("title");
-            p.cover = bigCover(o.optString("image"));
-            JSONArray creators = o.optJSONArray("creators");
-            List<String> names = new ArrayList<>();
-            if (creators != null) for (int i = 0; i < creators.length(); i++) names.add(creators.optString(i));
-            String artist = o.optString("artist");
-            if (names.isEmpty() && !artist.isEmpty()) names.add(artist);
-            p.subtitle = YtSearch.joinArtists(names);
-            if ("track".equals(p.kind)) {
-                Track t = new Track();
-                t.id = p.id;
-                t.title = p.title;
-                t.artists = p.subtitle;
-                t.cover = p.cover;
-                t.seconds = o.optLong("duration");
-                p.tracks.add(t);
-            } else {
-                JSONArray rows = o.optJSONArray("tracks");
-                for (int i = 0; rows != null && i < rows.length(); i++) {
-                    JSONObject r = rows.getJSONObject(i);
-                    Track t = new Track();
-                    t.id = r.optString("id");
-                    t.title = r.optString("title");
-                    t.artists = r.optString("artists");
-                    t.album = "album".equals(p.kind) ? p.title : r.optString("album");
-                    t.cover = "album".equals(p.kind) && !p.cover.isEmpty() ? p.cover : bigCover(r.optString("image"));
-                    t.seconds = r.optLong("duration");
-                    if (t.artists.isEmpty()) t.artists = p.subtitle;
-                    if (!t.title.isEmpty() && !containsId(p.tracks, t.id)) p.tracks.add(t);
-                }
-            }
-        } catch (Exception ignored) { }
-        return p;
-    }
-
-    private static boolean containsId(List<Track> list, String id) {
-        if (id.isEmpty()) return false;
-        for (Track t : list) if (id.equals(t.id)) return true;
-        return false;
-    }
-
     /** Fills missing artist / length / cover / album of a track from its public page's link-preview tags. */
     static void complete(Track t) {
-        if (t.id.isEmpty() || (!t.artists.isEmpty() && t.seconds > 0 && !t.cover.isEmpty())) return;
+        if (t.id.isEmpty() || (!t.artists.isEmpty() && t.seconds > 0 && !t.cover.isEmpty() && !t.album.isEmpty())) return;
         try {
             Track f = parseHtml(fetch("https://open.spotify.com/track/" + t.id));
             if (t.title.isEmpty()) t.title = f.title;

@@ -1,0 +1,560 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>Spotify у Хвилі</title>
+<link rel="stylesheet" href="/fonts/fonts.css">
+<style>
+:root{
+  --bg:#121212; --bg-elev:#1c1c1c; --bg-elev-2:#262626; --bg-press:#303030;
+  --fg:#fff; --fg-2:#b3b3b3; --fg-3:#8a8a8a; --line:rgba(255,255,255,.08);
+  --accent:#1ed760; --accent-ink:#06140b; --danger:#ff5c6c;
+  --font-ui:'Manrope',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --font-display:'Unbounded','Manrope',system-ui,sans-serif;
+  --ease-out:cubic-bezier(.22,1,.36,1); --ease-spring:cubic-bezier(.34,1.56,.64,1);
+  --safe-b:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font-ui);font-size:14px;-webkit-font-smoothing:antialiased}
+body{min-height:100vh;overscroll-behavior-y:none}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+img{display:block}
+.ic{width:24px;height:24px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ic.inl{display:inline-block;width:16px;height:16px;vertical-align:-3px;stroke-width:2.4;color:var(--accent)}
+
+/* ---------------- header */
+.top{position:sticky;top:0;z-index:20;padding:12px 16px 12px;background:rgba(18,18,18,.86);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid transparent;transition:border-color .2s}
+.top.scrolled{border-bottom-color:var(--line)}
+.bar{display:flex;align-items:center;gap:10px;min-height:40px}
+.back{width:40px;height:40px;margin-left:-8px;border-radius:50%;display:grid;place-items:center;transition:background .15s,transform .2s var(--ease-spring)}
+.back:active{background:var(--bg-press);transform:scale(.92)}
+.back[hidden]{display:none}
+.brand{flex:1;min-width:0}
+.brand b{display:block;font-family:var(--font-display);font-size:19px;font-weight:700;letter-spacing:-.01em}
+.brand small{display:flex;align-items:center;gap:6px;color:var(--fg-2);font-size:12px;font-weight:600;margin-top:2px}
+.brand small i{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 25%,transparent)}
+.paste{height:36px;padding:0 14px;border-radius:18px;background:var(--bg-elev-2);font-weight:700;font-size:13px;display:flex;align-items:center;gap:6px;transition:transform .2s var(--ease-spring),background .15s}
+.paste .ic{width:18px;height:18px}
+.paste:active{transform:scale(.94);background:var(--bg-press)}
+.search{margin-top:10px;display:flex;align-items:center;gap:8px;height:46px;padding:0 6px 0 14px;border-radius:12px;background:#fff;color:#121212}
+.search .ic{width:22px;height:22px;color:#4d4d4d}
+.search input{flex:1;min-width:0;height:100%;border:0;outline:0;background:transparent;font:inherit;font-size:15px;font-weight:600;color:#121212}
+.search input::placeholder{color:#6b6b6b;font-weight:600}
+.search input::-webkit-search-cancel-button{display:none}
+.clear{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:#4d4d4d}
+.clear[hidden]{display:none}
+
+main{padding:4px 0 calc(32px + var(--safe-b))}
+.view{animation:viewIn .32s var(--ease-out)}
+@keyframes viewIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+h2.sec{font-family:var(--font-display);font-size:17px;font-weight:700;margin:22px 16px 12px;letter-spacing:-.01em}
+
+/* ---------------- home */
+.hero{margin:12px 16px 0;padding:18px;border-radius:18px;background:#1f3a2a;background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 34%,#1c1c1c),#1c1c1c 70%);position:relative;overflow:hidden}
+.hero>:not(.waves){position:relative}
+.hero h1{font-family:var(--font-display);font-size:20px;line-height:1.2;margin:0 0 8px;font-weight:700}
+.hero p{margin:0;color:#e6e6e6;line-height:1.45;font-size:13.5px;max-width:34ch}
+.hero .waves{position:absolute;right:-18px;top:-10px;display:flex;gap:4px;align-items:center;height:120px;opacity:.35}
+.hero .waves i{width:5px;border-radius:3px;background:var(--accent);animation:wv 1.6s ease-in-out infinite;animation-delay:calc(var(--i) * -.13s);height:calc(20px + var(--h) * 1px)}
+@keyframes wv{50%{transform:scaleY(.45)}}
+.steps{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.steps span{font-size:12px;font-weight:700;padding:6px 10px;border-radius:14px;background:rgba(0,0,0,.28)}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 16px}
+.tile{position:relative;height:96px;border-radius:12px;overflow:hidden;padding:12px;text-align:left;background:hsl(var(--h) 62% 38%);transition:transform .25s var(--ease-spring)}
+.tile:active{transform:scale(.96)}
+.tile b{position:relative;z-index:1;font-family:var(--font-display);font-size:14px;font-weight:700;line-height:1.2;display:block;max-width:70%}
+.tile small{position:relative;z-index:1;font-size:11.5px;font-weight:700;opacity:.8;display:block;margin-top:4px}
+.tile::after{content:"";position:absolute;right:-14px;bottom:-14px;width:70px;height:70px;border-radius:8px;background:linear-gradient(140deg,hsl(var(--h) 80% 70%),hsl(calc(var(--h) + 40) 70% 45%));transform:rotate(24deg);box-shadow:0 6px 16px rgba(0,0,0,.35)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 16px}
+.chip{height:34px;padding:0 6px 0 14px;border-radius:17px;background:var(--bg-elev-2);display:flex;align-items:center;gap:4px;font-weight:700;font-size:13px;max-width:100%;transition:transform .2s var(--ease-spring)}
+.chip:active{transform:scale(.95)}
+.chip span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chip .x{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;color:var(--fg-3)}
+.chip .x .ic{width:15px;height:15px}
+.link-btn{margin:0 16px;color:var(--fg-2);font-weight:700;font-size:13px}
+
+/* ---------------- cards & rows */
+.row-scroll{display:flex;gap:12px;overflow-x:auto;padding:0 16px 4px;scroll-padding:0 16px;scroll-snap-type:x proximity;scrollbar-width:none}
+.row-scroll::-webkit-scrollbar{display:none}
+.card{flex:none;width:136px;text-align:left;scroll-snap-align:start;transition:transform .25s var(--ease-spring)}
+.card:active{transform:scale(.95)}
+.cov{position:relative;width:136px;height:136px;border-radius:10px;overflow:hidden;background:var(--bg-elev-2);box-shadow:0 8px 20px rgba(0,0,0,.35)}
+.cov img{position:relative;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .35s}
+.cov img.ok{opacity:1}
+.cov .ph{position:absolute;inset:0;display:grid;place-items:center;color:var(--fg-3)}
+.cov .ph .ic{width:40px;height:40px;stroke-width:1.5}
+.card.artist .cov{border-radius:50%}
+.card b{display:block;margin-top:8px;font-size:13.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card small{display:block;margin-top:2px;color:var(--fg-2);font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card.artist{text-align:center}
+
+.tracks{margin:0 8px}
+.tr{display:flex;align-items:center;gap:12px;padding:7px 8px;border-radius:10px;width:100%;text-align:left;content-visibility:auto;contain-intrinsic-size:auto 62px;transition:background .15s}
+.tr:active{background:var(--bg-elev)}
+.tr .n{width:22px;flex:none;text-align:center;color:var(--fg-2);font-weight:700;font-variant-numeric:tabular-nums}
+.tr .th{position:relative;width:48px;height:48px;border-radius:6px;overflow:hidden;flex:none;background:var(--bg-elev-2)}
+.tr .th img{position:relative;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .3s}
+.tr .th img.ok{opacity:1}
+.tr .th .ph{position:absolute;inset:0;display:grid;place-items:center;color:var(--fg-3)}
+.tr .th .ph .ic{width:22px;height:22px;stroke-width:1.6}
+.tr .meta{flex:1;min-width:0}
+.tr .meta b{display:block;font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tr .meta small{display:flex;align-items:center;gap:6px;margin-top:3px;color:var(--fg-2);font-size:12.5px;font-weight:600;min-width:0}
+.tr .meta small span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tr.queued .meta b{color:var(--accent)}
+.e{flex:none;width:16px;height:16px;border-radius:3px;background:var(--fg-2);color:#121212;font-size:10px;font-weight:800;display:grid;place-items:center}
+.dl{width:42px;height:42px;flex:none;border-radius:50%;display:grid;place-items:center;color:var(--fg-2);transition:transform .25s var(--ease-spring),color .2s,background .2s}
+.dl:active{transform:scale(.88);background:var(--bg-press)}
+.dl .ic{width:22px;height:22px}
+.tr.queued .dl{color:var(--accent-ink);background:var(--accent);width:30px;height:30px;margin:6px}
+.tr.queued .dl .ic{width:17px;height:17px;stroke-width:3}
+.more{display:block;margin:6px 16px 0;height:38px;padding:0 16px;border-radius:19px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.3);font-weight:700;font-size:13px}
+.more:active{background:var(--bg-elev)}
+.notice{margin:12px 16px 0;padding:12px 14px;border-radius:12px;background:var(--bg-elev);color:var(--fg-2);font-size:12.5px;font-weight:600;line-height:1.45;display:flex;gap:10px}
+.notice .ic{width:18px;height:18px;flex:none;color:var(--accent);margin-top:1px}
+
+/* ---------------- entity page */
+.ent{position:relative;isolation:isolate;padding:8px 16px 0;overflow:hidden}
+.ent-bg{position:absolute;inset:-40px -40px auto;height:340px;z-index:-1;background-size:cover;background-position:center;filter:blur(40px) saturate(1.4) brightness(.55);opacity:.85;transform:scale(1.1)}
+.ent-bg::after{content:"";position:absolute;inset:0;background:linear-gradient(to bottom,transparent 30%,var(--bg))}
+.ent-cov{width:min(210px,58vw);height:min(210px,58vw);margin:10px auto 0;border-radius:8px;overflow:hidden;box-shadow:0 18px 44px rgba(0,0,0,.55);background:var(--bg-elev-2);position:relative}
+.ent-cov img{position:relative;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .4s}
+.ent-cov img.ok{opacity:1}
+.ent-cov .ph{position:absolute;inset:0;display:grid;place-items:center;color:var(--fg-3)}
+.ent-cov .ph .ic{width:64px;height:64px;stroke-width:1.3}
+.ent.artist .ent-cov{border-radius:50%}
+.ent h1{font-family:var(--font-display);font-size:24px;line-height:1.15;font-weight:700;margin:18px 0 6px;letter-spacing:-.01em;overflow-wrap:anywhere}
+.ent .by{font-weight:800;font-size:13.5px}
+.ent .lbl{color:var(--fg-2);font-size:12.5px;font-weight:600;margin-top:4px}
+.ent .desc{color:var(--fg-2);font-size:12.5px;line-height:1.45;margin-top:8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.actions{display:flex;align-items:center;gap:12px;margin:16px 0 8px}
+.big{height:48px;padding:0 22px 0 18px;border-radius:24px;background:var(--accent);color:var(--accent-ink);font-weight:800;font-size:15px;display:flex;align-items:center;gap:8px;box-shadow:0 10px 24px color-mix(in srgb,var(--accent) 30%,transparent);transition:transform .25s var(--ease-spring),filter .2s}
+.big:active{transform:scale(.95);filter:brightness(.92)}
+.big .ic{width:22px;height:22px;stroke-width:2.4}
+.big.done{background:var(--bg-elev-2);color:var(--fg);box-shadow:none}
+
+/* ---------------- states */
+.sk{background:linear-gradient(90deg,var(--bg-elev) 0%,var(--bg-elev-2) 50%,var(--bg-elev) 100%);background-size:200% 100%;animation:sh 1.2s linear infinite;border-radius:8px}
+@keyframes sh{to{background-position:-200% 0}}
+.sk-row{display:flex;gap:12px;align-items:center;padding:8px 16px}
+.sk-row .a{width:48px;height:48px;border-radius:6px}
+.sk-row .b{flex:1}
+.sk-row .b i{display:block;height:12px;margin:6px 0;border-radius:6px}
+.empty{margin:56px 28px;text-align:center;color:var(--fg-2);line-height:1.5}
+.empty b{display:block;color:var(--fg);font-family:var(--font-display);font-size:17px;margin-bottom:8px}
+.empty .ic{width:44px;height:44px;margin:0 auto 14px;display:block;color:var(--fg-3);stroke-width:1.5}
+.empty .more{display:inline-block;margin-top:16px}
+
+.toast{position:fixed;left:16px;right:16px;bottom:calc(20px + var(--safe-b));z-index:50;padding:13px 16px;border-radius:12px;background:#f2f2f2;color:#121212;font-weight:700;font-size:13.5px;box-shadow:0 12px 30px rgba(0,0,0,.5);transform:translateY(140%);opacity:0;transition:transform .35s var(--ease-spring),opacity .25s;pointer-events:none}
+.toast.on{transform:none;opacity:1}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="m15 5-7 7 7 7"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+  <symbol id="i-dl" viewBox="0 0 24 24"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 19.5h14"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></symbol>
+  <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 14a4.5 4.5 0 0 0 6.4 0l3-3A4.5 4.5 0 0 0 13 4.6l-1 1"/><path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3 3A4.5 4.5 0 0 0 11 19.4l1-1"/></symbol>
+  <symbol id="i-note" viewBox="0 0 24 24"><path d="M9 18V5l11-2v13"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.01"/></symbol>
+  <symbol id="i-cloud" viewBox="0 0 24 24"><path d="M7 18a5 5 0 1 1 1-9.9A6 6 0 0 1 19.5 10 4 4 0 0 1 18 18z"/><path d="m4 4 16 16"/></symbol>
+</svg>
+
+<header class="top" id="top">
+  <div class="bar">
+    <button class="back" id="back" aria-label="Назад" hidden><svg class="ic"><use href="#i-back"/></svg></button>
+    <div class="brand"><b>Spotify</b><small><i></i>без входу й реєстрації</small></div>
+    <button class="paste" id="paste" aria-label="Вставити посилання Spotify"><svg class="ic"><use href="#i-link"/></svg><span>Вставити</span></button>
+  </div>
+  <form class="search" id="form" role="search" autocomplete="off">
+    <svg class="ic"><use href="#i-search"/></svg>
+    <input id="q" type="search" enterkeyhint="search" placeholder="Трек, виконавець, альбом або посилання" aria-label="Пошук у Spotify">
+    <button type="button" class="clear" id="clear" aria-label="Очистити" hidden><svg class="ic"><use href="#i-x"/></svg></button>
+  </form>
+</header>
+<main id="view"></main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+'use strict';
+const $ = s => document.querySelector(s);
+const B = window.HvyliaSpotify || null;
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const ic = (n, cls = '') => `<svg class="ic ${cls}"><use href="#i-${n}"/></svg>`;
+const safeImg = u => typeof u === 'string' && /^https:\/\//.test(u) ? u : '';
+const KIND_NAME = { album: 'Альбом', playlist: 'Плейлист', artist: 'Виконавець', track: 'Трек' };
+const LINK_RE = /(open|play)\.spotify\.com\/|spotify:(track|album|playlist|artist):|spotify\.link\/|spoti\.fi\//i;
+const CHARTS = [
+  { id: '37i9dQZF1DXcBWIGoYBM5M', title: 'Today’s Top Hits', sub: 'Найпопулярніше зараз', h: 145 },
+  { id: '37i9dQZEVXbKkidEfWYRuD', title: 'Top 50 — Україна', sub: 'Щоденний чарт', h: 212 },
+  { id: '37i9dQZEVXbMDoHDwVN2tF', title: 'Top 50 — Світ', sub: 'Щоденний чарт', h: 330 },
+  { id: '37i9dQZEVXbLiRSasKsNU9', title: 'Viral 50 — Світ', sub: 'Що набирає хвилю', h: 28 },
+];
+
+// Accent colour chosen in the player (same origin, same storage).
+try {
+  const ACC = { green: '#1ed760', blue: '#4da3ff', violet: '#a986ff', pink: '#ff6fae', orange: '#ff9147', yellow: '#f2d84b' };
+  const s = JSON.parse(localStorage.getItem('hvylia:v1') || '{}');
+  if (ACC[s.accent]) document.documentElement.style.setProperty('--accent', ACC[s.accent]);
+} catch (e) {}
+
+// ---------------------------------------------------------------- small storage
+const store = {
+  get(k, d) { try { const v = JSON.parse(localStorage.getItem('hvylia:sp:' + k)); return v == null ? d : v; } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem('hvylia:sp:' + k, JSON.stringify(v)); } catch (e) {} },
+};
+const queued = new Set(store.get('queued', []));
+function rememberQueued(keys) {
+  keys.forEach(k => k && queued.add(k));
+  store.set('queued', [...queued].slice(-3000));
+}
+function pushRecent(key, item, max) {
+  const list = store.get(key, []).filter(x => JSON.stringify(x.k || x) !== JSON.stringify(item.k || item));
+  list.unshift(item);
+  store.set(key, list.slice(0, max));
+}
+
+// ---------------------------------------------------------------- bridge
+let seq = 0;
+const waits = new Map();
+function call(method, ...args) {
+  return new Promise((res, rej) => {
+    if (!B || !B[method]) { rej(new Error('Ця вкладка працює в застосунку «Хвиля» на Android.')); return; }
+    const id = ++seq;
+    waits.set(id, { res, rej });
+    try { B[method](id, ...args); } catch (e) { waits.delete(id); rej(e); }
+  });
+}
+window.__sp = {
+  done(id, s) { const w = waits.get(id); if (!w) return; waits.delete(id); try { w.res(JSON.parse(s)); } catch (e) { w.rej(e); } },
+  fail(id, msg) { const w = waits.get(id); if (!w) return; waits.delete(id); w.rej(new Error(msg)); },
+  queued(keys) {
+    rememberQueued(keys);
+    document.querySelectorAll('.tr').forEach(r => { if (queued.has(r.dataset.key)) markRow(r); });
+    document.querySelectorAll('.big[data-all]').forEach(updateBig);
+  },
+  checkLink,
+};
+
+// ---------------------------------------------------------------- helpers
+function plural(n, one, few, many) {
+  const a = Math.abs(n) % 100, b = a % 10;
+  if (a > 10 && a < 20) return many;
+  if (b === 1) return one;
+  if (b >= 2 && b <= 4) return few;
+  return many;
+}
+const tracksWord = n => `${n} ${plural(n, 'трек', 'треки', 'треків')}`;
+const mmss = s => s > 0 ? `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, '0')}` : '';
+function total(s) {
+  const h = Math.floor(s / 3600), m = Math.round((s % 3600) / 60);
+  return h ? `${h} год ${m} хв` : `${Math.max(1, m)} хв`;
+}
+let toastTimer;
+function toast(msg) {
+  const t = $('#toast');
+  t.textContent = msg;
+  t.classList.add('on');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('on'), 2600);
+}
+function img(url, cls, placeholder) {
+  const u = safeImg(url);
+  return `<div class="${cls}"><span class="ph">${ic(placeholder)}</span>${u ? `<img loading="lazy" decoding="async" alt="" src="${esc(u)}" onload="this.classList.add('ok')" onerror="this.remove()">` : ''}</div>`;
+}
+const keyOf = t => t.id || t.yt || '';
+
+// ---------------------------------------------------------------- routing
+// #/  ·  #/search/<q>  ·  #/<album|playlist|artist|track>/<id>
+const view = $('#view');
+const scrolls = new Map();
+let current = '';
+function route() {
+  let h = location.hash.replace(/^#\/?/, '');
+  try { h = decodeURIComponent(h); } catch (e) {}
+  const i = h.indexOf('/');
+  return i < 0 ? { name: h || 'home', arg: '' } : { name: h.slice(0, i), arg: h.slice(i + 1) };
+}
+function go(hash, replace) {
+  if (location.hash === hash) return render();
+  if (replace) { history.replaceState(null, '', hash); render(); } else location.hash = hash;
+}
+addEventListener('hashchange', render);
+function render() {
+  if (current) scrolls.set(current, scrollY);
+  const r = route();
+  current = r.name + '/' + r.arg;
+  $('#back').hidden = r.name === 'home';
+  if (r.name === 'search') {
+    if ($('#q').value.trim() !== r.arg) $('#q').value = r.arg;
+    showSearch(r.arg);
+  } else if (KIND_NAME[r.name] && /^[A-Za-z0-9]{22}$/.test(r.arg)) {
+    showPage(r.name, r.arg);
+  } else {
+    if (document.activeElement !== $('#q')) $('#q').value = '';
+    showHome();
+  }
+  $('#clear').hidden = !$('#q').value;
+}
+function paint(html, restore) {
+  view.innerHTML = `<div class="view">${html}</div>`;
+  scrollTo(0, restore ? (scrolls.get(current) || 0) : 0);
+}
+
+// ---------------------------------------------------------------- home
+function showHome() {
+  const recent = store.get('recent', []);
+  const searches = store.get('searches', []);
+  let h = `<section class="hero"><div class="waves" aria-hidden="true">${[30, 70, 50, 90, 40, 80, 55, 100, 45, 65].map((v, i) => `<i style="--i:${i};--h:${v}"></i>`).join('')}</div>
+    <h1>Spotify без акаунта</h1>
+    <p>Шукай треки, альбоми, плейлисти й виконавців — входити й реєструватися не треба. Натисни ${ic('dl', 'inl')} біля треку, і Хвиля збереже MP3.</p>
+    <div class="steps"><span>1 · знайди</span><span>2 · натисни ↓</span><span>3 · слухай у Хвилі</span></div></section>`;
+  h += `<h2 class="sec">Чарти</h2><div class="tiles">${CHARTS.map(c => `<button class="tile" style="--h:${c.h}" data-open="playlist/${c.id}"><b>${esc(c.title)}</b><small>${esc(c.sub)}</small></button>`).join('')}</div>`;
+  if (recent.length) h += `<h2 class="sec">Нещодавно відкривав</h2><div class="row-scroll">${recent.map(cardHTML).join('')}</div>`;
+  if (searches.length) {
+    h += `<h2 class="sec">Ти шукав</h2><div class="chips">${searches.map(q => `<div class="chip" role="button" tabindex="0" data-q="${esc(q)}"><span>${esc(q)}</span><button class="x" data-forget="${esc(q)}" aria-label="Прибрати">${ic('x')}</button></div>`).join('')}</div>`;
+  }
+  h += `<div class="notice" style="margin-top:22px">${ic('info')}<span>Є посилання на трек, альбом чи плейлист? Встав його в пошук, натисни «Вставити» або поділися ним зі Spotify, Telegram чи браузера → «Скачати у Хвилю».</span></div>`;
+  paint(h, true);
+}
+
+// ---------------------------------------------------------------- search
+const cache = new Map();
+let searchSeq = 0;
+function skeletonRows(n) {
+  return Array.from({ length: n }, () => `<div class="sk-row"><div class="a sk"></div><div class="b"><i class="sk" style="width:70%"></i><i class="sk" style="width:45%"></i></div></div>`).join('');
+}
+async function showSearch(q) {
+  q = q.trim();
+  if (!q) return go('#/', true);
+  const my = ++searchSeq;
+  const still = () => my === searchSeq && route().name === 'search' && route().arg.trim() === q;
+  const hit = cache.get('s:' + q);
+  if (hit) return paintSearch(q, hit, true);
+  paint(`<div style="margin-top:14px">${skeletonRows(7)}</div>`);
+  try {
+    const data = await call('search', q);
+    cache.set('s:' + q, data);
+    if (still()) paintSearch(q, data, false);
+  } catch (e) {
+    if (still()) paintError(e.message, () => showSearch(q));
+  }
+}
+function paintSearch(q, d, restore) {
+  const n = d.tracks.length + d.albums.length + d.playlists.length + d.artists.length;
+  if (!n) {
+    paint(`<div class="empty">${ic('search')}<b>Нічого не знайшов</b>За запитом «${esc(q)}» у Spotify порожньо. Перевір написання або спробуй інші слова.</div>`);
+    return;
+  }
+  let h = '';
+  if (d.source === 'youtube') h += `<div class="notice">${ic('cloud')}<span>Пошук Spotify зараз не відповідає, тож це результати з YouTube Music. Скачування працює так само.</span></div>`;
+  if (d.tracks.length) {
+    const shown = d.tracks.slice(0, 6);
+    h += `<h2 class="sec">Треки</h2><div class="tracks" data-list="search">${shown.map((t, i) => rowHTML(t, i, false)).join('')}</div>`;
+    if (d.tracks.length > 6) h += `<button class="more" data-more>Показати всі треки (${d.tracks.length})</button>`;
+  }
+  if (d.artists.length) h += `<h2 class="sec">Виконавці</h2><div class="row-scroll">${d.artists.map(cardHTML).join('')}</div>`;
+  if (d.albums.length) h += `<h2 class="sec">Альбоми</h2><div class="row-scroll">${d.albums.map(cardHTML).join('')}</div>`;
+  if (d.playlists.length) h += `<h2 class="sec">Плейлисти</h2><div class="row-scroll">${d.playlists.map(cardHTML).join('')}</div>`;
+  paint(h, restore);
+  listData.search = d.tracks;
+  listMeta.search = { title: q, subtitle: 'Пошук', cover: '' };
+}
+function cardHTML(c) {
+  const kind = c.kind || 'album';
+  return `<button class="card ${kind}" data-open="${kind}/${esc(c.id)}">
+    ${img(c.cover, 'cov', kind === 'artist' ? 'user' : 'note')}<b>${esc(c.title)}</b><small>${esc(c.subtitle || KIND_NAME[kind])}</small></button>`;
+}
+
+// ---------------------------------------------------------------- track rows
+const listData = {};
+const listMeta = {};
+function rowHTML(t, i, numbered) {
+  const k = keyOf(t);
+  const q = queued.has(k);
+  const lead = numbered ? `<span class="n">${i + 1}</span>` : img(t.thumb || t.cover, 'th', 'note');
+  const sub = [t.artists, mmss(t.seconds)].filter(Boolean).join(' · ');
+  return `<div class="tr ${q ? 'queued' : ''}" role="button" tabindex="0" data-i="${i}" data-key="${esc(k)}">${lead}
+    <div class="meta"><b>${esc(t.title)}</b><small>${t.explicit ? '<span class="e" aria-label="Відверта лексика">E</span>' : ''}<span>${esc(sub)}</span></small></div>
+    <button class="dl" aria-label="Скачати MP3">${ic(q ? 'check' : 'dl')}</button></div>`;
+}
+function markRow(r) {
+  r.classList.add('queued');
+  const b = r.querySelector('.dl');
+  if (b) b.innerHTML = ic('check');
+}
+
+// ---------------------------------------------------------------- album / playlist / artist / track
+async function showPage(kind, id) {
+  const ck = kind + ':' + id;
+  const hit = cache.get(ck);
+  if (hit) return paintPage(hit, true);
+  paint(`<div class="ent"><div class="ent-cov sk"></div><div class="sk" style="height:26px;width:70%;margin:20px 0 10px"></div><div class="sk" style="height:14px;width:40%"></div></div><div style="margin-top:20px">${skeletonRows(6)}</div>`);
+  try {
+    const d = await call('page', kind, id);
+    cache.set(ck, d);
+    if (current === kind + '/' + id) paintPage(d, false);
+  } catch (e) {
+    if (current === kind + '/' + id) paintError(e.message, () => showPage(kind, id));
+  }
+}
+function paintPage(d, restore) {
+  const kind = d.kind;
+  const tracks = d.tracks || [];
+  const secs = tracks.reduce((a, t) => a + (t.seconds || 0), 0);
+  const parts = [];
+  if (d.label) parts.push(d.label);
+  if (kind !== 'track' && tracks.length) parts.push(tracksWord(tracks.length));
+  if (secs && kind !== 'artist') parts.push(kind === 'track' ? mmss(secs) : total(secs));
+  pushRecent('recent', { k: kind + '/' + d.id, kind, id: d.id, title: d.title, subtitle: kind === 'artist' ? 'Виконавець' : d.subtitle, cover: d.cover }, 12);
+  let h = `<section class="ent ${kind}"><div class="ent-bg" style="background-image:url('${esc(safeImg(d.cover))}')"></div>
+    ${img(d.cover, 'ent-cov', kind === 'artist' ? 'user' : 'note')}
+    <h1>${esc(d.title)}</h1>
+    ${d.subtitle && kind !== 'artist' ? `<div class="by">${esc(d.subtitle)}</div>` : ''}
+    <div class="lbl">${esc(parts.join(' · '))}</div>
+    ${d.description ? `<div class="desc">${esc(d.description)}</div>` : ''}
+    ${tracks.length ? `<div class="actions"><button class="big" data-all="page">${ic('dl')}<span></span></button></div>` : ''}</section>`;
+  if (d.limited && tracks.length >= 50) h += `<div class="notice">${ic('info')}<span>Без входу Spotify показав ${tracksWord(tracks.length)} цього списку. Їх можна скачати всі одразу.</span></div>`;
+  if (kind === 'artist' && tracks.length) h += `<h2 class="sec">Популярні треки</h2>`;
+  if (tracks.length) h += `<div class="tracks" data-list="page" style="margin-top:${kind === 'artist' ? 0 : 6}px">${tracks.map((t, i) => rowHTML(t, i, kind === 'album')).join('')}</div>`;
+  else h += `<div class="empty">${ic('note')}<b>Тут порожньо</b>Spotify не показав жодного треку на цій сторінці.</div>`;
+  if (d.releases && d.releases.length) h += `<h2 class="sec">Релізи</h2><div class="row-scroll">${d.releases.map(cardHTML).join('')}</div>`;
+  paint(h, restore);
+  listData.page = tracks;
+  listMeta.page = { title: d.title, subtitle: kind === 'artist' ? `${d.title} · популярні треки` : d.subtitle, cover: d.cover, kind };
+  view.querySelectorAll('.big[data-all]').forEach(updateBig);
+}
+function updateBig(b) {
+  const list = listData[b.dataset.all] || [];
+  const left = list.filter(t => !queued.has(keyOf(t))).length;
+  const one = list.length === 1;
+  b.classList.toggle('done', left === 0);
+  b.innerHTML = left === 0 ? `${ic('check')}<span>${one ? 'Уже в черзі' : 'Усі вже в черзі'}</span>`
+    : `${ic('dl')}<span>${one ? 'Скачати MP3' : left === list.length ? `Скачати всі (${list.length})` : `Скачати решту (${left})`}</span>`;
+}
+function paintError(msg, retry) {
+  paint(`<div class="empty">${ic('cloud')}<b>Не вийшло</b>${esc(msg)}<br><button class="more" id="retry">Спробувати ще раз</button></div>`);
+  $('#retry').onclick = retry;
+}
+
+// ---------------------------------------------------------------- downloads
+function download(list, meta) {
+  if (!list.length) return;
+  try {
+    B.download(JSON.stringify(list), JSON.stringify(meta || {}));
+  } catch (e) {
+    toast('Скачування працює в застосунку «Хвиля» на Android.');
+  }
+}
+
+// ---------------------------------------------------------------- links (pasted, typed or shared)
+async function openLink(text) {
+  try {
+    const l = await call('resolve', text);
+    if (!l) { toast('Це не схоже на посилання Spotify.'); return false; }
+    $('#q').blur();
+    go(`#/${l.kind}/${l.id}`);
+    return true;
+  } catch (e) {
+    toast(e.message);
+    return false;
+  }
+}
+function checkLink() {
+  if (!B || !B.takeLink) return;
+  const t = (B.takeLink() || '').trim();
+  if (!t) return;
+  if (LINK_RE.test(t)) openLink(t);
+  else { $('#q').value = t.slice(0, 120); search(true); }
+}
+
+// ---------------------------------------------------------------- events
+let typing;
+function search(now) {
+  clearTimeout(typing);
+  const q = $('#q').value.trim();
+  $('#clear').hidden = !$('#q').value;
+  if (LINK_RE.test(q)) { if (now) openLink(q); return; }
+  const run = () => {
+    const r = route();
+    if (!q) { if (r.name === 'search') go('#/', true); return; }
+    go('#/search/' + encodeURIComponent(q), r.name === 'search');
+  };
+  if (now) run(); else typing = setTimeout(run, 450);
+}
+$('#q').addEventListener('input', () => search(false));
+$('#form').addEventListener('submit', e => {
+  e.preventDefault();
+  const q = $('#q').value.trim();
+  if (q && !LINK_RE.test(q)) {
+    const list = store.get('searches', []).filter(x => x.toLowerCase() !== q.toLowerCase());
+    list.unshift(q);
+    store.set('searches', list.slice(0, 8));
+  }
+  search(true);
+  $('#q').blur();
+});
+$('#q').addEventListener('paste', () => setTimeout(() => { if (LINK_RE.test($('#q').value)) openLink($('#q').value.trim()); }, 0));
+$('#clear').addEventListener('click', () => { $('#q').value = ''; $('#q').focus(); search(true); });
+$('#back').addEventListener('click', () => history.back());
+$('#paste').addEventListener('click', async () => {
+  const t = B && B.clipboard ? (B.clipboard() || '').trim() : '';
+  if (!t) { toast('Буфер обміну порожній. Скопіюй посилання в Spotify: «Поділитися» → «Копіювати посилання».'); return; }
+  if (!LINK_RE.test(t)) { toast('У буфері немає посилання Spotify.'); return; }
+  openLink(t);
+});
+addEventListener('scroll', () => $('#top').classList.toggle('scrolled', scrollY > 4), { passive: true });
+
+view.addEventListener('click', e => {
+  const t = e.target;
+  const open = t.closest('[data-open]');
+  if (open) { go('#/' + open.dataset.open); return; }
+  const forget = t.closest('[data-forget]');
+  if (forget) {
+    e.stopPropagation();
+    store.set('searches', store.get('searches', []).filter(x => x !== forget.dataset.forget));
+    forget.closest('.chip').remove();
+    return;
+  }
+  const chip = t.closest('[data-q]');
+  if (chip) { $('#q').value = chip.dataset.q; search(true); return; }
+  const more = t.closest('[data-more]');
+  if (more) {
+    const list = view.querySelector('[data-list="search"]');
+    list.innerHTML = listData.search.map((x, i) => rowHTML(x, i, false)).join('');
+    more.remove();
+    return;
+  }
+  const big = t.closest('.big[data-all]');
+  if (big) {
+    const all = listData[big.dataset.all] || [];
+    const left = all.filter(x => !queued.has(keyOf(x)));
+    const list = left.length ? left : all;
+    const meta = Object.assign({}, listMeta[big.dataset.all]);
+    if (list.length === 1 && meta.kind === 'track') meta.cover = list[0].cover;
+    download(list, meta);
+    return;
+  }
+  const row = t.closest('.tr');
+  if (row) {
+    const list = listData[row.closest('[data-list]').dataset.list] || [];
+    const tr = list[+row.dataset.i];
+    if (tr) download([tr], listMeta[row.closest('[data-list]').dataset.list]);
+  }
+});
+view.addEventListener('keydown', e => {
+  if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('.tr,.chip')) { e.preventDefault(); e.target.click(); }
+});
+
+render();
+checkLink();
+</script>
+</body>
+</html>

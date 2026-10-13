@@ -37,11 +37,29 @@
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden|navigation|uiMode|density|fontScale"
             android:hardwareAccelerated="true" />
 
+        <!-- Spotify without an account; Spotify links shared to Хвиля or opened with it land here -->
         <activity
             android:name=".SpotifyActivity"
-            android:exported="false"
+            android:exported="true"
+            android:label="Скачати у Хвилю"
+            android:launchMode="singleTask"
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden|navigation|uiMode|density|fontScale"
-            android:hardwareAccelerated="true" />
+            android:windowSoftInputMode="adjustResize"
+            android:hardwareAccelerated="true">
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" />
+                <data android:host="open.spotify.com" />
+                <data android:host="spotify.link" />
+            </intent-filter>
+        </activity>
 
         <service
             android:name=".DownloadService"
