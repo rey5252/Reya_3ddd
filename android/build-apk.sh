@@ -9,8 +9,8 @@ cd "$(dirname "$0")"
 HERE=$(pwd)
 OUT=$HERE/build
 BT=${BUILD_TOOLS:-/usr/lib/android-sdk/build-tools/debian}
-VERSION_CODE=${VERSION_CODE:-4}
-VERSION_NAME=${VERSION_NAME:-1.3}
+VERSION_CODE=${VERSION_CODE:-5}
+VERSION_NAME=${VERSION_NAME:-1.4}
 MIN_SDK=26
 ANDROID_JAR=${ANDROID_JAR:-$OUT/android-34.jar}
 KEYSTORE=${KEYSTORE:-$HERE/hvylia.keystore}

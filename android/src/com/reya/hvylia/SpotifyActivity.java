@@ -30,10 +30,15 @@ public class SpotifyActivity extends BrowserActivity {
     private final ExecutorService pool = Executors.newFixedThreadPool(3);
     private volatile String pendingLink;
 
+    private final StreamPlayer.Listener playerListener = state -> {
+        if (!isDestroyed()) web.evaluateJavascript("window.__sp&&__sp.player(" + JSONObject.quote(state) + ")", null);
+    };
+
     @Override
     protected void onCreate(Bundle state) {
         pendingLink = linkText(getIntent());
         super.onCreate(state);
+        StreamPlayer.get(this).setListener(playerListener);
     }
 
     @Override
@@ -47,6 +52,7 @@ public class SpotifyActivity extends BrowserActivity {
 
     @Override
     protected void onDestroy() {
+        StreamPlayer.get(this).removeListener(playerListener); // the music goes on; the notification controls it
         pool.shutdownNow();
         super.onDestroy();
     }
@@ -204,6 +210,46 @@ public class SpotifyActivity extends BrowserActivity {
             });
             try { done.await(2, TimeUnit.SECONDS); } catch (InterruptedException ignored) { }
             return out[0];
+        }
+
+        /** Plays the list (it becomes the queue), starting with the track whose key is `startKey`. */
+        @JavascriptInterface
+        public void play(final String tracksJson, final String startKey) {
+            runOnUiThread(() -> {
+                try {
+                    List<StreamPlayer.Item> items = StreamPlayer.items(new JSONArray(tracksJson));
+                    int start = 0;
+                    for (int i = 0; i < items.size(); i++) if (items.get(i).key.equals(startKey)) { start = i; break; }
+                    StreamPlayer.get(SpotifyActivity.this).playList(items, start);
+                } catch (Exception ignored) { }
+            });
+        }
+
+        /** toggle, play, pause, next, prev */
+        @JavascriptInterface
+        public void control(final String cmd) {
+            runOnUiThread(() -> {
+                StreamPlayer p = StreamPlayer.get(SpotifyActivity.this);
+                switch (cmd) {
+                    case "toggle": p.toggle(); break;
+                    case "play": p.play(); break;
+                    case "pause": p.pause(); break;
+                    case "next": p.next(); break;
+                    case "prev": p.prev(); break;
+                    default: break;
+                }
+            });
+        }
+
+        @JavascriptInterface
+        public void seek(final double ms) {
+            runOnUiThread(() -> StreamPlayer.get(SpotifyActivity.this).seek((long) ms));
+        }
+
+        /** Sends the player's state to the screen (__sp.player), e.g. when the screen opens. */
+        @JavascriptInterface
+        public void playerSync() {
+            runOnUiThread(() -> playerListener.onState(StreamPlayer.get(SpotifyActivity.this).state()));
         }
 
         @JavascriptInterface

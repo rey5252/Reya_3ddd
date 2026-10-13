@@ -63,6 +63,11 @@ final class StreamCache {
         }
     }
 
+    /** Drops a lookup whose stream addresses stopped working, so the next call fetches fresh ones. */
+    static void forget(String url) {
+        synchronized (MAP) { MAP.remove(url); }
+    }
+
     private static boolean failed(Future<StreamInfo> f) {
         if (!f.isDone()) return false;
         try { f.get(); return false; } catch (Exception e) { return true; }

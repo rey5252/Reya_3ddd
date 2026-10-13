@@ -131,10 +131,14 @@ h2.sec{font-family:var(--font-display);font-size:17px;font-weight:700;margin:22p
 .ent .lbl{color:var(--fg-2);font-size:12.5px;font-weight:600;margin-top:4px}
 .ent .desc{color:var(--fg-2);font-size:12.5px;line-height:1.45;margin-top:8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .actions{display:flex;align-items:center;gap:12px;margin:16px 0 8px}
-.big{height:48px;padding:0 22px 0 18px;border-radius:24px;background:var(--accent);color:var(--accent-ink);font-weight:800;font-size:15px;display:flex;align-items:center;gap:8px;box-shadow:0 10px 24px color-mix(in srgb,var(--accent) 30%,transparent);transition:transform .25s var(--ease-spring),filter .2s}
-.big:active{transform:scale(.95);filter:brightness(.92)}
-.big .ic{width:22px;height:22px;stroke-width:2.4}
-.big.done{background:var(--bg-elev-2);color:var(--fg);box-shadow:none}
+.actions .grow{flex:1}
+.dlall{height:44px;padding:0 18px 0 14px;border-radius:22px;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.35);font-weight:800;font-size:14px;display:flex;align-items:center;gap:8px;white-space:nowrap;transition:transform .25s var(--ease-spring),background .2s}
+.dlall:active{transform:scale(.95);background:var(--bg-elev)}
+.dlall .ic{width:20px;height:20px;stroke-width:2.4}
+.dlall.done{color:var(--accent);box-shadow:inset 0 0 0 1.5px var(--accent)}
+.playbig{width:56px;height:56px;flex:none;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;box-shadow:0 10px 24px rgba(0,0,0,.4);transition:transform .25s var(--ease-spring),filter .2s}
+.playbig:active{transform:scale(.9);filter:brightness(.92)}
+.playbig .ic{width:26px;height:26px}
 
 /* ---------------- states */
 .sk{background:linear-gradient(90deg,var(--bg-elev) 0%,var(--bg-elev-2) 50%,var(--bg-elev) 100%);background-size:200% 100%;animation:sh 1.2s linear infinite;border-radius:8px}
@@ -148,6 +152,65 @@ h2.sec{font-family:var(--font-display);font-size:17px;font-weight:700;margin:22p
 .empty .ic{width:44px;height:44px;margin:0 auto 14px;display:block;color:var(--fg-3);stroke-width:1.5}
 .empty .more{display:inline-block;margin-top:16px}
 
+/* ---------------- listening */
+.ic.f{fill:currentColor;stroke:none}
+.tr.playing .meta b{color:var(--accent)}
+.tr.playing .n{font-size:0}
+.eqw{display:grid;place-items:center}
+.th .eqw{position:absolute;inset:0;background:rgba(0,0,0,.45)}
+.eq{display:inline-flex;align-items:flex-end;gap:2px;height:14px;width:15px}
+.eq i{flex:1;height:100%;border-radius:1px;background:var(--accent);transform-origin:bottom;animation:eq .9s ease-in-out infinite}
+.eq i:nth-child(2){animation-delay:-.3s}
+.eq i:nth-child(3){animation-delay:-.6s}
+.eq.paused i{animation:none;transform:scaleY(.35)}
+@keyframes eq{0%,100%{transform:scaleY(.3)}50%{transform:scaleY(1)}}
+.spin{display:block;width:22px;height:22px;border-radius:50%;border:2.5px solid currentColor;border-right-color:transparent;animation:rot .8s linear infinite}
+@keyframes rot{to{transform:rotate(360deg)}}
+body.has-mini main{padding-bottom:calc(96px + var(--safe-b))}
+body.has-mini .toast{bottom:calc(84px + var(--safe-b))}
+.mini{position:fixed;left:8px;right:8px;bottom:calc(8px + var(--safe-b));z-index:30;height:62px;border-radius:12px;background:#2a2a2a;display:flex;align-items:center;gap:2px;padding:0 6px 0 9px;box-shadow:0 12px 30px rgba(0,0,0,.55);overflow:hidden;transition:transform .4s var(--ease-spring),opacity .25s,visibility 0s}
+.mini[hidden]{display:flex;visibility:hidden;transform:translateY(150%);opacity:0;pointer-events:none;transition:transform .4s var(--ease-spring),opacity .25s,visibility 0s .4s}
+.mini-main{flex:1;min-width:0;height:100%;display:flex;align-items:center;gap:10px;text-align:left}
+.mini-cov,.np-cov .box{position:relative;overflow:hidden;background:var(--bg-press);display:grid;place-items:center;color:var(--fg-3)}
+.mini-cov{width:44px;height:44px;border-radius:6px;flex:none}
+.mini-cov .ic{width:22px;height:22px;stroke-width:1.6}
+.mini-cov img,.np-cov img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.mini-meta{flex:1;min-width:0;display:block}
+.mini-meta b{display:block;font-size:13.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mini-meta small{display:block;margin-top:2px;font-size:12px;font-weight:600;color:var(--fg-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mini-meta small.err{color:#ff8a95}
+.mbtn{width:44px;height:44px;flex:none;border-radius:50%;display:grid;place-items:center;transition:transform .2s var(--ease-spring),opacity .2s}
+.mbtn:active{transform:scale(.86)}
+.mbtn:disabled{opacity:.3}
+.mbtn .ic{width:26px;height:26px}
+.mini-prog{position:absolute;left:9px;right:9px;bottom:0;height:2px;border-radius:1px;background:rgba(255,255,255,.14);overflow:hidden}
+.mini-prog i{display:block;width:100%;height:100%;background:#fff;transform-origin:left;transform:scaleX(0)}
+.np{position:fixed;inset:0;z-index:40;isolation:isolate;overflow:hidden;background:#121212;display:flex;flex-direction:column;padding:10px 24px calc(26px + var(--safe-b));transform:translateY(100%);transition:transform .45s var(--ease-out)}
+.np.open{transform:none}
+.np[hidden]{display:none}
+.np-bg{position:absolute;inset:-60px;z-index:-1;background-size:cover;background-position:center;filter:blur(50px) saturate(1.5) brightness(.55);transform:scale(1.2)}
+.np-bg::after{content:"";position:absolute;inset:0;background:linear-gradient(to bottom,rgba(18,18,18,.15),#121212 82%)}
+.np-head{display:flex;align-items:center;gap:8px;height:48px;margin:0 -8px}
+.np-head .from{flex:1;min-width:0;text-align:center}
+.np-head .from small{display:block;font-size:10.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--fg-2)}
+.np-head .from b{display:block;margin-top:2px;font-size:13px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.np-cov{flex:1;min-height:0;display:grid;place-items:center;padding:18px 0}
+.np-cov .box{width:min(100%,44vh);aspect-ratio:1;border-radius:10px;box-shadow:0 24px 60px rgba(0,0,0,.6)}
+.np-cov .box>.ic{width:72px;height:72px;stroke-width:1.2}
+.np-meta b{display:block;font-family:var(--font-display);font-size:21px;font-weight:700;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.np-meta small{display:block;margin-top:5px;color:var(--fg-2);font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.np-err{margin-top:8px;min-height:18px;color:var(--fg-2);font-weight:700;font-size:13px}
+.np-err.bad{color:#ff8a95}
+.seek{display:block;width:100%;height:26px;margin:6px 0 0;background:transparent;-webkit-appearance:none;appearance:none;--p:0%}
+.seek::-webkit-slider-runnable-track{height:4px;border-radius:2px;background:linear-gradient(to right,#fff var(--p),rgba(255,255,255,.22) var(--p))}
+.seek::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;margin-top:-5px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.4)}
+.times{display:flex;justify-content:space-between;color:var(--fg-2);font-size:12px;font-weight:700;font-variant-numeric:tabular-nums}
+.np-ctl{display:flex;align-items:center;justify-content:center;gap:30px;margin-top:12px}
+.np-ctl .mbtn .ic{width:34px;height:34px}
+.np-ctl .pp{width:72px;height:72px;background:#fff;color:#121212}
+.np-ctl .pp .ic{width:32px;height:32px}
+.np-ctl .pp .spin{width:28px;height:28px;border-width:3px}
+.np-note{margin-top:18px;text-align:center;color:var(--fg-3);font-size:12px;font-weight:600}
 .toast{position:fixed;left:16px;right:16px;bottom:calc(20px + var(--safe-b));z-index:50;padding:13px 16px;border-radius:12px;background:#f2f2f2;color:#121212;font-weight:700;font-size:13.5px;box-shadow:0 12px 30px rgba(0,0,0,.5);transform:translateY(140%);opacity:0;transition:transform .35s var(--ease-spring),opacity .25s;pointer-events:none}
 .toast.on{transform:none;opacity:1}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
@@ -164,6 +227,11 @@ h2.sec{font-family:var(--font-display);font-size:17px;font-weight:700;margin:22p
   <symbol id="i-note" viewBox="0 0 24 24"><path d="M9 18V5l11-2v13"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/></symbol>
   <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></symbol>
   <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.01"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.6v12.8a1 1 0 0 0 1.53.85l10.2-6.4a1 1 0 0 0 0-1.7L9.53 4.75A1 1 0 0 0 8 5.6z"/></symbol>
+  <symbol id="i-pause" viewBox="0 0 24 24"><rect x="6" y="5" width="4.3" height="14" rx="1.3"/><rect x="13.7" y="5" width="4.3" height="14" rx="1.3"/></symbol>
+  <symbol id="i-next" viewBox="0 0 24 24"><path d="M5 6v12a.9.9 0 0 0 1.4.75l9-6a.9.9 0 0 0 0-1.5l-9-6A.9.9 0 0 0 5 6z"/><rect x="16.4" y="5" width="2.6" height="14" rx="1.2"/></symbol>
+  <symbol id="i-prev" viewBox="0 0 24 24"><path d="M19 6v12a.9.9 0 0 1-1.4.75l-9-6a.9.9 0 0 1 0-1.5l9-6A.9.9 0 0 1 19 6z"/><rect x="5" y="5" width="2.6" height="14" rx="1.2"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="m5 9 7 7 7-7"/></symbol>
   <symbol id="i-cloud" viewBox="0 0 24 24"><path d="M7 18a5 5 0 1 1 1-9.9A6 6 0 0 1 19.5 10 4 4 0 0 1 18 18z"/><path d="m4 4 16 16"/></symbol>
 </svg>
 
@@ -180,6 +248,31 @@ h2.sec{font-family:var(--font-display);font-size:17px;font-weight:700;margin:22p
   </form>
 </header>
 <main id="view"></main>
+<div class="mini" id="mini" hidden>
+  <button class="mini-main" id="miniOpen" aria-label="Відкрити плеєр"><span class="mini-cov" id="miniCov"></span><span class="mini-meta"><b id="miniTitle"></b><small id="miniSub"></small></span></button>
+  <button class="mbtn" id="miniToggle" aria-label="Пауза"></button>
+  <button class="mbtn" id="miniNext" aria-label="Наступний трек"><svg class="ic f"><use href="#i-next"/></svg></button>
+  <div class="mini-prog"><i id="miniProg"></i></div>
+</div>
+<section class="np" id="np" hidden role="dialog" aria-label="Зараз грає">
+  <div class="np-bg" id="npBg"></div>
+  <div class="np-head">
+    <button class="back" id="npClose" aria-label="Згорнути"><svg class="ic"><use href="#i-down"/></svg></button>
+    <div class="from"><small>Грає з</small><b id="npFrom">Spotify</b></div>
+    <button class="back" id="npDl" aria-label="Скачати MP3"><svg class="ic"><use href="#i-dl"/></svg></button>
+  </div>
+  <div class="np-cov"><div class="box" id="npCov"></div></div>
+  <div class="np-meta"><b id="npTitle"></b><small id="npArtists"></small></div>
+  <div class="np-err" id="npErr"></div>
+  <input class="seek" id="npSeek" type="range" min="0" max="1000" value="0" aria-label="Позиція в треку">
+  <div class="times"><span id="npPos">0:00</span><span id="npDur">0:00</span></div>
+  <div class="np-ctl">
+    <button class="mbtn" id="npPrev" aria-label="Попередній трек"><svg class="ic f"><use href="#i-prev"/></svg></button>
+    <button class="mbtn pp" id="npToggle" aria-label="Пауза"></button>
+    <button class="mbtn" id="npNext" aria-label="Наступний трек"><svg class="ic f"><use href="#i-next"/></svg></button>
+  </div>
+  <div class="np-note">Звук — із YouTube. Трек можна скачати кнопкою ↓ угорі.</div>
+</section>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -238,7 +331,7 @@ window.__sp = {
   queued(keys) {
     rememberQueued(keys);
     document.querySelectorAll('.tr').forEach(r => { if (queued.has(r.dataset.key)) markRow(r); });
-    document.querySelectorAll('.big[data-all]').forEach(updateBig);
+    document.querySelectorAll('.dlall[data-all]').forEach(updateBig);
   },
   checkLink,
 };
@@ -314,8 +407,8 @@ function showHome() {
   const searches = store.get('searches', []);
   let h = `<section class="hero"><div class="waves" aria-hidden="true">${[30, 70, 50, 90, 40, 80, 55, 100, 45, 65].map((v, i) => `<i style="--i:${i};--h:${v}"></i>`).join('')}</div>
     <h1>Spotify без акаунта</h1>
-    <p>Шукай треки, альбоми, плейлисти й виконавців — входити й реєструватися не треба. Натисни ${ic('dl', 'inl')} біля треку, і Хвиля збереже MP3.</p>
-    <div class="steps"><span>1 · знайди</span><span>2 · натисни ↓</span><span>3 · слухай у Хвилі</span></div></section>`;
+    <p>Шукай треки, альбоми, плейлисти й виконавців — входити й реєструватися не треба. Натисни на трек — і він заграє. ${ic('dl', 'inl')} — збереже MP3 у Хвилю.</p>
+    <div class="steps"><span>1 · знайди</span><span>2 · слухай</span><span>3 · скачуй ↓</span></div></section>`;
   h += `<h2 class="sec">Чарти</h2><div class="tiles">${CHARTS.map(c => `<button class="tile" style="--h:${c.h}" data-open="playlist/${c.id}"><b>${esc(c.title)}</b><small>${esc(c.sub)}</small></button>`).join('')}</div>`;
   if (recent.length) h += `<h2 class="sec">Нещодавно відкривав</h2><div class="row-scroll">${recent.map(cardHTML).join('')}</div>`;
   if (searches.length) {
@@ -365,7 +458,8 @@ function paintSearch(q, d, restore) {
   if (d.playlists.length) h += `<h2 class="sec">Плейлисти</h2><div class="row-scroll">${d.playlists.map(cardHTML).join('')}</div>`;
   paint(h, restore);
   listData.search = d.tracks;
-  listMeta.search = { title: q, subtitle: 'Пошук', cover: '' };
+  listMeta.search = { title: `Пошук «${q}»`, subtitle: 'Пошук', cover: '' };
+  markPlaying();
 }
 function cardHTML(c) {
   const kind = c.kind || 'album';
@@ -420,7 +514,7 @@ function paintPage(d, restore) {
     ${d.subtitle && kind !== 'artist' ? `<div class="by">${esc(d.subtitle)}</div>` : ''}
     <div class="lbl">${esc(parts.join(' · '))}</div>
     ${d.description ? `<div class="desc">${esc(d.description)}</div>` : ''}
-    ${tracks.length ? `<div class="actions"><button class="big" data-all="page">${ic('dl')}<span></span></button></div>` : ''}</section>`;
+    ${tracks.length ? `<div class="actions"><button class="dlall" data-all="page">${ic('dl')}<span></span></button><span class="grow"></span><button class="playbig" data-play="page" aria-label="Слухати">${ic('play', 'f')}</button></div>` : ''}</section>`;
   if (d.limited && tracks.length >= 50) h += `<div class="notice">${ic('info')}<span>Без входу Spotify показав ${tracksWord(tracks.length)} цього списку. Їх можна скачати всі одразу.</span></div>`;
   if (kind === 'artist' && tracks.length) h += `<h2 class="sec">Популярні треки</h2>`;
   if (tracks.length) h += `<div class="tracks" data-list="page" style="margin-top:${kind === 'artist' ? 0 : 6}px">${tracks.map((t, i) => rowHTML(t, i, kind === 'album')).join('')}</div>`;
@@ -429,7 +523,8 @@ function paintPage(d, restore) {
   paint(h, restore);
   listData.page = tracks;
   listMeta.page = { title: d.title, subtitle: kind === 'artist' ? `${d.title} · популярні треки` : d.subtitle, cover: d.cover, kind };
-  view.querySelectorAll('.big[data-all]').forEach(updateBig);
+  view.querySelectorAll('.dlall[data-all]').forEach(updateBig);
+  markPlaying();
 }
 function updateBig(b) {
   const list = listData[b.dataset.all] || [];
@@ -530,9 +625,16 @@ view.addEventListener('click', e => {
     const list = view.querySelector('[data-list="search"]');
     list.innerHTML = listData.search.map((x, i) => rowHTML(x, i, false)).join('');
     more.remove();
+    markPlaying();
     return;
   }
-  const big = t.closest('.big[data-all]');
+  const pb = t.closest('[data-play]');
+  if (pb) {
+    if (ownsQueue(pb.dataset.play)) control('toggle');
+    else play(pb.dataset.play);
+    return;
+  }
+  const big = t.closest('.dlall[data-all]');
   if (big) {
     const all = listData[big.dataset.all] || [];
     const left = all.filter(x => !queued.has(keyOf(x)));
@@ -544,17 +646,166 @@ view.addEventListener('click', e => {
   }
   const row = t.closest('.tr');
   if (row) {
-    const list = listData[row.closest('[data-list]').dataset.list] || [];
-    const tr = list[+row.dataset.i];
-    if (tr) download([tr], listMeta[row.closest('[data-list]').dataset.list]);
+    const name = row.closest('[data-list]').dataset.list;
+    const tr = (listData[name] || [])[+row.dataset.i];
+    if (!tr) return;
+    if (t.closest('.dl')) { download([tr], listMeta[name]); return; } // ↓ saves the MP3
+    if (P.active && P.key === keyOf(tr) && !P.error) openNP(); // the playing track: open the player
+    else play(name, keyOf(tr));
   }
 });
 view.addEventListener('keydown', e => {
   if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('.tr,.chip')) { e.preventDefault(); e.target.click(); }
 });
 
+// ---------------------------------------------------------------- listening
+// The app plays tracks natively (StreamPlayer): the screen sends the list and shows what __sp.player reports.
+let P = { active: false };
+let playFrom = '', playRoute = '';
+try { playFrom = sessionStorage.getItem('hvylia:sp:from') || ''; playRoute = sessionStorage.getItem('hvylia:sp:route') || ''; } catch (e) {}
+let dragging = false;
+const clock = s => { s = Math.max(0, Math.floor(s || 0)); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
+function play(name, key) {
+  const list = (listData[name] || []).filter(t => keyOf(t) && t.title);
+  if (!list.length) return;
+  if (!B || !B.play) { toast('Слухати можна в застосунку «Хвиля» на Android.'); return; }
+  const meta = listMeta[name] || {};
+  playFrom = meta.kind === 'artist' ? meta.title : meta.title || 'Spotify';
+  playRoute = name === 'page' ? current : 'search';
+  try { sessionStorage.setItem('hvylia:sp:from', playFrom); sessionStorage.setItem('hvylia:sp:route', playRoute); } catch (e) {}
+  const start = key || keyOf(list[0]);
+  const i = Math.max(0, list.findIndex(t => keyOf(t) === start));
+  B.play(JSON.stringify(list), keyOf(list[i]));
+  // Show it at once; the player's own report follows.
+  onPlayer({ active: true, key: keyOf(list[i]), track: list[i], playing: true, loading: true, error: '', pos: 0,
+    dur: (list[i].seconds || 0) * 1000, at: Date.now(), index: i, count: list.length, hasNext: i + 1 < list.length, hasPrev: i > 0 });
+}
+function control(cmd) {
+  if (!B || !B.control) return;
+  B.control(cmd);
+  if (cmd === 'toggle' && P.active) { // answer the tap at once
+    P.pos = curPos(); P.at = Date.now(); P.playing = !P.playing;
+    onPlayer(P);
+  }
+}
+/** Whether the playing queue came from this list (then its big button pauses / resumes). */
+function ownsQueue(name) { return P.active && playRoute === (name === 'page' ? current : 'search'); }
+function curPos() {
+  if (!P.active) return 0;
+  let p = P.pos || 0;
+  if (P.playing && !P.loading && !P.error) p += Date.now() - (P.at || Date.now());
+  return Math.max(0, P.dur ? Math.min(p, P.dur) : p);
+}
+function coverInto(el, url, ph) {
+  const u = safeImg(url);
+  if (el.dataset.src === u && el.firstChild) return;
+  el.dataset.src = u;
+  el.innerHTML = ic(ph) + (u ? `<img alt="" src="${esc(u)}" onerror="this.remove()">` : '');
+}
+function onPlayer(s) {
+  P = s && s.active ? s : { active: false };
+  document.body.classList.toggle('has-mini', P.active);
+  $('#mini').hidden = !P.active;
+  if (!P.active) { closeNP(); markPlaying(); return; }
+  const t = P.track || {};
+  coverInto($('#miniCov'), t.thumb || t.cover, 'note');
+  coverInto($('#npCov'), t.cover || t.thumb, 'note');
+  const bg = safeImg(t.cover || t.thumb);
+  $('#npBg').style.backgroundImage = bg ? `url("${bg}")` : 'none';
+  $('#miniTitle').textContent = t.title || '';
+  const sub = $('#miniSub');
+  sub.textContent = P.error || (P.loading && P.playing ? 'Шукаю звук…' : t.artists || '');
+  sub.classList.toggle('err', !!P.error);
+  $('#npTitle').textContent = t.title || '';
+  $('#npArtists').textContent = t.artists || '';
+  const err = $('#npErr');
+  err.textContent = P.error || (P.loading && P.playing ? 'Шукаю звук на YouTube…' : '');
+  err.classList.toggle('bad', !!P.error);
+  $('#npFrom').textContent = playFrom || 'Spotify';
+  const busy = P.loading && P.playing && !P.error;
+  const pp = busy ? '<span class="spin"></span>' : ic(P.playing ? 'pause' : 'play', 'f');
+  for (const id of ['#miniToggle', '#npToggle']) {
+    const b = $(id);
+    if (b.dataset.pp !== pp) { b.dataset.pp = pp; b.innerHTML = pp; }
+    b.setAttribute('aria-label', P.playing ? 'Пауза' : 'Слухати');
+  }
+  $('#miniNext').disabled = !P.hasNext;
+  $('#npNext').disabled = !P.hasNext;
+  $('#npDur').textContent = clock((P.dur || 0) / 1000);
+  tick();
+  markPlaying();
+}
+function tick() {
+  if (!P.active) return;
+  const d = P.dur || 0, p = curPos(), f = d ? Math.min(1, p / d) : 0;
+  $('#miniProg').style.transform = `scaleX(${f})`;
+  if (!dragging) {
+    const seek = $('#npSeek');
+    seek.value = Math.round(f * 1000);
+    seek.style.setProperty('--p', (f * 100).toFixed(2) + '%');
+    $('#npPos').textContent = clock(p / 1000);
+  }
+}
+setInterval(tick, 250);
+function markPlaying() {
+  document.querySelectorAll('.tr').forEach(r => {
+    const on = P.active && r.dataset.key === P.key;
+    r.classList.toggle('playing', on);
+    let w = r.querySelector('.eqw');
+    if (on && !w) {
+      const host = r.querySelector('.n') || r.querySelector('.th');
+      if (host) { host.insertAdjacentHTML('beforeend', '<span class="eqw"><span class="eq"><i></i><i></i><i></i></span></span>'); w = host.querySelector('.eqw'); }
+    } else if (!on && w) { w.remove(); w = null; }
+    if (w) w.firstChild.classList.toggle('paused', !P.playing || !!P.loading || !!P.error);
+  });
+  document.querySelectorAll('[data-play]').forEach(b => {
+    const pp = ic(ownsQueue(b.dataset.play) && P.playing ? 'pause' : 'play', 'f');
+    if (b.dataset.pp !== pp) { b.dataset.pp = pp; b.innerHTML = pp; }
+  });
+}
+const npOpen = () => !$('#np').hidden;
+function openNP() {
+  if (!P.active || npOpen()) return;
+  const np = $('#np');
+  np.hidden = false;
+  np.getBoundingClientRect();
+  np.classList.add('open');
+  history.pushState({ np: 1 }, '');
+}
+function closeNP(fromHistory) {
+  if (!npOpen()) return;
+  if (!fromHistory && history.state && history.state.np) { history.back(); return; } // popstate closes it
+  const np = $('#np');
+  np.classList.remove('open');
+  setTimeout(() => { if (!np.classList.contains('open')) np.hidden = true; }, 450);
+}
+addEventListener('popstate', () => { if (npOpen() && !(history.state && history.state.np)) closeNP(true); });
+window.__sp.player = s => { try { onPlayer(typeof s === 'string' ? JSON.parse(s) : s); } catch (e) {} };
+$('#miniOpen').addEventListener('click', openNP);
+$('#miniToggle').addEventListener('click', () => control(P.error ? 'play' : 'toggle'));
+$('#miniNext').addEventListener('click', () => control('next'));
+$('#npClose').addEventListener('click', () => closeNP());
+$('#npToggle').addEventListener('click', () => control(P.error ? 'play' : 'toggle'));
+$('#npNext').addEventListener('click', () => control('next'));
+$('#npPrev').addEventListener('click', () => control('prev'));
+$('#npDl').addEventListener('click', () => { if (P.track) download([P.track], { cover: P.track.cover }); });
+$('#npSeek').addEventListener('input', e => {
+  dragging = true;
+  const f = e.target.value / 1000;
+  e.target.style.setProperty('--p', (f * 100).toFixed(2) + '%');
+  $('#npPos').textContent = clock(f * (P.dur || 0) / 1000);
+});
+$('#npSeek').addEventListener('change', e => {
+  const ms = Math.round(e.target.value / 1000 * (P.dur || 0));
+  dragging = false;
+  if (B && B.seek) B.seek(ms);
+  P.pos = ms; P.at = Date.now();
+  tick();
+});
+
 render();
 checkLink();
+if (B && B.playerSync) B.playerSync();
 </script>
 </body>
 </html>

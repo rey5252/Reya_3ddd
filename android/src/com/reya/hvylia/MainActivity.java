@@ -91,6 +91,8 @@ public class MainActivity extends Activity {
     @Override
     protected void onDestroy() {
         if (instance == this) instance = null;
+        StreamPlayer sp = StreamPlayer.peek();
+        if (sp != null) sp.stop(); // closing the app stops the Spotify tab's music too
         stopService(new Intent(this, PlayerService.class));
         web.destroy();
         super.onDestroy();

@@ -22,20 +22,49 @@ import android.os.SystemClock;
 import android.util.Base64;
 
 /**
- * Keeps playback alive in the background and mirrors the page's player in a media notification,
- * on the lock screen and for headset / Bluetooth buttons. Every button is forwarded to the page.
+ * Keeps playback alive in the background and shows the active player in a media notification, on the lock screen
+ * and for headset / Bluetooth buttons. Two players can own it: the library player (the page in MainActivity) and
+ * the Spotify tab's {@link StreamPlayer}. The one that starts playing takes over and the other one pauses;
+ * buttons go to the owner.
  */
 public class PlayerService extends Service {
+    /** What the notification buttons and media keys drive. */
+    interface Controller {
+        void play();
+        void pause();
+        void toggle();
+        void next();
+        void prev();
+        void seek(long ms);
+    }
+
+    /** The library player: forwards to the page. */
+    static final Controller WEB = new Controller() {
+        @Override public void play() { MainActivity.js("window.__hvylia&&__hvylia.play()"); }
+        @Override public void pause() { MainActivity.js("window.__hvylia&&__hvylia.pause()"); }
+        @Override public void toggle() { MainActivity.js("window.__hvylia&&__hvylia.toggle()"); }
+        @Override public void next() { MainActivity.js("window.__hvylia&&__hvylia.next()"); }
+        @Override public void prev() { MainActivity.js("window.__hvylia&&__hvylia.prev()"); }
+        @Override public void seek(long ms) { MainActivity.js("window.__hvylia&&__hvylia.seek(" + ms + ")"); }
+    };
+
+    private static final class State {
+        String id = "", title = "", artist = "", album = "", artId = "";
+        boolean playing;
+        long duration, position;
+        float speed = 1f;
+        Bitmap art;
+    }
+
     private static final String CHANNEL = "playback";
     private static final int NOTE_ID = 1;
     private static final Handler MAIN = new Handler(Looper.getMainLooper());
 
     private static PlayerService inst;
-    private static String id = "", title = "", artist = "", album = "", artId = "";
-    private static boolean playing;
-    private static long duration, position;
-    private static float speed = 1f;
-    private static Bitmap art;
+    private static final State web = new State(), stream = new State();
+    private static Controller streamCtl;
+    private static boolean streamOwns; // guarded by PlayerService.class
+    private static long streamSince;
 
     private MediaSession session;
     private NotificationManager nm;
@@ -43,19 +72,58 @@ public class PlayerService extends Service {
 
     // ---------- called from the page bridge (background thread) ----------
 
-    static void update(final Context c, String i, String t, String ar, String al, boolean p, long dur, long pos, float sp) {
+    static void update(final Context c, String i, String t, String ar, String al, final boolean p, long dur, long pos, float sp) {
+        boolean takeOver = false;
         synchronized (PlayerService.class) {
-            id = i == null ? "" : i; title = t == null ? "" : t; artist = ar == null ? "" : ar; album = al == null ? "" : al;
-            playing = p; duration = Math.max(0, dur); position = Math.max(0, pos); speed = sp > 0 ? sp : 1f;
-            if (!id.equals(artId)) art = null;
+            web.id = i == null ? "" : i; web.title = t == null ? "" : t; web.artist = ar == null ? "" : ar; web.album = al == null ? "" : al;
+            web.playing = p; web.duration = Math.max(0, dur); web.position = Math.max(0, pos); web.speed = sp > 0 ? sp : 1f;
+            if (!web.id.equals(web.artId)) web.art = null;
+            // (a "playing" report already on its way when the Spotify tab took over must not take it back)
+            if (p && streamOwns && SystemClock.uptimeMillis() - streamSince > 1500) { streamOwns = false; takeOver = true; }
         }
         final Context app = c.getApplicationContext();
+        final boolean pauseStream = takeOver;
         MAIN.post(new Runnable() {
             @Override public void run() {
+                StreamPlayer sp = StreamPlayer.peek();
+                if (pauseStream && sp != null) sp.pause(); // the library player started: the Spotify tab stops
                 if (inst != null) inst.refresh();
-                else if (playing) start(app);
+                else if (p) start(app);
             }
         });
+    }
+
+    /** The Spotify tab's player changed (main thread). `wants` = it is playing or about to (still loading). */
+    static void stream(Context c, Controller ctl, String key, String t, String ar, String al, boolean playing, boolean wants,
+                       long dur, long pos, Bitmap art) {
+        boolean takeOver = false;
+        synchronized (PlayerService.class) {
+            streamCtl = ctl;
+            stream.id = key; stream.title = t; stream.artist = ar; stream.album = al;
+            stream.playing = playing; stream.duration = Math.max(0, dur); stream.position = Math.max(0, pos); stream.speed = 1f;
+            stream.art = art;
+            if (wants && !streamOwns) { streamOwns = true; streamSince = SystemClock.uptimeMillis(); takeOver = true; }
+        }
+        if (takeOver) WEB.pause(); // and the library player stops
+        if (inst != null) inst.refresh();
+        else if (wants) start(c.getApplicationContext());
+    }
+
+    /** The Spotify tab's player was closed: show the library player again, or go away. */
+    static void streamStopped(Context c) {
+        boolean webHasTrack;
+        synchronized (PlayerService.class) {
+            stream.id = "";
+            streamOwns = false;
+            webHasTrack = !web.id.isEmpty();
+        }
+        if (inst == null) return;
+        if (webHasTrack) inst.refresh();
+        else c.stopService(new Intent(c, PlayerService.class));
+    }
+
+    private static Controller owner() {
+        synchronized (PlayerService.class) { return streamOwns && streamCtl != null ? streamCtl : WEB; }
     }
 
     static void art(String forId, String dataUrl) {
@@ -66,14 +134,25 @@ public class PlayerService extends Service {
             b = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
         } catch (RuntimeException ignored) { }
         synchronized (PlayerService.class) {
-            artId = forId == null ? "" : forId;
-            art = b;
+            web.artId = forId == null ? "" : forId;
+            web.art = b;
         }
         MAIN.post(new Runnable() { @Override public void run() { if (inst != null) inst.refresh(); } });
     }
 
+    /** The library player has nothing to show. */
     static void clear(final Context c) {
-        MAIN.post(new Runnable() { @Override public void run() { c.stopService(new Intent(c, PlayerService.class)); } });
+        final boolean keep;
+        synchronized (PlayerService.class) {
+            web.id = "";
+            keep = streamOwns;
+        }
+        MAIN.post(new Runnable() {
+            @Override public void run() {
+                if (!keep) c.stopService(new Intent(c, PlayerService.class));
+                else if (inst != null) inst.refresh();
+            }
+        });
     }
 
     private static void start(Context c) {
@@ -101,14 +180,13 @@ public class PlayerService extends Service {
         }
         session = new MediaSession(this, "Hvylia");
         session.setCallback(new MediaSession.Callback() {
-            @Override public void onPlay() { MainActivity.js("window.__hvylia&&__hvylia.play()"); }
-            @Override public void onPause() { MainActivity.js("window.__hvylia&&__hvylia.pause()"); }
-            @Override public void onStop() { MainActivity.js("window.__hvylia&&__hvylia.pause()"); }
-            @Override public void onSkipToNext() { MainActivity.js("window.__hvylia&&__hvylia.next()"); }
-            @Override public void onSkipToPrevious() { MainActivity.js("window.__hvylia&&__hvylia.prev()"); }
-            @Override public void onSeekTo(long pos) { MainActivity.js("window.__hvylia&&__hvylia.seek(" + pos + ")"); }
+            @Override public void onPlay() { owner().play(); }
+            @Override public void onPause() { owner().pause(); }
+            @Override public void onStop() { owner().pause(); }
+            @Override public void onSkipToNext() { owner().next(); }
+            @Override public void onSkipToPrevious() { owner().prev(); }
+            @Override public void onSeekTo(long pos) { owner().seek(pos); }
         });
-        session.setSessionActivity(openApp());
         session.setActive(true);
         refresh();
     }
@@ -116,9 +194,9 @@ public class PlayerService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         String a = intent != null ? intent.getAction() : null;
-        if ("prev".equals(a)) MainActivity.js("window.__hvylia&&__hvylia.prev()");
-        else if ("next".equals(a)) MainActivity.js("window.__hvylia&&__hvylia.next()");
-        else if ("toggle".equals(a)) MainActivity.js("window.__hvylia&&__hvylia.toggle()");
+        if ("prev".equals(a)) owner().prev();
+        else if ("next".equals(a)) owner().next();
+        else if ("toggle".equals(a)) owner().toggle();
         refresh();
         return START_NOT_STICKY;
     }
@@ -128,6 +206,8 @@ public class PlayerService extends Service {
         // Swiping the app away stops the music, like closing it.
         MainActivity a = MainActivity.instance;
         if (a != null) a.finish();
+        StreamPlayer sp = StreamPlayer.peek();
+        if (sp != null) sp.stop();
         stopSelf();
     }
 
@@ -143,8 +223,14 @@ public class PlayerService extends Service {
     public IBinder onBind(Intent intent) { return null; }
 
     private void refresh() {
-        String t, ar, al; boolean p; long dur, pos; float sp; Bitmap b;
-        synchronized (PlayerService.class) { t = title; ar = artist; al = album; p = playing; dur = duration; pos = position; sp = speed; b = art; }
+        String t, ar, al; boolean p, fromStream; long dur, pos; float sp; Bitmap b;
+        synchronized (PlayerService.class) {
+            fromStream = streamOwns;
+            State s = fromStream ? stream : web;
+            t = s.title; ar = s.artist; al = s.album; p = s.playing; dur = s.duration; pos = s.position; sp = s.speed; b = s.art;
+        }
+        PendingIntent open = fromStream ? openSpotify() : openApp();
+        session.setSessionActivity(open);
 
         MediaMetadata.Builder md = new MediaMetadata.Builder()
                 .putString(MediaMetadata.METADATA_KEY_TITLE, t)
@@ -166,7 +252,7 @@ public class PlayerService extends Service {
                 .setContentText(ar)
                 .setSubText(al)
                 .setLargeIcon(b)
-                .setContentIntent(openApp())
+                .setContentIntent(open)
                 .setVisibility(Notification.VISIBILITY_PUBLIC)
                 .setShowWhen(false)
                 .setOngoing(p)
@@ -190,6 +276,11 @@ public class PlayerService extends Service {
         Intent i = new Intent(this, PlayerService.class).setAction(act);
         PendingIntent pi = PendingIntent.getService(this, code, i, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
         return new Notification.Action.Builder(Icon.createWithResource(this, icon), label, pi).build();
+    }
+
+    private PendingIntent openSpotify() {
+        Intent i = new Intent(this, SpotifyActivity.class).setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        return PendingIntent.getActivity(this, 4, i, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
     private PendingIntent openApp() {
