@@ -34,10 +34,12 @@ DEFAULT_ART = os.path.join(ROOT, "FortressTowers", "art", "FT")
 EXPORT_SCRIPT = os.path.join(SCRIPT_DIR, "blender_export_w3x.py")
 
 TOWER_IDS = ["AlliedPrismSpire", "AlliedCryoBastion", "AlliedAegisSpire",
-             "SovietTeslaObelisk", "SovietFlakNest", "SovietInfernoBunker", "SovietTsarCannon",
+             "SovietTeslaObelisk", "SovietFlakNest", "SovietInfernoBunker", "SovietTsarCannon", "SovietBigBertha",
              "JapanTenguSpire", "JapanWaveCitadel", "JapanKitsuneShrine"]
 NANOCORES = [t + "Nanocore" for t in TOWER_IDS if t.startswith("Japan")]
 BUDGET_TOWER = (3000, 12000)
+BUDGET_SUPERWEAPON = (3000, 24000)   # one-per-player superweapon buildings
+SUPERWEAPONS = {"SovietBigBertha"}
 BUDGET_NANOCORE = (0, 2500)
 GEN_TIMEOUT = 600
 
@@ -209,7 +211,8 @@ def report(only):
             print("  %-28s %-24s ПОМИЛКА читання: %s" % (stem, ft_name(stem), exc))
             continue
         total += st["tris"]
-        lo, hi = BUDGET_NANOCORE if stem.endswith("Nanocore") else BUDGET_TOWER
+        lo, hi = (BUDGET_NANOCORE if stem.endswith("Nanocore")
+                  else BUDGET_SUPERWEAPON if stem in SUPERWEAPONS else BUDGET_TOWER)
         notes = []
         if not lo <= st["tris"] <= hi:
             notes.append("поза бюджетом %d-%d" % (lo, hi))

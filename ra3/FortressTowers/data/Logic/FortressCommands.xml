@@ -71,6 +71,20 @@
         <Object>SovietTsarCannon</Object>
     </LogicCommand>
 
+    <LogicCommand
+        id="Command_ConstructSovietBigBertha"
+        Type="FOUNDATION_CONSTRUCT">
+        <Object>SovietBigBertha</Object>
+    </LogicCommand>
+
+    <!-- Big Bertha strike: target any location. VERIFY: Type and child element against the vanilla
+         Vacuum Imploder / Iron Curtain buttons. -->
+    <LogicCommand
+        id="Command_SpecialPowerSovietBigBertha"
+        Type="SPECIAL_POWER">
+        <SpecialPower>SpecialPower_SovietBigBerthaStrike</SpecialPower>
+    </LogicCommand>
+
     <!-- ===================== Empire of the Rising Sun ===================== -->
     <!-- The yard builds the nanocore (a mobile unit); the core then unpacks into the tower.
          VERIFY: Type="UNIT_BUILD" matches the vanilla Japan core buttons

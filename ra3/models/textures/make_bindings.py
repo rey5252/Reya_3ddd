@@ -99,6 +99,9 @@ MANUAL: dict[str, dict] = {
     "SovietTeslaObelisk": {"hazard_y": "soviet/hazard", "hazard_k": "soviet/hazard"},
     "SovietInfernoBunker": {"haz_y": "soviet/hazard", "haz_k": "soviet/hazard"},
     "SovietTsarCannon": {"haz_y": "soviet/hazard", "haz_k": "soviet/hazard"},
+    "SovietBigBertha": {"haz_y": "soviet/hazard", "haz_k": "soviet/hazard", "plate": {"texture": "soviet/concrete", "tile": 4.0},
+                        "rail": None, "sleeper": None, "cream": None,
+                        "ballast": {"texture": "soviet/concrete", "tile": 1.5}},
 }
 
 # */plate_steel is drawn as ONE deck panel framed on the tile border, so on the foundation plate

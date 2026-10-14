@@ -115,6 +115,28 @@
     "black": "empire/trim_black",
     "dark": "empire/trim_black"
   },
+  "SovietBigBertha": {
+    "plate": {
+      "texture": "soviet/concrete",
+      "tile": 4.0
+    },
+    "plate_top": "soviet/plate_steel",
+    "haz_y": "soviet/hazard",
+    "haz_k": {
+      "texture": "soviet/hazard",
+      "white": 0.15
+    },
+    "olive": "soviet/steel_olive",
+    "olive_lt": "soviet/steel_olive",
+    "gun_dark": "soviet/dark_metal",
+    "steel": "soviet/plate_steel",
+    "ballast": {
+      "texture": "soviet/concrete",
+      "tile": 1.5
+    },
+    "red": "soviet/paint_red",
+    "rivet": "soviet/plate_steel"
+  },
   "SovietFlakNest": {
     "plate": {
       "texture": "soviet/plate_steel",

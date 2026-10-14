@@ -27,6 +27,7 @@
         <Include type="all" source="ART:FTFlakNest.w3x" />
         <Include type="all" source="ART:FTInfernoBunker.w3x" />
         <Include type="all" source="ART:FTTsarCannon.w3x" />
+        <Include type="all" source="ART:FTBigBertha.w3x" />
 
         <!-- Empire of the Rising Sun: towers + nanocores -->
         <Include type="all" source="ART:FTTenguSpire.w3x" />

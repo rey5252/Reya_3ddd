@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    FortressTowers 1.0 - Superweapon: SovietBigBertha ("Велика Берта")
+
+    A superweapon BUILDING, not a turret: a super-heavy railway gun standing on its siding
+    (own model art/FT/FTBigBertha.w3x, built from models/towers/SovietBigBertha.py).
+
+    HOW IT WORKS (like the vanilla Soviet superweapons):
+      - The building has a special power with a 4-minute reload and a public countdown.
+      - The player clicks any point on the map; the gun fires (muzzle blast FX on FX_MUZZLE01),
+        and after a 4 s flight time a salvo of 3 heavy shells lands around that point
+        (0.8 s apart, scatter 90): each 3000 damage at the centre (R40) and 1200 up to R110.
+      - One per player. BuildCost 5000, BuildTime 50 s, MaxHealth 6000, EnergyProduction -20,
+        needs the Battle Lab. Shuts down without power (the countdown pauses).
+
+    AUTHOR MUST CHECK IN SageXml (copy from the vanilla Vacuum Imploder / Iron Curtain):
+      - SpecialPowerTemplate attributes, SpecialPowerModule / OCLSpecialPower module names,
+        the LogicCommand Type for special powers, how the superweapon timer is shown.
+      - ObjectCreationList syntax, FX list and audio event names, armor template, DamageType tokens,
+        Battle Lab object id, MaxSimultaneousOfType.
+    Every such uncertain name is marked with a VERIFY comment below.
+-->
+<AssetDeclaration xmlns="uri:ea.com:eala:asset" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Includes>
+        <Include type="reference" source="DATA:static.xml" />
+        <Include type="reference" source="DATA:global.xml" />
+        <Include type="reference" source="DATA:audio.xml" />
+    </Includes>
+
+    <!-- ===================================================================== -->
+    <!-- Special power: strike any location, 4 min reload                      -->
+    <!-- ===================================================================== -->
+    <!-- VERIFY: attribute names against SpecialPowerTemplate entries of the vanilla Soviet superweapons. -->
+    <SpecialPowerTemplate
+        id="SpecialPower_SovietBigBerthaStrike"
+        ReloadTime="240s"
+        TargetType="LOCATION"
+        RadiusCursorRadius="150"
+        PublicTimer="true"
+        ShortcutPower="true"
+        InitiateSound="SovietSuperWeapon_Launch"
+        Flags="NEEDS_OBJECT_FILTER WATER_OK" />
+
+    <!-- The shell salvo is a short-lived invisible object created at the target. -->
+    <!-- VERIFY: ObjectCreationList / CreateObject syntax in the RA3 schema. -->
+    <ObjectCreationList id="OCL_SovietBigBerthaStrike">
+        <CreateObject ObjectNames="SovietBigBerthaStrike" Disposition="ON_GROUND_ALIGNED" Count="1" />
+    </ObjectCreationList>
+
+    <!-- Warhead of one shell. -->
+    <WeaponTemplate
+        id="SovietBigBerthaShellWarhead"
+        Name="SovietBigBerthaShellWarhead"
+        AttackRange="200"
+        ClipSize="3"
+        AutoReloadsClip="No"
+        ScatterRadius="90"
+        AntiMask="ANTI_GROUND"
+        RadiusDamageAffects="ENEMIES NEUTRALS ALLIES"
+        FireFX="FX_SovietBigBerthaShellImpact">
+        <!-- 3 shells, 0.8 s apart. VERIFY: FiringDuration as inter-shot delay. -->
+        <FiringDuration MinSeconds="0.8s" MaxSeconds="0.8s" />
+        <Nuggets>
+            <!-- VERIFY: DamageType / DeathType tokens. -->
+            <DamageNugget Damage="3000" Radius="40" DamageType="EXPLOSION" DeathType="EXPLODED" />
+            <DamageNugget Damage="1200" Radius="110" DamageType="EXPLOSION" DeathType="EXPLODED" />
+            <!-- VERIFY: FX list name - reuse a vanilla huge ground explosion. -->
+            <FireFXNugget FireFX="FX_SovietBigBerthaShellImpact" />
+        </Nuggets>
+    </WeaponTemplate>
+
+    <!-- Invisible strike marker: waits for the shells' 4 s flight, fires the salvo, then goes away. -->
+    <!-- VERIFY: module names (FireWeaponUpdate, LifetimeUpdate) and KindOf flags of vanilla helper objects. -->
+    <GameObject
+        id="SovietBigBerthaStrike"
+        inheritFrom="BaseProjectile"
+        Side="Soviet"
+        EditorSorting="SYSTEM"
+        KindOf="NO_COLLIDE UNATTACKABLE IGNORED_IN_GUI CLICK_THROUGH">
+        <Behaviors>
+            <FireWeaponUpdate id="ModuleTag_FireSalvo" InitialDelay="4s">
+                <FireWeaponNugget WeaponName="SovietBigBerthaShellWarhead" FireDelay="0s" />
+            </FireWeaponUpdate>
+            <!-- VERIFY: an incoming-shell whistle / shadow FX before impact. -->
+            <FXListAtBoneUpdate id="ModuleTag_Incoming" FXList="FX_SovietBigBerthaIncoming" />
+            <LifetimeUpdate id="ModuleTag_Lifetime" MinLifetime="8s" MaxLifetime="8s" />
+            <DestroyDie id="ModuleTag_DestroyDie" />
+        </Behaviors>
+        <Body>
+            <ImmortalBody id="ModuleTag_Body" MaxHealth="1" />
+        </Body>
+    </GameObject>
+
+    <!-- ===================================================================== -->
+    <!-- The building                                                          -->
+    <!-- ===================================================================== -->
+    <!-- VERIFY: SelectPortrait / ButtonImage - point them at models/cameos/SovietBigBertha once imported. -->
+    <GameObject
+        id="SovietBigBertha"
+        inheritFrom="BaseStructure"
+        Side="Soviet"
+        EditorSorting="STRUCTURE"
+        KindOf="PRELOAD STRUCTURE SELECTABLE IMMOBILE SCORE FS_SUPERWEAPON POWERED"
+        BuildCost="5000"
+        BuildTime="50"
+        MaxSimultaneousOfType="1"
+        CommandSet="SovietBigBerthaCommandSet"
+        EnergyProduction="-20"
+        ThreatLevel="15"
+        VisionRange="400"
+        ShroudClearingRange="400"
+        SelectPortrait="Portrait_SovietSuperWeapon"
+        ButtonImage="Button_SovietSuperWeapon"
+        RadarPriority="STRUCTURE">
+
+        <DisplayName>NAME:SovietBigBertha</DisplayName>
+        <Description>DESC:SovietBigBertha</Description>
+        <TypeDescription>TYPE:SovietBigBertha</TypeDescription>
+
+        <!-- VERIFY: armor template of the vanilla Soviet superweapon structures. -->
+        <ArmorSet Armor="SovietSuperWeaponArmor" DamageFX="StructureDamageFXNoShake" />
+
+        <Draws>
+            <ScriptedModelDraw
+                id="ModuleTag_Draw"
+                OkToChangeModelColor="true"
+                ExtraPublicBone="FX_MUZZLE01 FX_GLOW">
+                <!-- Custom Fortress Protocol model (art/FT/FTBigBertha.w3x, built by scripts/build_models.py). -->
+                <ModelConditionState ParseCondStateType="PARSE_DEFAULT">
+                    <Model Name="FTBigBertha" />
+                </ModelConditionState>
+                <ModelConditionState ParseCondStateType="PARSE_NORMAL" ConditionsYes="REALLYDAMAGED">
+                    <Model Name="FTBigBertha" />
+                    <ParticleSysBone BoneName="BARREL" FXParticleSystemTemplate="SmokeStructureDamagedLarge" FollowBone="true" />
+                </ModelConditionState>
+                <!-- Muzzle blast when the special power fires. VERIFY: condition flag set by the special power. -->
+                <AnimationState ParseCondStateType="PARSE_NORMAL" ConditionsYes="SPECIAL_WEAPON_ONE" StateName="Firing">
+                    <FXEvent Frame="0" Effect="FX_SovietBigBerthaMuzzleBlast" Bone="FX_MUZZLE01" />
+                </AnimationState>
+            </ScriptedModelDraw>
+        </Draws>
+
+        <Behaviors>
+            <!-- +25% HP from Upgrade_FortressReinforcedPlating (data/Logic/FortressUpgrades.xml). -->
+            <MaxHealthUpgrade
+                id="ModuleTag_FortressPlating"
+                TriggeredBy="Upgrade_FortressReinforcedPlating"
+                AddMaxHealth="1500"
+                ChangeType="ADD_CURRENT_HEALTH_TOO" />
+
+            <!-- VERIFY: module names/attributes, copy from the vanilla Vacuum Imploder. -->
+            <SpecialPowerModule
+                id="ModuleTag_StrikePower"
+                SpecialPowerTemplate="SpecialPower_SovietBigBerthaStrike"
+                UpdateModuleStartsAttack="false"
+                StartsPaused="false" />
+            <OCLSpecialPower
+                id="ModuleTag_StrikeOCL"
+                SpecialPowerTemplate="SpecialPower_SovietBigBerthaStrike"
+                OCL="OCL_SovietBigBerthaStrike"
+                CreateLocation="CREATE_AT_LOCATION"
+                ConditionFlag="SPECIAL_WEAPON_ONE"
+                ConditionFlagDuration="3s" />
+
+            <!-- Superweapons pause without power (as vanilla). VERIFY module name. -->
+            <PowerConsumerBehavior id="ModuleTag_PowerConsumer" />
+
+            <DestroyDie id="ModuleTag_DestroyDie" />
+            <!-- VERIFY: death FX list and rubble OCL names of a large Soviet structure. -->
+            <FXListDie id="ModuleTag_FXListDie" DeathFX="FX_SovietStructureDeathLarge" />
+            <CreateObjectDie id="ModuleTag_CreateObjectDie" CreationList="OCL_SovietStructureRubbleLarge" />
+        </Behaviors>
+
+        <Body>
+            <ActiveBody id="ModuleTag_Body" MaxHealth="6000" />
+        </Body>
+
+        <Geometry IsSmall="false">
+            <!-- 16 x 16 m siding (10 units per metre); the barrel overhangs it. -->
+            <Shape Type="BOX" MajorRadius="80" MinorRadius="80" Height="100" />
+        </Geometry>
+
+        <ObjectPrerequisites>
+            <!-- VERIFY: Soviet Battle Lab object id. -->
+            <GameDependency>
+                <RequiredObject>SovietBattleLab</RequiredObject>
+            </GameDependency>
+        </ObjectPrerequisites>
+
+        <!-- Sounds. VERIFY: audio event names. -->
+        <VoiceSelect>SovietSuperWeapon_Select</VoiceSelect>
+        <SoundOnDamaged>StructureDamagedMedium</SoundOnDamaged>
+        <SoundOnReallyDamaged>StructureDamagedHeavy</SoundOnReallyDamaged>
+        <SoundDie>SovietStructureDieLarge</SoundDie>
+        <UnitSpecificSounds>
+            <SoundSellStructure>SovietStructureSold</SoundSellStructure>
+        </UnitSpecificSounds>
+    </GameObject>
+</AssetDeclaration>

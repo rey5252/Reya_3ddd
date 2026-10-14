@@ -24,6 +24,7 @@
         <Include type="all" source="Towers/Soviet/SovietFlakNest.xml" />
         <Include type="all" source="Towers/Soviet/SovietInfernoBunker.xml" />
         <Include type="all" source="Towers/Soviet/SovietTsarCannon.xml" />
+        <Include type="all" source="Towers/Soviet/SovietBigBertha.xml" />
 
         <!-- Towers: Empire of the Rising Sun -->
         <Include type="all" source="Towers/Japan/JapanTenguSpire.xml" />

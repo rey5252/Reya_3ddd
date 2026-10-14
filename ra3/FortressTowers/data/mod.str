@@ -1,8 +1,8 @@
 // ==========================================================
 // FortressTowers 1.0 — mod.str
-// ЗГЕНЕРОВАНО scripts/merge_strings.py (2026-10-14 15:15). НЕ РЕДАГУВАТИ ВРУЧНУ:
+// ЗГЕНЕРОВАНО scripts/merge_strings.py (2026-10-14 21:01). НЕ РЕДАГУВАТИ ВРУЧНУ:
 // редагуйте data/strings/*.str і запустіть скрипт знову.
-// Джерела (11): AlliedAegisSpire.str, AlliedCryoBastion.str, AlliedPrismSpire.str, JapanKitsuneShrine.str, JapanTenguSpire.str, JapanWaveCitadel.str, SovietFlakNest.str, SovietInfernoBunker.str, SovietTeslaObelisk.str, SovietTsarCannon.str, _Logic.str
+// Джерела (12): AlliedAegisSpire.str, AlliedCryoBastion.str, AlliedPrismSpire.str, JapanKitsuneShrine.str, JapanTenguSpire.str, JapanWaveCitadel.str, SovietBigBertha.str, SovietFlakNest.str, SovietInfernoBunker.str, SovietTeslaObelisk.str, SovietTsarCannon.str, _Logic.str
 // ==========================================================
 
 // ---- AlliedAegisSpire.str (міток: 3) ----
@@ -125,6 +125,28 @@ TYPE:JapanWaveCitadelNanocore
 "Наноядро оборонної споруди"
 END
 
+// ---- SovietBigBertha.str (міток: 5) ----
+
+NAME:SovietBigBertha
+"Велика Берта"
+END
+
+DESC:SovietBigBertha
+"Суперзброя СРСР: надважка залізнична гармата. Лише одна на гравця.\nРаз на 4 хвилини б'є в будь-яку точку карти: через 4 с туди падає залп із 3 снарядів по 3000 урону.\nСильна проти: баз, оборони, скупчень техніки.\nСлабка: сама не обороняється, ціль бачить відлік до удару."
+END
+
+TYPE:SovietBigBertha
+"Суперзброя"
+END
+
+NAME:SpecialPower_SovietBigBerthaStrike
+"Залп «Великої Берти»"
+END
+
+TOOLTIP:SpecialPowerSovietBigBertha
+"Залп «Великої Берти».\nВкажіть будь-яку точку на карті: через 4 с туди впадуть 3 надважкі снаряди.\nПерезарядка: 4 хвилини."
+END
+
 // ---- SovietFlakNest.str (міток: 3) ----
 
 NAME:SovietFlakNest
@@ -181,7 +203,7 @@ TYPE:SovietTsarCannon
 "Далекобійна артилерія"
 END
 
-// ---- _Logic.str (міток: 12) ----
+// ---- _Logic.str (міток: 13) ----
 
 // FortressTowers 1.0 - рядки інтеграційного шару (кнопки будівництва та апгрейд).
 // Зливається у data/mod.str разом із data/strings/<TowerId>.str.
@@ -212,6 +234,10 @@ END
 
 TOOLTIP:ConstructSovietTsarCannon
 "Збудувати Цар-гармату ($3500).\nНадважка артилерія: дальність 1100, снаряд на 1500 урону по площі.\nПотрібна: бойова лабораторія."
+END
+
+TOOLTIP:ConstructSovietBigBertha
+"Збудувати «Велику Берту» ($5000). Суперзброя, лише одна на гравця.\nНадважка залізнична гармата: раз на 4 хв залп із 3 снарядів у будь-яку точку карти.\nПотрібна: бойова лабораторія."
 END
 
 TOOLTIP:ConstructJapanTenguSpire

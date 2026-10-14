@@ -31,6 +31,7 @@ TOWERS = [
     ("SovietFlakNest", "Soviet"),
     ("SovietInfernoBunker", "Soviet"),
     ("SovietTsarCannon", "Soviet"),
+    ("SovietBigBertha", "Soviet"),
     ("JapanTenguSpire", "Japan"),
     ("JapanWaveCitadel", "Japan"),
     ("JapanKitsuneShrine", "Japan"),

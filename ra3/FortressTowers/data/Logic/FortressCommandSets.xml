@@ -68,6 +68,14 @@
         <Cmd>Command_Stop</Cmd>
     </LogicCommandSet>
 
+    <!-- Superweapon building: the strike button, plus sell / repair / power. -->
+    <LogicCommandSet id="SovietBigBerthaCommandSet">
+        <Cmd>Command_SpecialPowerSovietBigBertha</Cmd>
+        <Cmd>Command_Sell</Cmd>
+        <Cmd>Command_Repair</Cmd>
+        <Cmd>Command_TogglePower</Cmd>
+    </LogicCommandSet>
+
     <LogicCommandSet id="SovietTsarCannonCommandSet">
         <Cmd>Command_Sell</Cmd>
         <Cmd>Command_Repair</Cmd>
@@ -159,6 +167,7 @@
         <Cmd>Command_ConstructSovietFlakNest</Cmd>
         <Cmd>Command_ConstructSovietInfernoBunker</Cmd>
         <Cmd>Command_ConstructSovietTsarCannon</Cmd>
+        <Cmd>Command_ConstructSovietBigBertha</Cmd>
         <Cmd>Command_Upgrade_FortressReinforcedPlating</Cmd>
     </LogicCommandSet>
 
