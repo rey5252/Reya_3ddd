@@ -68,6 +68,13 @@
         <Cmd>Command_Stop</Cmd>
     </LogicCommandSet>
 
+    <LogicCommandSet id="SovietTsarCannonCommandSet">
+        <Cmd>Command_Sell</Cmd>
+        <Cmd>Command_Repair</Cmd>
+        <Cmd>Command_TogglePower</Cmd>
+        <Cmd>Command_Stop</Cmd>
+    </LogicCommandSet>
+
     <!-- Garrisonable (3 infantry): adds the vanilla evacuate button. -->
     <LogicCommandSet id="SovietInfernoBunkerCommandSet">
         <Cmd>Command_Sell</Cmd>
@@ -151,6 +158,7 @@
         <Cmd>Command_ConstructSovietTeslaObelisk</Cmd>
         <Cmd>Command_ConstructSovietFlakNest</Cmd>
         <Cmd>Command_ConstructSovietInfernoBunker</Cmd>
+        <Cmd>Command_ConstructSovietTsarCannon</Cmd>
         <Cmd>Command_Upgrade_FortressReinforcedPlating</Cmd>
     </LogicCommandSet>
 

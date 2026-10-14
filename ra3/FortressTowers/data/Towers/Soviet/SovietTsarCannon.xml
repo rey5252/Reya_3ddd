@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    FortressTowers 1.0 - Tower #10: SovietTsarCannon ("Цар-гармата")
+
+    BASE: built on the same pattern as the other Soviet towers of this mod (SovietFlakNest:
+          turret + pitching barrel), with its own model art/FT/FTTsarCannon.w3x.
+          Weapon logic follows a vanilla long-range artillery shell (VERIFY: copy the projectile
+          object and FX from a vanilla artillery weapon in SageXml, e.g. the Dreadnought missiles
+          or the Apocalypse cannon shell).
+
+    WHAT IT IS:
+      - Super-heavy long-range artillery: a huge armored turret on an 8 x 8 m foundation with a
+        very long barrel (about 11 m) that lobs one shell every 8 s.
+      - Range 1100 (more than twice any other base defense), minimum range 250 (dead zone),
+        ground targets only. Shell: 1500 damage at the centre, radius 70, falls off to the edge.
+      - Slow turret (40 deg/s) and an inaccurate shot (scatter 40) so it is strong against bases
+        and slow groups, weak against fast units and anything that gets close.
+      - BuildCost 3500, BuildTime 40 s, MaxHealth 4500, EnergyProduction -15, needs Battle Lab.
+
+    AUTHOR MUST CHECK IN SageXml:
+      - ProjectileTemplate (the shell object), FX list and audio event names.
+      - Armor template, DamageType / DeathType tokens, Battle Lab object id.
+    Every such uncertain name is marked with a VERIFY comment below.
+-->
+<AssetDeclaration xmlns="uri:ea.com:eala:asset" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Includes>
+        <Include type="reference" source="DATA:static.xml" />
+        <Include type="reference" source="DATA:global.xml" />
+        <Include type="reference" source="DATA:audio.xml" />
+    </Includes>
+
+    <!-- ===================================================================== -->
+    <!-- Weapon: one heavy arcing shell every 8 s, range 1100, dead zone 250   -->
+    <!-- ===================================================================== -->
+    <!-- VERIFY: FireFX / FireSound - reuse a vanilla heavy cannon (Apocalypse tank / Dreadnought). -->
+    <WeaponTemplate
+        id="SovietTsarCannonWeapon"
+        Name="SovietTsarCannonWeapon"
+        AttackRange="1100"
+        MinimumAttackRange="250"
+        WeaponSpeed="420"
+        MinWeaponSpeed="200"
+        MaxWeaponSpeed="600"
+        ScaleWeaponSpeed="true"
+        ClipSize="1"
+        AutoReloadsClip="Yes"
+        AcceptableAimDelta="4d"
+        PreAttackDelay="1500"
+        PreAttackType="PER_SHOT"
+        AntiMask="ANTI_GROUND"
+        RadiusDamageAffects="ENEMIES NEUTRALS"
+        ProjectileCollidesWith="STRUCTURES"
+        ScatterRadius="40"
+        FireFX="FX_SovietTsarCannonMuzzleBlast"
+        FireSound="SovietApocalypseTank_WeaponFire"
+        CanFireWhileMoving="false">
+        <ClipReloadTime MinSeconds="8s" MaxSeconds="8s" />
+        <Nuggets>
+            <!-- VERIFY: ProjectileTemplate - a vanilla ballistic shell object; WarheadTemplate is below. -->
+            <ProjectileNugget
+                WarheadTemplate="SovietTsarCannonWarhead"
+                ProjectileTemplate="SovietTsarCannonShell" />
+        </Nuggets>
+    </WeaponTemplate>
+
+    <!-- Warhead: big blast where the shell lands, damage falls off towards the edge. -->
+    <WeaponTemplate
+        id="SovietTsarCannonWarhead"
+        Name="SovietTsarCannonWarhead"
+        AttackRange="1100"
+        AntiMask="ANTI_GROUND"
+        RadiusDamageAffects="ENEMIES NEUTRALS">
+        <Nuggets>
+            <!-- VERIFY: DamageType "EXPLOSION" / DeathType "EXPLODED" tokens in the RA3 enums. -->
+            <DamageNugget
+                Damage="1500"
+                Radius="25"
+                DamageType="EXPLOSION"
+                DeathType="EXPLODED" />
+            <DamageNugget
+                Damage="600"
+                Radius="70"
+                DamageType="EXPLOSION"
+                DeathType="EXPLODED" />
+            <!-- VERIFY: FX list name - reuse a vanilla large ground explosion. -->
+            <FireFXNugget FireFX="FX_SovietTsarCannonImpact" />
+        </Nuggets>
+    </WeaponTemplate>
+
+    <!-- ===================================================================== -->
+    <!-- Shell projectile                                                      -->
+    <!-- ===================================================================== -->
+    <!-- VERIFY: copy a vanilla ballistic shell projectile (model, MissileUpdate / ballistic
+         locomotor settings) and only change the id. The trail FX name is a placeholder. -->
+    <GameObject
+        id="SovietTsarCannonShell"
+        inheritFrom="BaseProjectile"
+        Side="Soviet"
+        EditorSorting="SYSTEM"
+        KindOf="PROJECTILE">
+        <Draws>
+            <ScriptedModelDraw id="ModuleTag_Draw" OkToChangeModelColor="false">
+                <ModelConditionState ParseCondStateType="PARSE_DEFAULT">
+                    <!-- VERIFY: vanilla shell model name -->
+                    <Model Name="SUApocalypse_PROJ" />
+                    <ParticleSysBone BoneName="NONE" FXParticleSystemTemplate="SovietTsarCannonShellTrail" FollowBone="true" />
+                </ModelConditionState>
+            </ScriptedModelDraw>
+        </Draws>
+        <Behaviors>
+            <!-- High lob: the shell climbs and falls like real artillery. VERIFY module/attributes. -->
+            <DumbProjectileBehavior
+                id="ModuleTag_Projectile"
+                FirstHeight="180"
+                SecondHeight="180"
+                FirstPercentIndent="30%"
+                SecondPercentIndent="70%"
+                OrientToFlightPath="true"
+                DetonateCallsKill="true" />
+        </Behaviors>
+        <Body>
+            <ImmortalBody id="ModuleTag_Body" MaxHealth="1" />
+        </Body>
+    </GameObject>
+
+    <!-- ===================================================================== -->
+    <!-- GameObject                                                            -->
+    <!-- ===================================================================== -->
+    <!-- VERIFY: SelectPortrait / ButtonImage - point them at the cameo from models/cameos once it is
+         imported as a texture; until then the vanilla Soviet superweapon portrait is used. -->
+    <GameObject
+        id="SovietTsarCannon"
+        inheritFrom="BaseStructure"
+        Side="Soviet"
+        EditorSorting="STRUCTURE"
+        KindOf="PRELOAD STRUCTURE SELECTABLE IMMOBILE SCORE FS_BASE_DEFENSE CAN_ATTACK"
+        BuildCost="3500"
+        BuildTime="40"
+        CommandSet="SovietTsarCannonCommandSet"
+        EnergyProduction="-15"
+        ThreatLevel="10"
+        VisionRange="500"
+        ShroudClearingRange="500"
+        SelectPortrait="Portrait_SovietSuperWeapon"
+        ButtonImage="Button_SovietSuperWeapon"
+        RadarPriority="STRUCTURE">
+
+        <DisplayName>NAME:SovietTsarCannon</DisplayName>
+        <Description>DESC:SovietTsarCannon</Description>
+        <TypeDescription>TYPE:SovietTsarCannon</TypeDescription>
+
+        <!-- VERIFY: armor template of a heavy Soviet structure. -->
+        <ArmorSet Armor="SovietBaseDefenseArmor" DamageFX="StructureDamageFXNoShake" />
+
+        <WeaponSet>
+            <Weapon Ordering="PRIMARY_WEAPON" Template="SovietTsarCannonWeapon" />
+        </WeaponSet>
+
+        <Draws>
+            <ScriptedModelDraw
+                id="ModuleTag_Draw"
+                OkToChangeModelColor="true"
+                ExtraPublicBone="FX_MUZZLE01 FX_GLOW">
+                <!-- Custom Fortress Protocol model (art/FT/FTTsarCannon.w3x, built by scripts/build_models.py). -->
+                <ModelConditionState ParseCondStateType="PARSE_DEFAULT">
+                    <Model Name="FTTsarCannon" />
+                    <Turret TurretNameKey="TURRET" TurretPitch="BARREL" TurretID="1" />
+                    <WeaponFireFXBone WeaponSlotType="PRIMARY_WEAPON" BoneName="FX_MUZZLE" />
+                    <WeaponLaunchBone WeaponSlotType="PRIMARY_WEAPON" BoneName="FX_MUZZLE" />
+                </ModelConditionState>
+                <ModelConditionState ParseCondStateType="PARSE_NORMAL" ConditionsYes="REALLYDAMAGED">
+                    <Model Name="FTTsarCannon" />
+                    <Turret TurretNameKey="TURRET" TurretPitch="BARREL" TurretID="1" />
+                    <WeaponFireFXBone WeaponSlotType="PRIMARY_WEAPON" BoneName="FX_MUZZLE" />
+                    <WeaponLaunchBone WeaponSlotType="PRIMARY_WEAPON" BoneName="FX_MUZZLE" />
+                    <ParticleSysBone BoneName="TURRET" FXParticleSystemTemplate="SmokeStructureDamagedMedium" FollowBone="true" />
+                </ModelConditionState>
+            </ScriptedModelDraw>
+        </Draws>
+
+        <Behaviors>
+            <!-- +25% HP from Upgrade_FortressReinforcedPlating (data/Logic/FortressUpgrades.xml). -->
+            <MaxHealthUpgrade
+                id="ModuleTag_FortressPlating"
+                TriggeredBy="Upgrade_FortressReinforcedPlating"
+                AddMaxHealth="1125"
+                ChangeType="ADD_CURRENT_HEALTH_TOO" />
+
+            <WeaponSetUpdate id="ModuleTag_WeaponSetUpdate">
+                <WeaponSlotTurret ID="1" AllowInterleavedFiring="false">
+                    <Weapon Ordering="PRIMARY_WEAPON" Template="SovietTsarCannonWeapon" />
+                    <!-- Slow, heavy turret: 40 deg/s turn, barrel raised for the lob. -->
+                    <TurretSettings
+                        TurretTurnRate="40"
+                        TurretPitchRate="20"
+                        AllowsPitch="true"
+                        NaturalTurretPitch="25d"
+                        MinPhysicalPitch="10d"
+                        MinIdleScanTime="4s"
+                        MaxIdleScanTime="10s"
+                        MinIdleScanAngle="0d"
+                        MaxIdleScanAngle="90d">
+                        <TurretAITargetChooserData
+                            CanAcquireDynamicIfAssignedOutOfRange="false"
+                            SympathyRange="150" />
+                    </TurretSettings>
+                </WeaponSlotTurret>
+            </WeaponSetUpdate>
+
+            <!-- Base defenses shut down on low power (as vanilla). VERIFY module name in RA3 SageXml. -->
+            <PowerConsumerBehavior id="ModuleTag_PowerConsumer" />
+
+            <DestroyDie id="ModuleTag_DestroyDie" />
+            <!-- VERIFY: death FX list and rubble OCL names of a large Soviet structure. -->
+            <FXListDie id="ModuleTag_FXListDie" DeathFX="FX_SovietStructureDeathLarge" />
+            <CreateObjectDie id="ModuleTag_CreateObjectDie" CreationList="OCL_SovietStructureRubbleLarge" />
+        </Behaviors>
+
+        <Body>
+            <ActiveBody id="ModuleTag_Body" MaxHealth="4500" />
+        </Body>
+
+        <AI>
+            <!-- VERIFY: AILuaEventsList name used by vanilla Soviet base defenses. -->
+            <AIUpdate id="ModuleTag_AI" AutoAcquireEnemiesWhenIdle="YES" AILuaEventsList="BaseDefenseFunctions" />
+        </AI>
+
+        <Geometry IsSmall="false">
+            <!-- 8 x 8 m foundation (10 units per metre); the barrel overhangs it. -->
+            <Shape Type="BOX" MajorRadius="40" MinorRadius="40" Height="70" />
+        </Geometry>
+
+        <ObjectPrerequisites>
+            <!-- VERIFY: Soviet Battle Lab object id. -->
+            <GameDependency>
+                <RequiredObject>SovietBattleLab</RequiredObject>
+            </GameDependency>
+        </ObjectPrerequisites>
+
+        <!-- Sounds. VERIFY: audio event names. -->
+        <VoiceSelect>SovietSuperWeapon_Select</VoiceSelect>
+        <SoundOnDamaged>StructureDamagedMedium</SoundOnDamaged>
+        <SoundOnReallyDamaged>StructureDamagedHeavy</SoundOnReallyDamaged>
+        <SoundDie>SovietStructureDieLarge</SoundDie>
+        <UnitSpecificSounds>
+            <SoundSellStructure>SovietStructureSold</SoundSellStructure>
+        </UnitSpecificSounds>
+    </GameObject>
+</AssetDeclaration>

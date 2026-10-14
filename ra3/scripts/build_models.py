@@ -34,7 +34,7 @@ DEFAULT_ART = os.path.join(ROOT, "FortressTowers", "art", "FT")
 EXPORT_SCRIPT = os.path.join(SCRIPT_DIR, "blender_export_w3x.py")
 
 TOWER_IDS = ["AlliedPrismSpire", "AlliedCryoBastion", "AlliedAegisSpire",
-             "SovietTeslaObelisk", "SovietFlakNest", "SovietInfernoBunker",
+             "SovietTeslaObelisk", "SovietFlakNest", "SovietInfernoBunker", "SovietTsarCannon",
              "JapanTenguSpire", "JapanWaveCitadel", "JapanKitsuneShrine"]
 NANOCORES = [t + "Nanocore" for t in TOWER_IDS if t.startswith("Japan")]
 BUDGET_TOWER = (3000, 12000)

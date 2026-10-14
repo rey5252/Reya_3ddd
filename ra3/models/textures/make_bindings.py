@@ -98,6 +98,7 @@ MANUAL: dict[str, dict] = {
     "SovietFlakNest": {"haz_y": "soviet/hazard", "haz_k": "soviet/hazard"},
     "SovietTeslaObelisk": {"hazard_y": "soviet/hazard", "hazard_k": "soviet/hazard"},
     "SovietInfernoBunker": {"haz_y": "soviet/hazard", "haz_k": "soviet/hazard"},
+    "SovietTsarCannon": {"haz_y": "soviet/hazard", "haz_k": "soviet/hazard"},
 }
 
 # */plate_steel is drawn as ONE deck panel framed on the tile border, so on the foundation plate
@@ -218,21 +219,6 @@ def classify(model: str, mat: dict, tset: str):
     return None, "no keyword"
 
 
-# The */plate_steel textures are one deck panel with a frame on the tile border, so on the
-# foundation itself one tile spans the whole 6x6 plate instead of the default 2 units.
-PLATE_MATERIALS = re.compile(r"^plate(_top|_hi|_in)?$")
-PLATE_TILE = 6.0
-
-
-def plate_tile(name, binding):
-    tex = binding if isinstance(binding, str) else binding.get("texture")
-    if not (tex and tex.endswith("/plate_steel") and PLATE_MATERIALS.match(name)):
-        return binding
-    out = {"texture": tex} if isinstance(binding, str) else dict(binding)
-    out["tile"] = PLATE_TILE
-    return out
-
-
 def material_bounds(js: dict) -> dict:
     """{material index: (min xyz, max xyz)} in model space (node translations applied)."""
     out = {}
@@ -275,6 +261,7 @@ def foundation_density(binding, bounds, name=""):
         b = {"texture": tex} if isinstance(binding, str) else dict(binding)
         if "tile" not in b:
             b.update(FOUNDATION_TILE)
+            b["tile"] = float(round(max(hi[0] - lo[0], hi[2] - lo[2])))
         return b, True
     return binding, False
 
@@ -300,10 +287,9 @@ def build(verbose=True):
             if b:
                 b, fnd = foundation_density(b, bounds.get(mi), mat.get("name", ""))
                 if fnd:
-                    why += ", foundation tile 6"
+                    why += f", foundation tile {b['tile']:g}"
             nm = mat.get("name", "?")
             if b:
-                b = plate_tile(nm, b)
                 entry[nm] = b
                 tex = b if isinstance(b, str) else (b.get("texture") or b.get("tex"))
                 if not (HERE / f"{tex}_dif.png").exists():
@@ -312,6 +298,15 @@ def build(verbose=True):
             if isinstance(b, dict) and "white" in b:
                 shown += f" w={b['white']}"
             lines.append(f"    {nm:<16} -> {shown:<30} ({why})")
+        # inset decks on the foundation (plate_in, plate_top, ...) use the plate's own tile size
+        fnd_tile = next((v["tile"] for k, v in entry.items() if isinstance(v, dict) and "offset" in v
+                         and str(v.get("texture", "")).endswith("/plate_steel")), None)
+        if fnd_tile:
+            for k, v in list(entry.items()):
+                tex = v if isinstance(v, str) else v.get("texture")
+                if (tex and tex.split("/")[-1] in FOUNDATION_TEX and re.fullmatch(FOUNDATION_NAMES, k)
+                        and not (isinstance(v, dict) and "tile" in v)):
+                    entry[k] = dict({"texture": tex}, **({} if isinstance(v, str) else v), tile=fnd_tile)
         out[model] = entry
         if verbose:
             print(f"{model}: {len(entry)}/{len(js.get('materials', []))} materials textured")

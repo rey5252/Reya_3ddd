@@ -10,7 +10,7 @@
     IMPORTANT FOR TOWER AUTHORS / REVIEWERS:
     The UpgradeTemplate by itself does nothing. Every one of the 9 tower GameObjects
     (AlliedPrismSpire, AlliedCryoBastion, AlliedAegisSpire, SovietTeslaObelisk, SovietFlakNest,
-    SovietInfernoBunker, JapanTenguSpire, JapanWaveCitadel, JapanKitsuneShrine - the deployed tower,
+    SovietInfernoBunker, SovietTsarCannon, JapanTenguSpire, JapanWaveCitadel, JapanKitsuneShrine - the deployed tower,
     not the Japan *Nanocore unit) must carry a MaxHealthUpgrade behavior keyed on this upgrade inside
     its <Behaviors> block. Because it is a PLAYER upgrade, towers built after the purchase get it too.
 
@@ -32,6 +32,7 @@
         SovietTeslaObelisk   3600 -> 900
         SovietFlakNest       2400 -> 600
         SovietInfernoBunker  3000 -> 750
+        SovietTsarCannon     4500 -> 1125
         JapanTenguSpire      2000 -> 500
         JapanWaveCitadel     3400 -> 850
         JapanKitsuneShrine   1800 -> 450

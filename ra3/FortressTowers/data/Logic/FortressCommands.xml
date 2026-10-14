@@ -65,6 +65,12 @@
         <Object>SovietInfernoBunker</Object>
     </LogicCommand>
 
+    <LogicCommand
+        id="Command_ConstructSovietTsarCannon"
+        Type="FOUNDATION_CONSTRUCT">
+        <Object>SovietTsarCannon</Object>
+    </LogicCommand>
+
     <!-- ===================== Empire of the Rising Sun ===================== -->
     <!-- The yard builds the nanocore (a mobile unit); the core then unpacks into the tower.
          VERIFY: Type="UNIT_BUILD" matches the vanilla Japan core buttons
