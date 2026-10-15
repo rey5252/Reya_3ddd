@@ -612,24 +612,28 @@
   }
 
   // Подряпина — трохи зігнута лінія зі звуженими кінцями й розривами; маска max-ом, AA за відстанню до відрізка.
+  // Ширина й сила рахуються в кожному пікселі за його проєкцією на подряпину, тож уздовж неї вони змінюються
+  // плавно (без сходинок на стиках відрізків ламаної).
   function drawScratch(mask, size, x0, y0, ang, len, wid, bend, inten, seed) {
     const dx = Math.cos(ang), dy = Math.sin(ang), nx = -dy, ny = dx, W = size - 1;
-    const steps = Math.max(2, Math.ceil(len / 4));
+    const steps = Math.max(2, Math.ceil(len / 4)), R = 0.5 * wid + 1;
     const ptx = t => x0 + dx * len * t + nx * bend * 4 * t * (1 - t), pty = t => y0 + dy * len * t + ny * bend * 4 * t * (1 - t);
+    const strength = t => inten * util.smoothstep(0.2, 0.45, noise1D(seed, t * len / 10));
     let ax = ptx(0), ay = pty(0);
     for (let s = 0; s < steps; s++) {
-      const t1 = (s + 1) / steps, tm = (s + 0.5) / steps, bx = ptx(t1), by = pty(t1);
-      const hw = 0.5 * wid * Math.sqrt(Math.sin(Math.PI * tm)), v = inten * util.smoothstep(0.2, 0.45, noise1D(seed, tm * len / 10));
-      if (v > 0 && hw > 0.05) {
-        const ex = bx - ax, ey = by - ay, l2 = ex * ex + ey * ey || 1, R = hw + 1;
+      const t0 = s / steps, t1 = (s + 1) / steps, bx = ptx(t1), by = pty(t1);
+      if (strength(t0) + strength((t0 + t1) / 2) + strength(t1) > 1e-3) {
+        const ex = bx - ax, ey = by - ay, l2 = ex * ex + ey * ey || 1;
         const xa = Math.floor(Math.min(ax, bx) - R), xb = Math.ceil(Math.max(ax, bx) + R);
         const ya = Math.floor(Math.min(ay, by) - R), yb = Math.ceil(Math.max(ay, by) + R);
         for (let py = ya; py <= yb; py++) {
           const row = (py & W) * size;
           for (let px = xa; px <= xb; px++) {
             const qx = px - ax, qy = py - ay, t = util.clamp((qx * ex + qy * ey) / l2, 0, 1);
-            const ux = qx - ex * t, uy = qy - ey * t, c = util.clamp(hw + 0.5 - Math.sqrt(ux * ux + uy * uy), 0, 1) * v;
-            if (c > 0) { const i = row + (px & W); if (c > mask[i]) mask[i] = c; }
+            const ux = qx - ex * t, uy = qy - ey * t, tt = t0 + (t1 - t0) * t;
+            const hw = 0.5 * wid * Math.sqrt(Math.sin(Math.PI * tt));
+            const c = util.clamp(hw + 0.5 - Math.sqrt(ux * ux + uy * uy), 0, 1);
+            if (c > 0 && hw > 0.05) { const v = c * strength(tt), i = row + (px & W); if (v > mask[i]) mask[i] = v; }
           }
         }
       }
@@ -658,7 +662,7 @@
       const m = mask[i];
       if (m <= 0) continue;
       mix3(col, i * 4, METAL[0], METAL[1], METAL[2], m);
-      spec[i] = spec[i] + (140 - spec[i]) * m;
+      spec[i] = spec[i] + (Math.max(140, spec[i] + 40) - spec[i]) * m; // блиск лише росте, навіть на глянцевій основі
       hgt[i] = util.clamp(hgt[i] - 0.06 * m, 0, 1);
       team[i] = team[i] * (1 - m);
     }

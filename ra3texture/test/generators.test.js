@@ -133,6 +133,43 @@ test('dirt gradient wraps from bottom to top without a seam', () => {
   const S = 256, x = run('dirt', S, 3, { amount: 0.5, gradient: 1, scale: 2, cavity: 0 });
   const st = tileStats((px, py) => x.color[(py * S + px) * 4], S)[1];
   assert.ok(st.wrap <= st.max * 1.5 + 0.5, `wrap ${st.wrap} vs interior ${st.max}`); });
+test('a scratch leaving through one edge re-enters through the opposite edge at the same height', () => {
+  // Одна подряпина (≤ 25 px) коротша за текстуру (128 px): торкнутися обох протилежних країв у тих самих рядках/стовпцях
+  // вона може, лише якщо загортається. Перебираємо seed-и детерміновано й вимагаємо кілька таких перетинів на кожній осі.
+  const S = 128, on = 0.15, found = { x: 0, y: 0 };
+  const meet = (a, b) => { for (let t = 0; t < S; t++) if (a(t) >= on) for (let d = -2; d <= 2; d++) if (t + d >= 0 && t + d < S && b(t + d) >= on) return true; return false; };
+  for (let seed = 1; seed <= 150; seed++) {
+    const x = run('scratches', S, seed, { count: 1, length: 60, width: 4 }), F = (px, py) => x.spec[py * S + px] / 140;
+    if (meet(py => F(S - 1, py), py => F(0, py))) found.x++;
+    if (meet(px => F(px, S - 1), px => F(px, 0))) found.y++; }
+  assert.ok(found.x >= 3 && found.y >= 3, JSON.stringify(found)); });
+test('rivets straddling the edge are stamped whole (exact shift invariance)', () => {
+  // Штучний шов біля краю: ліві заклепки сідають на межу текстури. Той самий шов, зсунутий на S/2, має дати
+  // рівно ті самі карти, зсунуті на S/2 (розміщення залежить лише від висоти, купол — від дробової позиції).
+  const S = 512;
+  for (const axis of [0, 1]) {
+    const mk = off => run('rivets', S, 9, { mode: 'seams' }, x => {
+      for (let a = 0; a < S; a++) for (let t = 0; t < 3; t++) { const c = (5 + off + t) % S; x.height[axis ? c * S + a : a * S + c] = 0.25; } });
+    const A = mk(0), B = mk(S / 2); let diff = 0, edge = 0;
+    for (let y = 0; y < S; y++) for (let px = 0; px < S; px++) {
+      const i = y * S + px, j = axis ? ((y + S / 2) % S) * S + px : y * S + (px + S / 2) % S;
+      if (A.height[i] !== B.height[j] || A.spec[i] !== B.spec[j] || A.color[i * 4] !== B.color[j * 4]) diff++;
+      if ((axis ? y : px) === 0 && A.height[i] > 0.5) edge++; }
+    assert.ok(edge > 0, 'axis ' + axis + ': rivets reach the edge'); assert.strictEqual(diff, 0, 'axis ' + axis); } });
+test('rust streaks run on from the bottom edge onto the top edge', () => {
+  // Ефект патьоків = різниця блиску без і з патьоками (той самий seed). Нижче плями він може лише згасати
+  // з множником decay ≥ 0.75 на піксель — і на межі рядків S-1 → 0 так само, як усередині.
+  const S = 256, mk = streaks => run('rust', S, 4, { amount: 0.4, streaks }, x => { x.spec.fill(200); x.team.fill(255); });
+  const off = mk(0), on = mk(1); let wrap = 0, wrapBad = 0, inner = 0, innerBad = 0;
+  for (let px = 0; px < S; px++) for (let y = 0; y < S; y++) {
+    const a = ((y - 1 + S) % S) * S + px, b = y * S + px;
+    if (on.team[a] !== 255 || on.team[b] !== 255 || off.spec[a] < 100 || off.spec[b] < 100) continue; // лише поза іржею
+    const ra = (off.spec[a] - on.spec[a]) / off.spec[a], rb = (off.spec[b] - on.spec[b]) / off.spec[b];
+    if (ra < 0.1) continue;
+    const bad = rb < 0.6 * ra;
+    if (y === 0) { wrap++; wrapBad += bad; } else { inner++; innerBad += bad; } }
+  assert.ok(wrap >= 10, 'streaks cross the bottom edge: ' + wrap);
+  assert.strictEqual(wrapBad, 0, 'breaks at the wrap'); assert.strictEqual(innerBad, 0, 'breaks inside'); });
 test('camo patterns: all three tile and only change color', () => {
   for (const pattern of ['blotch', 'stripes', 'digital']) {
     const x = run('camo', 128, 4, { pattern });
@@ -241,6 +278,11 @@ test('scratches expose bright metal: spec up, height down, colour lighter', () =
   const x = run('scratches', 512, 1); const k = argmax(x.spec); // 512 — опорний розмір: ширина 1 px
   assert.ok(x.spec[k] > 100); assert.ok(minOf(x.height) < 0.5); assert.ok(maxOf(x.height) <= 0.5);
   assert.ok(x.color[k * 4] > 160, 'metal colour at the brightest scratch'); });
+
+test('scratches never lower gloss, even on a glossy base', () => {
+  const S = 128, x = fresh(S); g.apply(layer('base', 1, { gloss: 200 }), x, S, {}); const before = x.spec.slice();
+  g.apply(layer('scratches', 1, { count: 200 }), x, S, {});
+  assert.ok(x.spec.every((v, i) => v >= before[i])); assert.ok(x.spec.some((v, i) => v > before[i])); });
 
 // ---- team ----
 test('team stripes: default paints a band, leaves height and spec', () => {
