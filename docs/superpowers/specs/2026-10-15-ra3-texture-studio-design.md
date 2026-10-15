@@ -74,7 +74,8 @@ ra3texture/
   js/project.js       збереження/відкриття проєкту (.json)
   js/app.js           зв'язок UI з ядром (єдиний файл, що чіпає DOM, окрім preview3d)
   test/*.test.js      тести ядра (node --test)
-  test/smoke.mjs      smoke-тест сторінки в Chromium (Playwright)
+  js/meshes.js        процедурні моделі для 3D-прев'ю (чисті функції, тестуються в Node)
+  test/smoke.cjs      smoke-тест сторінки в Chromium (Playwright)
   README.md           інструкція українською
 ```
 
@@ -161,7 +162,7 @@ ra3texture/
 ## Проєкт (`project.js`)
 
 `.json` з версією формату, розміром, назвою, списком шарів (тип, параметри, seed, enabled), імпортованими
-зображеннями та оверлеями пензля (як PNG data URL). Відкриття відтворює ті самі карти, що й до збереження.
+зображеннями та оверлеями пензля (сирі байти, стиснені deflate через `CompressionStream`, у base64; працює і в браузері, і в Node для тестів). Відкриття відтворює ті самі карти, що й до збереження.
 
 ## 3D-прев'ю (`preview3d.js`)
 
@@ -201,7 +202,7 @@ ra3texture/
 - `generators`: однаковий seed дає однаковий результат, різний seed дає різний, кожен шар змінює саме свої карти;
 - `project`: зберегти→відкрити дає ідентичні карти.
 
-`test/smoke.mjs` (Playwright, вбудований Chromium) відкриває `index.html` через `file://`, чекає демо-скін, натискає
+`test/smoke.cjs` (Playwright, вбудований Chromium) відкриває `index.html` через `file://`, чекає демо-скін, натискає
 «Експорт DDS» і перевіряє, що завантажилися три файли з правильними іменами й magic `DDS `, а в консолі немає помилок.
 
 CI: окремий job `ra3texture` у `.github/workflows/build.yml` запускає `node --test` (Node 20). Збірку модів це не зачіпає.
