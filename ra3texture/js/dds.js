@@ -83,6 +83,49 @@
   function q5(v) { return clamp(Math.round(v * 31 / 255), 0, 31); }
   function q6(v) { return clamp(Math.round(v * 63 / 255), 0, 63); }
 
+  let scoreBits = 0;   // індекси, знайдені останнім scoreEndpoints()
+
+  function pack565(mr, mg, mb, ax, ay, az, t) {
+    return (q5(mr + ax * t) << 11) | (q6(mg + ay * t) << 5) | q5(mb + az * t);
+  }
+
+  // Призначає кожному пікселю з bpx найближчий колір палітри {c0, c1, 2/3·c0+1/3·c1, 1/3·c0+2/3·c1}
+  // (палітра така, як її відновить декодер; c0 >= c1 у 565). Повертає сумарну квадратичну похибку,
+  // а 32 біти індексів кладе в scoreBits. При c0 === c1 усі індекси 0.
+  function scoreEndpoints(c0, c1) {
+    const r0 = expand5(c0 >> 11), g0 = expand6((c0 >> 5) & 63), b0 = expand5(c0 & 31);
+    let err = 0, bits = 0;
+    if (c0 === c1) {
+      for (let p = 0; p < 48; p += 3) {
+        const dr = bpx[p] - r0, dg = bpx[p + 1] - g0, db = bpx[p + 2] - b0;
+        err += dr * dr + dg * dg + db * db;
+      }
+      scoreBits = 0;
+      return err;
+    }
+    const r1 = expand5(c1 >> 11), g1 = expand6((c1 >> 5) & 63), b1 = expand5(c1 & 31);
+    const r2 = ((2 * r0 + r1) / 3) | 0, g2 = ((2 * g0 + g1) / 3) | 0, b2 = ((2 * b0 + b1) / 3) | 0;
+    const r3 = ((r0 + 2 * r1) / 3) | 0, g3 = ((g0 + 2 * g1) / 3) | 0, b3 = ((b0 + 2 * b1) / 3) | 0;
+    for (let p = 15; p >= 0; p--) {
+      const r = bpx[p * 3], g = bpx[p * 3 + 1], b = bpx[p * 3 + 2];
+      let dr = r - r0, dg = g - g0, db = b - b0;
+      let best = dr * dr + dg * dg + db * db, idx = 0;
+      dr = r - r1; dg = g - g1; db = b - b1;
+      let d = dr * dr + dg * dg + db * db;
+      if (d < best) { best = d; idx = 1; }
+      dr = r - r2; dg = g - g2; db = b - b2;
+      d = dr * dr + dg * dg + db * db;
+      if (d < best) { best = d; idx = 2; }
+      dr = r - r3; dg = g - g3; db = b - b3;
+      d = dr * dr + dg * dg + db * db;
+      if (d < best) { best = d; idx = 3; }
+      err += best;
+      bits = ((bits << 2) | idx) >>> 0;
+    }
+    scoreBits = bits;
+    return err;
+  }
+
   // Кодує колірний 4×4 блок із bpx у out[o..o+7].
   function encodeColorBlock(out, o) {
     let mr = 0, mg = 0, mb = 0;
@@ -96,14 +139,35 @@
       xx += r * r; xy += r * g; xz += r * b; yy += g * g; yz += g * b; zz += b * b;
     }
 
-    // головна вісь: степеневий метод, 8 ітерацій зі стартом (1,1,1)
+    // головна вісь: степеневий метод, 8 ітерацій зі стартом (1,1,1).
+    // Якщо відхилення блока ортогональні до (1,1,1), то C·v = 0 (напр. червоний/зелений):
+    // беремо стовпець ковариації з найбільшою нормою, а якщо й він ~0 — діагональ bbox (max−min).
+    const eps = 1e-6 * (xx + yy + zz);
     let ax = 1, ay = 1, az = 1;
     for (let it = 0; it < 8; it++) {
-      const nx = xx * ax + xy * ay + xz * az;
-      const ny = xy * ax + yy * ay + yz * az;
-      const nz = xz * ax + yz * ay + zz * az;
-      const len = Math.sqrt(nx * nx + ny * ny + nz * nz);
-      if (len < 1e-9) break;   // виродкова ковариація (однотонний блок): лишаємо поточну вісь
+      let nx = xx * ax + xy * ay + xz * az;
+      let ny = xy * ax + yy * ay + yz * az;
+      let nz = xz * ax + yz * ay + zz * az;
+      let len = Math.sqrt(nx * nx + ny * ny + nz * nz);
+      if (len <= eps) {
+        const n0 = xx * xx + xy * xy + xz * xz, n1 = xy * xy + yy * yy + yz * yz, n2 = xz * xz + yz * yz + zz * zz;
+        if (n0 >= n1 && n0 >= n2) { nx = xx; ny = xy; nz = xz; }
+        else if (n1 >= n2) { nx = xy; ny = yy; nz = yz; }
+        else { nx = xz; ny = yz; nz = zz; }
+        len = Math.sqrt(nx * nx + ny * ny + nz * nz);
+        if (len <= eps) {
+          let rmin = 255, rmax = 0, gmin = 255, gmax = 0, bmin = 255, bmax = 0;
+          for (let i = 0; i < 48; i += 3) {
+            const r = bpx[i], g = bpx[i + 1], b = bpx[i + 2];
+            if (r < rmin) rmin = r; if (r > rmax) rmax = r;
+            if (g < gmin) gmin = g; if (g > gmax) gmax = g;
+            if (b < bmin) bmin = b; if (b > bmax) bmax = b;
+          }
+          nx = rmax - rmin; ny = gmax - gmin; nz = bmax - bmin;
+          len = Math.sqrt(nx * nx + ny * ny + nz * nz);
+          if (len <= 0) break;   // однотонний блок: вісь неважлива
+        }
+      }
       ax = nx / len; ay = ny / len; az = nz / len;
     }
 
@@ -115,39 +179,24 @@
       if (t > tmax) tmax = t;
     }
 
-    // кінцеві кольори на осі, інсет (max−min)/16 з обох боків
+    // Кандидат A: інсет (max−min)/16 з обох боків (план). Кандидат B: без інсету, точні min/max,
+    // щоб жорсткі дво-тональні блоки (чорне/біле, маска гравця B=255) не втрачали крайні значення.
+    // Лишаємо той, у кого менша сумарна квадратична похибка після призначення індексів.
     const inset = (tmax - tmin) / 16;
-    const t0 = tmax - inset, t1 = tmin + inset;
-    let c0 = (q5(mr + ax * t0) << 11) | (q6(mg + ay * t0) << 5) | q5(mb + az * t0);
-    let c1 = (q5(mr + ax * t1) << 11) | (q6(mg + ay * t1) << 5) | q5(mb + az * t1);
+    let c0 = pack565(mr, mg, mb, ax, ay, az, tmax - inset), c1 = pack565(mr, mg, mb, ax, ay, az, tmin + inset);
     if (c0 < c1) { const t = c0; c0 = c1; c1 = t; }
+    let bestErr = scoreEndpoints(c0, c1), bestBits = scoreBits;
+    if (inset > 0 && bestErr > 0) {
+      let e0 = pack565(mr, mg, mb, ax, ay, az, tmax), e1 = pack565(mr, mg, mb, ax, ay, az, tmin);
+      if (e0 < e1) { const t = e0; e0 = e1; e1 = t; }
+      if (e0 !== c0 || e1 !== c1) {
+        const err = scoreEndpoints(e0, e1);
+        if (err < bestErr) { bestErr = err; bestBits = scoreBits; c0 = e0; c1 = e1; }
+      }
+    }
 
     out[o] = c0 & 255; out[o + 1] = c0 >> 8; out[o + 2] = c1 & 255; out[o + 3] = c1 >> 8;
-    if (c0 === c1) { out[o + 4] = 0; out[o + 5] = 0; out[o + 6] = 0; out[o + 7] = 0; return; }
-
-    // палітра: c0, c1, 2/3·c0+1/3·c1, 1/3·c0+2/3·c1 (як її відновить декодер)
-    const r0 = expand5(c0 >> 11), g0 = expand6((c0 >> 5) & 63), b0 = expand5(c0 & 31);
-    const r1 = expand5(c1 >> 11), g1 = expand6((c1 >> 5) & 63), b1 = expand5(c1 & 31);
-    const r2 = ((2 * r0 + r1) / 3) | 0, g2 = ((2 * g0 + g1) / 3) | 0, b2 = ((2 * b0 + b1) / 3) | 0;
-    const r3 = ((r0 + 2 * r1) / 3) | 0, g3 = ((g0 + 2 * g1) / 3) | 0, b3 = ((b0 + 2 * b1) / 3) | 0;
-
-    let bits = 0;
-    for (let p = 15; p >= 0; p--) {
-      const r = bpx[p * 3], g = bpx[p * 3 + 1], b = bpx[p * 3 + 2];
-      let dr = r - r0, dg = g - g0, db = b - b0;
-      let best = dr * dr + dg * dg + db * db, idx = 0;
-      dr = r - r1; dg = g - g1; db = b - b1;
-      let d = dr * dr + dg * dg + db * db;
-      if (d < best) { best = d; idx = 1; }
-      dr = r - r2; dg = g - g2; db = b - b2;
-      d = dr * dr + dg * dg + db * db;
-      if (d < best) { best = d; idx = 2; }
-      dr = r - r3; dg = g - g3; db = b - b3;
-      d = dr * dr + dg * dg + db * db;
-      if (d < best) { idx = 3; }
-      bits = ((bits << 2) | idx) >>> 0;
-    }
-    out[o + 4] = bits & 255; out[o + 5] = (bits >>> 8) & 255; out[o + 6] = (bits >>> 16) & 255; out[o + 7] = bits >>> 24;
+    out[o + 4] = bestBits & 255; out[o + 5] = (bestBits >>> 8) & 255; out[o + 6] = (bestBits >>> 16) & 255; out[o + 7] = bestBits >>> 24;
   }
 
   // Кодує альфу 4×4 блока з bal у out[o..o+7] (DXT5, 8-рівневий режим a0 > a1).

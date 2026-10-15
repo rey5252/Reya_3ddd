@@ -153,3 +153,46 @@ test('async encode equals sync for DXT5 and A8R8G8B8 (multi-chunk)', async () =>
     const fr = []; const a = await dds.encodeDDSAsync(lv, f, p => fr.push(p));
     assert.deepStrictEqual(a, dds.encodeDDS(lv, f), f); assert.ok(fr.length > 1, f);
     assert.strictEqual(fr[fr.length - 1], 1); for (let i = 1; i < fr.length; i++) assert.ok(fr[i] >= fr[i - 1] && fr[i] <= 1); } });
+
+// ---- Fix round 1: регресії кодувальника блоків ----
+
+// Кодує один блок 4×4 (функція кольору (x,y) -> [r,g,b,a]) і повертає розкодовані RGBA.
+const roundtripBlock = (fn, fmt) => {
+  const d = new Uint8ClampedArray(64);
+  for (let y = 0; y < 4; y++) for (let x = 0; x < 4; x++) d.set(fn(x, y), (y * 4 + x) * 4);
+  return { src: d, out: dds.decodeDDS(dds.encodeDDS([{ width: 4, height: 4, data: d }], fmt)).data };
+};
+const assertBlockClose = (src, out, tol, msg) => {
+  for (let i = 0; i < 64; i++) if (i % 4 !== 3) assert.ok(Math.abs(src[i] - out[i]) <= tol,
+    `${msg}: px ${i >> 2} ch ${i & 3}: src ${src[i]} out ${out[i]}`);
+};
+
+test('hue-only block: red/green checker keeps both colours (deviation orthogonal to grey axis)', () => {
+  const { src, out } = roundtripBlock((x, y) => ((x + y) & 1 ? [0, 255, 0, 255] : [255, 0, 0, 255]), 'DXT1');
+  assertBlockClose(src, out, 8, 'red/green checker'); });
+test('hue-only block: SPM-style red/blue edge keeps both colours', () => {
+  const { src, out } = roundtripBlock(x => (x < 2 ? [255, 0, 0, 255] : [0, 0, 255, 255]), 'DXT1');
+  assertBlockClose(src, out, 8, 'red/blue edge'); });
+test('hue-only block with non-axis-aligned chroma direction (constant R+G+B)', () => {
+  const a = [200, 100, 50, 255], b = [150, 150, 50, 255]; // R+G+B == 350 у обох
+  const { src, out } = roundtripBlock((x, y) => ((x + y) & 1 ? a : b), 'DXT1');
+  assertBlockClose(src, out, 8, 'chroma-only pair'); });
+
+test('DXT5 alpha ramp: index bit packing is correct for all 16 pixels', () => {
+  const { out } = roundtripBlock((x, y) => [40, 80, 120, (y * 4 + x) * 17], 'DXT5');
+  let prev = -1;
+  for (let i = 0; i < 16; i++) {
+    const a = out[i * 4 + 3];
+    assert.ok(Math.abs(a - i * 17) <= 18, `px ${i}: alpha ${a} vs ${i * 17}`);
+    assert.ok(a >= prev, `px ${i}: alpha ${a} < previous ${prev}`); prev = a; } });
+
+test('hard two-tone blocks decode to exact extremes (no inset loss)', () => {
+  const bw = roundtripBlock(x => (x < 2 ? [0, 0, 0, 255] : [255, 255, 255, 255]), 'DXT1');
+  assertBlockClose(bw.src, bw.out, 0, 'black/white');
+  const rb = roundtripBlock((x, y) => (y < 2 ? [255, 0, 0, 255] : [0, 0, 255, 255]), 'DXT1');
+  assertBlockClose(rb.src, rb.out, 0, 'red/blue halves');
+  const mask = roundtripBlock(x => (x < 3 ? [200, 0, 255, 255] : [200, 0, 0, 255]), 'DXT1'); // SPM: B=255 край маски
+  for (let y = 0; y < 4; y++) assert.strictEqual(mask.out[(y * 4) * 4 + 2], 255, 'mask B stays 255'); });
+test('DXT5 two-tone block is exact in color too', () => {
+  const { src, out } = roundtripBlock(x => (x < 2 ? [0, 0, 0, 255] : [255, 255, 255, 255]), 'DXT5');
+  assertBlockClose(src, out, 0, 'DXT5 black/white'); });
