@@ -178,6 +178,26 @@ function makeDDS(size, pixel) {
   if (await page.$eval('#doc-name', i => i.value) !== 'SmokeSkin') await fail('назва документа після відкриття проєкту змінилася');
   await checkErrors('після збереження й відкриття проєкту');
 
+  // ---------- Імпорт набору з гри (X.dds + X_NRM.dds + X_SPM.dds) ----------
+  // Документ бере розмір набору (256), процедурні шари вимикаються, щоб не змішуватися з текстурою гри.
+  const procOn = await page.$$eval('#layer-list li[data-id]:not([data-type="image"]) input[data-act="toggle"]', els => els.filter(e => e.checked).length);
+  if (!procOn) await fail('перед імпортом набору немає ввімкнених процедурних шарів');
+  const set = [
+    ['SmokeSet.dds', makeDDS(256, (x, y) => ((x >> 4) & 1 ? [150, 140, 120, 255] : [90, 85, 80, 255]))],
+    ['SmokeSet_NRM.dds', makeDDS(256, x => ((x >> 3) & 1 ? [170, 128, 240, 255] : [128, 128, 255, 255]))],
+    ['SmokeSet_SPM.dds', makeDDS(256, (x, y) => [80, 0, y < 64 ? 255 : 0, 255])]];
+  await page.setInputFiles('#file-input', set.map(([name, buffer]) => ({ name, mimeType: 'application/octet-stream', buffer })));
+  await waitStatus(() => document.getElementById('doc-name').value === 'SmokeSet' && !document.getElementById('status').classList.contains('busy'),
+    20000, 'набір з гри не імпортувався');
+  st = await statusInfo();
+  if (/\berror\b/.test(st.cls)) await fail('імпорт набору завершився помилкою: ' + st.text);
+  const procAfter = await page.$$eval('#layer-list li[data-id]:not([data-type="image"]) input[data-act="toggle"]', els => els.map(e => e.checked));
+  if (!procAfter.length || procAfter.some(c => c)) await fail('після імпорту набору процедурні шари не вимкнено: ' + JSON.stringify(procAfter));
+  if (!/Процедурні шари вимкнено/.test(st.text)) await fail('статус не каже, що процедурні шари вимкнено: ' + st.text);
+  if (await page.$eval('#doc-size', s => s.value) !== '256') await fail('розмір документа не став 256 за набором');
+  if (!(await page.$('#layer-list li[data-type="nrm"]'))) await fail('імпортована NRM не з\'явилась у списку шарів');
+  await checkErrors('після імпорту набору з гри');
+
   // ---------- Вузький екран (телефон) ----------
   await page.setViewportSize({ width: 390, height: 844 });
   await page.waitForTimeout(400);

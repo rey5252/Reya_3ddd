@@ -749,6 +749,17 @@
     updateDocInfo();
   }
 
+  // Новий розмір документа: імпорти й мазки ресемплюються, історія скидається (знімки старого розміру вже не
+  // підходять). Після виклику потрібна перебудова.
+  function resizeDoc(n) {
+    maps.resizeDocument(S.doc, n);
+    S.layerCache = null;
+    clearHistory();
+    markDirty();
+    $('doc-size').value = String(n);
+    updateDocInfo();
+  }
+
   function changeSize() {
     const sel = $('doc-size'), n = +sel.value, d = S.doc, old = d.size;
     if (n === old || SIZES.indexOf(n) < 0) return;
@@ -758,12 +769,8 @@
     setTimeout(() => {
       sel.disabled = false;
       if (S.doc !== d) return;                 // за цей час відкрили інший документ
-      try { maps.resizeDocument(d, n); }
+      try { resizeDoc(n); }
       catch (e) { sel.value = String(old); setStatus('Не вдалося змінити розмір: ' + errText(e), 'error'); return; }
-      S.layerCache = null;
-      clearHistory();                          // знімки старого розміру вже не підходять
-      markDirty();
-      updateDocInfo();
       if (rebuildNow()) {
         const shrunk = n < old && (Object.keys(d.images).length || d.nrmImport);
         setStatus('Розмір документа: ' + n + '×' + n + (shrunk ? '. Імпортовані зображення зменшено: при збільшенні назад деталі не повернуться.' : ''), 'ok');
@@ -927,27 +934,39 @@
       { target: 'alpha', channel: 'a', name: 'Прозорість (A) · ' + file.name });
   }
 
+  // Набір з гри — серед файлів є _NRM чи _SPM. Тоді документ бере розмір кольорової текстури набору (якщо він
+  // підтримується), а ввімкнені процедурні шари вимикаються (не видаляються), щоб не змішувати їхній рельєф
+  // і фарбу з текстурою гри. Окреме зображення без _NRM/_SPM — наклейка: додається шаром у розмірі документа.
+  // Спершу розкодовуються всі файли, і лише потім змінюється документ.
   async function importFiles(files) {
     const items = files.map(file => ({ file, info: maps.classifyTextureName(file.name) }))
       .sort((a, b) => ROLE_ORDER[a.info.role] - ROLE_ORDER[b.info.role]);
-    const done = [], errors = [];
-    let scaled = 0;
-    let base = null, firstLayer = null;
+    const decoded = [], errors = [], notes = [];
     for (let i = 0; i < items.length; i++) {
       const { file, info } = items[i];
       setStatus('Імпорт ' + (i + 1) + ' з ' + items.length + ': «' + file.name + '»…', 'busy');
-      try {
-        const img = await decodeImage(file);
-        const layer = applyImport(file, img, info.role);
-        firstLayer = firstLayer || layer;
-        if (base === null) base = info.base;   // файли впорядковано «колір» першим, тож назву дає він
-        done.push({ name: file.name, role: info.role });
-        if (img.width !== S.doc.size || img.height !== S.doc.size) scaled++;
-      } catch (e) {
-        errors.push('«' + file.name + '»: ' + errText(e));
-      }
+      try { decoded.push({ file, info, img: await decodeImage(file) }); }
+      catch (e) { errors.push('«' + file.name + '»: ' + errText(e)); }
     }
-    if (done.length) {
+    if (decoded.length && items.some(x => x.info.role !== 'diffuse')) {
+      const diffuse = decoded.find(x => x.info.role === 'diffuse'), w = diffuse ? diffuse.img.width : 0;
+      if (diffuse && w === diffuse.img.height && w !== S.doc.size && SIZES.indexOf(w) >= 0) {
+        flushRebuild();
+        resizeDoc(w);
+        notes.push('Розмір документа: ' + w + '×' + w + ', як у текстури гри.');
+      }
+      const procedural = S.doc.layers.filter(l => l.enabled && l.type !== 'image');
+      for (const l of procedural) l.enabled = false;
+      if (procedural.length) notes.push('Процедурні шари вимкнено, щоб не змішувати з текстурою гри — увімкніть потрібні вручну.');
+    }
+    let scaled = 0, base = null, firstLayer = null;
+    for (const { file, info, img } of decoded) {
+      const layer = applyImport(file, img, info.role);
+      firstLayer = firstLayer || layer;
+      if (base === null) base = info.base;     // файли впорядковано «колір» першим, тож назву дає він
+      if (img.width !== S.doc.size || img.height !== S.doc.size) scaled++;
+    }
+    if (decoded.length) {
       S.doc.name = maps.sanitizeName(base);
       $('doc-name').value = S.doc.name;
       updateDocInfo();
@@ -957,10 +976,9 @@
       markDirty();
       rebuildNow();
     }
-    let msg = done.length ? 'Імпортовано: ' + done.map(x => x.name + ' (' + ROLE_LABEL[x.role] + ')').join(', ') + '.' : '';
+    let msg = decoded.length ? 'Імпортовано: ' + decoded.map(x => x.file.name + ' (' + ROLE_LABEL[x.info.role] + ')').join(', ') + '.' : '';
+    if (notes.length) msg += ' ' + notes.join(' ');
     if (scaled) msg += ' Масштабовано до ' + S.doc.size + '×' + S.doc.size + '.';
-    const procedural = S.doc.layers.some(l => l.enabled && l.type !== 'image');
-    if (done.some(x => x.role !== 'diffuse') && procedural) msg += ' Порада: щоб лише перефарбувати текстуру з гри, вимкніть процедурні шари.';
     if (errors.length) msg = (msg ? msg + ' ' : '') + 'Не вдалося імпортувати ' + errors.join('; ');
     setStatus(msg.trim(), errors.length ? 'error' : 'ok');
   }
