@@ -271,6 +271,15 @@ test('rust paints rust colour, roughens height, amount 0 does nothing', () => {
 test('rust and scratches strip the player colour they cover', () => {
   for (const [type, params] of [['rust', { amount: 0.6 }], ['scratches', { count: 200 }]]) {
     const x = run(type, 64, 1, params, y => y.team.fill(255)); assert.ok(x.team.some(v => v < 128), type); } });
+test('dirt on a full player-colour mask lowers the mask where the dirt is strong (dirt is not recoloured)', () => {
+  const S = 64, x = run('dirt', S, 1, { amount: 0.6, color: '#000000' }, y => y.team.fill(255));
+  // Чорний бруд на сірому 128: що темніший піксель, то сильніший бруд — і то нижча маска.
+  const px = []; for (let i = 0; i < S * S; i++) px.push([x.color[i * 4], x.team[i]]);
+  const clean = px.filter(p => p[0] === 128), dirtiest = px.reduce((a, b) => (b[0] < a[0] ? b : a));
+  assert.ok(clean.length > 0 && clean.every(p => p[1] >= 250), 'без бруду (колір не змінився) маска лишається повною');
+  assert.ok(dirtiest[0] < 60 && dirtiest[1] < 100, 'найбрудніший піксель: колір ' + dirtiest[0] + ', маска ' + dirtiest[1]);
+  px.sort((a, b) => a[0] - b[0]);
+  for (let k = 1; k < px.length; k++) assert.ok(px[k][1] >= px[k - 1][1] - 2, 'маска спадає разом із кольором: ' + px[k - 1] + ' -> ' + px[k]); });
 
 // ---- scratches ----
 test('scratches expose bright metal: spec up, height down, colour lighter', () => {

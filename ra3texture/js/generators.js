@@ -520,7 +520,7 @@
   function applyDirt(p, seed, maps, size) {
     const amt = p.amount;
     if (!(amt > 0)) return;
-    const dc = util.hexToRgb(p.color), rng = util.mulberry32(seed), n = size * size, col = maps.color, spec = maps.spec;
+    const dc = util.hexToRgb(p.color), rng = util.mulberry32(seed), n = size * size, col = maps.color, spec = maps.spec, team = maps.team;
     const freq = Math.max(2, Math.round(5 / p.scale));
     const big = noiseField(nextSeed(rng), size, freq, 5, true);
     const detail = noiseField(nextSeed(rng), size, freq * 8, 2, false);
@@ -543,6 +543,7 @@
         const sh = 0.8 + 0.4 * detail[i];
         mix3(col, i * 4, dc[0] * sh, dc[1] * sh, dc[2] * sh, 0.8 * m);
         spec[i] = spec[i] * (1 - 0.85 * m);
+        team[i] = team[i] * (1 - 0.8 * m);   // бруд не фарбується в колір гравця (як іржа й подряпини)
       }
     }
   }
