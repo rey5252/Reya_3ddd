@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>RA3 Texture Studio</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='4' fill='%2320262b' stroke='%23d2a24c' stroke-width='2.4'/%3E%3Cpath d='M9 21l7-10 7 10' fill='none' stroke='%23d2a24c' stroke-width='2.8'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+  <!-- Файли -->
+  <header class="topbar">
+    <div class="brand"><b>RA3 Texture Studio</b><span id="doc-chip" class="doc-chip"></span></div>
+    <div class="file-actions">
+      <button id="btn-new" type="button" title="Новий документ: заливка-основа + шар «Малювання» (з підтвердженням)">Новий</button>
+      <button id="btn-open-project" type="button" title="Відкрити проєкт .ra3tex.json (v2 або v1)">Відкрити</button>
+      <button id="btn-save-project" type="button" title="Зберегти проєкт: шари, маски, мазки й імпорт в одному файлі (Ctrl+S)">Зберегти</button>
+      <button id="btn-import" type="button" title="DDS, TGA, PNG, JPG: набір з гри Назва + _NRM + _SPM розкладається сам">Імпорт</button>
+      <span class="sep"></span>
+      <button id="btn-export-dds" class="primary" type="button" title="Три файли для Mod SDK: Назва.dds, _NRM.dds, _SPM.dds з mip-рівнями">Експорт DDS</button>
+      <button id="btn-export-png" type="button" title="Ті самі три карти у PNG">Експорт PNG</button>
+    </div>
+    <input type="file" id="file-input" multiple accept=".dds,.tga,.png,.jpg,.jpeg,.webp,.bmp,.gif" hidden>
+    <input type="file" id="project-input" accept=".json,application/json" hidden>
+    <input type="file" id="image-input" accept=".dds,.tga,.png,.jpg,.jpeg,.webp,.bmp,.gif" hidden>
+    <input type="file" id="alpha-input" accept=".dds,.tga,.png,.jpg,.jpeg,.webp,.bmp,.gif" hidden>
+  </header>
+
+  <!-- Інструменти -->
+  <div class="toolbar" id="toolbar">
+    <div class="tgroup" role="group" aria-label="Інструмент">
+      <button id="tool-brush" class="tool" data-tool="brush" type="button" title="Пензель (B). Shift+клік — пряма лінія від попередньої точки; Alt+клік — піпетка">Пензель</button>
+      <button id="tool-eraser" class="tool" data-tool="eraser" type="button" title="Гумка (E): стирає мазки шару або ховає шар на масці">Гумка</button>
+      <button id="tool-fill" class="tool" data-tool="fill" type="button" title="Заливка (G): область схожого кольору або весь шар/маска">Заливка</button>
+      <button id="tool-picker" class="tool" data-tool="picker" type="button" title="Піпетка (I): бере колір, висоту, блиск і колір гравця в матеріал пензля">Піпетка</button>
+    </div>
+    <div class="tgroup">
+      <span class="tlabel">Ціль</span>
+      <button id="target-toggle" class="seg" type="button" title="Що малює пензель: шар «Малювання» чи маску вибраного шару (M)">
+        <span data-target="paint">Шар</span><span data-target="mask">Маска</span>
+      </button>
+    </div>
+    <div class="tgroup sliders">
+      <label class="tslider" title="Розмір пензля в пікселях текстури ([ і ])"><span>Розмір</span><input type="range" id="brush-size" min="1" max="512" step="1"><output id="brush-size-out"></output></label>
+      <label class="tslider" title="Потік: сила одного відбитка"><span>Потік</span><input type="range" id="brush-flow" min="1" max="100" step="1"><output id="brush-flow-out"></output></label>
+      <label class="tslider" title="Жорсткість краю (для круглої альфи)"><span>Жорсткість</span><input type="range" id="brush-hardness" min="0" max="100" step="1"><output id="brush-hardness-out"></output></label>
+    </div>
+    <div class="tgroup fill-only" id="fill-options" hidden>
+      <label class="tslider" title="Допуск заливки: наскільки колір може відрізнятися від кольору під курсором"><span>Допуск</span><input type="range" id="fill-tolerance" min="0" max="255" step="1"><output id="fill-tolerance-out"></output></label>
+      <label class="check" title="Залити весь шар (або всю маску), а не лише область"><input type="checkbox" id="fill-whole"><span>Весь шар</span></label>
+    </div>
+    <div class="tgroup">
+      <span class="tlabel">Симетрія</span>
+      <label class="check" title="Дзеркально відносно вертикальної осі текстури"><input type="checkbox" id="sym-x"><span>X</span></label>
+      <label class="check" title="Дзеркально відносно горизонтальної осі текстури"><input type="checkbox" id="sym-y"><span>Y</span></label>
+    </div>
+    <div class="tgroup">
+      <button id="btn-undo" type="button" title="Скасувати (Ctrl+Z)">↶ Скасувати</button>
+      <button id="btn-redo" type="button" title="Повернути (Ctrl+Y або Ctrl+Shift+Z)">↷</button>
+    </div>
+  </div>
+
+  <main class="workspace">
+    <!-- Шари -->
+    <aside class="col col-left panel" aria-label="Шари">
+      <div class="panel-head"><h2>Шари</h2><span class="muted">згори — верхній</span></div>
+      <div class="add-row">
+        <button id="btn-add-paint" type="button" title="Новий шар для пензля над вибраним">+ Малювання</button>
+        <button id="btn-add-fill" type="button" title="Шар-заливка матеріалом пензля (зручно з маскою)">+ Заливка</button>
+        <select id="gen-select" aria-label="Додати шар-генератор"></select>
+        <select id="smart-select" aria-label="Додати розумний матеріал"></select>
+        <button id="btn-add-image" type="button" title="Картинка шаром (прозорість картинки стає маскою)">+ Зображення</button>
+      </div>
+      <ul id="layer-list" class="layer-list" aria-label="Стек шарів"></ul>
+      <div class="layer-foot">
+        <label class="tslider wide" title="Непрозорість вибраного шару"><span>Непрозорість</span><input type="range" id="layer-opacity" min="0" max="100" step="1"><output id="layer-opacity-out"></output></label>
+        <div class="row">
+          <button id="btn-layer-up" type="button" title="Вище">↑</button>
+          <button id="btn-layer-down" type="button" title="Нижче">↓</button>
+          <button id="btn-layer-dup" type="button" title="Дублювати шар">Копія</button>
+          <button id="btn-layer-del" type="button" class="danger" title="Видалити шар (двічі)">Видалити</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Полотно -->
+    <section class="col col-center">
+      <div class="view-bar">
+        <nav id="view-tabs" class="tabs" role="tablist" aria-label="Вигляд полотна">
+          <button type="button" role="tab" data-view="color">Колір</button>
+          <button type="button" role="tab" data-view="height">Висота</button>
+          <button type="button" role="tab" data-view="nrm">NRM</button>
+          <button type="button" role="tab" data-view="spm">SPM</button>
+          <button type="button" role="tab" data-view="alpha">Прозорість</button>
+          <button type="button" role="tab" data-view="game">У грі</button>
+        </nav>
+        <div class="view-tools">
+          <button id="tile-toggle" type="button" aria-pressed="false" title="Показати текстуру 3×3, щоб бачити шви (T)">Тайлінг 3×3</button>
+          <button id="zoom-out" type="button" title="Зменшити (колесо миші)">−</button>
+          <button id="zoom-reset" type="button" title="100% (0)" class="zoom-label">100%</button>
+          <button id="zoom-in" type="button" title="Збільшити (колесо миші)">+</button>
+          <button id="zoom-fit" type="button" title="Вмістити (F)">Вмістити</button>
+        </div>
+      </div>
+      <div class="stage" id="stage">
+        <canvas id="canvas-main" aria-label="Текстура: малюйте пензлем; колесо — масштаб, пробіл+тягти — рух"></canvas>
+        <canvas id="canvas-overlay" aria-hidden="true"></canvas>
+      </div>
+    </section>
+
+    <!-- Властивості -->
+    <aside class="col col-right">
+      <details class="panel" id="preview-panel" open>
+        <summary class="panel-head"><h2>3D-прев'ю</h2></summary>
+        <div class="preview-box">
+          <canvas id="canvas-3d" aria-label="3D-прев'ю: тягніть, щоб обертати"></canvas>
+          <div class="preview-error" id="preview-error" hidden></div>
+        </div>
+        <div class="preview-row">
+          <select id="model-select" aria-label="Модель">
+            <option value="tank">Танк</option>
+            <option value="cube">Куб</option>
+            <option value="cylinder">Циліндр</option>
+            <option value="sphere">Сфера</option>
+          </select>
+          <div id="team-colors" class="swatches" role="radiogroup" aria-label="Колір гравця"></div>
+        </div>
+      </details>
+
+      <section class="panel side">
+        <nav class="tabs side-tabs" id="side-tabs" role="tablist">
+          <button type="button" role="tab" id="tab-brush" data-tab="brush">Пензель</button>
+          <button type="button" role="tab" id="tab-layer" data-tab="layer">Шар</button>
+          <button type="button" role="tab" id="tab-doc" data-tab="doc">Документ</button>
+        </nav>
+
+        <div class="tab-body" id="panel-brush" data-panel="brush">
+          <h3>Матеріал пензля</h3>
+          <div id="brush-material"></div>
+          <h3>Альфа (форма відбитка)</h3>
+          <div id="alpha-grid" class="alpha-grid" role="radiogroup" aria-label="Альфа пензля"></div>
+          <button id="btn-add-alpha" type="button" class="wide" title="Яскравість картинки стає формою пензля (лише на цей сеанс)">+ Альфа з картинки</button>
+          <h3>Динаміка</h3>
+          <div id="brush-dynamics" class="form"></div>
+        </div>
+
+        <div class="tab-body" id="panel-layer" data-panel="layer" hidden>
+          <div id="layer-props" class="form"></div>
+        </div>
+
+        <div class="tab-body" id="panel-doc" data-panel="doc" hidden>
+          <div class="form">
+            <div class="field">
+              <label for="doc-name">Назва скіна</label>
+              <input type="text" id="doc-name" spellcheck="false" autocomplete="off" maxlength="64" placeholder="AUMyTank">
+              <div class="hint" id="doc-files"></div>
+            </div>
+            <div class="field">
+              <label for="doc-size">Розмір текстури</label>
+              <select id="doc-size">
+                <option value="256">256 × 256</option>
+                <option value="512">512 × 512</option>
+                <option value="1024">1024 × 1024</option>
+                <option value="2048">2048 × 2048 (повільніше)</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="nrm-strength">Сила рельєфу (NRM) <output id="nrm-strength-out"></output></label>
+              <input type="range" id="nrm-strength" min="0" max="10" step="0.1">
+            </div>
+            <label class="check" title="RA3, найімовірніше, читає нормалі як DirectX: перемикач зазвичай вимкнений. Якщо в грі рельєф вивернутий — увімкніть"><input type="checkbox" id="nrm-invert-y"><span>Інвертувати Y нормалей (OpenGL)</span></label>
+            <label class="check" title="A8R8G8B8: більші файли без втрат"><input type="checkbox" id="uncompressed"><span>Експорт DDS без стиснення</span></label>
+            <div class="hint">Стиснення вибирається само: DXT1 без прозорості, DXT5 з нею.</div>
+          </div>
+          <details class="help">
+            <summary>Довідка</summary>
+            <ul>
+              <li><b>Шари</b> накладаються знизу вгору. «Малювання» — для пензля, «Заливка» — матеріал на весь шар (керуйте маскою), «Генератор» — панелі, заклепки, бруд тощо, «Розумний матеріал» — готовий набір заливок з масками.</li>
+              <li><b>Маска</b>: біла — шар видно, чорна — ні. Ціль «Маска» (M): пензель відкриває шар, гумка ховає. Генератор маски (зношені краї, западини…) множиться на намальоване.</li>
+              <li><b>Клавіші</b>: B пензель, E гумка, G заливка, I піпетка, M шар/маска, [ ] розмір, Shift+клік — лінія, Alt+клік — піпетка, T тайлінг, F вмістити, 0 — 100%, пробіл+тягти або середня кнопка — рух, колесо — масштаб.</li>
+              <li><b>Скасування</b> (Ctrl+Z / Ctrl+Y): мазки, заливки, малювання маски, додавання, видалення й порядок шарів, додавання й прибирання масок. Зміни повзунків і назв не скасовуються.</li>
+              <li><b>Експорт</b>: три файли <span class="mono">Назва.dds</span>, <span class="mono">_NRM</span>, <span class="mono">_SPM</span> — у <span class="mono">Art/</span> мода (підпапка з перших двох літер назви).</li>
+            </ul>
+          </details>
+        </div>
+      </section>
+    </aside>
+  </main>
+
+  <footer class="statusbar">
+    <div id="status" role="status" aria-live="polite" class="busy">Завантаження…</div>
+    <div id="cursor-pos" class="muted"></div>
+    <div id="help-line" class="muted help-line">B пензель · E гумка · G заливка · I піпетка · M шар/маска · [ ] розмір · Shift+клік лінія · пробіл+тягти рух · колесо масштаб · T тайлінг · Ctrl+Z/Y</div>
+  </footer>
+</div>
+
+<div class="drop-overlay" id="drop-overlay" hidden>
+  <div class="drop-card"><b>Відпустіть файли, щоб імпортувати</b><span>DDS, TGA, PNG, JPG або проєкт .json</span></div>
+</div>
+
+<noscript><div class="noscript">Для роботи RA3 Texture Studio потрібен JavaScript.</div></noscript>
+
+<script src="js/util.js"></script>
+<script src="js/dds.js"></script>
+<script src="js/tga.js"></script>
+<script src="js/maps.js"></script>
+<script src="js/generators.js"></script>
+<script src="js/maskgen.js"></script>
+<script src="js/materials.js"></script>
+<script src="js/layers.js"></script>
+<script src="js/brush.js"></script>
+<script src="js/meshes.js"></script>
+<script src="js/preview3d.js"></script>
+<script src="js/project.js"></script>
+<script src="js/app-core.js"></script>
+<script src="js/app-canvas.js"></script>
+<script src="js/app-panels.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

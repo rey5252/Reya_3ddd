@@ -79,3 +79,28 @@ jobs:
           git diff --cached --quiet && exit 0
           git commit -m "Update built jars [skip ci]"
           for i in 1 2 3; do git pull --rebase && git push && break; sleep 5; done
+
+  # Тести ядра RA3 Texture Studio (чистий JS, без збірки). Моди Minecraft не зачіпає.
+  ra3texture:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Test RA3 Texture Studio
+        run: node --test ra3texture/test/*.test.js
+
+  ra3texture-exe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+      - name: Build RA3TextureStudio.exe
+        run: bash ra3texture/desktop/build.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: RA3TextureStudio-exe
+          path: ra3texture/dist/RA3TextureStudio.exe

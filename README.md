@@ -17,3 +17,8 @@
 ```
 
 Готовий `.jar` — у `build/libs/`. Також GitHub Actions збирає мод при кожному пуші (вкладка **Actions** → артефакт `cursedseed-jar`).
+
+## RA3 Texture Studio
+
+У папці [`ra3texture/`](ra3texture/) лежить окрема браузерна програма для скінів Red Alert 3: з шарів, пензля або готових текстур вона робить набір `Назва.dds`, `Назва_NRM.dds`, `Назва_SPM.dds` для Mod SDK. Відкривається подвійним кліком на `index.html`, без інтернету.
+Інструкція: [`ra3texture/README.md`](ra3texture/README.md).
