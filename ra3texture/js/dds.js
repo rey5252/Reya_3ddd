@@ -83,6 +83,40 @@
   function q5(v) { return clamp(Math.round(v * 31 / 255), 0, 31); }
   function q6(v) { return clamp(Math.round(v * 63 / 255), 0, 63); }
 
+  // «Оптимальний один колір» (як у stb_dxt): для кожного 8-бітного v — пара кінців [a, b] (5 чи 6 біт),
+  // у якої колір палітри (2·a + b) / 3, як його відновлює декодер, найближчий до v. Штраф 3% розкиду кінців
+  // (допуск інтерполяції в DX10) і менший розкид при рівності: тоді й декодер з округленням дає ±1.
+  // Так однотонний блок, колір якого лежить між рівнями 565 (рівна нормаль 128,128,255), не зсувається.
+  function singleColorTable(bits, expand) {
+    const n = 1 << bits, t = new Uint8Array(512);
+    for (let v = 0; v < 256; v++) {
+      let best = Infinity, bestSpread = Infinity;
+      for (let a = 0; a < n; a++) {
+        for (let b = 0; b < n; b++) {
+          const ea = expand(a), eb = expand(b), spread = Math.abs(ea - eb);
+          const err = Math.abs((((2 * ea + eb) / 3) | 0) - v) + ((spread * 3 / 100) | 0);
+          if (err < best || (err === best && spread < bestSpread)) { best = err; bestSpread = spread; t[v * 2] = a; t[v * 2 + 1] = b; }
+        }
+      }
+    }
+    return t;
+  }
+  const SINGLE5 = singleColorTable(5, expand5), SINGLE6 = singleColorTable(6, expand6);
+  const SINGLE_RANGE = 24;   // розмах блока вздовж головної осі, до якого пробуємо один колір
+
+  let single0 = 0, single1 = 0, singleBits = 0;   // кінці й індекси, знайдені останнім singleEndpoints()
+
+  // Кінці для кольору (r, g, b) з таблиць, упорядковані до c0 > c1. Колір дає індекс 2 (2/3·c0 + 1/3·c1),
+  // а якщо кінці довелося переставити — індекс 3 (той самий колір). c0 === c1 — колір точний, індекс 0.
+  function singleEndpoints(r, g, b) {
+    let s0 = (SINGLE5[r * 2] << 11) | (SINGLE6[g * 2] << 5) | SINGLE5[b * 2];
+    let s1 = (SINGLE5[r * 2 + 1] << 11) | (SINGLE6[g * 2 + 1] << 5) | SINGLE5[b * 2 + 1];
+    singleBits = 0xAAAAAAAA;
+    if (s0 < s1) { const t = s0; s0 = s1; s1 = t; singleBits = 0xFFFFFFFF; }
+    else if (s0 === s1) singleBits = 0;
+    single0 = s0; single1 = s1;
+  }
+
   let scoreBits = 0;   // індекси, знайдені останнім scoreEndpoints()
 
   function pack565(mr, mg, mb, ax, ay, az, t) {
@@ -128,6 +162,12 @@
 
   // Кодує колірний 4×4 блок із bpx у out[o..o+7].
   function encodeColorBlock(out, o) {
+    // Однотонний блок: одразу один колір. За таблицями він у кожному каналі не гірший за найближчий колір 565
+    // (пара a = b теж є серед варіантів), тож порівнювати з іншими кандидатами не треба.
+    let uniform = true;
+    for (let i = 3; i < 48; i += 3) if (bpx[i] !== bpx[0] || bpx[i + 1] !== bpx[1] || bpx[i + 2] !== bpx[2]) { uniform = false; break; }
+    if (uniform) { singleEndpoints(bpx[0], bpx[1], bpx[2]); writeColorBlock(out, o, single0, single1, singleBits); return; }
+
     let mr = 0, mg = 0, mb = 0;
     for (let i = 0; i < 48; i += 3) { mr += bpx[i]; mg += bpx[i + 1]; mb += bpx[i + 2]; }
     mr /= 16; mg /= 16; mb /= 16;
@@ -194,9 +234,21 @@
         if (err < bestErr) { bestErr = err; bestBits = scoreBits; c0 = e0; c1 = e1; }
       }
     }
+    // Кандидат C для майже однотонного блока: середній колір через таблиці одного кольору.
+    if (bestErr > 0 && tmax - tmin <= SINGLE_RANGE) {
+      singleEndpoints(Math.round(mr), Math.round(mg), Math.round(mb));
+      if (single0 !== c0 || single1 !== c1) {
+        const err = scoreEndpoints(single0, single1);
+        if (err < bestErr) { bestErr = err; bestBits = scoreBits; c0 = single0; c1 = single1; }
+      }
+    }
 
+    writeColorBlock(out, o, c0, c1, bestBits);
+  }
+
+  function writeColorBlock(out, o, c0, c1, bits) {
     out[o] = c0 & 255; out[o + 1] = c0 >> 8; out[o + 2] = c1 & 255; out[o + 3] = c1 >> 8;
-    out[o + 4] = bestBits & 255; out[o + 5] = (bestBits >>> 8) & 255; out[o + 6] = (bestBits >>> 16) & 255; out[o + 7] = bestBits >>> 24;
+    out[o + 4] = bits & 255; out[o + 5] = (bits >>> 8) & 255; out[o + 6] = (bits >>> 16) & 255; out[o + 7] = bits >>> 24;
   }
 
   // Кодує альфу 4×4 блока з bal у out[o..o+7] (DXT5, 8-рівневий режим a0 > a1).

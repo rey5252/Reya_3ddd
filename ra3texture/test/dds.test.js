@@ -196,3 +196,44 @@ test('hard two-tone blocks decode to exact extremes (no inset loss)', () => {
 test('DXT5 two-tone block is exact in color too', () => {
   const { src, out } = roundtripBlock(x => (x < 2 ? [0, 0, 0, 255] : [255, 255, 255, 255]), 'DXT5');
   assertBlockClose(src, out, 0, 'DXT5 black/white'); });
+
+// ---- Оптимальний один колір: однотонний блок, колір якого між рівнями 565 ----
+
+// Розбирає DXT1-блоки рівня 0 і повертає кількість блоків у 3-кольоровому режимі (c0 <= c1) з індексом 3 (прозорий).
+const transparentBlocks = (b, w, h) => {
+  let bad = 0;
+  for (let k = 0, p = 128; k < Math.ceil(w / 4) * Math.ceil(h / 4); k++, p += 8) {
+    const c0 = b[p] | (b[p + 1] << 8), c1 = b[p + 2] | (b[p + 3] << 8), bits = (b[p + 4] | (b[p + 5] << 8) | (b[p + 6] << 16) | (b[p + 7] << 24)) >>> 0;
+    if (c0 <= c1) for (let i = 0; i < 16; i++) if (((bits >>> (2 * i)) & 3) === 3) { bad++; break; } }
+  return bad; };
+test('flat normal (128,128,255) survives DXT1 on every mip level within ±1 (no tilt in game)', () => {
+  const lv = dds.buildMips(solid(16, [128, 128, 255, 255]), 16, { normalMap: true });
+  const bytes = dds.encodeDDS(lv, 'DXT1');
+  assert.strictEqual(transparentBlocks(bytes, 16, 16), 0);
+  let off = 128;
+  for (const l of lv) {                                     // кожен рівень окремо, як його прочитає гра
+    const n = Math.max(1, Math.ceil(l.width / 4)) * Math.max(1, Math.ceil(l.height / 4)) * 8;
+    const one = dds.encodeDDS([l], 'DXT1');
+    assert.deepStrictEqual([...one.subarray(128)], [...bytes.subarray(off, off + n)], 'level ' + l.width + ' encoded the same in the chain');
+    const px = dds.decodeDDS(one).data;
+    for (let i = 0; i < px.length; i += 4) for (let k = 0; k < 3; k++) assert.ok(Math.abs(px[i + k] - [128, 128, 255][k]) <= 1, 'level ' + l.width + ' ch ' + k + ': ' + px[i + k]);
+    off += n; } });
+test('uniform grey 0..255 decodes within ±1 in DXT1 and DXT5 (opaque, 4-colour or exact)', () => {
+  for (const f of ['DXT1', 'DXT5']) for (let v = 0; v < 256; v++) {
+    const b = dds.encodeDDS([{ width: 4, height: 4, data: solid(4, [v, v, v, 255]) }], f), px = dds.decodeDDS(b).data;
+    if (f === 'DXT1') assert.strictEqual(transparentBlocks(b, 4, 4), 0, 'grey ' + v);
+    for (let i = 0; i < 64; i += 4) { for (let k = 0; k < 3; k++) assert.ok(Math.abs(px[i + k] - v) <= 1, f + ' grey ' + v + ' ch ' + k + ': ' + px[i + k]);
+      assert.strictEqual(px[i + 3], 255, f + ' grey ' + v + ' alpha'); } } });
+test('uniform random colours decode within ±1 in DXT1 and DXT5', () => {
+  const rnd = require('../js/util.js').mulberry32(42);
+  for (let t = 0; t < 300; t++) {
+    const c = [rnd() * 256 | 0, rnd() * 256 | 0, rnd() * 256 | 0];
+    for (const f of ['DXT1', 'DXT5']) {
+      const b = dds.encodeDDS([{ width: 4, height: 4, data: solid(4, [...c, 255]) }], f), px = dds.decodeDDS(b).data;
+      if (f === 'DXT1') assert.strictEqual(transparentBlocks(b, 4, 4), 0, c.join());
+      for (let k = 0; k < 3; k++) assert.ok(Math.abs(px[k] - c[k]) <= 1, f + ' ' + c.join() + ' ch ' + k + ': ' + px[k]); } } });
+test('near-uniform block (±1 noise around a colour between 565 levels) stays within ±2', () => {
+  const rnd = require('../js/util.js').mulberry32(7);
+  for (const base of [[128, 128, 255], [100, 61, 30], [10, 200, 131]]) {
+    const { src, out } = roundtripBlock(() => [...base.map(v => v + (rnd() * 3 | 0) - 1), 255], 'DXT1');
+    assertBlockClose(src, out, 2, 'near ' + base.join()); } });
