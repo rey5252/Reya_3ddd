@@ -1,739 +1,12 @@
 (function (RA3) { 'use strict';
-  // Зв'язок інтерфейсу з ядром. Єдиний модуль, що працює з DOM (окрім preview3d.js).
-  // Розділи: константи · DOM · стан · статус · перебудова · полотно · пензель і undo · шари · параметри шару ·
-  // документ · 3D-прев'ю · імпорт · експорт · проєкт · клавіатура й перетягування · запуск.
-  const util = RA3.util || require('./util.js');
-  const dds = RA3.dds || require('./dds.js');
-  const tga = RA3.tga || require('./tga.js');
-  const maps = RA3.maps || require('./maps.js');
-  const generators = RA3.generators || require('./generators.js');
-  const project = RA3.project || require('./project.js');
+  // RA3 Texture Studio v2 — файли (імпорт DDS/TGA/PNG/JPG, експорт DDS/PNG, проєкт), документ, 3D-прев'ю,
+  // клавіатура, перетягування файлів і запуск. Спільні стан і функції — у RA3.App (app-core.js).
+  const util = RA3.util, dds = RA3.dds, tga = RA3.tga, maps = RA3.maps, layers = RA3.layers, project = RA3.project;
+  const A = RA3.App, S = A.S, C = A.C, $ = A.$, el = A.el;
 
-  // ---------- Константи ----------
-
-  const SIZES = [256, 512, 1024, 2048];
-  const REBUILD_DELAY = 60;                    // мс debounce після зміни параметра
-  const UNDO_MAX = 30;                         // не більше 30 знімків
-  const UNDO_BYTES = 256 * 1024 * 1024;        // і не більше 256 МБ на всю історію
   const DOWNLOAD_GAP = 250;                    // мс між завантаженнями
-  const CONFIRM_MS = 2500;                     // скільки кнопка чекає другого кліку
-  const DROP_CONFIRM_MS = 8000;                // …а після перетягування проєкту (треба дотягтися до кнопки)
-  const DEFAULT_TEAM = 1;                      // Red
-
-  const VIEW_INFO = {
-    color: '<b>Колір</b> (DiffuseTexture): фарба скіна без освітлення.',
-    height: '<b>Висота</b>: світле — опукле, темне — заглиблене. З неї будується карта нормалей.',
-    nrm: '<b>NRM</b> (NormalMap): рельєф для освітлення. Силу задає «Сила рельєфу» в налаштуваннях документа.',
-    spm: '<b>SPM</b> (SpecMap): червоний канал — блиск, синій — маска кольору гравця.',
-    alpha: '<b>Прозорість</b>: пікселі, темніші за 96 із 255, гра не малює (alpha-test).',
-    game: '<b>У грі</b>: скін з кольором гравця й освітленням, як його показує шейдер RA3.'
-  };
-  // Вкладки, на яких видно мазок по цілі (перша — куди перемкнути, якщо поточна його не показує).
-  const VIEWS_FOR_TARGET = { color: ['color', 'game'], alpha: ['alpha', 'game'], height: ['height', 'nrm', 'game'], spec: ['spm', 'game'], team: ['game', 'spm'] };
-  const BRUSH_VALUE = {
-    alpha: { label: 'Непрозорість', hint: '0 — дірка (гра не малює), 255 — суцільне', def: 0 },
-    height: { label: 'Висота', hint: '128 — рівно, більше — опукло, менше — заглиблення', def: 190 },
-    spec: { label: 'Блиск', hint: '0 — матове, 255 — дзеркальне', def: 220 },
-    team: { label: 'Колір гравця', hint: '0 — без кольору гравця, 255 — повний колір гравця', def: 255 }
-  };
-  const TEAM_NAMES = { Gold: 'Золотий', Red: 'Червоний', Blue: 'Синій', Green: 'Зелений', Orange: 'Помаранчевий', SkyBlue: 'Блакитний', Purple: 'Фіолетовий', Pink: 'Рожевий' };
-  // Шари, чий візерунок залежить від seed.
-  const SEEDED = { base: 1, camo: 1, panels: 1, rivets: 1, dirt: 1, rust: 1, scratches: 1 };
-  // Параметри, що діють лише в певних режимах (інші ховаються, щоб не плутати).
-  const notLuma = p => p.mode !== 'luma', stripes = p => p.mode === 'stripes';
-  const PARAM_VISIBLE = {
-    team: { x: notLuma, y: notLuma, w: notLuma, h: notLuma, angle: stripes, count: stripes, lumaMin: p => p.mode === 'luma' },
-    image: { channel: p => p.target !== 'color' }
-  };
   const ROLE_LABEL = { diffuse: 'колір + прозорість', spm: 'блиск + колір гравця', nrm: 'нормалі' };
   const ROLE_ORDER = { diffuse: 0, spm: 1, nrm: 2 };
-
-  const ICONS = {
-    plus: '<path d="M12 5v14M5 12h14"/>',
-    up: '<path d="m6 15 6-6 6 6"/>',
-    down: '<path d="m6 9 6 6 6-6"/>',
-    close: '<path d="M7 7l10 10M17 7 7 17"/>',
-    undo: '<path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/>',
-    redo: '<path d="m15 14 5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/>',
-    download: '<path d="M12 4v11m-5-5 5 5 5-5M5 20h14"/>',
-    upload: '<path d="M12 20V9m-5 5 5-5 5 5M5 4h14"/>',
-    image: '<rect x="3.5" y="5" width="17" height="14" rx="1.5"/><path d="m4 17 5-5 4 4 2.5-2.5L20 18"/><circle cx="15.5" cy="9.5" r="1.5"/>',
-    save: '<path d="M5 4h11l3 3v13H5z"/><path d="M8 4v5h7V4M8 20v-6h8v6"/>',
-    folder: '<path d="M3 6.5h6l2 2h10V19H3z"/>',
-    file: '<path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M12 11v6M9 14h6"/>',
-    dice: '<rect x="4" y="4" width="16" height="16" rx="3"/><g fill="currentColor" stroke="none"><circle cx="8.5" cy="8.5" r="1.4"/><circle cx="15.5" cy="15.5" r="1.4"/><circle cx="15.5" cy="8.5" r="1.4"/><circle cx="8.5" cy="15.5" r="1.4"/><circle cx="12" cy="12" r="1.4"/></g>',
-    reset: '<path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v4h4"/>'
-  };
-
-  // ---------- DOM ----------
-
-  const $ = id => document.getElementById(id);
-  const PROPS = { value: 1, checked: 1, disabled: 1, hidden: 1, selected: 1 };
-
-  function el(tag, props) {
-    const e = document.createElement(tag);
-    for (const k of Object.keys(props || {})) {
-      const v = props[k];
-      if (k === 'class') e.className = v;
-      else if (k === 'text') e.textContent = v;
-      else if (k === 'dataset') Object.assign(e.dataset, v);
-      else if (PROPS[k]) e[k] = v;
-      else e.setAttribute(k, v);
-    }
-    return e;
-  }
-  function iconSvg(name) { return '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">' + ICONS[name] + '</svg>'; }
-  function iconButton(name, title, act, disabled) {
-    const b = el('button', { type: 'button', class: 'btn icon', title, 'aria-label': title, dataset: { act }, disabled: !!disabled });
-    b.innerHTML = iconSvg(name);
-    return b;
-  }
-  function errText(e) { return (e && e.message) || String(e); }
-  function sentence(text) { return /[.!?…]$/.test(text) ? text : text + '.'; }
-  function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-  function isObject(v) { return v !== null && typeof v === 'object' && !Array.isArray(v); }
-
-  // Заливка доріжки повзунка до поточного значення (для WebKit; Firefox малює її сам).
-  function fillRange(input) {
-    const min = +input.min, max = +input.max, t = max > min ? (+input.value - min) / (max - min) : 0;
-    input.style.setProperty('--fill', (t * 100).toFixed(1) + '%');
-  }
-  function rangeOutput(input) { const f = input.closest('.field'); return f && f.querySelector('output'); }
-
-  // ---------- Стан ----------
-
-  const S = {
-    doc: null,
-    layerCache: null,       // карти після останнього ввімкненого шару, до мазків: {size, color, height, spec, team}
-    version: 0,             // зростає після кожної зміни документа: карт, налаштувань, шарів, назви
-    painted: '',            // ключ останнього намальованого вигляду
-    selectedId: null,
-    view: 'game',
-    team: DEFAULT_TEAM,
-    undo: [], redo: [],
-    stroke: null,
-    brushValues: {},
-    nrmImportName: '',
-    dirty: false,
-    timers: { rebuild: 0, preview: 0 },
-    raf: { paint: 0, stroke: 0 }
-  };
-  for (const t of Object.keys(BRUSH_VALUE)) S.brushValues[t] = BRUSH_VALUE[t].def;
-  let preview = null;
-
-  // version теж росте: за ним saveProject бачить зміни, зроблені під час збереження.
-  function markDirty() { S.dirty = true; S.version++; }
-
-  // ---------- Статус ----------
-
-  // kind: '' | 'ok' | 'busy' | 'error'
-  function setStatus(text, kind) {
-    const s = $('status');
-    s.textContent = text;
-    s.className = kind || '';
-  }
-
-  // ---------- Перебудова ----------
-
-  // Повна перебудова doc (шари + мазки). Реєстр знімає копію карт одразу після останнього ввімкненого шару,
-  // тож під час мазка перекомпоновуються лише оверлеї, без повторного запуску генераторів.
-  function rebuildLayers(doc, reuse) {
-    let last = null;
-    for (const l of doc.layers) if (l.enabled) last = l;
-    let cache = null;
-    maps.rebuild(doc, {
-      apply(layer, m, size, images) {
-        generators.apply(layer, m, size, images);
-        if (layer === last) cache = copyMaps(m, size, reuse);
-      }
-    });
-    return cache;
-  }
-
-  function copyMaps(m, size, reuse) {
-    if (reuse && reuse.size === size) {
-      reuse.color.set(m.color); reuse.height.set(m.height); reuse.spec.set(m.spec); reuse.team.set(m.team);
-      return reuse;
-    }
-    return { size, color: m.color.slice(), height: m.height.slice(), spec: m.spec.slice(), team: m.team.slice() };
-  }
-
-  // Кеш шарів + оверлеї пензля через той самий maps.rebuild (один «шар», що копіює кеш).
-  const CACHED_LAYER = { enabled: true };
-  function composite() {
-    const c = S.layerCache;
-    maps.rebuild(Object.assign({}, S.doc, { layers: c ? [CACHED_LAYER] : [] }), {
-      apply(layer, m) { m.color.set(c.color); m.height.set(c.height); m.spec.set(c.spec); m.team.set(c.team); }
-    });
-    changed();
-  }
-
-  function changed() { S.version++; requestPaint(); }
-
-  function rebuildNow() {
-    clearTimeout(S.timers.rebuild); S.timers.rebuild = 0;
-    let ok = true;
-    try { S.layerCache = rebuildLayers(S.doc, S.layerCache); }
-    catch (e) { ok = false; setStatus('Не вдалося перебудувати текстуру: ' + errText(e), 'error'); }
-    changed();
-    schedulePreview();
-    if (ok) setStatus('Готово', 'ok');
-    return ok;
-  }
-
-  function scheduleRebuild() {
-    markDirty();
-    clearTimeout(S.timers.rebuild);
-    S.timers.rebuild = setTimeout(() => {
-      if (S.doc.size < 1024) { rebuildNow(); return; }
-      setStatus('Перебудова…', 'busy');           // на великих текстурах перебудова помітна: даємо статусу намалюватися
-      S.timers.rebuild = setTimeout(rebuildNow, 30);
-    }, REBUILD_DELAY);
-  }
-
-  function flushRebuild() { if (S.timers.rebuild) rebuildNow(); }
-
-  // ---------- Полотно ----------
-
-  function requestPaint() { if (!S.raf.paint) S.raf.paint = requestAnimationFrame(paintNow); }
-
-  // Вигляд перераховується лише після зміни карт, вкладки чи кольору гравця (для «У грі»), не на рух миші.
-  function paintNow() {
-    if (S.raf.paint) { cancelAnimationFrame(S.raf.paint); S.raf.paint = 0; }
-    const d = S.doc, canvas = $('canvas-main');
-    const key = S.version + ':' + S.view + ':' + (S.view === 'game' ? S.team : '');
-    if (key === S.painted) return;
-    let rgba;
-    try { rgba = maps.viewRGBA(d, S.view, maps.TEAM_COLORS[S.team].rgb); }
-    catch (e) { setStatus('Не вдалося показати вигляд: ' + errText(e), 'error'); return; }
-    if (canvas.width !== d.size || canvas.height !== d.size) { canvas.width = d.size; canvas.height = d.size; }
-    canvas.getContext('2d').putImageData(new ImageData(rgba, d.size, d.size), 0, 0);
-    S.painted = key;
-    canvas.dataset.view = S.view;
-  }
-
-  function setView(view) {
-    S.view = view;
-    for (const b of document.querySelectorAll('#view-tabs button[data-view]')) {
-      const on = b.dataset.view === view;
-      b.classList.toggle('active', on);
-      b.setAttribute('aria-selected', on ? 'true' : 'false');
-    }
-    $('view-caption').innerHTML = VIEW_INFO[view];
-    requestPaint();
-  }
-
-  // Полотно — квадрат, вписаний у сцену; на вузькому екрані — на всю ширину.
-  function fitCanvas() {
-    const stage = $('stage'), cs = getComputedStyle(stage);
-    const w = stage.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
-    const h = stage.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
-    // На вузькому екрані сцена росте за вмістом: обмежуємо полотно висотою вікна, щоб малювати без прокрутки.
-    const narrow = window.matchMedia('(max-width: 899px)').matches;
-    const side = Math.max(96, Math.floor(narrow ? Math.min(w, Math.max(240, window.innerHeight - 200)) : Math.min(w, h)));
-    const frame = $('canvas-frame');
-    if (frame.style.width !== side + 'px') { frame.style.width = side + 'px'; frame.style.height = side + 'px'; }
-  }
-
-  // ---------- Пензель і undo ----------
-
-  function brushSettings() {
-    const target = $('brush-target').value, erase = $('brush-erase').checked;
-    const opts = { radius: +$('brush-size').value / 2, hardness: +$('brush-hardness').value / 100, strength: +$('brush-strength').value / 100, erase };
-    if (!erase) opts.value = target === 'color' ? util.hexToRgb($('brush-color').value) : +$('brush-value').value;
-    return { target, opts };
-  }
-
-  // Позиція в текселях (дробова); мазок ставиться в Math.floor, бо піксель (x, y) лежить у точці (x, y).
-  function texelAt(e) {
-    const r = $('canvas-main').getBoundingClientRect(), n = S.doc.size;
-    return { x: (e.clientX - r.left) / r.width * n, y: (e.clientY - r.top) / r.height * n };
-  }
-
-  function dab(p) { maps.applyBrush(S.doc, S.stroke.target, Math.floor(p.x), Math.floor(p.y), S.stroke.opts); }
-
-  // Відбитки з кроком ≈ радіус/4 між подіями миші, тож швидкий мазок суцільний.
-  function strokeTo(p) {
-    const s = S.stroke, dx = p.x - s.last.x, dy = p.y - s.last.y, dist = Math.sqrt(dx * dx + dy * dy);
-    if (dist < s.spacing) return;
-    const ux = dx / dist, uy = dy / dist;
-    let t = s.spacing;
-    for (; t <= dist; t += s.spacing) dab({ x: s.last.x + ux * t, y: s.last.y + uy * t });
-    t -= s.spacing;
-    s.last = { x: s.last.x + ux * t, y: s.last.y + uy * t };
-  }
-
-  function strokeFrame() {
-    S.raf.stroke = 0;
-    composite();
-    paintNow();
-  }
-
-  function onPointerDown(e) {
-    if ((e.pointerType === 'mouse' && e.button !== 0) || S.stroke) return;
-    e.preventDefault();
-    let b;
-    try { b = brushSettings(); } catch (err) { setStatus(errText(err), 'error'); return; }
-    pushUndo(maps.cloneOverlay(S.doc, b.target));
-    S.stroke = { id: e.pointerId, target: b.target, opts: b.opts, last: texelAt(e), spacing: Math.max(1, b.opts.radius / 4) };
-    try { $('canvas-main').setPointerCapture(e.pointerId); } catch (err) { /* не критично */ }
-    dab(S.stroke.last);
-    markDirty();
-    if (!S.raf.stroke) S.raf.stroke = requestAnimationFrame(strokeFrame);
-  }
-
-  function onPointerMove(e) {
-    moveCursor(e);
-    const s = S.stroke;
-    if (!s || e.pointerId !== s.id) return;
-    const list = typeof e.getCoalescedEvents === 'function' ? e.getCoalescedEvents() : [];
-    for (const ce of (list.length ? list : [e])) strokeTo(texelAt(ce));
-    if (!S.raf.stroke) S.raf.stroke = requestAnimationFrame(strokeFrame);
-  }
-
-  function endStroke(e) {
-    const s = S.stroke;
-    if (!s || (e && e.pointerId !== s.id)) return;
-    S.stroke = null;
-    if (S.raf.stroke) { cancelAnimationFrame(S.raf.stroke); S.raf.stroke = 0; }
-    composite();
-    paintNow();
-    schedulePreview(0);
-    updateHistoryButtons();
-  }
-
-  function moveCursor(e) {
-    const cur = $('brush-cursor');
-    if (e.pointerType === 'touch') { cur.hidden = true; return; }
-    const r = $('canvas-frame').getBoundingClientRect(), n = S.doc.size;
-    const d = Math.max(4, +$('brush-size').value * r.width / n);
-    cur.style.width = d + 'px'; cur.style.height = d + 'px';
-    cur.style.transform = 'translate(' + (e.clientX - r.left - d / 2) + 'px,' + (e.clientY - r.top - d / 2) + 'px)';
-    cur.classList.toggle('erase', $('brush-erase').checked);
-    cur.hidden = false;
-    const t = texelAt(e), x = Math.floor(t.x), y = Math.floor(t.y);
-    $('cursor-pos').textContent = x >= 0 && y >= 0 && x < n && y < n ? 'X ' + x + ' · Y ' + y + ' · ' + n + '×' + n : '';
-  }
-
-  const SHORTCUTS = 'Ctrl+Z — скасувати мазок · [ ] — розмір пензля';
-  function hideCursor() { $('brush-cursor').hidden = true; $('cursor-pos').textContent = SHORTCUTS; }
-
-  function snapBytes(s) { return s.value.length + s.cov.length; }
-  function historyBytes() {
-    let b = 0;
-    for (const s of S.undo) b += snapBytes(s);
-    for (const s of S.redo) b += snapBytes(s);
-    return b;
-  }
-  // Не більше min(30, 256 МБ / розмір знімка): на 2048² це ≈12 знімків кольору.
-  function trimHistory() {
-    while (S.undo.length > UNDO_MAX || (S.undo.length > 1 && historyBytes() > UNDO_BYTES)) S.undo.shift();
-    while (S.redo.length > UNDO_MAX || (S.redo.length > 0 && historyBytes() > UNDO_BYTES)) S.redo.shift();
-  }
-
-  function pushUndo(snap) {
-    S.undo.push(snap);
-    S.redo.length = 0;
-    trimHistory();
-    updateHistoryButtons();
-  }
-
-  function clearHistory() { S.undo.length = 0; S.redo.length = 0; updateHistoryButtons(); }
-
-  function stepHistory(from, to, message) {
-    if (S.stroke || !from.length) return;
-    const snap = from.pop();
-    to.push(maps.cloneOverlay(S.doc, snap.target));
-    maps.restoreOverlay(S.doc, snap);
-    trimHistory();
-    composite();
-    schedulePreview(0);
-    updateHistoryButtons();
-    markDirty();
-    setStatus(message, 'ok');
-  }
-  function undo() { stepHistory(S.undo, S.redo, 'Мазок скасовано'); }
-  function redo() { stepHistory(S.redo, S.undo, 'Мазок повернуто'); }
-
-  function updateHistoryButtons() {
-    $('btn-undo').disabled = !S.undo.length;
-    $('btn-redo').disabled = !S.redo.length;
-  }
-
-  // Ціль пензля: показати потрібне поле значення й вкладку, на якій мазок видно.
-  function onBrushTarget() {
-    const target = $('brush-target').value, isColor = target === 'color';
-    $('field-brush-color').hidden = !isColor;
-    $('field-brush-value').hidden = isColor;
-    if (!isColor) {
-      const v = $('brush-value');
-      $('brush-value-label').textContent = BRUSH_VALUE[target].label;
-      $('field-brush-value').title = BRUSH_VALUE[target].hint;
-      v.value = S.brushValues[target];
-      syncRange(v);
-    }
-    const views = VIEWS_FOR_TARGET[target];
-    if (views.indexOf(S.view) < 0) setView(views[0]);
-  }
-
-  function syncRange(input) {
-    fillRange(input);
-    const out = rangeOutput(input);
-    if (!out) return;
-    const v = +input.value;
-    switch (input.id) {
-      case 'brush-size': out.textContent = v + ' px'; break;
-      case 'brush-hardness': case 'brush-strength': out.textContent = v + '%'; break;
-      case 'nrm-strength': out.textContent = v.toFixed(1); break;
-      default: out.textContent = String(v);
-    }
-  }
-
-  function bindBrush() {
-    const canvas = $('canvas-main');
-    canvas.addEventListener('pointerdown', onPointerDown);
-    canvas.addEventListener('pointermove', onPointerMove);
-    canvas.addEventListener('pointerup', endStroke);
-    canvas.addEventListener('pointercancel', endStroke);
-    canvas.addEventListener('lostpointercapture', endStroke);
-    canvas.addEventListener('pointerleave', hideCursor);
-    canvas.addEventListener('contextmenu', e => e.preventDefault());
-    for (const id of ['brush-size', 'brush-hardness', 'brush-strength', 'brush-value']) {
-      const input = $(id);
-      syncRange(input);
-      input.addEventListener('input', () => {
-        syncRange(input);
-        if (id === 'brush-value') S.brushValues[$('brush-target').value] = +input.value;
-      });
-    }
-    const color = $('brush-color'), hex = $('brush-color-hex');
-    const syncColor = () => { hex.textContent = color.value.toUpperCase(); };
-    color.addEventListener('input', syncColor);
-    syncColor();
-    $('brush-target').addEventListener('change', onBrushTarget);
-    $('btn-undo').addEventListener('click', undo);
-    $('btn-redo').addEventListener('click', redo);
-    onBrushTarget();
-    updateHistoryButtons();
-  }
-
-  function nudgeBrushSize(dir) {
-    const input = $('brush-size'), v = +input.value;
-    input.value = Math.round(dir > 0 ? Math.max(v + 1, v * 1.2) : Math.min(v - 1, v / 1.2));
-    syncRange(input);
-  }
-
-  // ---------- Шари ----------
-
-  function layerDef(type) {
-    for (const c of generators.catalog) if (c.type === type) return c;
-    return null;
-  }
-  function findLayer(id) { return S.doc.layers.find(l => l.id === id) || null; }
-  function selectedLayer() { return S.selectedId ? findLayer(S.selectedId) : null; }
-
-  function renderLayers() {
-    const list = $('layer-list'), layers = S.doc.layers;
-    list.textContent = '';
-    if (!layers.length && !S.doc.nrmImport) {
-      list.append(el('li', { class: 'empty', text: 'Шарів ще немає. Додайте шар нижче або перетягніть зображення на сторінку.' }));
-    }
-    layers.forEach((layer, i) => {
-      const def = layerDef(layer.type), typeLabel = def ? def.label : layer.type;
-      const li = el('li', {
-        class: 'layer' + (layer.id === S.selectedId ? ' selected' : '') + (layer.enabled ? '' : ' off'),
-        dataset: { id: layer.id, type: layer.type }
-      });
-      const cb = el('input', { type: 'checkbox', checked: !!layer.enabled, title: 'Увімкнути або вимкнути шар', 'aria-label': 'Увімкнути шар «' + layer.name + '»', dataset: { act: 'toggle' } });
-      const name = el('button', { type: 'button', class: 'layer-name', dataset: { act: 'select' }, 'aria-pressed': layer.id === S.selectedId ? 'true' : 'false' });
-      name.append(el('span', { class: 'layer-title', text: layer.name || typeLabel }));
-      if (layer.name !== typeLabel) name.append(el('span', { class: 'layer-type', text: typeLabel }));
-      const tools = el('div', { class: 'layer-tools' });
-      tools.append(
-        iconButton('up', 'Вище (раніше в порядку)', 'up', i === 0),
-        iconButton('down', 'Нижче (пізніше в порядку)', 'down', i === layers.length - 1),
-        iconButton('close', 'Видалити шар', 'delete'));
-      li.append(cb, name, tools);
-      list.append(li);
-    });
-    if (S.doc.nrmImport) {
-      const li = el('li', { class: 'layer pseudo', dataset: { type: 'nrm' } });
-      const name = el('div', { class: 'layer-name' });
-      name.append(el('span', { class: 'layer-title', text: S.nrmImportName || 'Імпортована NRM' }),
-        el('span', { class: 'layer-type', text: 'Карта нормалей, змішується з рельєфом шарів' }));
-      const tools = el('div', { class: 'layer-tools' });
-      tools.append(iconButton('close', 'Прибрати імпортовану NRM', 'drop-nrm'));
-      li.append(el('span'), name, tools);
-      list.append(li);
-    }
-  }
-
-  // Дії з підтвердженням другим кліком (без модальних вікон): перший клік «озброює» кнопку на ms мс.
-  const armed = new Map();                     // кнопка -> { title, timer }
-  function armConfirm(btn, message, ms) {
-    let a = armed.get(btn);
-    if (a) clearTimeout(a.timer);
-    else {
-      a = { title: btn.title };
-      armed.set(btn, a);
-      btn.classList.add('confirm');
-      btn.title = 'Натисніть ще раз, щоб підтвердити';
-    }
-    a.timer = setTimeout(() => disarm(btn), ms || CONFIRM_MS);
-    setStatus(message, '');
-  }
-  function disarm(btn) {
-    const a = armed.get(btn);
-    if (!a) return;
-    clearTimeout(a.timer);
-    armed.delete(btn);
-    btn.classList.remove('confirm');
-    btn.title = a.title;
-  }
-  function confirmThen(btn, message, fn) {
-    if (armed.has(btn)) { disarm(btn); fn(); return; }
-    armConfirm(btn, message);
-  }
-
-  function onLayerClick(e) {
-    const li = e.target.closest('li');
-    if (!li) return;
-    const btn = e.target.closest('[data-act]'), id = li.dataset.id, act = btn ? btn.dataset.act : 'select';
-    if (act === 'toggle') return;
-    if (act === 'drop-nrm') { confirmThen(btn, 'Натисніть ✕ ще раз, щоб прибрати імпортовану NRM', dropNrmImport); return; }
-    if (!id) return;
-    if (act === 'select') selectLayer(id);
-    else if (act === 'up' || act === 'down') moveLayer(id, act === 'up' ? -1 : 1);
-    else if (act === 'delete') {
-      const layer = findLayer(id);
-      confirmThen(btn, 'Натисніть ✕ ще раз, щоб видалити шар «' + (layer ? layer.name : '') + '»', () => deleteLayer(id));
-    }
-  }
-
-  function onLayerToggle(e) {
-    if (!e.target.matches('[data-act="toggle"]')) return;
-    const li = e.target.closest('li'), layer = findLayer(li.dataset.id);
-    if (!layer) return;
-    layer.enabled = e.target.checked;
-    li.classList.toggle('off', !layer.enabled);
-    scheduleRebuild();
-  }
-
-  function selectLayer(id) {
-    S.selectedId = id;
-    for (const li of $('layer-list').querySelectorAll('li[data-id]')) {
-      const on = li.dataset.id === id;
-      li.classList.toggle('selected', on);
-      const name = li.querySelector('.layer-name');
-      if (name) name.setAttribute('aria-pressed', on ? 'true' : 'false');
-    }
-    renderParams();
-  }
-
-  function moveLayer(id, dir) {
-    const layers = S.doc.layers, i = layers.findIndex(l => l.id === id), j = i + dir;
-    if (i < 0 || j < 0 || j >= layers.length) return;
-    const t = layers[i]; layers[i] = layers[j]; layers[j] = t;
-    renderLayers();
-    const btn = $('layer-list').querySelector('li[data-id="' + id + '"] [data-act="' + (dir < 0 ? 'up' : 'down') + '"]');
-    if (btn && !btn.disabled) btn.focus();
-    scheduleRebuild();
-  }
-
-  function deleteLayer(id) {
-    const layers = S.doc.layers, i = layers.findIndex(l => l.id === id);
-    if (i < 0) return;
-    const [removed] = layers.splice(i, 1);
-    // Зображення без жодного шару більше не потрібне ні в пам'яті, ні у файлі проєкту.
-    const img = removed.type === 'image' && removed.params ? removed.params.imageId : null;
-    if (img && !layers.some(l => l.type === 'image' && l.params && l.params.imageId === img)) delete S.doc.images[img];
-    if (S.selectedId === id) S.selectedId = layers.length ? layers[Math.min(i, layers.length - 1)].id : null;
-    renderLayers();
-    renderParams();
-    scheduleRebuild();
-  }
-
-  function addLayer() {
-    const type = $('add-layer-type').value, layers = S.doc.layers;
-    const layer = generators.defaultLayer(type);
-    const at = layers.findIndex(l => l.id === S.selectedId);
-    layers.splice(at < 0 ? layers.length : at + 1, 0, layer);
-    S.selectedId = layer.id;
-    renderLayers();
-    renderParams();
-    const li = $('layer-list').querySelector('li[data-id="' + layer.id + '"]');
-    if (li) li.scrollIntoView({ block: 'nearest' });
-    scheduleRebuild();
-  }
-
-  function dropNrmImport() {
-    S.doc.nrmImport = null;
-    S.nrmImportName = '';
-    renderLayers();
-    markDirty();
-    changed();
-    schedulePreview(0);
-    setStatus('Імпортовану NRM прибрано', 'ok');
-  }
-
-  function fillAddLayerSelect() {
-    const sel = $('add-layer-type');
-    for (const c of generators.catalog) if (c.type !== 'image') sel.append(el('option', { value: c.type, text: c.label }));
-  }
-
-  // ---------- Параметри шару ----------
-
-  function paramDefaults(def) {
-    const out = {};
-    for (const p of def.params) out[p.key] = p.default;
-    return out;
-  }
-
-  function formatParam(p, v) {
-    if (p.max <= 1 && p.step < 1) return Math.round(v * 100) + '%';
-    const dec = p.step >= 1 ? 0 : (String(p.step).split('.')[1] || '').length;
-    return (+v).toFixed(dec);
-  }
-
-  function field(labelText, control, key, forId) {
-    const wrap = el('div', { class: 'field' });
-    if (key) wrap.dataset.key = key;
-    const lab = el('label', { class: 'field-label', for: forId || control.id });
-    lab.append(el('span', { text: labelText }));
-    wrap.append(lab, control);
-    return wrap;
-  }
-
-  // Варіанти для imageId: усі зображення документа з іменем файлу з назви першого шару, що на них посилається
-  // (шари імпорту називаються «Роль · файл»).
-  function imageOptions(current) {
-    const names = {};
-    for (const l of S.doc.layers) {
-      if (l.type === 'image' && l.params && !(l.params.imageId in names)) names[l.params.imageId] = String(l.name).split(' · ').pop();
-    }
-    const opts = Object.keys(S.doc.images).map((id, i) => ({ value: id, label: names[id] || 'Зображення ' + (i + 1) }));
-    if (!(current in S.doc.images)) opts.unshift({ value: current, label: '— немає файлу —' });
-    return opts;
-  }
-
-  function paramControl(layer, p, value) {
-    const id = 'param-' + p.key, params = layer.params;
-    const set = v => { params[p.key] = v; scheduleRebuild(); };
-    if (p.kind === 'range') {
-      const input = el('input', { type: 'range', id, min: p.min, max: p.max, step: p.step });
-      input.value = value;
-      const wrap = field(p.label, input, p.key), out = el('output', { text: formatParam(p, +input.value) });
-      wrap.querySelector('.field-label').append(out);
-      fillRange(input);
-      input.addEventListener('input', () => { out.textContent = formatParam(p, +input.value); fillRange(input); set(+input.value); });
-      return wrap;
-    }
-    if (p.kind === 'color') {
-      const input = el('input', { type: 'color', id, value });
-      const code = el('span', { class: 'mono', text: String(value).toUpperCase() });
-      const row = el('div', { class: 'color-row' });
-      row.append(input, code);
-      const wrap = field(p.label, row, p.key, id);
-      input.addEventListener('input', () => {
-        code.textContent = input.value.toUpperCase();
-        // Свій колір на основі фракції означає власний пресет.
-        if (layer.type === 'base' && params.preset !== 'custom') {
-          params.preset = 'custom';
-          const preset = $('param-preset');
-          if (preset) preset.value = 'custom';
-        }
-        set(input.value);
-      });
-      return wrap;
-    }
-    if (p.kind === 'select') {
-      const input = el('select', { id });
-      for (const o of (p.source === 'images' ? imageOptions(value) : p.options)) input.append(el('option', { value: o.value, text: o.label }));
-      input.value = value;
-      input.addEventListener('change', () => {
-        set(input.value);
-        // Пресет фракції показує свої кольори в полях «Основний / Другий колір».
-        const pair = layer.type === 'base' && p.key === 'preset' ? generators.FACTION_PRESETS[input.value] : null;
-        if (pair) { params.color1 = pair[0]; params.color2 = pair[1]; renderParams(); return; }
-        updateParamVisibility(layer);
-      });
-      return field(p.label, input, p.key);
-    }
-    const input = el('input', { type: 'checkbox', id, checked: !!value });
-    const wrap = el('label', { class: 'toggle', dataset: { key: p.key } });
-    wrap.append(input, el('span', { text: p.label }));
-    input.addEventListener('change', () => set(input.checked));
-    return wrap;
-  }
-
-  function seedControl(layer) {
-    const input = el('input', { type: 'number', id: 'param-seed', min: 0, max: 4294967295, step: 1, inputmode: 'numeric' });
-    input.value = layer.seed;
-    const dice = el('button', { type: 'button', class: 'btn icon', title: 'Новий випадковий варіант', 'aria-label': 'Новий випадковий варіант' });
-    dice.innerHTML = iconSvg('dice');
-    const row = el('div', { class: 'input-row' });
-    row.append(input, dice);
-    const wrap = field('Варіант візерунка (seed)', row, null, 'param-seed');
-    input.addEventListener('change', () => {
-      const v = Math.floor(+input.value);
-      if (!Number.isFinite(v) || v < 0) { input.value = layer.seed; return; }
-      layer.seed = v % 4294967296;
-      input.value = layer.seed;
-      scheduleRebuild();
-    });
-    dice.addEventListener('click', () => {
-      layer.seed = Math.floor(Math.random() * 4294967296);
-      input.value = layer.seed;
-      scheduleRebuild();
-    });
-    return wrap;
-  }
-
-  function renderParams() {
-    const box = $('layer-params'), layer = selectedLayer();
-    box.textContent = '';
-    if (!layer) { box.append(el('p', { class: 'empty', text: 'Виберіть шар у списку, щоб змінити його параметри.' })); return; }
-    const def = layerDef(layer.type);
-    if (!def) { box.append(el('p', { class: 'empty', text: 'Невідомий тип шару: ' + layer.type })); return; }
-    if (!isObject(layer.params)) layer.params = {};
-
-    const head = el('div', { class: 'params-head', dataset: { type: layer.type } });
-    head.append(el('span', { class: 'badge', text: def.label }));
-    box.append(head);
-
-    const name = el('input', { type: 'text', id: 'param-name', maxlength: 80, spellcheck: 'false', autocomplete: 'off' });
-    name.value = layer.name;
-    name.addEventListener('input', () => {
-      layer.name = name.value;
-      markDirty();
-      const title = $('layer-list').querySelector('li[data-id="' + layer.id + '"] .layer-title');
-      if (title) title.textContent = layer.name || def.label;
-    });
-    box.append(field('Назва шару', name));
-
-    const values = Object.assign(paramDefaults(def), layer.params);
-    for (const p of def.params) box.append(paramControl(layer, p, values[p.key]));
-    if (SEEDED[layer.type]) box.append(seedControl(layer));
-    if (layer.type !== 'image') {
-      const reset = el('button', { type: 'button', class: 'btn ghost', title: 'Повернути типові значення параметрів цього шару' });
-      reset.innerHTML = iconSvg('reset') + 'Типові значення';
-      reset.addEventListener('click', () => { layer.params = paramDefaults(def); renderParams(); scheduleRebuild(); });
-      const foot = el('div', { class: 'params-foot' });
-      foot.append(reset);
-      box.append(foot);
-    }
-    updateParamVisibility(layer);
-  }
-
-  function updateParamVisibility(layer) {
-    const rules = PARAM_VISIBLE[layer.type];
-    if (!rules) return;
-    const def = layerDef(layer.type), values = Object.assign(paramDefaults(def), layer.params);
-    for (const f of $('layer-params').querySelectorAll('[data-key]')) {
-      const rule = rules[f.dataset.key];
-      f.hidden = rule ? !rule(values) : false;
-    }
-  }
 
   // ---------- Документ ----------
 
@@ -746,53 +19,54 @@
     if (bad) files.append(el('br'), 'Лише латинські літери, цифри та «_» — інші символи буде відкинуто.');
     const chip = $('doc-chip');
     chip.textContent = '';
-    chip.append(el('b', { text: maps.sanitizeName(d.name) }), ' · ' + d.size + '×' + d.size);
+    chip.append(el('b', { text: maps.sanitizeName(d.name) }), ' · ' + d.size + '×' + d.size + (S.dirty ? ' · не збережено' : ''));
   }
+  A.updateDocInfo = updateDocInfo;
 
   function commitName() {
     const input = $('doc-name'), name = maps.sanitizeName(input.value);
-    if (name !== S.doc.name) markDirty();
+    if (name !== S.doc.name) A.markDirty();
     S.doc.name = name;
     input.value = name;
     updateDocInfo();
   }
 
-  function syncDocControls() {
+  A.syncDocControls = function () {
     const d = S.doc;
     $('doc-name').value = d.name;
     $('doc-size').value = String(d.size);
-    const nrm = $('nrm-strength');
-    nrm.value = d.settings.nrmStrength;
-    syncRange(nrm);
+    $('nrm-strength').value = d.settings.nrmStrength;
+    $('nrm-strength-out').textContent = (+d.settings.nrmStrength).toFixed(1);
     $('nrm-invert-y').checked = !!d.settings.invertY;
     updateDocInfo();
-  }
+  };
 
-  // Новий розмір документа: імпорти й мазки ресемплюються, історія скидається (знімки старого розміру вже не
-  // підходять). Після виклику потрібна перебудова.
+  // Новий розмір: буфери ресемплюються (layers.resize), історія скидається (знімки старого розміру не підходять).
   function resizeDoc(n) {
-    maps.resizeDocument(S.doc, n);
-    S.layerCache = null;
-    clearHistory();
-    markDirty();
+    layers.resize(S.doc, n);
+    S.below = null;
+    S.lastPoint = null;
+    A.clearHistory();
+    A.markDirty();
     $('doc-size').value = String(n);
+    A.resetView();
     updateDocInfo();
   }
 
   function changeSize() {
     const sel = $('doc-size'), n = +sel.value, d = S.doc, old = d.size;
-    if (n === old || SIZES.indexOf(n) < 0) return;
-    flushRebuild();
-    setStatus('Зміна розміру на ' + n + '×' + n + '…', 'busy');
+    if (n === old || C.SIZES.indexOf(n) < 0) return;
+    A.flushRebuild();
+    A.setStatus('Зміна розміру на ' + n + '×' + n + '…', 'busy');
     sel.disabled = true;
     setTimeout(() => {
       sel.disabled = false;
       if (S.doc !== d) return;                 // за цей час відкрили інший документ
       try { resizeDoc(n); }
-      catch (e) { sel.value = String(old); setStatus('Не вдалося змінити розмір: ' + errText(e), 'error'); return; }
-      if (rebuildNow()) {
-        const shrunk = n < old && (Object.keys(d.images).length || d.nrmImport);
-        setStatus('Розмір документа: ' + n + '×' + n + (shrunk ? '. Імпортовані зображення зменшено: при збільшенні назад деталі не повернуться.' : ''), 'ok');
+      catch (e) { sel.value = String(old); A.setStatus('Не вдалося змінити розмір: ' + A.errText(e), 'error'); return; }
+      if (A.rebuildNow()) {
+        const shrunk = n < old;
+        A.setStatus('Розмір документа: ' + n + '×' + n + '. Історію скасування очищено' + (shrunk ? '; дрібні деталі мазків і зображень при збільшенні назад не повернуться' : '') + '.', 'ok');
       }
     }, 30);
   }
@@ -804,103 +78,93 @@
     $('doc-size').addEventListener('change', changeSize);
     const nrm = $('nrm-strength');
     nrm.addEventListener('input', () => {
-      syncRange(nrm);
       S.doc.settings.nrmStrength = +nrm.value;
-      markDirty();
-      changed();
-      schedulePreview(150);
+      $('nrm-strength-out').textContent = (+nrm.value).toFixed(1);
+      A.markDirty();
+      A.mapsChanged(true);
+      A.schedulePreview(150);
     });
     $('nrm-invert-y').addEventListener('change', e => {
       S.doc.settings.invertY = e.target.checked;
-      markDirty();
-      changed();
-      schedulePreview(0);
+      A.markDirty();
+      A.mapsChanged(true);
+      A.schedulePreview(0);
     });
   }
 
-  // Новий документ, поточна робота й т. ін. — усе через одну точку заміни документа.
-  function setDocument(doc, cache) {
-    S.doc = doc;
-    S.layerCache = cache;
+  A.dropNrmImport = function () {
+    S.doc.nrmImport = null;
     S.nrmImportName = '';
-    S.painted = '';
-    clearHistory();
-    S.selectedId = doc.layers.length ? doc.layers[0].id : null;
-    syncDocControls();
-    renderLayers();
-    renderParams();
-    fitCanvas();
-    changed();
-    schedulePreview(0);
-  }
+    A.markDirty();
+    A.renderLayers();
+    A.mapsChanged(true);
+    A.schedulePreview(0);
+    A.setStatus('Імпортовану NRM прибрано', 'ok');
+  };
 
   function newDocument() {
-    const d = maps.createDocument({ name: S.doc.name, size: S.doc.size });
-    d.layers.push(generators.defaultLayer('base'));
-    let cache = null;
-    try { cache = rebuildLayers(d, null); } catch (e) { setStatus('Не вдалося створити документ: ' + errText(e), 'error'); return; }
-    setDocument(d, cache);
-    S.dirty = false;
-    setStatus('Новий документ: лише «Основа фракції». Додайте шари або імпортуйте зображення.', 'ok');
+    let d;
+    try { d = A.blankDocument(S.doc.name, S.doc.size); } catch (e) { A.setStatus('Не вдалося створити документ: ' + A.errText(e), 'error'); return; }
+    A.setDocument(d);
+    A.setStatus('Новий документ: заливка-основа й шар «Малювання». Додавайте шари, розумні матеріали або імпортуйте текстуру.', 'ok');
   }
 
   // ---------- 3D-прев'ю ----------
 
   function initPreview() {
     const canvas = $('canvas-3d');
-    try { preview = new RA3.Preview3D(canvas); } catch (e) { preview = { ok: false, error: errText(e) }; }
-    if (!preview.ok) {
+    let p;
+    try { p = new RA3.Preview3D(canvas); } catch (e) { p = { ok: false, error: A.errText(e) }; }
+    A.preview = p;
+    if (!p.ok) {
       canvas.hidden = true;
       $('model-select').disabled = true;
       const box = $('preview-error');
-      box.append(el('strong', { text: preview.error || 'WebGL недоступний' }),
-        el('span', { text: '3D-прев\'ю вимкнено, решта програми працює як звичайно. Як скін виглядає в грі, показує вкладка «У грі».' }));
+      box.append(el('b', { text: p.error || 'WebGL недоступний' }),
+        el('span', { text: '3D-прев\'ю вимкнено, решта програми працює. Як скін виглядає в грі, показує вкладка «У грі».' }));
       box.hidden = false;
       return;
     }
-    preview.setModel($('model-select').value);
-    preview.setTeamColor(maps.TEAM_COLORS[S.team].rgb);
-    $('model-select').addEventListener('change', e => { preview.setModel(e.target.value); preview.render(); });
-    // Прев'ю поза екраном (на телефоні нижче полотна) не малюється.
+    p.setModel($('model-select').value);
+    p.setTeamColor(maps.TEAM_COLORS[S.team].rgb);
+    $('model-select').addEventListener('change', e => { p.setModel(e.target.value); p.render(); });
+    // Прев'ю поза екраном чи згорнуте не малюється.
+    let visible = true;
+    const sync = () => { if (visible && $('preview-panel').open) p.start(); else p.stop(); };
+    $('preview-panel').addEventListener('toggle', () => { sync(); if ($('preview-panel').open) A.schedulePreview(0); });
     if (typeof IntersectionObserver === 'function') {
-      new IntersectionObserver(entries => { if (entries[entries.length - 1].isIntersecting) preview.start(); else preview.stop(); }).observe(canvas);
-    } else preview.start();
+      new IntersectionObserver(entries => { visible = entries[entries.length - 1].isIntersecting; sync(); }).observe(canvas);
+    } else sync();
   }
 
-  function schedulePreview(delay) {
-    if (!preview || !preview.ok) return;
+  A.schedulePreview = function (delay) {
+    const p = A.preview;
+    if (!p || !p.ok) return;
     clearTimeout(S.timers.preview);
     S.timers.preview = setTimeout(updatePreview, delay === undefined ? 100 : delay);
-  }
+  };
 
   function updatePreview() {
     S.timers.preview = 0;
-    if (S.stroke || !preview || !preview.ok) return;  // після мазка прев'ю оновить endStroke
+    const p = A.preview;
+    if (!p || !p.ok) return;
+    if (S.stroke) { A.schedulePreview(150); return; }     // під час мазка — після нього
     const d = S.doc;
     try {
-      preview.setTextures(maps.buildDiffuse(d), maps.buildNRM(d), maps.buildSPM(d), d.size, { invertY: d.settings.invertY });
-      preview.render();   // кадр і тоді, коли цикл стоїть (прев'ю поза екраном)
-    } catch (e) { setStatus('3D-прев\'ю: ' + errText(e), 'error'); }
+      p.setTextures(maps.buildDiffuse(d), maps.buildNRM(d), maps.buildSPM(d), d.size, { invertY: d.settings.invertY });
+      p.render();
+    } catch (e) { A.setStatus('3D-прев\'ю: ' + A.errText(e), 'error'); }
   }
 
   function buildTeamSwatches() {
     const box = $('team-colors');
     maps.TEAM_COLORS.forEach((t, i) => {
-      const name = TEAM_NAMES[t.id] || t.id;
-      const b = el('button', { type: 'button', class: 'swatch', role: 'radio', title: name, 'aria-label': name, dataset: { team: i } });
-      b.style.setProperty('--c', 'rgb(' + t.rgb.join(',') + ')');
+      const name = C.TEAM_NAMES[t.id] || t.id;
+      const b = el('button', { type: 'button', class: 'swatch', role: 'radio', title: 'Колір гравця: ' + name, 'aria-label': name, dataset: { team: i } });
+      b.style.background = 'rgb(' + t.rgb.join(',') + ')';
       box.append(b);
     });
-    box.addEventListener('click', e => { const b = e.target.closest('[data-team]'); if (b) setTeam(+b.dataset.team); });
-  }
-
-  function setTeam(i) {
-    S.team = i;
-    for (const b of $('team-colors').children) b.setAttribute('aria-checked', +b.dataset.team === i ? 'true' : 'false');
-    const t = maps.TEAM_COLORS[i];
-    $('team-name').textContent = TEAM_NAMES[t.id] || t.id;
-    if (preview && preview.ok) { preview.setTeamColor(t.rgb); preview.render(); }
-    if (S.view === 'game') requestPaint();
+    box.addEventListener('click', e => { const b = e.target.closest('[data-team]'); if (b) A.setTeam(+b.dataset.team); });
   }
 
   // ---------- Імпорт ----------
@@ -923,83 +187,102 @@
     } finally { bmp.close(); }
   }
 
-  // Зображення під розмір документа (білінійно), один раз на файл.
-  function fitImage(img, size) {
-    if (img.width === size && img.height === size) return img;
-    return { width: size, height: size, data: util.resampleRGBA(img.data, img.width, img.height, size, size) };
+  function imageLayer(imageId, name, target, channel) {
+    return layers.newLayer('proc', { proc: { type: 'image', seed: 0, params: { imageId, target, channel: channel || 'lum', opacity: 1 } }, name });
   }
 
-  // Два шари-зображення над одним буфером (колір + прозорість чи блиск + колір гравця).
-  function addImagePair(img, first, second) {
-    const a = maps.addImageLayer(S.doc, img, first), b = maps.addImageLayer(S.doc, img, second);
-    delete S.doc.images[b.params.imageId];
-    b.params.imageId = a.params.imageId;
-    return a;
-  }
-
-  function applyImport(file, img, role) {
-    const d = S.doc, fitted = fitImage(img, d.size);
-    if (role === 'nrm') {
-      d.nrmImport = new Uint8ClampedArray(fitted.data);
-      S.nrmImportName = file.name;
-      return null;
+  // Наклейка: одне зображення кольором; прозорість картинки стає маскою шару.
+  function decalLayer(img, fileName) {
+    const d = S.doc, id = layers.addImage(d, img), data = d.images[id], n = d.size * d.size;
+    const l = imageLayer(id, 'Зображення · ' + fileName, 'color');
+    let transparent = false;
+    for (let i = 3; i < data.length; i += 4) if (data[i] < 250) { transparent = true; break; }
+    if (transparent) {
+      const paint = new Uint8ClampedArray(n);
+      for (let i = 0; i < n; i++) paint[i] = data[i * 4 + 3];
+      l.mask = { enabled: true, invert: false, paint, gen: null };
     }
-    // Роль першою: у вузькому списку шарів обрізається ім'я файлу, а не роль.
-    if (role === 'spm') {
-      return addImagePair(fitted, { target: 'spec', channel: 'r', name: 'Блиск (R) · ' + file.name },
-        { target: 'team', channel: 'b', name: 'Колір гравця (B) · ' + file.name });
-    }
-    return addImagePair(fitted, { target: 'color', name: 'Колір · ' + file.name },
-      { target: 'alpha', channel: 'a', name: 'Прозорість (A) · ' + file.name });
+    return l;
   }
 
-  // Набір з гри — серед файлів є _NRM чи _SPM. Тоді документ бере розмір кольорової текстури набору (якщо він
-  // підтримується), а ввімкнені процедурні шари вимикаються (не видаляються), щоб не змішувати їхній рельєф
-  // і фарбу з текстурою гри. Окреме зображення без _NRM/_SPM — наклейка: додається шаром у розмірі документа.
-  // Спершу розкодовуються всі файли, і лише потім змінюється документ.
-  async function importFiles(files) {
+  // Набір з гри (є _NRM чи _SPM): документ бере розмір кольорової текстури (якщо підтримується), видимі шари,
+  // крім зображень і порожніх «Малювань», вимикаються (не видаляються), шари набору стають у самий низ стеку.
+  // Окреме зображення — наклейка над вибраним шаром. Спершу розкодовується все, потім змінюється документ.
+  async function importFiles(files, asDecal) {
     const items = files.map(file => ({ file, info: maps.classifyTextureName(file.name) }))
       .sort((a, b) => ROLE_ORDER[a.info.role] - ROLE_ORDER[b.info.role]);
     const decoded = [], errors = [], notes = [];
     for (let i = 0; i < items.length; i++) {
       const { file, info } = items[i];
-      setStatus('Імпорт ' + (i + 1) + ' з ' + items.length + ': «' + file.name + '»…', 'busy');
+      A.setStatus('Імпорт ' + (i + 1) + ' з ' + items.length + ': «' + file.name + '»…', 'busy');
       try { decoded.push({ file, info, img: await decodeImage(file) }); }
-      catch (e) { errors.push('«' + file.name + '»: ' + errText(e)); }
+      catch (e) { errors.push('«' + file.name + '»: ' + A.errText(e)); }
     }
-    if (decoded.length && items.some(x => x.info.role !== 'diffuse')) {
-      const diffuse = decoded.find(x => x.info.role === 'diffuse'), w = diffuse ? diffuse.img.width : 0;
-      if (diffuse && w === diffuse.img.height && w !== S.doc.size && SIZES.indexOf(w) >= 0) {
-        flushRebuild();
-        resizeDoc(w);
-        notes.push('Розмір документа: ' + w + '×' + w + ', як у текстури гри.');
-      }
-      const procedural = S.doc.layers.filter(l => l.enabled && l.type !== 'image');
-      for (const l of procedural) l.enabled = false;
-      if (procedural.length) notes.push('Процедурні шари вимкнено, щоб не змішувати з текстурою гри — увімкніть потрібні вручну.');
-    }
-    let scaled = 0, base = null, firstLayer = null;
-    for (const { file, info, img } of decoded) {
-      const layer = applyImport(file, img, info.role);
-      firstLayer = firstLayer || layer;
-      if (base === null) base = info.base;     // файли впорядковано «колір» першим, тож назву дає він
-      if (img.width !== S.doc.size || img.height !== S.doc.size) scaled++;
-    }
+    A.flushRebuild();
+    const d = S.doc;
+    const gameSet = !asDecal && decoded.length > 0 && items.some(x => x.info.role !== 'diffuse');
+    let scaled = 0;
     if (decoded.length) {
-      S.doc.name = maps.sanitizeName(base);
-      $('doc-name').value = S.doc.name;
+      const entry = A.stackEntry('імпорт');
+      if (gameSet) {
+        const diffuse = decoded.find(x => x.info.role === 'diffuse'), w = diffuse ? diffuse.img.width : 0;
+        if (diffuse && w === diffuse.img.height && w !== d.size && C.SIZES.indexOf(w) >= 0) {
+          resizeDoc(w);
+          notes.push('Розмір документа: ' + w + '×' + w + ', як у текстури гри (історію скасування очищено).');
+        }
+        const hidden = d.layers.filter(l => l.visible && !(l.kind === 'proc' && l.proc.type === 'image') && !(l.kind === 'paint' && isEmptyPaint(l)));
+        for (const l of hidden) l.visible = false;
+        if (hidden.length) notes.push('Інші шари вимкнено, щоб не змішувати з текстурою гри — увімкніть потрібні вручну.');
+      }
+      const added = [];
+      let base = null;
+      for (const { file, info, img } of decoded) {
+        if (img.width !== d.size || img.height !== d.size) scaled++;
+        if (!gameSet) { added.push(decalLayer(img, file.name)); continue; }
+        if (base === null) base = info.base;
+        if (info.role === 'nrm') {
+          d.nrmImport = new Uint8ClampedArray(img.width === d.size && img.height === d.size ? img.data : util.resampleRGBA(img.data, img.width, img.height, d.size, d.size));
+          S.nrmImportName = file.name;
+          continue;
+        }
+        const id = layers.addImage(d, img);
+        if (info.role === 'spm') added.push(imageLayer(id, 'Блиск (R) · ' + file.name, 'spec', 'r'), imageLayer(id, 'Колір гравця (B) · ' + file.name, 'team', 'b'));
+        else added.push(imageLayer(id, 'Колір · ' + file.name, 'color'), imageLayer(id, 'Прозорість (A) · ' + file.name, 'alpha', 'a'));
+      }
+      if (gameSet) {
+        // Шари набору — знизу, у порядку «колір, блиск»; шари користувача лишаються над ними.
+        // Undo прибирає шари набору (видимість інших шарів і імпортована NRM лишаються як є).
+        d.layers.splice(0, 0, ...added);
+        A.pushUndo(entry);
+        d.name = maps.sanitizeName(base);
+        $('doc-name').value = d.name;
+        A.renderLayers();
+        A.renderProps();
+        A.markDirty();
+        S.below = null;
+        A.rebuildNow();
+      } else if (added.length) {
+        A.insertLayers(added, 'імпорт');
+        A.flushRebuild();
+      }
       updateDocInfo();
-      if (firstLayer) S.selectedId = firstLayer.id;
-      renderLayers();
-      renderParams();
-      markDirty();
-      rebuildNow();
     }
-    let msg = decoded.length ? 'Імпортовано: ' + decoded.map(x => x.file.name + ' (' + ROLE_LABEL[x.info.role] + ')').join(', ') + '.' : '';
+    let msg = decoded.length ? 'Імпортовано: ' + decoded.map(x => x.file.name + ' (' + (gameSet ? ROLE_LABEL[x.info.role] : 'зображення') + ')').join(', ') + '.' : '';
     if (notes.length) msg += ' ' + notes.join(' ');
     if (scaled) msg += ' Масштабовано до ' + S.doc.size + '×' + S.doc.size + '.';
     if (errors.length) msg = (msg ? msg + ' ' : '') + 'Не вдалося імпортувати ' + errors.join('; ');
-    setStatus(msg.trim(), errors.length ? 'error' : 'ok');
+    A.setStatus(msg.trim() || 'Нічого не імпортовано', errors.length ? 'error' : 'ok');
+  }
+
+  function isEmptyPaint(l) {
+    for (const c of Object.keys(l.paint || {})) { const cov = l.paint[c].cov; for (let i = 0; i < cov.length; i++) if (cov[i]) return false; }
+    return true;
+  }
+
+  async function importAlpha(file) {
+    A.setStatus('Альфа з «' + file.name + '»…', 'busy');
+    const img = await decodeImage(file);
+    A.addCustomAlpha(img, file.name);
   }
 
   // ---------- Експорт ----------
@@ -1015,7 +298,7 @@
 
   async function downloadAll(files) {
     for (let i = 0; i < files.length; i++) {
-      if (i) await sleep(DOWNLOAD_GAP);
+      if (i) await A.sleep(DOWNLOAD_GAP);
       download(files[i].blob, files[i].name);
     }
   }
@@ -1026,7 +309,7 @@
     if (btns.some(b => b.disabled)) return;
     btns.forEach(b => { b.disabled = true; });
     try { await fn(); }
-    catch (e) { setStatus(failText + ': ' + errText(e), 'error'); }
+    catch (e) { A.setStatus(failText + ': ' + A.errText(e), 'error'); }
     finally { btns.forEach(b => { b.disabled = false; }); }
   }
   const EXPORT_BUTTONS = ['btn-export-dds', 'btn-export-png'];
@@ -1034,7 +317,7 @@
   // Знімок трьох карт на момент натискання: подальші зміни документа на файли не впливають.
   function exportSources() {
     commitName();
-    flushRebuild();
+    A.flushRebuild();
     const d = S.doc;
     return { base: maps.sanitizeName(d.name), size: d.size, diffuse: maps.buildDiffuse(d), nrm: maps.buildNRM(d), spm: maps.buildSPM(d) };
   }
@@ -1043,11 +326,11 @@
     const src = exportSources(), name = f => src.base + f.suffix + '.dds';
     const files = await dds.encodeSet(src, src.size, {
       uncompressed: $('uncompressed').checked,
-      onProgress: (p, f) => setStatus('Кодування DDS… ' + Math.floor(p * 100) + '% — ' + name(f) + ' (' + f.format + ')', 'busy')
+      onProgress: (p, f) => A.setStatus('Кодування DDS… ' + Math.floor(p * 100) + '% — ' + name(f) + ' (' + f.format + ')', 'busy')
     });
-    setStatus('Кодування DDS… 100%', 'busy');
+    A.setStatus('Кодування DDS… 100%', 'busy');
     await downloadAll(files.map(f => ({ name: name(f), blob: new Blob([f.bytes], { type: 'application/octet-stream' }) })));
-    setStatus('Експортовано: ' + files.map(f => name(f) + ' (' + f.format + ')').join(', '), 'ok');
+    A.setStatus('Експортовано: ' + files.map(f => name(f) + ' (' + f.format + ')').join(', '), 'ok');
   }
 
   async function exportPNG() {
@@ -1058,123 +341,127 @@
     const ctx = c.getContext('2d');
     const files = [];
     for (const [name, data] of items) {
-      setStatus('Підготовка PNG: ' + name + '…', 'busy');
+      A.setStatus('Підготовка PNG: ' + name + '…', 'busy');
       ctx.putImageData(new ImageData(data, src.size, src.size), 0, 0);
       const blob = await new Promise((resolve, reject) => c.toBlob(b => (b ? resolve(b) : reject(new Error('браузер не зміг створити PNG'))), 'image/png'));
       files.push({ name, blob });
     }
     await downloadAll(files);
-    setStatus('Експортовано PNG: ' + items.map(x => x[0]).join(', '), 'ok');
+    A.setStatus('Експортовано PNG: ' + items.map(x => x[0]).join(', '), 'ok');
   }
 
   // ---------- Проєкт ----------
 
-  // serialize знімає документ синхронно, тож файл відповідає моменту натискання. Якщо поки йшло стиснення
-  // документ змінився (мазок, параметр), ці зміни у файл не ввійшли, і документ лишається незбереженим.
+  // Лише зображення, на які посилаються шари (видалені шари могли лишити непотрібні).
+  function usedImages(d) {
+    const used = {};
+    for (const l of d.layers) {
+      const id = l.kind === 'proc' && l.proc && l.proc.type === 'image' ? l.proc.params.imageId : null;
+      if (id && d.images[id]) used[id] = d.images[id];
+    }
+    return used;
+  }
+
+  // serialize знімає документ синхронно, тож файл відповідає моменту натискання; зміни під час стиснення
+  // лишаються незбереженими.
   async function saveProject() {
     commitName();
-    setStatus('Збереження проєкту…', 'busy');
-    const version = S.version, name = maps.sanitizeName(S.doc.name) + '.ra3tex.json';
-    const json = await project.serialize(S.doc);
+    A.setStatus('Збереження проєкту…', 'busy');
+    const version = S.version, d = S.doc, name = maps.sanitizeName(d.name) + '.ra3tex.json';
+    const json = await project.serialize(Object.assign({}, d, { images: usedImages(d) }));
     download(new Blob([json], { type: 'application/json' }), name);
     const later = S.version !== version;
     if (!later) S.dirty = false;
-    setStatus('Проєкт збережено: ' + name + (later ? '. Зміни, зроблені під час збереження, у файл не ввійшли.' : ''), 'ok');
+    updateDocInfo();
+    A.setStatus('Проєкт збережено: ' + name + (later ? '. Зміни, зроблені під час збереження, у файл не ввійшли.' : ''), 'ok');
   }
 
-  let idCounter = 0;
-  // Шари з файлу: унікальні id, назва й параметри на місці (форма шару на них спирається).
-  function normalizeLayers(doc) {
-    const seen = {};
-    for (const l of doc.layers) {
-      const def = layerDef(l.type);
-      if (!def) throw new Error('невідомий тип шару «' + l.type + '»');
-      if (typeof l.id !== 'string' || !l.id || seen[l.id]) l.id = 'lay' + Date.now().toString(36) + (idCounter++).toString(36);
-      seen[l.id] = true;
-      if (typeof l.name !== 'string' || !l.name) l.name = def.label;
-      if (!isObject(l.params)) l.params = {};
-      if (!Number.isFinite(l.seed)) l.seed = 0;
-      l.enabled = l.enabled !== false;
-    }
-  }
-
-  // Новий документ готується повністю (розбір + перебудова) і лише тоді замінює поточний.
+  // Новий документ готується повністю (розбір + композиція) і лише тоді замінює поточний.
   async function openProject(file) {
-    setStatus('Відкриття проєкту «' + file.name + '»…', 'busy');
-    let doc, cache;
+    A.setStatus('Відкриття проєкту «' + file.name + '»…', 'busy');
+    let doc;
     try {
       doc = await project.deserialize(await file.text());
-      if (SIZES.indexOf(doc.size) < 0) throw new Error('розмір ' + doc.size + '×' + doc.size + ' не підтримується (потрібно 256, 512, 1024 або 2048)');
-      normalizeLayers(doc);
-      cache = rebuildLayers(doc, null);
+      if (C.SIZES.indexOf(doc.size) < 0) throw new Error('розмір ' + doc.size + '×' + doc.size + ' не підтримується (потрібно 256, 512, 1024 або 2048)');
+      layers.composite(doc);
     } catch (e) {
-      setStatus(sentence('Не вдалося відкрити проєкт «' + file.name + '»: ' + errText(e)) + ' Поточна робота не змінилася.', 'error');
+      A.setStatus(A.sentence('Не вдалося відкрити проєкт «' + file.name + '»: ' + A.errText(e)) + ' Поточна робота не змінилася.', 'error');
       return;
     }
-    setDocument(doc, cache);
-    S.dirty = false;
-    setStatus('Проєкт відкрито: ' + file.name, 'ok');
+    A.setDocument(doc, { nrmName: doc.nrmImport ? 'Імпортована NRM' : '' });
+    updateDocInfo();
+    A.setStatus('Проєкт відкрито: ' + file.name, 'ok');
   }
 
   const LOAD_BUTTONS = ['btn-import', 'btn-open-project', 'btn-new'];
-  // Під час збереження не можна змінити розмір, імпортувати чи відкрити інший документ.
   const SAVE_BUTTONS = ['btn-save-project', 'doc-size'].concat(LOAD_BUTTONS);
   function saveJob() { runJob(SAVE_BUTTONS, 'Не вдалося зберегти проєкт', saveProject); }
-
   function openProjectJob(file) { runJob(LOAD_BUTTONS, 'Не вдалося відкрити проєкт', () => openProject(file)); }
 
-  // Відкриття проєкту замінює документ. Якщо є незбережені зміни, «Відкрити» просить другий клік (як «Новий
-  // документ»), і лише тоді показує вибір файлу. Перетягнутий .json чекає в pendingProject, а кнопка «Відкрити»
-  // підсвічується: клік по ній відкриває саме цей файл.
+  // Відкриття замінює документ: з незбереженими змінами «Відкрити» просить другий клік. Перетягнутий .json
+  // чекає в pendingProject, і клік по підсвіченій кнопці відкриває саме його.
   let pendingProject = null;
   function onOpenProjectClick(e) {
     const btn = e.currentTarget;
-    if (!armed.has(btn)) pendingProject = null;      // новий цикл підтвердження — для вибору файлу
+    if (!A.isArmed(btn)) pendingProject = null;
     const go = () => { const f = pendingProject; pendingProject = null; if (f) openProjectJob(f); else $('project-input').click(); };
-    if (!S.dirty) { disarm(btn); go(); return; }
-    confirmThen(btn, 'Натисніть «Відкрити» ще раз: незбережені зміни поточного документа зникнуть', go);
+    if (!S.dirty) { A.disarm(btn); go(); return; }
+    A.confirmThen(btn, 'Натисніть «Відкрити» ще раз: незбережені зміни поточного документа зникнуть', go);
   }
 
   function handleFiles(files) {
-    if (!files.length || LOAD_BUTTONS.some(id => $(id).disabled)) return;   // триває імпорт, відкриття чи збереження
+    if (!files.length || LOAD_BUTTONS.some(id => $(id).disabled)) return;
     const proj = files.find(f => extOf(f.name) === 'json');
-    if (!proj) { runJob(LOAD_BUTTONS, 'Не вдалося імпортувати', () => importFiles(files)); return; }
+    if (!proj) { runJob(LOAD_BUTTONS, 'Не вдалося імпортувати', () => importFiles(files, false)); return; }
     if (!S.dirty) { openProjectJob(proj); return; }
     pendingProject = proj;
-    armConfirm($('btn-open-project'), 'Є незбережені зміни. Щоб замінити їх проєктом «' + proj.name + '», натисніть «Відкрити»', DROP_CONFIRM_MS);
+    A.armConfirm($('btn-open-project'), 'Є незбережені зміни. Щоб замінити їх проєктом «' + proj.name + '», натисніть «Відкрити»', C.DROP_CONFIRM_MS);
   }
 
   function bindFiles() {
-    const fileInput = $('file-input'), projectInput = $('project-input');
-    $('btn-import').addEventListener('click', () => fileInput.click());
-    fileInput.addEventListener('change', () => { const files = Array.from(fileInput.files); fileInput.value = ''; handleFiles(files); });
+    const pick = (id, fn) => {
+      const input = $(id);
+      input.addEventListener('change', () => { const files = Array.from(input.files); input.value = ''; if (files.length) fn(files); });
+    };
+    $('btn-import').addEventListener('click', () => $('file-input').click());
+    pick('file-input', handleFiles);
+    pick('image-input', files => runJob(LOAD_BUTTONS, 'Не вдалося додати зображення', () => importFiles(files, true)));
+    pick('alpha-input', files => runJob(['btn-add-alpha'], 'Не вдалося створити альфу', () => importAlpha(files[0])));
+    pick('project-input', files => openProjectJob(files[0]));
     $('btn-open-project').addEventListener('click', onOpenProjectClick);
-    projectInput.addEventListener('change', () => {
-      const file = projectInput.files[0];
-      projectInput.value = '';
-      if (file) openProjectJob(file);
-    });
     $('btn-save-project').addEventListener('click', saveJob);
     $('btn-export-dds').addEventListener('click', () => runJob(EXPORT_BUTTONS, 'Не вдалося експортувати DDS', exportDDS));
     $('btn-export-png').addEventListener('click', () => runJob(EXPORT_BUTTONS, 'Не вдалося експортувати PNG', exportPNG));
-    $('btn-new').addEventListener('click', e => confirmThen(e.currentTarget, 'Натисніть «Новий документ» ще раз: поточні шари й мазки зникнуть', newDocument));
+    $('btn-new').addEventListener('click', e => A.confirmThen(e.currentTarget, 'Натисніть «Новий» ще раз: поточні шари й мазки зникнуть', newDocument));
   }
 
   // ---------- Клавіатура й перетягування ----------
 
   function onKeyDown(e) {
-    const t = e.target, typing = t && t.matches && t.matches('input[type="text"], input[type="number"], textarea');
+    const t = e.target, typing = t && t.matches && t.matches('input[type="text"], input[type="number"], textarea, select');
     if ((e.ctrlKey || e.metaKey) && !e.altKey) {
       // e.code, а не e.key: на українській розкладці Z дає «я».
       if (e.code === 'KeyS') { e.preventDefault(); saveJob(); return; }
       if (typing) return;
-      if (e.code === 'KeyZ') { e.preventDefault(); if (e.shiftKey) redo(); else undo(); }
-      else if (e.code === 'KeyY') { e.preventDefault(); redo(); }
+      if (e.code === 'KeyZ') { e.preventDefault(); if (e.shiftKey) A.redo(); else A.undo(); }
+      else if (e.code === 'KeyY') { e.preventDefault(); A.redo(); }
       return;
     }
-    if (typing || e.altKey) return;
-    if (e.code === 'BracketLeft') nudgeBrushSize(-1);
-    else if (e.code === 'BracketRight') nudgeBrushSize(1);
+    if (typing || e.altKey || e.ctrlKey || e.metaKey) return;
+    switch (e.code) {
+      case 'Space': e.preventDefault(); if (!e.repeat) A.setSpace(true); break;
+      case 'KeyB': A.setTool('brush'); break;
+      case 'KeyE': A.setTool('eraser'); break;
+      case 'KeyG': A.setTool('fill'); break;
+      case 'KeyI': A.setTool('picker'); break;
+      case 'KeyM': A.setTarget(S.target === 'mask' ? 'paint' : 'mask'); break;
+      case 'BracketLeft': A.nudgeBrushSize(-1); break;
+      case 'BracketRight': A.nudgeBrushSize(1); break;
+      case 'KeyT': A.setTiling(!S.tiling); break;
+      case 'KeyF': A.fit(); break;
+      case 'Digit0': case 'Numpad0': A.zoomTo(1); break;
+      default: return;
+    }
   }
 
   function bindDragDrop() {
@@ -1195,47 +482,53 @@
 
   // ---------- Запуск ----------
 
-  function createDemo() {
-    const d = maps.createDocument({ name: 'AUMyTank', size: 512 });
-    d.layers = generators.demoLayers();
-    return d;
+  function fnv(arr) {
+    const b = new Uint8Array(arr.buffer, arr.byteOffset, arr.byteLength);
+    let h = 2166136261;
+    for (let i = 0; i < b.length; i++) h = Math.imul(h ^ b[i], 16777619);
+    return (h >>> 0).toString(16);
   }
 
   function init() {
-    for (const i of document.querySelectorAll('i[data-icon]')) i.innerHTML = iconSvg(i.dataset.icon);
-    fillAddLayerSelect();
-    buildTeamSwatches();
-    bindBrush();
+    A.initCanvas();
+    A.initPanels();
     bindDocument();
     bindFiles();
     bindDragDrop();
-    $('layer-list').addEventListener('click', onLayerClick);
-    $('layer-list').addEventListener('change', onLayerToggle);
-    $('btn-add-layer').addEventListener('click', addLayer);
-    $('view-tabs').addEventListener('click', e => { const b = e.target.closest('button[data-view]'); if (b) setView(b.dataset.view); });
+    buildTeamSwatches();
     document.addEventListener('keydown', onKeyDown);
+    document.addEventListener('keyup', e => { if (e.code === 'Space') A.setSpace(false); });
+    window.addEventListener('blur', () => A.setSpace(false));
     window.addEventListener('beforeunload', e => { if (S.dirty) { e.preventDefault(); e.returnValue = ''; } });
-    if (typeof ResizeObserver === 'function') new ResizeObserver(fitCanvas).observe($('stage'));
-    window.addEventListener('resize', fitCanvas);
-
-    hideCursor();                              // підказка про клавіші в рядку стану
     initPreview();
-    setTeam(DEFAULT_TEAM);
-    setView(S.view);
-    const demo = createDemo();
-    let cache = null, error = null;
-    try { cache = rebuildLayers(demo, null); } catch (e) { error = e; }
-    setDocument(demo, cache);
-    S.dirty = false;
-    if (error) setStatus('Не вдалося побудувати демо-скін: ' + errText(error), 'error');
-    else setStatus('Готово', 'ok');
+    A.setTool('brush');
+    A.setTeam(C.DEFAULT_TEAM);
+    A.setView(S.view);
+    A.setTiling(false);
+    A.updateUndoButtons();
+    let doc = null, error = null;
+    try { doc = A.createDemo(); } catch (e) { error = e; doc = A.blankDocument('AUMyTank', 512); }
+    A.setDocument(doc);
+    A.renderNow();
+    if (error) A.setStatus('Не вдалося побудувати демо-скін: ' + A.errText(error), 'error');
+    else if (A.statusKind() !== 'error') A.setStatus('Готово', 'ok');
+    // Незбережений стан у назві документа (шапка) оновлюється періодично — дешевше, ніж після кожної дії.
+    let shown = null;
+    setInterval(() => { if (shown !== S.dirty) { shown = S.dirty; updateDocInfo(); } }, 1000);
   }
 
-  const api = { get doc() { return S.doc; } };
-  RA3.app = api;
-  if (typeof module !== 'undefined' && module.exports) module.exports = api;
-  if (typeof document !== 'undefined') {
-    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
-    else init();
-  }
+  // Налагодження й тести (smoke.cjs): документ, стан, координати полотна, хеш буфера, час кадрів.
+  window.RA3_APP = {
+    app: A,
+    get doc() { return S.doc; },
+    get state() { return S; },
+    get view() { return A.V; },
+    flush() { A.flushRebuild(); A.renderNow(); },
+    toClient: (x, y) => A.toClient(x, y),
+    hash: fnv,
+    perf: () => ({ rebuild: S.perf.rebuild, frames: S.perf.frames.slice() })
+  };
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
 })(typeof window !== 'undefined' ? (window.RA3 = window.RA3 || {}) : {});
