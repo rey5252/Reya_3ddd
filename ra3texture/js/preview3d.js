@@ -68,10 +68,10 @@
     '  n.xy *= BUMP_SCALE;',
     '  float l2 = dot(n, n);',
     '  n = l2 > 1e-6 ? n * inversesqrt(l2) : vec3(0.0, 0.0, 1.0);',
-    // TBN з атрибутів: T вздовж +x зображення, бітангенс cross(N, T) вздовж «донизу по зображенню»
+    // TBN з атрибутів: T вздовж +x зображення (вправо), бітангенс cross(T, N) вздовж «донизу по зображенню»
     '  vec3 N = normalize(vN);',
     '  vec3 T = normalize(vT - N * dot(N, vT));',
-    '  vec3 B = cross(N, T);',
+    '  vec3 B = cross(T, N);',
     '  vec3 Nw = normalize(T * n.x + B * n.y + N * n.z);',
     '  vec3 V = normalize(uCam - vPos);',
     '  vec3 R = reflect(-V, Nw);',

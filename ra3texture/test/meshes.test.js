@@ -47,35 +47,108 @@ for (const [name, make] of Object.entries(MODELS)) {
   });
 }
 
-// ---- Конвенція UV / тангентного базису (рішення 2) ----
-// Рядок 0 текстури — верх зображення, v росте донизу, T = dP/du, cross(N,T) = dP/dv для кожного трикутника.
-// Додатково перевіряємо обхід трикутників проти годинникової стрілки зовні (для відсікання задніх граней).
+// ---- Конвенція UV / тангентного базису (виправлене рішення 2) ----
+// Рядок 0 текстури — верх зображення, v росте донизу. Зображення на гранях НЕ дзеркальне зовні:
+// T = dP/du, cross(T,N) = dP/dv для кожного трикутника. Додатково перевіряємо обхід трикутників проти
+// годинникової стрілки зовні (для відсікання задніх граней).
+// Для кожного трикутника: dP/du, dP/dv з позицій і UV, зовнішня нормаль (середня вершинна), вектор обходу `face`.
+function triFrames(m) {
+  const out = [];
+  for (let t = 0; t < m.indices.length; t += 3) {
+    const ids = [m.indices[t], m.indices[t + 1], m.indices[t + 2]];
+    const p = ids.map(i => v3(m.positions, i));
+    const uv = ids.map(i => [m.uvs[i * 2], m.uvs[i * 2 + 1]]);
+    const e1 = sub(p[1], p[0]), e2 = sub(p[2], p[0]);
+    const du1 = uv[1][0] - uv[0][0], dv1 = uv[1][1] - uv[0][1], du2 = uv[2][0] - uv[0][0], dv2 = uv[2][1] - uv[0][1];
+    const det = du1 * dv2 - du2 * dv1, face = cross(e1, e2);
+    if (Math.abs(det) < 1e-9 || len(face) < 1e-12) { out.push({ t: t / 3, ids, degenerate: true }); continue; } // вироджений у UV або в просторі
+    // «Зовні» беремо з вершинних нормалей, а не з обходу, щоб перевірки дзеркальності не залежали від обходу.
+    const ns = ids.map(i => v3(m.normals, i)), sum = [0, 1, 2].map(k => ns[0][k] + ns[1][k] + ns[2][k]);
+    out.push({
+      t: t / 3, ids, face, ng: sum.map(x => x / len(sum)),
+      dPdu: [0, 1, 2].map(k => (e1[k] * dv2 - e2[k] * dv1) / det),
+      dPdv: [0, 1, 2].map(k => (e2[k] * du1 - e1[k] * du2) / det)
+    });
+  }
+  return out;
+}
+
 for (const [name, make] of Object.entries(MODELS)) {
   test(`${name}: tangent frame follows dP/du and dP/dv, winding is outward`, () => {
-    const m = make();
-    let checked = 0;
-    for (let t = 0; t < m.indices.length; t += 3) {
-      const ids = [m.indices[t], m.indices[t + 1], m.indices[t + 2]];
-      const p = ids.map(i => v3(m.positions, i));
-      const uv = ids.map(i => [m.uvs[i * 2], m.uvs[i * 2 + 1]]);
-      const e1 = sub(p[1], p[0]), e2 = sub(p[2], p[0]);
-      const du1 = uv[1][0] - uv[0][0], dv1 = uv[1][1] - uv[0][1], du2 = uv[2][0] - uv[0][0], dv2 = uv[2][1] - uv[0][1];
-      const det = du1 * dv2 - du2 * dv1;
-      if (Math.abs(det) < 1e-9 || len(cross(e1, e2)) < 1e-12) continue; // вироджений у UV або в просторі
-      const dPdu = [0, 1, 2].map(k => (e1[k] * dv2 - e2[k] * dv1) / det);
-      const dPdv = [0, 1, 2].map(k => (e2[k] * du1 - e1[k] * du2) / det);
-      const face = cross(e1, e2);
-      for (const i of ids) {
+    const m = make(), frames = triFrames(m);
+    for (const f of frames) {
+      assert.ok(!f.degenerate, `трикутник ${f.t}: вироджені UV (без полюсних віял)`);
+      for (const i of f.ids) {
         const N = v3(m.normals, i), T = v3(m.tangents, i);
-        assert.ok(dot(T, dPdu) > 0, `трикутник ${t / 3}: T·dP/du = ${dot(T, dPdu)}`);
-        assert.ok(dot(cross(N, T), dPdv) > 0, `трикутник ${t / 3}: cross(N,T)·dP/dv = ${dot(cross(N, T), dPdv)}`);
-        assert.ok(dot(face, N) > 0, `трикутник ${t / 3}: обхід не назовні`);
+        assert.ok(dot(T, f.dPdu) > 0, `трикутник ${f.t}: T·dP/du = ${dot(T, f.dPdu)}`);
+        assert.ok(dot(cross(T, N), f.dPdv) > 0, `трикутник ${f.t}: cross(T,N)·dP/dv = ${dot(cross(T, N), f.dPdv)}`);
+        assert.ok(dot(f.face, N) > 0, `трикутник ${f.t}: обхід не назовні`);
       }
-      checked++;
     }
-    assert.strictEqual(checked, m.indices.length / 3, 'усі трикутники мають невироджені UV (без полюсних віял)');
+  });
+
+  // Не дзеркально: (dP/du, dP/dv, зовнішня нормаль) утворюють ліву трійку, тобто cross(dP/du, dP/dv) дивиться досередини.
+  test(`${name}: mapping is not mirrored (cross(dP/du, dP/dv) points inward)`, () => {
+    for (const f of triFrames(make())) {
+      assert.ok(!f.degenerate);
+      assert.ok(dot(cross(f.dPdu, f.dPdv), f.ng) < 0, `трикутник ${f.t}: дзеркальна розгортка`);
+    }
   });
 }
+
+// Явно по гранях: глядач ззовні дивиться вздовж -N, «вгору» на грані задано up(N); тоді вправо = cross(-N, up),
+// u мусить рости вправо, а v — донизу (проти up). Дзеркальна грань цього не пройде.
+function assertUpright(m, frames, upOf, label) {
+  let checked = 0;
+  for (const f of frames) {
+    const up = upOf(f.ng); if (!up) continue;
+    const right = cross(f.ng.map(x => -x), up);
+    if (len(right) < 1e-3) continue; // грань дивиться вздовж up: напрям «вправо» невизначений
+    assert.ok(dot(f.dPdu, right) > 0, `${label}, трикутник ${f.t}: u росте не вправо`);
+    assert.ok(dot(f.dPdv, up) < 0, `${label}, трикутник ${f.t}: v росте не донизу`);
+    checked++;
+  }
+  assert.ok(checked > 0, label + ': нічого не перевірено');
+}
+const nearAxis = (n, k) => Math.abs(n[k]) > 0.999;
+// Грані коробки: бокові — «вгору» +y, верх і низ — +x.
+const boxUp = n => nearAxis(n, 1) ? [1, 0, 0] : [0, 1, 0];
+
+test('cube: every face reads unmirrored from outside', () => {
+  const m = meshes.cube();
+  assertUpright(m, triFrames(m), boxUp, 'куб');
+  // Конкретно +Z, дивимося з +Z: зростання u веде до +X, зростання v веде до -Y (верх зображення вгорі).
+  const at = (nz, u, v) => { for (let i = 0; i < m.positions.length / 3; i++) { if (m.normals[i * 3 + 2] === nz && m.uvs[i * 2] === u && m.uvs[i * 2 + 1] === v) return v3(m.positions, i); } throw new Error('немає вершини'); };
+  const p00 = at(1, 0, 0), p10 = at(1, 1, 0), p01 = at(1, 0, 1);
+  assert.ok(p10[0] - p00[0] > 0.99 && Math.abs(p10[1] - p00[1]) < 1e-6, 'u росте до +X на грані +Z');
+  assert.ok(p01[1] - p00[1] < -0.99 && Math.abs(p01[0] - p00[0]) < 1e-6, 'v росте до -Y на грані +Z');
+});
+
+test('cylinder: side and caps read unmirrored from outside', () => {
+  const m = meshes.cylinder(), frames = triFrames(m);
+  const side = frames.filter(f => Math.abs(f.ng[1]) < 0.5), caps = frames.filter(f => Math.abs(f.ng[1]) >= 0.5);
+  assert.ok(side.length > 0 && caps.length > 0);
+  assertUpright(m, side, () => [0, 1, 0], 'бік циліндра'); // вгору = +y
+  assertUpright(m, caps, () => [-1, 0, 0], 'кришки циліндра'); // вгору = -x
+});
+
+test('sphere reads unmirrored from outside (up = +y)', () => {
+  const m = meshes.sphere();
+  assertUpright(m, triFrames(m), () => [0, 1, 0], 'сфера');
+});
+
+test('tank: hull, turret and barrel read unmirrored from outside', () => {
+  const m = meshes.tank(), frames = triFrames(m), parts = patches(m);
+  const boxVerts = new Set(parts.filter(g => g.length === 4).flat());
+  const isBox = f => boxVerts.has(f.ids[0]);
+  assert.strictEqual(parts.filter(g => g.length === 4).length, 12, 'корпус і башта: 12 граней');
+  assertUpright(m, frames.filter(isBox), boxUp, 'корпус і башта');
+  // Ствол лежить уздовж x: «вгору» вздовж ствола (+x) на боці, на дульному зрізі й казенній кришці — +y.
+  const barrel = frames.filter(f => !isBox(f));
+  assert.ok(barrel.length > 0);
+  assertUpright(m, barrel.filter(f => Math.abs(f.ng[0]) < 0.5), () => [1, 0, 0], 'бік ствола');
+  assertUpright(m, barrel.filter(f => Math.abs(f.ng[0]) >= 0.5), () => [0, 1, 0], 'кришки ствола');
+});
 
 // ---- Кожна грань займає UV 0..1 ----
 // Грані = компоненти зв'язності за індексами (куб: 6 граней; циліндр: бік і 2 кришки; сфера: одна поверхня).

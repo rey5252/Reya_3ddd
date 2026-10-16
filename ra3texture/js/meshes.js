@@ -4,11 +4,14 @@
   //
   // Конвенція UV і тангентного базису (одна для всіх мешів, перевіряється тестом):
   //   * рядок 0 текстури — верх зображення і вантажиться без UNPACK_FLIP_Y, тож v росте ДОНИЗУ;
+  //   * зображення на кожній грані НЕ дзеркальне, якщо дивитися ззовні: u росте вправо, v росте донизу;
   //   * тангент T = dP/du (вісь +x зображення);
-  //   * бітангент cross(N, T) = dP/dv (вісь «вниз по зображенню»), для кожного трикутника;
+  //   * бітангент cross(T, N) = dP/dv (вісь «вниз по зображенню»), для кожного трикутника
+  //     (для зовнішньої нормалі трійка T, dP/dv, N ліва, бо зображення дивиться на глядача);
   //   * трикутники обходяться проти годинникової стрілки, якщо дивитися ззовні (відсікання задніх граней).
-  // Звідси: tbn-нормаль = T·nx + cross(N,T)·ny + N·nz, де ny — у конвенції «y вниз по зображенню».
-  // Вертикальні грані — «стоячі» (v вниз = світ -y), тож зображення на них виглядає дзеркально по горизонталі.
+  // Звідси: tbn-нормаль = T·nx + cross(T,N)·ny + N·nz, де ny — у конвенції «y вниз по зображенню».
+  // Орієнтація «вгору» на гранях: бокові грані й бік циліндра — світове +y; верх і низ коробки — +x (вперед у танка);
+  // кришки циліндра — -x (після повороту ствола танка це +y, тож дульний зріз стоїть «прямо»); сфера — +y.
 
   const TWO_PI = Math.PI * 2;
   const MAX_VERTICES = 65536; // Uint16-індекси
@@ -29,9 +32,10 @@
   function cross(a, b) { return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]; }
 
   // Плоска грань: центр c, зовнішня нормаль n, напрям u (одиничний тангент t) завширшки w,
-  // напрям v = cross(n, t) завдовжки h. Кути (u,v) = (0,0), (1,0), (1,1), (0,1).
+  // напрям v = cross(t, n) завдовжки h. Кути (u,v) = (0,0) вгорі ліворуч, (1,0), (1,1), (0,1) внизу ліворуч,
+  // якщо дивитися ззовні. Обхід проти годинникової стрілки: верх-ліво, низ-ліво, низ-право, верх-право.
   function addQuad(g, c, n, t, w, h) {
-    const b = cross(n, t);
+    const b = cross(t, n);
     const corner = (su, sv) => [
       c[0] + t[0] * w * (su - 0.5) + b[0] * h * (sv - 0.5),
       c[1] + t[1] * w * (su - 0.5) + b[1] * h * (sv - 0.5),
@@ -39,42 +43,43 @@
     ];
     const i0 = vertex(g, corner(0, 0), n, t, 0, 0), i1 = vertex(g, corner(1, 0), n, t, 1, 0);
     const i2 = vertex(g, corner(1, 1), n, t, 1, 1), i3 = vertex(g, corner(0, 1), n, t, 0, 1);
-    tri(g, i0, i1, i2); tri(g, i0, i2, i3);
+    tri(g, i0, i3, i2); tri(g, i0, i2, i1);
   }
 
   // Паралелепіпед sx × sy × sz з центром у `at`: 6 окремих граней по 4 вершини, UV кожної грані 0..1.
   function box(sx, sy, sz, at) {
     const g = geom(), hx = sx / 2, hy = sy / 2, hz = sz / 2;
-    addQuad(g, [at[0], at[1], at[2] + hz], [0, 0, 1], [-1, 0, 0], sx, sy);
-    addQuad(g, [at[0], at[1], at[2] - hz], [0, 0, -1], [1, 0, 0], sx, sy);
-    addQuad(g, [at[0] + hx, at[1], at[2]], [1, 0, 0], [0, 0, 1], sz, sy);
-    addQuad(g, [at[0] - hx, at[1], at[2]], [-1, 0, 0], [0, 0, -1], sz, sy);
-    addQuad(g, [at[0], at[1] + hy, at[2]], [0, 1, 0], [1, 0, 0], sx, sz);
-    addQuad(g, [at[0], at[1] - hy, at[2]], [0, -1, 0], [1, 0, 0], sx, sz);
+    // Бокові грані: «вгору» = +y, праворуч для глядача ззовні = cross(y, n). Верх і низ: «вгору» = +x.
+    addQuad(g, [at[0], at[1], at[2] + hz], [0, 0, 1], [1, 0, 0], sx, sy);
+    addQuad(g, [at[0], at[1], at[2] - hz], [0, 0, -1], [-1, 0, 0], sx, sy);
+    addQuad(g, [at[0] + hx, at[1], at[2]], [1, 0, 0], [0, 0, -1], sz, sy);
+    addQuad(g, [at[0] - hx, at[1], at[2]], [-1, 0, 0], [0, 0, 1], sz, sy);
+    addQuad(g, [at[0], at[1] + hy, at[2]], [0, 1, 0], [0, 0, 1], sz, sx);
+    addQuad(g, [at[0], at[1] - hy, at[2]], [0, -1, 0], [0, 0, -1], sz, sx);
     return g;
   }
 
   // Циліндр з віссю y: радіус r, висота h (від -h/2 до h/2), seg сегментів.
-  // Бік: u іде по колу (φ = 2π·u), v донизу від верху (y = +h/2) до низу.
-  // Кришки: плоска проєкція кола на квадрат UV 0..1 (u = x, v = ∓z), тангент +x.
+  // Бік: u іде по колу (φ = 2π·u, у бік -z від +x, тобто вправо для глядача ззовні), v донизу від верху (y = +h/2).
+  // Кришки: плоска проєкція кола на квадрат UV 0..1, «вгору» = -x; тангент (0,0,-sign), v донизу = +x.
   function cylinderGeom(seg, r, h) {
     seg = Math.max(3, seg | 0);
     const g = geom(), hh = h / 2;
     const top = [], bot = [];
     for (let i = 0; i <= seg; i++) {
-      const phi = TWO_PI * i / seg, c = Math.cos(phi), s = Math.sin(phi), n = [c, 0, s], t = [-s, 0, c];
-      top.push(vertex(g, [r * c, hh, r * s], n, t, i / seg, 0));
-      bot.push(vertex(g, [r * c, -hh, r * s], n, t, i / seg, 1));
+      const phi = TWO_PI * i / seg, c = Math.cos(phi), s = Math.sin(phi), n = [c, 0, -s], t = [-s, 0, -c];
+      top.push(vertex(g, [r * c, hh, -r * s], n, t, i / seg, 0));
+      bot.push(vertex(g, [r * c, -hh, -r * s], n, t, i / seg, 1));
     }
     for (let i = 0; i < seg; i++) {
-      tri(g, top[i], top[i + 1], bot[i + 1]); tri(g, top[i], bot[i + 1], bot[i]);
+      tri(g, top[i], bot[i], bot[i + 1]); tri(g, top[i], bot[i + 1], top[i + 1]);
     }
     for (const sign of [1, -1]) { // +1: верхня кришка (N = +y), -1: нижня (N = -y)
-      const n = [0, sign, 0], t = [1, 0, 0], y = sign * hh;
+      const n = [0, sign, 0], t = [0, 0, -sign], y = sign * hh;
       const centre = vertex(g, [0, y, 0], n, t, 0.5, 0.5), ring = [];
       for (let i = 0; i < seg; i++) {
         const phi = TWO_PI * i / seg, c = Math.cos(phi), s = Math.sin(phi);
-        ring.push(vertex(g, [r * c, y, r * s], n, t, 0.5 + 0.5 * c, 0.5 - sign * 0.5 * s));
+        ring.push(vertex(g, [r * c, y, r * s], n, t, 0.5 - sign * 0.5 * s, 0.5 + 0.5 * c));
       }
       for (let i = 0; i < seg; i++) {
         const a = ring[i], b = ring[(i + 1) % seg];
@@ -84,9 +89,10 @@
     return g;
   }
 
-  // Сфера радіуса r: u — довгота (φ = 2π·u), v — широта донизу від північного полюса.
+  // Сфера радіуса r: u — довгота (φ = 2π·u, від +x у бік -z, тобто вправо для глядача ззовні),
+  // v — широта донизу від північного полюса.
   // Кожен трикутник біля полюса має власну вершину полюса з u посередині сегмента, тож UV не вироджені,
-  // а нормаль (0,±1,0) і тангент (-sinφ, 0, cosφ) визначені аналітично.
+  // а нормаль (0,±1,0) і тангент (-sinφ, 0, -cosφ) визначені аналітично.
   function sphereGeom(seg, r) {
     seg = Math.max(3, seg | 0);
     const rings = Math.max(2, Math.round(seg / 2)), g = geom();
@@ -96,26 +102,26 @@
       const pole = j === 0 || j === rings;
       for (let i = 0; i < (pole ? seg : seg + 1); i++) {
         const u = (i + (pole ? 0.5 : 0)) / seg, phi = TWO_PI * u, c = Math.cos(phi), s = Math.sin(phi);
-        const n = pole ? [0, ct, 0] : [c * st, ct, s * st];
-        row.push(vertex(g, [r * n[0], r * n[1], r * n[2]], n, [-s, 0, c], u, j / rings));
+        const n = pole ? [0, ct, 0] : [c * st, ct, -s * st];
+        row.push(vertex(g, [r * n[0], r * n[1], r * n[2]], n, [-s, 0, -c], u, j / rings));
       }
       rows.push(row);
     }
     for (let i = 0; i < seg; i++) {
-      tri(g, rows[0][i], rows[1][i + 1], rows[1][i]);
-      tri(g, rows[rings][i], rows[rings - 1][i], rows[rings - 1][i + 1]);
+      tri(g, rows[0][i], rows[1][i], rows[1][i + 1]);
+      tri(g, rows[rings][i], rows[rings - 1][i + 1], rows[rings - 1][i]);
     }
     for (let j = 1; j < rings - 1; j++) {
       for (let i = 0; i < seg; i++) {
         const a = rows[j][i], b = rows[j][i + 1], c = rows[j + 1][i + 1], d = rows[j + 1][i];
-        tri(g, a, b, c); tri(g, a, c, d);
+        tri(g, a, d, c); tri(g, a, c, b);
       }
     }
     return g;
   }
 
   // Поворот на -90° навколо z: (x,y,z) -> (y,-x,z). Вісь y переходить у +x; це власний поворот (det = +1),
-  // тож інваріанти T = dP/du, cross(N,T) = dP/dv і обхід трикутників зберігаються.
+  // тож інваріанти T = dP/du, cross(T,N) = dP/dv, відсутність дзеркальності й обхід трикутників зберігаються.
   function axisYToX(g, at) {
     const out = geom();
     for (let i = 0; i < g.pos.length; i += 3) {
