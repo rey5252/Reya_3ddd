@@ -267,12 +267,27 @@ test('NRM: imported flat map (128,128,255) leaves the result unchanged', () => {
   for (let i = 0; i < plain.length; i++) assert.ok(Math.abs(plain[i] - mixed[i]) <= 1, 'byte ' + i);
   const flat = m.createDocument({ size: 8 }); m.rebuild(flat, reg); flat.nrmImport = d.nrmImport;
   assert.deepStrictEqual([...m.buildNRM(flat).slice(0, 4)], [128, 128, 255, 255]); });
-test('NRM: import on flat height passes through in either convention (same convention for both operands)', () => {
+test('NRM: import is read as DirectX: on flat height it passes through, and invertY flips its green like the rest', () => {
   const d = m.createDocument({ size: 4 }); m.rebuild(d, reg);
-  d.nrmImport = new Uint8ClampedArray(4 * 4 * 4); for (let i = 0; i < 16; i++) d.nrmImport.set([204, 66, 209, 255], i * 4);   // n = (0.6, -0.48, 0.64)
-  for (const inv of [false, true]) { d.settings.invertY = inv; const o = m.buildNRM(d);
-    for (let k = 0; k < 3; k++) assert.ok(Math.abs(o[k] - [204, 66, 209][k]) <= 1, 'invertY=' + inv + ' ch ' + k);
+  d.nrmImport = new Uint8ClampedArray(4 * 4 * 4); for (let i = 0; i < 16; i++) d.nrmImport.set([204, 66, 209, 255], i * 4);   // n = (0.6, -0.48, 0.64), DirectX
+  for (const [inv, want] of [[false, [204, 66, 209]], [true, [204, 189, 209]]]) { d.settings.invertY = inv; const o = m.buildNRM(d);
+    for (let k = 0; k < 3; k++) assert.ok(Math.abs(o[k] - want[k]) <= 1, 'invertY=' + inv + ' ch ' + k + ': ' + o[k]);
     assert.strictEqual(o[3], 255); } });
+test('NRM: with an imported map, invertY flips G of the whole result and leaves the game view unchanged', () => {
+  const S = 8, d = m.createDocument({ size: S }); withLayer(d, heightReg((x, y) => 0.5 + 0.3 * Math.sin(x * 0.8 + y * 0.5)));
+  d.nrmImport = new Uint8ClampedArray(S * S * 4);
+  for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {                       // імпортований рельєф, DirectX
+    const v = [0.4 * Math.sin(x * 1.3), 0.5 * Math.cos(y * 0.9), 1], l = Math.hypot(...v);
+    d.nrmImport.set([...v.map(c => (c / l * 0.5 + 0.5) * 255), 255], (y * S + x) * 4); }
+  const dx = m.buildNRM(d), viewDx = m.viewRGBA(d, 'game', [230, 20, 20]);
+  d.settings.invertY = true; const gl = m.buildNRM(d), viewGl = m.viewRGBA(d, 'game', [230, 20, 20]);
+  let tilted = 0;
+  for (let i = 0; i < S * S * 4; i += 4) {
+    assert.strictEqual(gl[i], dx[i], 'R ' + i / 4); assert.strictEqual(gl[i + 2], dx[i + 2], 'B ' + i / 4);
+    assert.ok(Math.abs(gl[i + 1] + dx[i + 1] - 255) <= 1, 'G ' + i / 4 + ': ' + dx[i + 1] + ' / ' + gl[i + 1]);
+    if (Math.abs(dx[i + 1] - 128) > 20) tilted++; }
+  assert.ok(tilted > 8, 'у результаті є помітні нахили по Y: ' + tilted);
+  for (let k = 0; k < viewDx.length; k++) assert.ok(Math.abs(viewGl[k] - viewDx[k]) <= 1, 'game view byte ' + k + ': ' + viewDx[k] + ' / ' + viewGl[k]); });
 test('NRM: whiteout adds the xy of the import to the height-derived normal', () => {
   const d = m.createDocument({ size: 8 }); withLayer(d, heightReg(x => 0.1 * x));
   const plain = m.buildNRM(d)[(4 * 8 + 3) * 4];

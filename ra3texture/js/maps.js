@@ -240,8 +240,8 @@
 
   // Собель по висоті із загортанням, нормований на 8, тож dx, dy — похідна висоти на піксель.
   // n = normalize(-dx*s, -dy*s, 1). Імпортована NRM змішується за whiteout: normalize(a.xy + b.xy, a.z*b.z).
-  // Обидва вектори беруться в закодованій конвенції (G = ±n.y), а whiteout лінійний по xy, тому окремо
-  // перемикати знак для імпорту не потрібно: інверсія Y діє на весь ланцюжок однаково.
+  // Імпорт — файл гри, тобто в конвенції DirectX (як і рельєф шарів до інверсії): змішування йде в DirectX,
+  // а конвенція виходу (знак y при invertY) застосовується до всього результату.
   function buildNRM(doc) {
     const size = doc.size, n = size * size, hgt = doc.maps.height;
     const k = doc.settings.nrmStrength / 8, sgn = doc.settings.invertY ? -1 : 1;
@@ -260,7 +260,7 @@
         let ex = nx * inv, ey = sgn * ny * inv, ez = inv;
         const p = (r0 + x) * 4;
         if (imp) {
-          ex += imp[p] / 127.5 - 1; ey += imp[p + 1] / 127.5 - 1; ez *= imp[p + 2] / 127.5 - 1;
+          ex += imp[p] / 127.5 - 1; ey += sgn * (imp[p + 1] / 127.5 - 1); ez *= imp[p + 2] / 127.5 - 1;
           const l2 = ex * ex + ey * ey + ez * ez;
           if (l2 < 1e-12) { ex = 0; ey = 0; ez = 1; } else { const s = 1 / Math.sqrt(l2); ex *= s; ey *= s; ez *= s; }
         }
