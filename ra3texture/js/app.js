@@ -16,6 +16,8 @@
   const UNDO_MAX = 30;                         // не більше 30 знімків
   const UNDO_BYTES = 256 * 1024 * 1024;        // і не більше 256 МБ на всю історію
   const DOWNLOAD_GAP = 250;                    // мс між завантаженнями
+  const CONFIRM_MS = 2500;                     // скільки кнопка чекає другого кліку
+  const DROP_CONFIRM_MS = 8000;                // …а після перетягування проєкту (треба дотягтися до кнопки)
   const DEFAULT_TEAM = 1;                      // Red
 
   const VIEW_INFO = {
@@ -466,14 +468,31 @@
     }
   }
 
-  // Видалення з підтвердженням другим кліком (без модальних вікон).
-  function confirmThen(btn, message, fn) {
-    if (btn.classList.contains('confirm')) { fn(); return; }
-    const title = btn.title;
-    btn.classList.add('confirm');
-    btn.title = 'Натисніть ще раз, щоб підтвердити';
+  // Дії з підтвердженням другим кліком (без модальних вікон): перший клік «озброює» кнопку на ms мс.
+  const armed = new Map();                     // кнопка -> { title, timer }
+  function armConfirm(btn, message, ms) {
+    let a = armed.get(btn);
+    if (a) clearTimeout(a.timer);
+    else {
+      a = { title: btn.title };
+      armed.set(btn, a);
+      btn.classList.add('confirm');
+      btn.title = 'Натисніть ще раз, щоб підтвердити';
+    }
+    a.timer = setTimeout(() => disarm(btn), ms || CONFIRM_MS);
     setStatus(message, '');
-    setTimeout(() => { btn.classList.remove('confirm'); btn.title = title; }, 2500);
+  }
+  function disarm(btn) {
+    const a = armed.get(btn);
+    if (!a) return;
+    clearTimeout(a.timer);
+    armed.delete(btn);
+    btn.classList.remove('confirm');
+    btn.title = a.title;
+  }
+  function confirmThen(btn, message, fn) {
+    if (armed.has(btn)) { disarm(btn); fn(); return; }
+    armConfirm(btn, message);
   }
 
   function onLayerClick(e) {
@@ -1102,22 +1121,38 @@
   const SAVE_BUTTONS = ['btn-save-project', 'doc-size'].concat(LOAD_BUTTONS);
   function saveJob() { runJob(SAVE_BUTTONS, 'Не вдалося зберегти проєкт', saveProject); }
 
+  function openProjectJob(file) { runJob(LOAD_BUTTONS, 'Не вдалося відкрити проєкт', () => openProject(file)); }
+
+  // Відкриття проєкту замінює документ. Якщо є незбережені зміни, «Відкрити» просить другий клік (як «Новий
+  // документ»), і лише тоді показує вибір файлу. Перетягнутий .json чекає в pendingProject, а кнопка «Відкрити»
+  // підсвічується: клік по ній відкриває саме цей файл.
+  let pendingProject = null;
+  function onOpenProjectClick(e) {
+    const btn = e.currentTarget;
+    if (!armed.has(btn)) pendingProject = null;      // новий цикл підтвердження — для вибору файлу
+    const go = () => { const f = pendingProject; pendingProject = null; if (f) openProjectJob(f); else $('project-input').click(); };
+    if (!S.dirty) { disarm(btn); go(); return; }
+    confirmThen(btn, 'Натисніть «Відкрити» ще раз: незбережені зміни поточного документа зникнуть', go);
+  }
+
   function handleFiles(files) {
     if (!files.length || LOAD_BUTTONS.some(id => $(id).disabled)) return;   // триває імпорт, відкриття чи збереження
     const proj = files.find(f => extOf(f.name) === 'json');
-    if (proj) runJob(LOAD_BUTTONS, 'Не вдалося відкрити проєкт', () => openProject(proj));
-    else runJob(LOAD_BUTTONS, 'Не вдалося імпортувати', () => importFiles(files));
+    if (!proj) { runJob(LOAD_BUTTONS, 'Не вдалося імпортувати', () => importFiles(files)); return; }
+    if (!S.dirty) { openProjectJob(proj); return; }
+    pendingProject = proj;
+    armConfirm($('btn-open-project'), 'Є незбережені зміни. Щоб замінити їх проєктом «' + proj.name + '», натисніть «Відкрити»', DROP_CONFIRM_MS);
   }
 
   function bindFiles() {
     const fileInput = $('file-input'), projectInput = $('project-input');
     $('btn-import').addEventListener('click', () => fileInput.click());
     fileInput.addEventListener('change', () => { const files = Array.from(fileInput.files); fileInput.value = ''; handleFiles(files); });
-    $('btn-open-project').addEventListener('click', () => projectInput.click());
+    $('btn-open-project').addEventListener('click', onOpenProjectClick);
     projectInput.addEventListener('change', () => {
       const file = projectInput.files[0];
       projectInput.value = '';
-      if (file) runJob(LOAD_BUTTONS, 'Не вдалося відкрити проєкт', () => openProject(file));
+      if (file) openProjectJob(file);
     });
     $('btn-save-project').addEventListener('click', saveJob);
     $('btn-export-dds').addEventListener('click', () => runJob(EXPORT_BUTTONS, 'Не вдалося експортувати DDS', exportDDS));
