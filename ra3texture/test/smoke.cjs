@@ -3,7 +3,7 @@
 //   NODE_PATH=$(npm root -g) node ra3texture/test/smoke.cjs
 // Відкриває index.html через file://, чекає демо-скін і перевіряє: мазок на шарі «Малювання» змінює композицію,
 // Ctrl+Z повертає її точно; заливка + чорна маска + малювання маски (заливка видна лише там); заливка відром;
-// тайлінг; усі вкладки вигляду; розумний матеріал; експорт DDS; збереження й відкриття проєкту (композиція та
+// тайлінг; усі вкладки вигляду; розумний матеріал; експорт DDS і PNG; збереження й відкриття проєкту (композиція та
 // сама); імпорт набору з гри; відсутність горизонтальної прокрутки на 390 px.
 // WebGL не обов'язковий: без нього 3D-прев'ю показує повідомлення, а тест не падає.
 
@@ -271,6 +271,15 @@ function makeDDS(size, pixel) {
   }
   await checkErrors('після експорту DDS');
   step('експорт DDS: ' + ddsNames.join(', '));
+
+  await waitFor(() => !document.getElementById('btn-export-png').disabled, 10000, 'кнопка «Експорт PNG» не розблокувалась');
+  await page.click('#btn-export-png');
+  const png = await takeDownloads(3, 30000, 'Експорт PNG');
+  const pngNames = png.map(d => d.suggestedFilename());
+  if (JSON.stringify(pngNames) !== JSON.stringify([NAME + '.png', NAME + '_NRM.png', NAME + '_SPM.png'])) await fail('імена PNG: ' + JSON.stringify(pngNames));
+  for (const d of png) if (fs.readFileSync(await d.path()).subarray(0, 8).toString('hex') !== '89504e470d0a1a0a') await fail(d.suggestedFilename() + ' не PNG');
+  await checkErrors('після експорту PNG');
+  step('експорт PNG: ' + pngNames.join(', '));
 
   // ---------- Збереження й відкриття проєкту ----------
   await waitFor(() => !document.getElementById('btn-save-project').disabled, 10000, 'кнопка «Зберегти» не розблокувалась');
