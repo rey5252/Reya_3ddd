@@ -401,6 +401,30 @@
     });
   }
 
+  // --------------------------------------------------------------- export set
+
+  // Набір RA3 для «Експорт DDS»: колір у DXT1 (з прозорістю — DXT5), NRM і SPM у DXT1, або все A8R8G8B8
+  // (opts.uncompressed). Повний ланцюжок mip-рівнів, для NRM з перенормалізацією. Кодування шматками з
+  // opts.onProgress(частка 0..1 усього набору, файл). Повертає [{ suffix, format, bytes }]: колір, _NRM, _SPM.
+  async function encodeSet(set, size, opts) {
+    const o = opts || {}, raw = !!o.uncompressed, report = typeof o.onProgress === 'function' ? o.onProgress : null;
+    const jobs = [
+      { suffix: '', data: set.diffuse, format: raw ? 'A8R8G8B8' : (hasAlpha(set.diffuse) ? 'DXT5' : 'DXT1'), normalMap: false },
+      { suffix: '_NRM', data: set.nrm, format: raw ? 'A8R8G8B8' : 'DXT1', normalMap: true },
+      { suffix: '_SPM', data: set.spm, format: raw ? 'A8R8G8B8' : 'DXT1', normalMap: false }
+    ];
+    const files = [];
+    for (let i = 0; i < jobs.length; i++) {
+      const j = jobs[i], file = { suffix: j.suffix, format: j.format, bytes: null };
+      const progress = p => { if (report) report((i + p) / jobs.length, file); };
+      progress(0);
+      await new Promise(r => setTimeout(r, 0));     // дати сторінці показати прогрес до побудови mip-рівнів
+      file.bytes = await encodeDDSAsync(buildMips(j.data, size, { normalMap: j.normalMap }), j.format, progress);
+      files.push(file);
+    }
+    return files;
+  }
+
   // ----------------------------------------------------------------- decoding
 
   const FMT_ERR = 'Непідтримуваний формат DDS: ';
@@ -526,7 +550,7 @@
     }
   }
 
-  const api = { buildMips, hasAlpha, encodeDDS, encodeDDSAsync, decodeDDS };
+  const api = { buildMips, hasAlpha, encodeDDS, encodeDDSAsync, encodeSet, decodeDDS };
   RA3.dds = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? (window.RA3 = window.RA3 || {}) : {});

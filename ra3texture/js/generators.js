@@ -96,6 +96,13 @@
     };
   }
 
+  // Шари демо-скіна, що відкривається під час першого запуску: основа Альянсу, панелі, заклепки, смуги кольору
+  // гравця, бруд (колір гравця до бруду, щоб бруд не фарбувався). Щоразу нові об'єкти.
+  function demoLayers() {
+    const add = (type, seed, params) => { const l = defaultLayer(type, seed); Object.assign(l.params, params || {}); return l; };
+    return [add('base', 1, { preset: 'allied' }), add('panels', 2), add('rivets', 3), add('team', 4, { mode: 'stripes' }), add('dirt', 5)];
+  }
+
   // Параметри шару, доповнені типовими: числа обмежено діапазоном, невідомі варіанти й кольори замінено на типові.
   // Генератори читають лише ці ключі, тож каталог описує все, що впливає на результат.
   function resolveParams(def, given) {
@@ -783,7 +790,7 @@
     }
   }
 
-  const api = { FACTION_PRESETS, catalog, defaultLayer, apply };
+  const api = { FACTION_PRESETS, catalog, defaultLayer, demoLayers, apply };
   RA3.generators = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? (window.RA3 = window.RA3 || {}) : {});

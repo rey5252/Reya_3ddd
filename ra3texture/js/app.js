@@ -1003,25 +1003,14 @@
   }
 
   async function exportDDS() {
-    const src = exportSources(), raw = $('uncompressed').checked;
-    const jobs = [
-      { name: src.base + '.dds', data: src.diffuse, fmt: raw ? 'A8R8G8B8' : (dds.hasAlpha(src.diffuse) ? 'DXT5' : 'DXT1'), normalMap: false },
-      { name: src.base + '_NRM.dds', data: src.nrm, fmt: raw ? 'A8R8G8B8' : 'DXT1', normalMap: true },
-      { name: src.base + '_SPM.dds', data: src.spm, fmt: raw ? 'A8R8G8B8' : 'DXT1', normalMap: false }
-    ];
-    const files = [];
-    for (let i = 0; i < jobs.length; i++) {
-      const j = jobs[i];
-      const report = p => setStatus('Кодування DDS… ' + Math.floor((i + p) / jobs.length * 100) + '% — ' + j.name + ' (' + j.fmt + ')', 'busy');
-      report(0);
-      await sleep(0);
-      const levels = dds.buildMips(j.data, src.size, { normalMap: j.normalMap });
-      const bytes = await dds.encodeDDSAsync(levels, j.fmt, report);
-      files.push({ name: j.name, blob: new Blob([bytes], { type: 'application/octet-stream' }) });
-    }
+    const src = exportSources(), name = f => src.base + f.suffix + '.dds';
+    const files = await dds.encodeSet(src, src.size, {
+      uncompressed: $('uncompressed').checked,
+      onProgress: (p, f) => setStatus('Кодування DDS… ' + Math.floor(p * 100) + '% — ' + name(f) + ' (' + f.format + ')', 'busy')
+    });
     setStatus('Кодування DDS… 100%', 'busy');
-    await downloadAll(files);
-    setStatus('Експортовано: ' + jobs.map(j => j.name + ' (' + j.fmt + ')').join(', '), 'ok');
+    await downloadAll(files.map(f => ({ name: name(f), blob: new Blob([f.bytes], { type: 'application/octet-stream' }) })));
+    setStatus('Експортовано: ' + files.map(f => name(f) + ' (' + f.format + ')').join(', '), 'ok');
   }
 
   async function exportPNG() {
@@ -1153,15 +1142,9 @@
 
   // ---------- Запуск ----------
 
-  // Демо: основа Альянсу, панелі, заклепки, смуги кольору гравця, бруд (колір гравця до бруду, щоб бруд не фарбувався).
   function createDemo() {
     const d = maps.createDocument({ name: 'AUMyTank', size: 512 });
-    const add = (type, seed, params) => { const l = generators.defaultLayer(type, seed); Object.assign(l.params, params || {}); d.layers.push(l); };
-    add('base', 1, { preset: 'allied' });
-    add('panels', 2);
-    add('rivets', 3);
-    add('team', 4, { mode: 'stripes' });
-    add('dirt', 5);
+    d.layers = generators.demoLayers();
     return d;
   }
 
