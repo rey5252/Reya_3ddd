@@ -95,6 +95,21 @@ test('serialize does not mutate the document', async () => {
   for (const [ref, copy] of snap.imgs) { assert.strictEqual(ref.length, 16 * 16 * 4); sameBytes(ref, copy, 'image'); }
   assert.strictEqual(d.maps, snap.mapsRef); sameBytes(d.maps.color, snap.mapsColor, 'maps.color');
   for (const [ov, v, c] of snap.ov) { sameBytes(ov.value, v, 'ov.value'); sameBytes(ov.cov, c, 'ov.cov'); } });
+test('the file is a snapshot of the document at the moment serialize is called (edits and resize during compression do not leak in)', async () => {
+  const { d, imageId } = fullDoc(16);
+  const want = { name: d.name, size: d.size, settings: JSON.stringify(d.settings), layers: JSON.stringify(d.layers), image: d.images[imageId].slice(), nrm: d.nrmImport.slice(),
+    ov: m.TARGETS.map(t => [t, d.overlays[t].value.slice(), d.overlays[t].cov.slice()]) };
+  const pending = p.serialize(d);                                                      // як saveProject: стиснення ще триває…
+  m.applyBrush(d, 'team', 8, 8, { radius: 6, hardness: 1, strength: 1, value: 3 });    // …а користувач малює (буфери змінюються на місці),
+  m.applyBrush(d, 'color', 3, 3, { radius: 6, hardness: 1, strength: 1, value: [1, 2, 3] });
+  d.images[imageId].fill(9); d.nrmImport.fill(1);
+  d.name = 'Changed'; d.settings.nrmStrength = 7; d.layers[0].params.mutated = true; d.layers.push(g.defaultLayer('dirt', 4));
+  m.resizeDocument(d, 32);                                                              // …і змінює розмір документа
+  const b = await p.deserialize(await pending);
+  assert.strictEqual(b.name, want.name); assert.strictEqual(b.size, want.size);
+  assert.strictEqual(JSON.stringify(b.settings), want.settings); assert.strictEqual(JSON.stringify(b.layers), want.layers);
+  sameBytes(b.images[imageId], want.image, 'image'); sameBytes(b.nrmImport, want.nrm, 'nrmImport');
+  for (const [t, v, c] of want.ov) { sameBytes(b.overlays[t].value, v, t + '.value'); sameBytes(b.overlays[t].cov, c, t + '.cov'); } });
 test('layers and settings are deep copies on save and on load', async () => {
   const { d } = fullDoc(8);
   const s = await p.serialize(d), want = JSON.stringify(d.layers), wantSettings = JSON.stringify(d.settings);

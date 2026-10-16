@@ -102,9 +102,7 @@
     return res.map(r => r.value);
   }
 
-  async function encodeBuffer(arr) {
-    return toBase64(await deflate(new Uint8Array(arr.buffer, arr.byteOffset, arr.byteLength)));
-  }
+  async function encodeBuffer(bytes) { return toBase64(await deflate(bytes)); }
 
   async function decodeBuffer(str, expected, what) {
     try {
@@ -123,7 +121,9 @@
     }
   }
 
-  // Повертає JSON-текст проєкту. Документ не змінюється; шари й налаштування потрапляють у текст, тож копіюються.
+  // Повертає JSON-текст проєкту. Документ не змінюється. Файл — знімок документа на момент виклику: усе, що
+  // потрапить у файл (поля й копії буферів), береться синхронно до першого await, тож мазки, зміна розміру чи
+  // параметрів під час стиснення не роблять файл суперечливим.
   async function serialize(doc) {
     if (!doc || !util.isPow2(doc.size)) throw badDoc('розмір ' + (doc && doc.size) + ' (очікується степінь двійки)');
     const n = doc.size * doc.size;
@@ -139,17 +139,19 @@
     }
 
     needStreams();
-    const bufs = ids.map(id => doc.images[id]);
-    if (doc.nrmImport) bufs.push(doc.nrmImport);
-    for (const t of maps.TARGETS) bufs.push(doc.overlays[t].value, doc.overlays[t].cov);
+    const meta = JSON.parse(JSON.stringify({ name: doc.name, size: doc.size, settings: doc.settings, layers: doc.layers }));
+    const hasNrm = !!doc.nrmImport;
+    const bufs = ids.map(id => new Uint8Array(doc.images[id]));                 // копії, а не вигляди на живі буфери
+    if (hasNrm) bufs.push(new Uint8Array(doc.nrmImport));
+    for (const t of maps.TARGETS) bufs.push(new Uint8Array(doc.overlays[t].value), new Uint8Array(doc.overlays[t].cov));
     const enc = await all(bufs.map(encodeBuffer));
     let k = 0;   // розкладання в тому ж порядку, у якому збирався bufs
     const images = {};
     for (const id of ids) images[id] = enc[k++];
-    const nrmImport = doc.nrmImport ? enc[k++] : null;
+    const nrmImport = hasNrm ? enc[k++] : null;
     const overlays = {};
     for (const t of maps.TARGETS) { overlays[t] = { value: enc[k], cov: enc[k + 1] }; k += 2; }
-    return JSON.stringify({ format: FORMAT, version: VERSION, name: doc.name, size: doc.size, settings: doc.settings, layers: doc.layers, images, nrmImport, overlays });
+    return JSON.stringify({ format: FORMAT, version: VERSION, name: meta.name, size: meta.size, settings: meta.settings, layers: meta.layers, images, nrmImport, overlays });
   }
 
   // ---------- Відкриття ----------

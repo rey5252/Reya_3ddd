@@ -103,7 +103,7 @@
   const S = {
     doc: null,
     layerCache: null,       // карти після останнього ввімкненого шару, до мазків: {size, color, height, spec, team}
-    version: 0,             // зростає після кожної зміни карт чи налаштувань, що впливають на вигляд
+    version: 0,             // зростає після кожної зміни документа: карт, налаштувань, шарів, назви
     painted: '',            // ключ останнього намальованого вигляду
     selectedId: null,
     view: 'game',
@@ -119,7 +119,8 @@
   for (const t of Object.keys(BRUSH_VALUE)) S.brushValues[t] = BRUSH_VALUE[t].def;
   let preview = null;
 
-  function markDirty() { S.dirty = true; }
+  // version теж росте: за ним saveProject бачить зміни, зроблені під час збереження.
+  function markDirty() { S.dirty = true; S.version++; }
 
   // ---------- Статус ----------
 
@@ -1042,14 +1043,17 @@
 
   // ---------- Проєкт ----------
 
+  // serialize знімає документ синхронно, тож файл відповідає моменту натискання. Якщо поки йшло стиснення
+  // документ змінився (мазок, параметр), ці зміни у файл не ввійшли, і документ лишається незбереженим.
   async function saveProject() {
     commitName();
     setStatus('Збереження проєкту…', 'busy');
+    const version = S.version, name = maps.sanitizeName(S.doc.name) + '.ra3tex.json';
     const json = await project.serialize(S.doc);
-    const name = maps.sanitizeName(S.doc.name) + '.ra3tex.json';
     download(new Blob([json], { type: 'application/json' }), name);
-    S.dirty = false;
-    setStatus('Проєкт збережено: ' + name, 'ok');
+    const later = S.version !== version;
+    if (!later) S.dirty = false;
+    setStatus('Проєкт збережено: ' + name + (later ? '. Зміни, зроблені під час збереження, у файл не ввійшли.' : ''), 'ok');
   }
 
   let idCounter = 0;
@@ -1087,9 +1091,12 @@
   }
 
   const LOAD_BUTTONS = ['btn-import', 'btn-open-project', 'btn-new'];
+  // Під час збереження не можна змінити розмір, імпортувати чи відкрити інший документ.
+  const SAVE_BUTTONS = ['btn-save-project', 'doc-size'].concat(LOAD_BUTTONS);
+  function saveJob() { runJob(SAVE_BUTTONS, 'Не вдалося зберегти проєкт', saveProject); }
 
   function handleFiles(files) {
-    if (!files.length) return;
+    if (!files.length || LOAD_BUTTONS.some(id => $(id).disabled)) return;   // триває імпорт, відкриття чи збереження
     const proj = files.find(f => extOf(f.name) === 'json');
     if (proj) runJob(LOAD_BUTTONS, 'Не вдалося відкрити проєкт', () => openProject(proj));
     else runJob(LOAD_BUTTONS, 'Не вдалося імпортувати', () => importFiles(files));
@@ -1105,7 +1112,7 @@
       projectInput.value = '';
       if (file) runJob(LOAD_BUTTONS, 'Не вдалося відкрити проєкт', () => openProject(file));
     });
-    $('btn-save-project').addEventListener('click', () => runJob(['btn-save-project'], 'Не вдалося зберегти проєкт', saveProject));
+    $('btn-save-project').addEventListener('click', saveJob);
     $('btn-export-dds').addEventListener('click', () => runJob(EXPORT_BUTTONS, 'Не вдалося експортувати DDS', exportDDS));
     $('btn-export-png').addEventListener('click', () => runJob(EXPORT_BUTTONS, 'Не вдалося експортувати PNG', exportPNG));
     $('btn-new').addEventListener('click', e => confirmThen(e.currentTarget, 'Натисніть «Новий документ» ще раз: поточні шари й мазки зникнуть', newDocument));
@@ -1117,7 +1124,7 @@
     const t = e.target, typing = t && t.matches && t.matches('input[type="text"], input[type="number"], textarea');
     if ((e.ctrlKey || e.metaKey) && !e.altKey) {
       // e.code, а не e.key: на українській розкладці Z дає «я».
-      if (e.code === 'KeyS') { e.preventDefault(); runJob(['btn-save-project'], 'Не вдалося зберегти проєкт', saveProject); return; }
+      if (e.code === 'KeyS') { e.preventDefault(); saveJob(); return; }
       if (typing) return;
       if (e.code === 'KeyZ') { e.preventDefault(); if (e.shiftKey) redo(); else undo(); }
       else if (e.code === 'KeyY') { e.preventDefault(); redo(); }
