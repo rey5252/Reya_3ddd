@@ -1,0 +1,15 @@
+{
+  "itemGroup.domgun": "DOM Gun",
+  "item.domgun.dom_gun": "Штурмова гвинтівка DOM",
+  "item.domgun.dom_gun.ammo": "Магазин: %s / %s",
+  "item.domgun.dom_gun.tip_fire": "Утримуйте ПКМ, щоб стріляти (автоматично)",
+  "item.domgun.dom_gun.tip_ads": "Утримуйте присідання, щоб цілитися",
+  "item.domgun.dom_gun.tip_reload": "R — перезарядка (витрачає патрони DOM)",
+  "item.domgun.dom_ammo": "Патрони DOM",
+  "key.domgun.reload": "Перезарядити DOM Gun",
+  "key.categories.domgun": "DOM Gun",
+  "domgun.hud.reloading": "ПЕРЕЗАРЯДКА",
+  "domgun.hud.reload_hint": "[%s] ПЕРЕЗАРЯДКА",
+  "domgun.hud.no_ammo": "НЕМАЄ ПАТРОНІВ",
+  "domgun.message.no_ammo": "В інвентарі немає патронів DOM"
+}

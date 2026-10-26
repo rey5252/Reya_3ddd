@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "IIH",
+    "RDI",
+    " SI"
+  ],
+  "key": {
+    "I": { "item": "minecraft:iron_ingot" },
+    "H": { "item": "minecraft:tripwire_hook" },
+    "R": { "item": "minecraft:redstone" },
+    "D": { "item": "minecraft:dispenser" },
+    "S": { "item": "minecraft:stick" }
+  },
+  "result": {
+    "item": "domgun:dom_gun",
+    "count": 1
+  }
+}

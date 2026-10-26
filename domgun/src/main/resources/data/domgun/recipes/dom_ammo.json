@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "N",
+    "G",
+    "C"
+  ],
+  "key": {
+    "N": { "item": "minecraft:iron_nugget" },
+    "G": { "item": "minecraft:gunpowder" },
+    "C": { "item": "minecraft:copper_ingot" }
+  },
+  "result": {
+    "item": "domgun:dom_ammo",
+    "count": 16
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "itemGroup.domgun": "DOM Gun",
+  "item.domgun.dom_gun": "DOM Assault Rifle",
+  "item.domgun.dom_gun.ammo": "Magazine: %s / %s",
+  "item.domgun.dom_gun.tip_fire": "Hold right-click to fire (full auto)",
+  "item.domgun.dom_gun.tip_ads": "Hold sneak to aim down sights",
+  "item.domgun.dom_gun.tip_reload": "Press R to reload (uses DOM Rounds)",
+  "item.domgun.dom_ammo": "DOM Rounds",
+  "key.domgun.reload": "Reload DOM Gun",
+  "key.categories.domgun": "DOM Gun",
+  "domgun.hud.reloading": "RELOADING",
+  "domgun.hud.reload_hint": "[%s] RELOAD",
+  "domgun.hud.no_ammo": "NO AMMO",
+  "domgun.message.no_ammo": "No DOM Rounds in the inventory"
+}
