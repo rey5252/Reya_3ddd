@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Desert Tactical Map - 3D</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{overflow:hidden;background:#000;font-family:'Segoe UI',Arial,sans-serif}
+    canvas#game{display:block}
+    #crosshair{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;z-index:10}
+    #crosshair::before,#crosshair::after{content:'';position:absolute;background:rgba(200,255,200,.75)}
+    #crosshair::before{width:20px;height:2px;top:-1px;left:-10px}
+    #crosshair::after{width:2px;height:20px;top:-10px;left:-1px}
+    #compass-wrap{position:fixed;top:12px;left:50%;transform:translateX(-50%);pointer-events:none;z-index:10}
+    canvas#compass{width:200px;height:30px}
+    #hud{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);color:#fff;font-size:13px;
+      text-shadow:0 1px 4px rgba(0,0,0,.85);pointer-events:none;z-index:10;text-align:center;line-height:1.6}
+    #hud .loc{font-size:17px;font-weight:600;color:#e8c872;letter-spacing:0.5px}
+    #hud .pos{font-size:11px;color:rgba(255,255,255,0.5);font-family:monospace}
+    #minimap-wrap{position:fixed;top:50px;right:16px;width:180px;height:180px;
+      background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.2);border-radius:6px;
+      pointer-events:none;z-index:10;overflow:hidden}
+    canvas#minimap{width:100%;height:100%}
+    #instructions{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+      background:rgba(0,0,0,.88);color:#fff;z-index:100;cursor:pointer}
+    #instructions .box{text-align:center;max-width:440px}
+    #instructions h1{font-size:34px;margin-bottom:8px;color:#e8c872;letter-spacing:1px}
+    #instructions .sub{font-size:14px;color:#888;margin-bottom:18px}
+    #instructions p{margin:6px 0;font-size:15px;color:#bbb}
+    .key{display:inline-block;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);
+      border-radius:4px;padding:1px 7px;font-family:monospace;font-size:13px;color:#ddd}
+    #instructions .go{margin-top:26px;font-size:17px;color:#e8c872;animation:pulse 2s ease-in-out infinite}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.6}}
+    #loading{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+      background:#1a1610;color:#e8c872;font-size:22px;z-index:200;flex-direction:column;gap:12px}
+    #loading .bar{width:260px;height:4px;background:rgba(255,255,255,.15);border-radius:2px;overflow:hidden}
+    #loading .fill{height:100%;background:#e8c872;width:0%;transition:width .3s}
+    #team-btns{display:none;position:fixed;bottom:60px;left:50%;transform:translateX(-50%);z-index:10}
+    #team-btns button{padding:6px 18px;margin:0 4px;border:none;border-radius:4px;font-size:13px;
+      cursor:pointer;font-family:inherit;opacity:.7;transition:opacity .2s}
+    #team-btns button:hover{opacity:1}
+    .t-btn{background:#b83c3c;color:#fff}
+    .ct-btn{background:#3c5cb8;color:#fff}
+    #speed-indicator{position:fixed;bottom:50px;right:20px;color:rgba(255,255,255,0.3);font-size:11px;
+      font-family:monospace;pointer-events:none;z-index:10}
+  </style>
+</head>
+<body>
+  <div id="loading">
+    <div>Loading Desert Map…</div>
+    <div class="bar"><div class="fill" id="load-fill"></div></div>
+  </div>
+
+  <div id="instructions" style="display:none">
+    <div class="box">
+      <h1>DESERT TACTICAL MAP</h1>
+      <div class="sub">A competitive two-site tactical map</div>
+      <p><span class="key">W</span> <span class="key">A</span> <span class="key">S</span> <span class="key">D</span> — Move</p>
+      <p><span class="key">Shift</span> — Sprint &nbsp; <span class="key">Space</span> — Jump</p>
+      <p><span class="key">Mouse</span> — Look around</p>
+      <p><span class="key">1</span> T Spawn &nbsp; <span class="key">2</span> CT Spawn</p>
+      <p class="go">Click to enter</p>
+    </div>
+  </div>
+
+  <div id="crosshair"></div>
+
+  <div id="compass-wrap"><canvas id="compass" width="200" height="30"></canvas></div>
+
+  <div id="hud">
+    <div class="loc" id="loc-name">T Spawn</div>
+    <div class="pos" id="pos-info"></div>
+  </div>
+
+  <div id="minimap-wrap"><canvas id="minimap" width="360" height="360"></canvas></div>
+
+  <div id="team-btns">
+    <button class="t-btn" onclick="window.teleportTo('t')">T Spawn [1]</button>
+    <button class="ct-btn" onclick="window.teleportTo('ct')">CT Spawn [2]</button>
+  </div>
+
+  <div id="speed-indicator"></div>
+
+  <script src="node_modules/three/build/three.min.js"></script>
+  <script src="map.js"></script>
+  <script src="player.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
