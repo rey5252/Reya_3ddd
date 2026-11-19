@@ -32,6 +32,9 @@ jobs:
             dir: multibrewer
           - mod: chaosspawner
             dir: chaosspawner
+          - mod: sandbazaar
+            dir: sandbazaar
+            gametest: true
     defaults:
       run:
         working-directory: ${{ matrix.dir }}
@@ -46,6 +49,12 @@ jobs:
         run: |
           chmod +x ./gradlew
           ./gradlew build --stacktrace
+      # Builds the arena in a throwaway world, checks every block and removes it again.
+      # It must not hold back the jars of the other mods, so a failure only shows in this step's log.
+      - name: Game test
+        if: matrix.gametest
+        continue-on-error: true
+        run: ./gradlew runGameTestServer --stacktrace
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.mod }}-jar
