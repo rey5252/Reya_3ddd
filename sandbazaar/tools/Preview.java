@@ -46,8 +46,15 @@ public final class Preview {
         d = bp.sizeZ;
         Files.write(new File(out, "palette.txt").toPath(), new TreeSet<>(bp.palette()));
         ImageIO.write(top(), "png", new File(out, "top.png"));
-        ImageIO.write(iso(false), "png", new File(out, "iso_se.png"));
-        ImageIO.write(iso(true), "png", new File(out, "iso_nw.png"));
+        ImageIO.write(iso(false, 0, 0, w - 1, d - 1, bp.maxY, 8), "png", new File(out, "iso_se.png"));
+        ImageIO.write(iso(true, 0, 0, w - 1, d - 1, bp.maxY, 8), "png", new File(out, "iso_nw.png"));
+        if (args.length >= 5) {
+            int cut = args.length >= 6 ? Integer.parseInt(args[5]) : bp.maxY;
+            boolean flip = args.length >= 7 && args[6].equals("nw");
+            ImageIO.write(iso(flip, Integer.parseInt(args[1]), Integer.parseInt(args[2]), Integer.parseInt(args[3]),
+                    Integer.parseInt(args[4]), cut, 20), "png", new File(out, "crop.png"));
+            return;
+        }
         boolean ok = walk(new File(out, "reach.png"));
         System.out.println(bp.palette().size() + " block states, " + bp.signs().size() + " signs");
         if (!ok) {
@@ -181,13 +188,15 @@ public final class Preview {
         return img;
     }
 
-    private static BufferedImage iso(boolean flip) {
-        int a = 8;
-        int b = 4;
-        int c = 9;
-        int ox = d * a + 20;
-        int oy = (bp.maxY + 2) * c + 20;
-        BufferedImage img = new BufferedImage((w + d) * a + 40, (w + d) * b + (bp.sizeY + 2) * c + 40, BufferedImage.TYPE_INT_RGB);
+    /** An isometric picture of the columns x1..x2, z1..z2 below the height {@code cut}; the rest is left out. */
+    private static BufferedImage iso(boolean flip, int x1, int z1, int x2, int z2, int cut, int a) {
+        int b = a / 2;
+        int c = a + a / 8;
+        int cw = x2 - x1 + 1;
+        int cd = z2 - z1 + 1;
+        int ox = cd * a + 20 - ((flip ? w - 1 - x2 : x1) - (flip ? d - 1 - z2 : z1)) * a;
+        int oy = (cut + 2) * c + 20 - ((flip ? w - 1 - x2 : x1) + (flip ? d - 1 - z2 : z1)) * b;
+        BufferedImage img = new BufferedImage((cw + cd) * a + 40, (cw + cd) * b + (cut - bp.minY + 3) * c + 40, BufferedImage.TYPE_INT_RGB);
         Graphics2D g = img.createGraphics();
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
         g.setColor(new Color(0xBFD9EE));
@@ -198,14 +207,17 @@ public final class Preview {
                 int x = flip ? w - 1 - vx : vx;
                 int z = flip ? d - 1 - vz : vz;
                 int step = flip ? -1 : 1;
-                for (int y = bp.minY; y <= bp.maxY; y++) {
+                if (x < x1 || x > x2 || z < z1 || z > z2) {
+                    continue;
+                }
+                for (int y = bp.minY; y <= cut; y++) {
                     String s = bp.get(x, y, z);
                     if (s == null || s.equals("air")) {
                         continue;
                     }
-                    boolean up = clear(x, y + 1, z);
-                    boolean south = clear(x, y, z + step);
-                    boolean east = clear(x + step, y, z);
+                    boolean up = y == cut || clear(x, y + 1, z);
+                    boolean south = z + step < z1 || z + step > z2 || clear(x, y, z + step);
+                    boolean east = x + step < x1 || x + step > x2 || clear(x + step, y, z);
                     int k = kind(s);
                     String n = name(s);
                     boolean flat = n.endsWith("_carpet") || n.equals("lily_pad") || (n.endsWith("_trapdoor") && !s.contains("open=true"));

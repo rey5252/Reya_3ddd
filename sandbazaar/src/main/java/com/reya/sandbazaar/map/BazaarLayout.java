@@ -96,6 +96,7 @@ public final class BazaarLayout {
         layout.roofs();
         layout.decorate();
         layout.fixDoors();
+        layout.fixLanterns();
         return layout.bp;
     }
 
@@ -364,7 +365,7 @@ public final class BazaarLayout {
             case PLASTER:
                 return base ? "sandstone" : band ? "terracotta" : h < 6 ? "smooth_sandstone" : "white_terracotta";
             case TERRA:
-                return base ? "smooth_sandstone" : band ? "cut_sandstone" : h < 8 ? "packed_mud" : "terracotta";
+                return base || band ? "cut_red_sandstone" : h < 8 ? "smooth_sandstone" : "sandstone";
             case WALL:
                 return base || band ? "cut_sandstone" : h < 10 ? "smooth_sandstone" : "sandstone";
             default:
@@ -380,6 +381,8 @@ public final class BazaarLayout {
                 return "white_terracotta";
             case SAND:
                 return "smooth_sandstone";
+            case TERRA:
+                return "cut_red_sandstone";
             default:
                 return "cut_sandstone";
         }
@@ -466,6 +469,11 @@ public final class BazaarLayout {
             return;
         }
         int roof = Math.min(top[x][z], top[bx][bz]);
+        if ((DX[d] != 0 ? z : x) % 8 == 3 && roof >= f + 5) {
+            bp.set(ox, f + 4, oz, "stripped_spruce_log[axis=" + (DX[d] != 0 ? "x" : "z") + "]");
+            bp.set(ox, f + 3, oz, "lantern[hanging=true]");
+            return;
+        }
         int along = (DX[d] != 0 ? z : x) + lot[x][z] * 3;
         String wood = hash(lot[x][z], 1, 31) % 3 == 0 ? "dark_oak" : "spruce";
         boolean timber = style[x][z] == MUD || style[x][z] == PLASTER || style[x][z] == TERRA;
@@ -506,6 +514,25 @@ public final class BazaarLayout {
         }
     }
 
+    /** A hanging lantern whose beam something else was built over is taken down. */
+    private void fixLanterns() {
+        for (int x = 0; x < W; x++) {
+            for (int z = 0; z < D; z++) {
+                for (int y = MIN_Y; y < MAX_Y; y++) {
+                    if (!"lantern[hanging=true]".equals(bp.get(x, y, z))) {
+                        continue;
+                    }
+                    String above = bp.get(x, y + 1, z);
+                    boolean holds = above != null && (above.startsWith("stripped_spruce_log") || above.equals("cut_sandstone")
+                            || above.equals("smooth_sandstone") || above.equals("sandstone"));
+                    if (!holds) {
+                        bp.set(x, y, z, AIR);
+                    }
+                }
+            }
+        }
+    }
+
     // ---------------------------------------------------------------------------------------------- roofs
 
     private void roofs() {
@@ -518,13 +545,13 @@ public final class BazaarLayout {
             }
             int y = top[cx][cz] + 1;
             int h = hash(i, 3, 7) % 10;
-            if (h < 3 && plainRoof(cx - 3, cz - 3, cx + 3, cz + 3)) {
+            if (h < 6 && plainRoof(cx - 3, cz - 3, cx + 3, cz + 3)) {
                 dome(cx, cz, y, 3);
-            } else if (h < 3 && plainRoof(cx - 2, cz - 2, cx + 2, cz + 2)) {
+            } else if (h < 4 && plainRoof(cx - 2, cz - 2, cx + 2, cz + 2)) {
                 dome(cx, cz, y, 2);
-            } else if (h < 6 && plainRoof(cx - 1, cz - 1, cx + 1, cz + 1)) {
+            } else if (h < 7 && plainRoof(cx - 1, cz - 1, cx + 1, cz + 1)) {
                 windcatcher(cx, cz, y);
-            } else if (h < 8 && plainRoof(cx - 2, cz - 1, cx + 2, cz + 1)) {
+            } else if (h < 9 && plainRoof(cx - 2, cz - 1, cx + 2, cz + 1)) {
                 roofTerrace(cx, cz, y);
             }
         }
@@ -708,8 +735,8 @@ public final class BazaarLayout {
         crates(68, 47, 2, 68, 46, 2, 69, 47, 1);
         archAcrossX(33, 80, 85, 5);
         archAcrossX(57, 80, 85, 5);
-        wallBanner(82, 6, 32, NORTH, "blue");
-        wallBanner(83, 6, 58, SOUTH, "blue");
+        wallBanner(82, 7, 32, NORTH, "blue");
+        wallBanner(83, 7, 58, SOUTH, "blue");
 
         // dyers' alley
         archAcrossX(58, 50, 54, 5);
@@ -766,6 +793,9 @@ public final class BazaarLayout {
                     bp.set(x, y, 31 - i, "cut_sandstone");
                 }
                 bp.set(x, i, 31 - i, "sandstone_stairs[facing=north]");
+                for (int y = i + 1; y <= i + 4; y++) {
+                    bp.set(x, y, 31 - i, AIR);
+                }
             }
         }
         for (int x = 71; x <= 87; x += 8) {
@@ -776,6 +806,7 @@ public final class BazaarLayout {
 
         // the marked ground in the middle
         frame(75, 13, 87, 23, 0, "cut_red_sandstone");
+        glowCorners(75, 13, 87, 23, 0);
         floorLetter(GLYPH_A, 79, 16, 0);
         wallLetter(GLYPH_A, 65, 20, 0, -1, 3);
         wallSign(66, 2, 14, EAST, "site_a");
@@ -829,6 +860,7 @@ public final class BazaarLayout {
         wallBanner(84, 6, 44, NORTH, "blue");
         wallBanner(84, 6, 46, SOUTH, "blue");
         frame(78, 40, 90, 50, 0, "cyan_terracotta");
+        glowCorners(78, 40, 90, 50, 0);
         for (int z = 38; z <= 42; z += 2) {
             bp.set(96, 1, z, "hay_block");
             bp.set(96, 2, z, "target");
@@ -887,6 +919,7 @@ public final class BazaarLayout {
 
         // the marked ground
         frame(77, 71, 87, 80, 0, "cut_red_sandstone");
+        glowCorners(77, 71, 87, 80, 0);
         floorLetter(GLYPH_B, 80, 73, 0);
         wallLetter(GLYPH_B, 72, 59, 1, 0, 3);
         wallSign(78, 2, 60, SOUTH, "site_b");
@@ -1100,6 +1133,7 @@ public final class BazaarLayout {
                     default -> x2 - x;
                 };
                 boolean end = alongX ? x == x1 || x == x2 : z == z1 || z == z2;
+                bp.set(x, f + 3, z, AIR);
                 if (depth == 0) {
                     goods(x, z);
                 } else if (end) {
@@ -1219,6 +1253,7 @@ public final class BazaarLayout {
         }
         bp.set(cx, 3, cz, "chain");
         bp.set(cx, 2, cz, "chain");
+        bp.set(cx, 5, cz, "lantern");
         wallSign(cx, 1, cz - 2, NORTH, "well");
     }
 
@@ -1309,6 +1344,13 @@ public final class BazaarLayout {
         }
     }
 
+    private void glowCorners(int x1, int z1, int x2, int z2, int y) {
+        bp.set(x1, y, z1, "ochre_froglight");
+        bp.set(x2, y, z1, "ochre_froglight");
+        bp.set(x1, y, z2, "ochre_froglight");
+        bp.set(x2, y, z2, "ochre_froglight");
+    }
+
     /** Paints a letter on the ground, to be read looking north. */
     private void floorLetter(String[] glyph, int x, int z, int y) {
         for (int row = 0; row < 5; row++) {
@@ -1347,7 +1389,7 @@ public final class BazaarLayout {
         int bx = x - DX[facing];
         int bz = z - DZ[facing];
         String behind = bp.get(bx, y, bz);
-        if (behind != null && (behind.contains("door[") || AIR.equals(behind))) {
+        if (behind != null && behind.contains("door[")) {
             bp.set(bx, y, bz, "sandstone");
         }
     }
